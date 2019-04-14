@@ -89,11 +89,8 @@ class ReactPanel {
 		this._panel.webview.postMessage({ command: 'refactor view' });
 	}
 
-	/*private findImports(path: string) {
-		return { error: 'File not found' }
-	}*/
 	private createWorker(): ChildProcess {
-		return fork(path.join(__dirname, 'worker.js'), [], { stdio: 'pipe', execArgv: ['--inspect=' + (process.debugPort + 1)] });
+		return fork(path.join(__dirname, 'worker.js'), [], { execArgv: ['--inspect=' + (process.debugPort + 1)] });
 	}
 	public sendCompiledContract(editorContent: string | undefined, fn: string | undefined) {
 		// send JSON serializable compiled data
@@ -120,9 +117,8 @@ class ReactPanel {
 		const solcWorker = this.createWorker();
 		console.log("WorkerID: ", solcWorker.pid);
 		solcWorker.send({ command: 'compile', payload: input });
-		// const output = JSON.parse(solc.compile(JSON.stringify(input), this.findImports))
-		// console.log(output);
 		solcWorker.on('message', (m: any) => {
+			console.log(m);
 			if (m.compiled) {
 				console.log(m.compiled);
 				this._panel.webview.postMessage({ compiled: m.compiled })

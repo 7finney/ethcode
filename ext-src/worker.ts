@@ -1,4 +1,3 @@
-// const solc = require('solc');
 // @ts-ignore
 import * as solc from 'solc';
 
@@ -15,4 +14,3 @@ process.on('message', async (m) => {
         }
     }
 })
-module.exports = {};
