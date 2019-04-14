@@ -1,9 +1,18 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { fork, ChildProcess } from 'child_process';
 
 export function activate(context: vscode.ExtensionContext) {
-	context.subscriptions.push(vscode.commands.registerCommand('ethcode.compile', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('ethcode.activate', () => {
 		ReactPanel.createOrShow(context.extensionPath);
+	}));
+	context.subscriptions.push(vscode.commands.registerCommand('ethcode.compile', () => {
+		if (!ReactPanel.currentPanel) {
+			return;
+		}
+		const fileName = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : undefined;
+		const editorContent = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.getText() : undefined;
+		ReactPanel.currentPanel.sendCompiledContract(editorContent, fileName);
 	}));
 	context.subscriptions.push(vscode.commands.registerCommand('ethcode.refactor', () => {
 		if (!ReactPanel.currentPanel) {
@@ -28,6 +37,8 @@ class ReactPanel {
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionPath: string;
 	private _disposables: vscode.Disposable[] = [];
+	// @ts-ignore
+	private compiler: any;
 
 	public static createOrShow(extensionPath: string) {
 		const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
@@ -54,7 +65,7 @@ class ReactPanel {
 				vscode.Uri.file(path.join(this._extensionPath, 'build'))
 			]
 		});
-		
+
 		// Set the webview's initial html content 
 		this._panel.webview.html = this._getHtmlForWebview();
 
@@ -63,7 +74,7 @@ class ReactPanel {
 		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
 		// Handle messages from the webview
-		this._panel.webview.onDidReceiveMessage(message => {
+		this._panel.webview.onDidReceiveMessage((message: any) => {
 			switch (message.command) {
 				case 'alert':
 					vscode.window.showErrorMessage(message.text);
@@ -76,6 +87,61 @@ class ReactPanel {
 		// Send a message to the webview
 		// You can send any JSON serializable data.
 		this._panel.webview.postMessage({ command: 'refactor view' });
+	}
+
+	/*private findImports(path: string) {
+		return { error: 'File not found' }
+	}*/
+	private createWorker(): ChildProcess {
+		return fork(path.join(__dirname, 'worker.js'), [], { stdio: 'pipe', execArgv: ['--inspect=' + (process.debugPort + 1)] });
+	}
+	public sendCompiledContract(editorContent: string | undefined, fn: string | undefined) {
+		// send JSON serializable compiled data
+		const sources: ISources = {}
+		if (fn) {
+			sources[fn] = {
+				content: editorContent
+			}
+		}
+		var input = {
+			language: 'Solidity',
+			sources,
+			settings: {
+				outputSelection: {
+					'*': {
+						'*': ['*']
+					}
+				}
+			}
+		}
+		// child_process won't work because of debugging issue if launched with F5
+		// child_process will work when launched with ctrl+F5
+		// more on this - https://github.com/Microsoft/vscode/issues/40875
+		const solcWorker = this.createWorker();
+		console.log("WorkerID: ", solcWorker.pid);
+		solcWorker.send({ command: 'compile', payload: input });
+		// const output = JSON.parse(solc.compile(JSON.stringify(input), this.findImports))
+		// console.log(output);
+		solcWorker.on('message', (m: any) => {
+			if (m.compiled) {
+				console.log(m.compiled);
+				this._panel.webview.postMessage({ compiled: m.compiled })
+				solcWorker.kill();
+			}
+		});
+		solcWorker.on('error', (error: Error) => {
+			console.log('%c Compile worker process exited with error' + `${error.message}`, 'background: rgba(36, 194, 203, 0.3); color: #EF525B');
+		});
+		solcWorker.on('exit', (code: number, signal: string) => {
+			console.log('%c Compile worker process exited with ' + `code ${code} and signal ${signal}`, 'background: rgba(36, 194, 203, 0.3); color: #EF525B');
+			this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` })
+		});
+
+		/*const compiledData = {
+			source: "",
+			contracts: ""
+		}
+		this._panel.webview.postMessage({ compiledData, editorContent })*/
 	}
 
 	public dispose() {

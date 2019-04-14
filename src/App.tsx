@@ -5,19 +5,29 @@ import './App.css';
 import logo from './logo.svg';
 
 type IProps = any
+interface IState {
+  message: string
+}
 // @ts-ignore
 const vscode = acquireVsCodeApi();
-class App extends Component<IProps> {
+class App extends Component<IProps, IState> {
+  public state: IState
+  public props: IProps
+
   constructor(props: IProps) {
     super(props)
+    this.state = {
+      message: ''
+    }
   }
   public componentDidMount() {
     window.addEventListener('message', event => {
       const message = event.data;
-      console.log(JSON.stringify(message));
+      this.setState({ message: JSON.stringify(message) })
     });
   }
   public render() {
+    const { message } = this.state;
     return (
       <div className="App">
         <header className="App-header">
@@ -27,6 +37,11 @@ class App extends Component<IProps> {
         <p className="App-intro">
           Your compiled contracts should appear here.
         </p>
+        <pre>
+          {
+            message
+          }
+        </pre>
       </div>
     );
   }
