@@ -31,6 +31,16 @@
         "title": "Solidity compile refactor",
         "category": "Ethereum"
       }
+    ],
+    "keybindings": [
+      {
+        "key": "ctrl+shift+j",
+        "command": "ethcode.activate"
+      },
+      {
+        "key": "alt+j",
+        "command": "ethcode.compile"
+      }
     ]
   },
   "dependencies": {
