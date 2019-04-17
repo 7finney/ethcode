@@ -34,8 +34,11 @@
     ]
   },
   "dependencies": {
+    "@types/react-collapse": "^4.0.2",
     "react": "^16.3.2",
+    "react-collapse": "^4.0.3",
     "react-dom": "^16.3.2",
+    "react-motion": "^0.5.2",
     "react-scripts-ts": "2.16.0",
     "solc": "^0.5.7"
   },

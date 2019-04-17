@@ -118,9 +118,7 @@ class ReactPanel {
 		console.log("WorkerID: ", solcWorker.pid);
 		solcWorker.send({ command: 'compile', payload: input });
 		solcWorker.on('message', (m: any) => {
-			console.log(m);
 			if (m.compiled) {
-				console.log(m.compiled);
 				this._panel.webview.postMessage({ compiled: m.compiled })
 				solcWorker.kill();
 			}
@@ -132,12 +130,6 @@ class ReactPanel {
 			console.log('%c Compile worker process exited with ' + `code ${code} and signal ${signal}`, 'background: rgba(36, 194, 203, 0.3); color: #EF525B');
 			this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` })
 		});
-
-		/*const compiledData = {
-			source: "",
-			contracts: ""
-		}
-		this._panel.webview.postMessage({ compiledData, editorContent })*/
 	}
 
 	public dispose() {
