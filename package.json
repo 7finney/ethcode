@@ -34,11 +34,11 @@
     ],
     "keybindings": [
       {
-        "key": "ctrl+shift+j",
+        "key": "ctrl+alt+e",
         "command": "ethcode.activate"
       },
       {
-        "key": "alt+j",
+        "key": "ctrl+alt+c",
         "command": "ethcode.compile"
       }
     ]
