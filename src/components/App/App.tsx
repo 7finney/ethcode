@@ -1,8 +1,8 @@
 // @ts-ignore
 import React, { Component } from 'react';
 import { Collapse } from 'react-collapse';
-import './App.css';
-import ContractCompiled from './ContractCompiled';
+import '../css/App.css';
+import ContractCompiled from '../ContractCompiled/ContractCompiled';
 
 type IProps = any
 interface IState {

@@ -41,7 +41,7 @@ class ReactPanel {
 	private compiler: any;
 
 	public static createOrShow(extensionPath: string) {
-		const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
+		const column = vscode.window.activeTextEditor ? -2 : undefined;
 
 		// If we already have a panel, show it.
 		// Otherwise, create a new panel.
