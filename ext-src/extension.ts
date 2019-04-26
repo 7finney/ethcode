@@ -118,6 +118,8 @@ class ReactPanel {
 		console.log("WorkerID: ", solcWorker.pid);
 		solcWorker.send({ command: 'compile', payload: input });
 		solcWorker.on('message', (m: any) => {
+			console.log(m);
+			
 			if (m.compiled) {
 				this._panel.webview.postMessage({ compiled: m.compiled })
 				solcWorker.kill();
