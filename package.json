@@ -55,7 +55,7 @@
   "scripts": {
     "vscode:prepublish": "react-scripts-ts build && tsc -p tsconfig.extension.json",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "start": "react-scripts-ts start",
+    "start": "react-scripts-ts start && tsc -p tsconfig.extension.json",
     "build": "react-scripts-ts build && tsc -p tsconfig.extension.json",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
