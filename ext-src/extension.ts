@@ -2,6 +2,8 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
 import * as fs from "fs";
+import { RemixURLResolver } from "remix-url-resolver";
+import axios, { AxiosResponse } from "axios";
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -111,6 +113,80 @@ class ReactPanel {
     // You can send any JSON serializable data.
     this._panel.webview.postMessage({ command: "refactor view" });
   }
+  async handleGithubCall(root: string, filePath: string) {
+    try {
+      let req: string =
+        "https://api.github.com/repos/" + root + "/contents/" + filePath;
+      const response: AxiosResponse = await axios.get(req);
+      return Buffer.from(response.data.content, "base64").toString();
+    } catch (e) {
+      throw e;
+    }
+  }
+  /**
+   * Handle an import statement based on http
+   * @params url The url of the import statement
+   * @params cleanURL
+   */
+  async handleHttp(url: string, _: string) {
+    try {
+      const response: AxiosResponse = await axios.get(url);
+      return response.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+  /**
+   * Handle an import statement based on https
+   * @params url The url of the import statement
+   * @params cleanURL
+   */
+  async handleHttps(url: string, _: string) {
+    try {
+      const response: AxiosResponse = await axios.get(url);
+      return response.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+  handleSwarm(url: string, cleanURL: string) {
+    return;
+  }
+  /**
+   * Handle an import statement based on IPFS
+   * @params url The url of the IPFS import statement
+   */
+  async handleIPFS(url: string) {
+    // replace ipfs:// with /ipfs/
+    url = url.replace(/^ipfs:\/\/?/, "ipfs/");
+    try {
+      const req = "https://gateway.ipfs.io/" + url;
+      // If you don't find greeter.sol on ipfs gateway use local
+      // const req = 'http://localhost:8080/' + url
+      const response: AxiosResponse = await axios.get(req);
+      return response.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+  private handleLocal(pathString: string, filePath: any) {
+    // if no relative/absolute path given then search in node_modules folder
+    if (
+      pathString &&
+      pathString.indexOf(".") !== 0 &&
+      pathString.indexOf("/") !== 0
+    ) {
+      // return handleNodeModulesImport(pathString, filePath, pathString)
+      return;
+    } else {
+      const o = { encoding: "UTF-8" };
+      const p = pathString
+        ? path.resolve(pathString, filePath)
+        : path.resolve(pathString, filePath);
+      const content = fs.readFileSync(p, o);
+      return content;
+    }
+  }
 
   private createWorker(): ChildProcess {
     return fork(path.join(__dirname, "worker.js"), [], {
@@ -149,16 +225,74 @@ class ReactPanel {
       console.log(m);
 
       if (m.path) {
-        fs.readFile(m.path, "utf8", (err, data) => {
-          if (!err && data) {
-            sources[m.path] = {
-              content: data
-            };
-			console.log(sources);
-			
-            solcWorker.send({ command: "compile", payload: input });
+        const FSHandler = [
+          {
+            type: "local",
+            match: (url: string) => {
+              return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?(\w+\.sol)/g.exec(
+                url
+              );
+            },
+            handle: (match: Array<string>) => {
+              return this.handleLocal(match[2], match[3]);
+            }
+          },
+          {
+            type: "github",
+            match: (url: string) => {
+              return /^(https?:\/\/)?(www.)?github.com\/([^/]*\/[^/]*)\/(.*)/.exec(
+                url
+              );
+            },
+            handle: (match: Array<string>) =>
+              this.handleGithubCall(match[3], match[4])
+          },
+          {
+            type: "http",
+            match: (url: string) => {
+              return /^(http?:\/\/?(.*))$/.exec(url);
+            },
+            handle: (match: Array<string>) =>
+              this.handleHttp(match[1], match[2])
+          },
+          {
+            type: "https",
+            match: (url: string) => {
+              return /^(https?:\/\/?(.*))$/.exec(url);
+            },
+            handle: (match: Array<string>) =>
+              this.handleHttps(match[1], match[2])
+          },
+          {
+            type: "swarm",
+            match: (url: string) => {
+              return /^(bzz-raw?:\/\/?(.*))$/.exec(url);
+            },
+            handle: (match: Array<string>) =>
+              this.handleSwarm(match[1], match[2])
+          },
+          {
+            type: "ipfs",
+            match: (url: string) => {
+              return /^(ipfs:\/\/?.+)/.exec(url);
+            },
+            handle: (match: Array<string>) => this.handleIPFS(match[1])
           }
-        });
+        ];
+
+        const urlResolver = new RemixURLResolver();
+        urlResolver
+          .resolve(m.path, FSHandler)
+          .then((sources: object) => {
+            sources = sources;
+          })
+          .catch((e: Error) => {
+            throw e;
+          });
+
+        // console.log(sources);
+
+        solcWorker.send({ command: "compile", payload: input });
       }
 
       if (m.compiled) {
