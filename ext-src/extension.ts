@@ -284,7 +284,7 @@ class ReactPanel {
         urlResolver
           .resolve(m.path, FSHandler)
           .then((sources: object) => {
-            sources = sources;
+            sources[m.path] = sources;
           })
           .catch((e: Error) => {
             throw e;
