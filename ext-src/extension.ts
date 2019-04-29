@@ -283,8 +283,10 @@ class ReactPanel {
         const urlResolver = new RemixURLResolver();
         urlResolver
           .resolve(m.path, FSHandler)
-          .then((sources: object) => {
-            sources[m.path] = sources;
+          .then((data: any) => {
+            sources[m.path] = {
+              content: data.content
+            };
           })
           .catch((e: Error) => {
             throw e;
