@@ -1,5 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
-import "./mortal.sol";
+ // import "./mortal.sol";
+ import "github.com/mathcody/solidity-examples/mortal/mortal.sol";
+
 
 contract Greeter is Mortal {
     /* Define variable greeting of the type string */
