@@ -1,7 +1,6 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
-import * as fs from "fs";
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -146,21 +145,12 @@ class ReactPanel {
     console.log("WorkerID: ", solcWorker.pid);
     solcWorker.send({ command: "compile", payload: input });
     solcWorker.on("message", (m: any) => {
-      console.log(m);
-
-      if (m.path) {
-        fs.readFile(m.path, "utf8", (err, data) => {
-          if (!err && data) {
-            sources[m.path] = {
-              content: data
-            };
-			console.log(sources);
-			
-            solcWorker.send({ command: "compile", payload: input });
-          }
-        });
+      if (m.data && m.path) {
+        sources[m.path] = {
+          content: m.data.content
+        };
+        solcWorker.send({ command: "compile", payload: input });
       }
-
       if (m.compiled) {
         this._panel.webview.postMessage({ compiled: m.compiled });
         solcWorker.kill();

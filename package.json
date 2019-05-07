@@ -50,6 +50,7 @@
     "react-dom": "^16.3.2",
     "react-motion": "^0.5.2",
     "react-scripts-ts": "2.16.0",
+    "remix-url-resolver": "^0.0.5",
     "solc": "^0.5.7"
   },
   "scripts": {
