@@ -152,7 +152,7 @@ class ReactPanel {
         solcWorker.send({ command: "compile", payload: input });
       }
       if (m.compiled) {
-        this._panel.webview.postMessage({ compiled: m.compiled });
+        this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
       }
     });
