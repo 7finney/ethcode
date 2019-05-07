@@ -1,8 +1,7 @@
 pragma solidity ^0.5.2;
 
- import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
- import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-
+import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 contract SampleToken is ERC20, ERC20Detailed {
     uint8 public constant DECIMALS = 18;
