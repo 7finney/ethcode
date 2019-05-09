@@ -1,6 +1,8 @@
 // @ts-ignore
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import "./Dropdown.css";
+import { changePath } from "../../actions";
 
 type IProps = any;
 // @ts-ignore
@@ -14,10 +16,15 @@ class Dropdown extends Component<IProps, IState> {
       sources: this.props.files
     };
   }
+  componentDidMount() {
+    console.log(this.props);
+  }
   public renderProps() {
     return this.props.files.map((file: any) => (
-      <option value={file} key={file}>{file}</option>
-    ))
+      <option value={file} key={file}>
+        {file}
+      </option>
+    ));
   }
   public render() {
     return (
@@ -33,4 +40,13 @@ class Dropdown extends Component<IProps, IState> {
   }
 }
 
-export default Dropdown;
+function mapDispatchToProps(dispatch: any): any {
+  return {
+    changePath: (val: string) => dispatch(changePath(val))
+  };
+}
+
+export default connect(
+  null,
+  mapDispatchToProps
+)(Dropdown);
