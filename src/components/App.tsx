@@ -36,6 +36,9 @@ class App extends Component<IProps, IState> {
       // TODO: handle error message
     });
   }
+  public changeFile = (val: any) => {
+    console.log(val);
+  };
   public render() {
     const { compiled, message } = this.state;
     return (
@@ -44,7 +47,10 @@ class App extends Component<IProps, IState> {
           <h1 className="App-title">ETHcode</h1>
         </header>
         {compiled && compiled.sources && (
-          <Dropdown files={Object.keys(compiled.sources)} />
+          <Dropdown
+            files={Object.keys(compiled.sources)}
+            changeFile={this.changeFile}
+          />
         )}
         <pre>{message}</pre>
         <p>

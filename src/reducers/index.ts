@@ -1,6 +1,4 @@
-import { combineReducers } from "redux";
-import selectedFile from "./selectedFile";
+// import { combineReducers } from "redux";
 
-export default combineReducers({
-  selectedFile
-});
+// export default combineReducers({
+// });

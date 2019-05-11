@@ -1,24 +1,26 @@
 // @ts-ignore
 import React, { Component } from "react";
-import { connect } from "react-redux";
 import "./Dropdown.css";
-import { changePath } from "../../actions";
 
-type IProps = any;
+interface IProps {
+  files: any;
+  changeFile: (val: any) => void;
+}
 // @ts-ignore
 interface IState {
-  sources: any;
+  value: any;
 }
 class Dropdown extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      sources: this.props.files
+      value: "No Files"
     };
   }
-  componentDidMount() {
-    console.log(this.props);
-  }
+  public handleChange = (e: any) => {
+    this.setState({ value: e.target.value });
+    this.props.changeFile(this.state.value)
+  };
   public renderProps() {
     return this.props.files.map((file: any) => (
       <option value={file} key={file}>
@@ -29,7 +31,11 @@ class Dropdown extends Component<IProps, IState> {
   public render() {
     return (
       <div>
-        <select name="files" id="compiledFiles">
+        <select
+          id="compiledFiles"
+          value={this.state.value}
+          onChange={this.handleChange}
+        >
           <option value="No Files" selected={true} disabled={true}>
             No Files
           </option>
@@ -40,13 +46,4 @@ class Dropdown extends Component<IProps, IState> {
   }
 }
 
-function mapDispatchToProps(dispatch: any): any {
-  return {
-    changePath: (val: string) => dispatch(changePath(val))
-  };
-}
-
-export default connect(
-  null,
-  mapDispatchToProps
-)(Dropdown);
+export default Dropdown;
