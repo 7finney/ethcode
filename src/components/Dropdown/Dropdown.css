@@ -4,3 +4,6 @@ select#compiledFiles {
     color: #000;
     font-size: 17px;
 }
+.optStyle {
+    background-color: red;
+}

@@ -1,49 +1,48 @@
 // @ts-ignore
 import React, { Component } from "react";
+// @ts-ignore
+import Select from 'react-select';
 import "./Dropdown.css";
 
 interface IProps {
   files: any;
   changeFile: (val: any) => void;
 }
-// @ts-ignore
+interface IOpt {
+  value: string,
+  label: string
+}
 interface IState {
-  value: any;
+  selectedOption: any;
+  options: IOpt[];
 }
 class Dropdown extends Component<IProps, IState> {
+  public state = {
+    selectedOption: null,
+    options: new Array()
+  }
   constructor(props: IProps) {
     super(props);
-    this.state = {
-      value: "No Files"
-    };
+    const { options } = this.state;
+    props.files.map((file: string) => {
+      const optItm: IOpt = { value: file, label: file.replace(/^.*[\\\/]/, '') };
+      options.push(optItm);
+    })
   }
-  public handleChange = (e: any) => {
-    this.setState({ value: e.target.value });
-    this.props.changeFile(this.state.value)
+  public handleChange = (selectedOption: any) => {
+    this.setState({ selectedOption });
+    this.props.changeFile(selectedOption);
   };
-  public renderProps() {
-    return this.props.files.map((file: any) => (
-      <option value={file} key={file}>
-        {file}
-      </option>
-    ));
-  }
   public render() {
+    const { selectedOption } = this.state;
     return (
-      <div>
-        <select
-          id="compiledFiles"
-          value={this.state.value}
-          onChange={this.handleChange}
-        >
-          <option value="No Files" selected={true} disabled={true}>
-            No Files
-          </option>
-          {this.renderProps()}
-        </select>
-      </div>
+      <Select
+        value={selectedOption}
+        onChange={this.handleChange}
+        options={this.state.options}
+        className="optStyle"
+      />
     );
   }
 }
-
 export default Dropdown;

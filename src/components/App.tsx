@@ -11,6 +11,10 @@ interface IState {
   compiled: any;
   error: Error | null;
 }
+interface IOpt {
+  value: string,
+  label: string
+}
 // @ts-ignore
 const vscode = acquireVsCodeApi();
 class App extends Component<IProps, IState> {
@@ -36,8 +40,8 @@ class App extends Component<IProps, IState> {
       // TODO: handle error message
     });
   }
-  public changeFile = (val: any) => {
-    console.log(val);
+  public changeFile = (selectedOpt: IOpt) => {
+    console.log(selectedOpt.value);
   };
   public render() {
     const { compiled, message } = this.state;
@@ -92,5 +96,4 @@ class App extends Component<IProps, IState> {
     );
   }
 }
-
 export default App;

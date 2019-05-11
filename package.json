@@ -51,6 +51,7 @@
     "react-motion": "^0.5.2",
     "react-redux": "^7.0.3",
     "react-scripts-ts": "2.16.0",
+    "react-select": "^2.4.3",
     "redux": "^4.0.1",
     "remix-url-resolver": "^0.0.5",
     "solc": "^0.5.7"
@@ -67,8 +68,6 @@
   "devDependencies": {
     "@types/jest": "^22.2.3",
     "@types/node": "^10.14.4",
-    "@types/react": "^16.8.17",
-    "@types/react-dom": "^16.8.4",
     "typescript": "^3.4.5",
     "vscode": "^1.1.34"
   }
