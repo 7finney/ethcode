@@ -19,12 +19,11 @@
 }
 
 .compiledOutput {
-  display: flex;
   height: 100%;
-  width: 500vw;
+  width: 500px;
+  overflow: scroll;
   font-size: 15px;
   margin: 20px;
   flex-wrap: wrap;
-  justify-content: flex-start;
   border: 1px solid #fff;
 }
