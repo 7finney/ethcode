@@ -20,10 +20,10 @@
 
 .compiledOutput {
   height: 100%;
-  width: 500px;
+  width: 95vw;
   overflow: scroll;
   font-size: 15px;
   margin: 20px;
-  flex-wrap: wrap;
-  border: 1px solid #fff;
+  padding: 7px;
+  border: 1px solid rgba(218, 218, 218, 0.555);
 }

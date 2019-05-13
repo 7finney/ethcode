@@ -35,8 +35,9 @@ class App extends Component<IProps, IState> {
       const { data } = event;
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
+        const fileName = Object.keys(compiled.sources)[0];
         console.log(Object.keys(compiled.sources));
-        this.setState({ compiled });
+        this.setState({ compiled, fileName });
       }
       // TODO: handle error message
     });
@@ -65,10 +66,10 @@ class App extends Component<IProps, IState> {
               {Object.keys(compiled.contracts[fileName]).map(
                 (contractName: string, i: number) => {
                   const bytecode =
-                    compiled.contracts[fileName][contractName].evm
-                      .bytecode.object;
+                    compiled.contracts[fileName][contractName].evm.bytecode
+                      .object;
                   const ContractABI =
-                    compiled.contracts[fileName][contractName].abi;                    
+                    compiled.contracts[fileName][contractName].abi;
                   return (
                     <div
                       id={contractName}

@@ -1,6 +1,7 @@
 // @ts-ignore
 import React, { Component } from 'react';
 import InputsForm from '../InputsForm/InputsForm';
+import "./ContractCompiled.css"
 
 interface IProps {
     contractName: string,
