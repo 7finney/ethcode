@@ -1,7 +1,7 @@
 // @ts-ignore
 import React, { Component } from "react";
 // @ts-ignore
-import Select from 'react-select';
+import Select from "react-select";
 import "./Dropdown.css";
 
 interface IProps {
@@ -9,8 +9,8 @@ interface IProps {
   changeFile: (val: any) => void;
 }
 interface IOpt {
-  value: string,
-  label: string
+  value: string;
+  label: string;
 }
 interface IState {
   selectedOption: any;
@@ -20,14 +20,20 @@ class Dropdown extends Component<IProps, IState> {
   public state = {
     selectedOption: null,
     options: new Array()
-  }
+  };
   constructor(props: IProps) {
     super(props);
     const { options } = this.state;
     props.files.map((file: string) => {
-      const optItm: IOpt = { value: file, label: file.replace(/^.*[\\\/]/, '') };
+      const optItm: IOpt = {
+        value: file,
+        label: file.replace(/^.*[\\\/]/, "")
+      };
       options.push(optItm);
-    })
+    });
+  }
+  public componentWillUnmount() {
+    this.setState({ selectedOption: null, options: new Array() });
   }
   public handleChange = (selectedOption: any) => {
     this.setState({ selectedOption });
