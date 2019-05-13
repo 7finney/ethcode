@@ -5,3 +5,7 @@
   padding: 5px;
   height: 40px;
 }
+
+.contract-name {
+    text-align: left;
+}
