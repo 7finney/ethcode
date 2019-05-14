@@ -31,3 +31,16 @@
 .contract-container {
   text-align: left;
 }
+
+.processMessage {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: #000000;
+  font-size: 18px;
+  color: #fff;
+  padding: 5px;
+  text-align: left;
+  text-transform: uppercase;
+}
