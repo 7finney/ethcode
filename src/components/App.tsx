@@ -10,7 +10,7 @@ interface IState {
   compiled: any;
   error: Error | null;
   fileName: any;
-  processMessage: string
+  processMessage: string;
 }
 interface IOpt {
   value: string;
@@ -40,8 +40,9 @@ class App extends Component<IProps, IState> {
         const fileName = Object.keys(compiled.sources)[0];
         this.setState({ compiled, fileName, processMessage: "" });
       }
-      if(data.resetState){
-        this.setState({fileName: "", compiled: "", processMessage: "Compilling..."} )        
+      if (data.processMessage) {
+        const { processMessage } = data;
+        this.setState({ fileName: "", compiled: "", processMessage });
       }
       // TODO: handle error message
     });

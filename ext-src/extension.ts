@@ -144,7 +144,7 @@ class ReactPanel {
     const solcWorker = this.createWorker();
     console.log("WorkerID: ", solcWorker.pid);
     // Reset Components State before compilation
-    this._panel.webview.postMessage({ resetState: true }); 
+    this._panel.webview.postMessage({ processMessage: "Compiling..." }); 
     solcWorker.send({ command: "compile", payload: input });
     solcWorker.on("message", (m: any) => {
       if (m.data && m.path) {
@@ -156,6 +156,9 @@ class ReactPanel {
       if (m.compiled) {
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
+      }
+      if (m.processMessage){
+        this._panel.webview.postMessage({ processMessage: m.processMessage }); 
       }
     });
     solcWorker.on("error", (error: Error) => {
