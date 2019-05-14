@@ -38,10 +38,9 @@ class App extends Component<IProps, IState> {
         const fileName = Object.keys(compiled.sources)[0];
         this.setState({ compiled, fileName });
       }
-      if(data.resetState){
-        this.setState({fileName: "", compiled: ""} )
-        console.log("Compiling");
-        
+      if (data.resetState) {
+        this.setState({fileName: "", compiled: ""});
+        console.log("Compiling...");
       }
       // TODO: handle error message
     });
