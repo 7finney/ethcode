@@ -1,83 +1,100 @@
 // @ts-ignore
-import React, { Component } from 'react';
-import { Collapse } from 'react-collapse';
-import './App.css';
-import ContractCompiled from './ContractCompiled';
+import React, { Component } from "react";
+import "./App.css";
+import ContractCompiled from "./ContractCompiled";
+import Dropdown from "./Dropdown";
 
-type IProps = any
+type IProps = any;
 interface IState {
-  message: string,
-  compiled: any,
-  error: Error | null
+  message: string;
+  compiled: any;
+  error: Error | null;
+  fileName: any;
+}
+interface IOpt {
+  value: string;
+  label: string;
 }
 // @ts-ignore
 const vscode = acquireVsCodeApi();
 class App extends Component<IProps, IState> {
-  public state: IState
-  public props: IProps
+  public state: IState;
+  public props: IProps;
 
   constructor(props: IProps) {
-    super(props)
+    super(props);
     this.state = {
-      message: '',
-      compiled: '',
-      error: null
-    }
+      message: "",
+      compiled: "",
+      error: null,
+      fileName: ""
+    };
   }
   public componentDidMount() {
-    window.addEventListener('message', event => {
+    window.addEventListener("message", event => {
       const { data } = event;
-      if(data.compiled) {
-        const compiled = JSON.parse(data.compiled)
-        console.log(Object.keys(compiled.sources));
-        this.setState({ compiled });
+      if (data.compiled) {
+        const compiled = JSON.parse(data.compiled);
+        const fileName = Object.keys(compiled.sources)[0];
+        this.setState({ compiled, fileName });
+      }
+      if (data.resetState) {
+        this.setState({fileName: "", compiled: ""});
+        console.log("Compiling...");
       }
       // TODO: handle error message
     });
   }
+  public changeFile = (selectedOpt: IOpt) => {
+    this.setState({ fileName: selectedOpt.value });
+  };
+
   public render() {
-    const { compiled, message } = this.state;
+    const { compiled, message, fileName } = this.state;
     return (
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        <pre>
-          {
-            message
-          }
-        </pre>
+        {compiled && compiled.sources && (
+          <Dropdown
+            files={Object.keys(compiled.sources)}
+            changeFile={this.changeFile}
+          />
+        )}
+        <pre>{message}</pre>
         <p>
-          {
-            compiled &&
-            Object.keys(compiled.sources).map((fileName: string, index: number) => {
-              return(
-                <Collapse isOpened={true} key={index}>
-                  {
-                    Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                      const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                      const ContractABI = compiled.contracts[fileName][contractName].abi;
-                        return (
-                            <div id={contractName} className="contract-container" key={index}>
-                                {
-                                    <ContractCompiled
-                                        contractName={contractName}
-                                        bytecode={bytecode}
-                                        abi={ContractABI}
-                                    />
-                                }
-                            </div>
-                        );
-                    })
-                    }
-                </Collapse>
-              )
-            })
-          }
+          {compiled && fileName && (
+            <div className="compiledOutput">
+              {Object.keys(compiled.contracts[fileName]).map(
+                (contractName: string, i: number) => {
+                  const bytecode =
+                    compiled.contracts[fileName][contractName].evm.bytecode
+                      .object;
+                  const ContractABI =
+                    compiled.contracts[fileName][contractName].abi;
+                  return (
+                    <div
+                      id={contractName}
+                      className="contract-container"
+                      key={i}
+                    >
+                      {
+                        <ContractCompiled
+                          contractName={contractName}
+                          bytecode={bytecode}
+                          abi={ContractABI}
+                        />
+                      }
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          )}
         </p>
       </div>
     );
   }
 }
-
 export default App;

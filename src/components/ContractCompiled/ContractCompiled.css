@@ -1,0 +1,11 @@
+.large-code {
+  overflow: scroll;
+  background-color: #000;
+  color: #fff;
+  padding: 5px;
+  height: 40px;
+}
+
+.contract-name {
+    text-align: left;
+}

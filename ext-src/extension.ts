@@ -143,6 +143,8 @@ class ReactPanel {
     // more on this - https://github.com/Microsoft/vscode/issues/40875
     const solcWorker = this.createWorker();
     console.log("WorkerID: ", solcWorker.pid);
+    // Reset Components State before compilation
+    this._panel.webview.postMessage({ resetState: true }); 
     solcWorker.send({ command: "compile", payload: input });
     solcWorker.on("message", (m: any) => {
       if (m.data && m.path) {
@@ -152,7 +154,7 @@ class ReactPanel {
         solcWorker.send({ command: "compile", payload: input });
       }
       if (m.compiled) {
-        this._panel.webview.postMessage({ compiled: m.compiled });
+        this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
       }
     });
