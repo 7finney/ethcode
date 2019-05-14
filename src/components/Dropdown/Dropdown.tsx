@@ -16,6 +16,35 @@ interface IState {
   selectedOption: any;
   options: IOpt[];
 }
+
+const customStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: "#000",
+    color: "#fff"
+  }),
+
+  menu: (base: any) => ({
+    ...base,
+    color: "#fff",
+    background: "#000"
+  }),
+  menuList: (base: any) => ({
+    ...base,
+    color: "#fff",
+    background: "#000"
+  }),
+  singleValue: (base: any) => ({
+    ...base,
+    color: "#fff"
+  }),
+  option: (base: any, {isFocused}: any) => ({
+    ...base,
+    color: "#fff",
+    backgroundColor: isFocused ? "#aaa": null
+  })
+};
+
 class Dropdown extends Component<IProps, IState> {
   public state = {
     selectedOption: null,
@@ -43,10 +72,12 @@ class Dropdown extends Component<IProps, IState> {
     const { selectedOption } = this.state;
     return (
       <Select
+        placeholder="Select Files"
         value={selectedOption}
         onChange={this.handleChange}
         options={this.state.options}
         className="optStyle"
+        styles={customStyles}
       />
     );
   }

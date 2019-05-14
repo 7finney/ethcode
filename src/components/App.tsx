@@ -36,8 +36,12 @@ class App extends Component<IProps, IState> {
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
         const fileName = Object.keys(compiled.sources)[0];
-        console.log(Object.keys(compiled.sources));
         this.setState({ compiled, fileName });
+      }
+      if(data.resetState){
+        this.setState({fileName: "", compiled: ""} )
+        console.log("Compiling");
+        
       }
       // TODO: handle error message
     });

@@ -1,9 +1,8 @@
 
 .optStyle {
-  width: 150px;
+  width: 350px;
   height: 20px;
-  color: #fff;
-  background-color: rgb(9, 0, 58);
   font-size: 17px;
   margin: 20px auto;
+  color: #fff;
 }
