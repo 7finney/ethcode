@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
 import Dropdown from "./Dropdown";
+import CompilerVersionSelector from "./CompilerVersionSelector";
 
 type IProps = any;
 interface IState {
@@ -58,6 +59,7 @@ class App extends Component<IProps, IState> {
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
+        <CompilerVersionSelector />
         {compiled && compiled.sources && (
           <Dropdown
             files={Object.keys(compiled.sources)}
