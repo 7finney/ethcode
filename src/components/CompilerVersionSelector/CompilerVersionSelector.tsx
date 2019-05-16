@@ -27,17 +27,29 @@ class CompilerVersionSelector extends Component<IProps, IState> {
     // atom.config.set("etheratom.versionSelector", selectedVersion);
   }
   public async componentDidMount() {
-    await this.fetchVersionList();
+    window.addEventListener("message", event => {
+      const { data } = event;
+      if (data.versions) {
+        this.setState({ availableVersions: data.versions });
+      }
+      console.log(this.state.availableVersions);
+      
+      // TODO: handle error message
+    });
   }
 
   public async fetchVersionList() {
-    const versions = await axios.get(
-      "https://ethereum.github.io/solc-bin/bin/list.json"
-    );
-    this.setState({
-      availableVersions: versions.data.builds
-      //   selectedVersion: atom.config.get("etheratom.versionSelector")
-    });
+    try {
+      const versions = await axios.get(
+        "https://ethereum.github.io/solc-bin/bin/list.json"
+      );
+      this.setState({
+        availableVersions: versions.data.releases
+        //   selectedVersion: atom.config.get("etheratom.versionSelector")
+      });
+    } catch (error) {
+      console.log("axios error", error);
+    }
   }
   public render() {
     const { availableVersions } = this.state;

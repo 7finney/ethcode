@@ -2,6 +2,7 @@
 import * as solc from "solc";
 import * as path from "path";
 import * as fs from "fs";
+import axios from "axios";
 
 import { RemixURLResolver } from "remix-url-resolver";
 
@@ -27,7 +28,7 @@ function handleLocal(pathString: string, filePath: any) {
 function findImports(path: any) {
   // TODO: We need current solc file path here for relative local import
   // @ts-ignore
-  process.send({processMessage: "importing files..."})
+  process.send({ processMessage: "importing files..." });
   const FSHandler = [
     {
       type: "local",
@@ -66,5 +67,17 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ error: e });
     }
+  }
+  if (m.command === "fetch_compiler_verison") {
+    axios
+      .get("https://ethereum.github.io/solc-bin/bin/list.json")
+      .then((res: any) => {
+        // @ts-ignore
+        process.send({ versions: res.data });
+      })
+      .catch((e: Error) => {
+        // @ts-ignore
+        process.send({ error: e });
+      });
   }
 });

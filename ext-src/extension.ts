@@ -6,6 +6,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", () => {
       ReactPanel.createOrShow(context.extensionPath);
+      ReactPanel.getCompilerVersion();
     })
   );
   context.subscriptions.push(
@@ -49,6 +50,7 @@ class ReactPanel {
   private _disposables: vscode.Disposable[] = [];
   // @ts-ignore
   private compiler: any;
+  static getCompilerVersion: any;
 
   public static createOrShow(extensionPath: string) {
     const column = vscode.window.activeTextEditor ? -2 : undefined;
@@ -144,7 +146,7 @@ class ReactPanel {
     const solcWorker = this.createWorker();
     console.log("WorkerID: ", solcWorker.pid);
     // Reset Components State before compilation
-    this._panel.webview.postMessage({ processMessage: "Compiling..." }); 
+    this._panel.webview.postMessage({ processMessage: "Compiling..." });
     solcWorker.send({ command: "compile", payload: input });
     solcWorker.on("message", (m: any) => {
       if (m.data && m.path) {
@@ -157,8 +159,8 @@ class ReactPanel {
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
       }
-      if (m.processMessage){
-        this._panel.webview.postMessage({ processMessage: m.processMessage }); 
+      if (m.processMessage) {
+        this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
     });
     solcWorker.on("error", (error: Error) => {
@@ -191,6 +193,34 @@ class ReactPanel {
         x.dispose();
       }
     }
+  }
+
+  public getCompilerVersion(): void {
+    const solcWorker = this.createWorker();
+    solcWorker.send({ command: "fetch_compiler_verison" });
+    solcWorker.on("message", (m: any) => {
+      if (m.versions) {
+        const { versions } = m;
+        this._panel.webview.postMessage({ versions });
+        solcWorker.kill();
+      }
+    });
+    solcWorker.on("error", (error: Error) => {
+      console.log(
+        "%c Compile worker process exited with error" + `${error.message}`,
+        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+      );
+    });
+    solcWorker.on("exit", (code: number, signal: string) => {
+      console.log(
+        "%c Compile worker process exited with " +
+          `code ${code} and signal ${signal}`,
+        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+      );
+      this._panel.webview.postMessage({
+        message: `Error code ${code} : Error signal ${signal}`
+      });
+    });
   }
 
   private _getHtmlForWebview() {
