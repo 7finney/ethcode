@@ -1,6 +1,5 @@
 // @ts-ignore
 import React, { Component } from 'react';
-import InputsForm from '../InputsForm/InputsForm';
 import "./ContractCompiled.css"
 
 interface IProps {
@@ -26,11 +25,6 @@ class ContractCompiled extends Component<IProps> {
                 <div className="abi-definition">
                     <pre className="large-code">{ JSON.stringify(abi) }</pre>
                 </div>
-                {
-                    abi.map((abiItem: any, i: number) => {
-                        return <InputsForm key={i} contractName={contractName} abi={abiItem} onSubmit={this._handleInput}/>;
-                    })
-                }
             </div>
         );
     }
