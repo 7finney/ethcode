@@ -10,6 +10,7 @@ interface IState {
   compiled: any;
   error: Error | null;
   fileName: any;
+  processMessage: string;
 }
 interface IOpt {
   value: string;
@@ -27,7 +28,8 @@ class App extends Component<IProps, IState> {
       message: "",
       compiled: "",
       error: null,
-      fileName: ""
+      fileName: "",
+      processMessage: ""
     };
   }
   public componentDidMount() {
@@ -36,11 +38,11 @@ class App extends Component<IProps, IState> {
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
         const fileName = Object.keys(compiled.sources)[0];
-        this.setState({ compiled, fileName });
+        this.setState({ compiled, fileName, processMessage: "" });
       }
-      if (data.resetState) {
-        this.setState({fileName: "", compiled: ""});
-        console.log("Compiling...");
+      if (data.processMessage) {
+        const { processMessage } = data;
+        this.setState({ fileName: "", compiled: "", processMessage });
       }
       // TODO: handle error message
     });
@@ -50,7 +52,7 @@ class App extends Component<IProps, IState> {
   };
 
   public render() {
-    const { compiled, message, fileName } = this.state;
+    const { compiled, message, fileName, processMessage } = this.state;
     return (
       <div className="App">
         <header className="App-header">
@@ -93,6 +95,7 @@ class App extends Component<IProps, IState> {
             </div>
           )}
         </p>
+        <pre className="processMessage">{processMessage}</pre>
       </div>
     );
   }
