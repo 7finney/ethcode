@@ -27,7 +27,7 @@ function handleLocal(pathString: string, filePath: any) {
 function findImports(path: any) {
   // TODO: We need current solc file path here for relative local import
   // @ts-ignore
-  process.send({processMessage: "importing files..."})
+  process.send({ processMessage: "importing files..." })
   const FSHandler = [
     {
       type: "local",
