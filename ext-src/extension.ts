@@ -6,7 +6,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", () => {
       ReactPanel.createOrShow(context.extensionPath);
-      ReactPanel.getCompilerVersion();
     })
   );
   context.subscriptions.push(
@@ -53,6 +52,7 @@ class ReactPanel {
 
   public static createOrShow(extensionPath: string) {
     const column = vscode.window.activeTextEditor ? -2 : undefined;
+    ReactPanel.getCompilerVersion();
 
     // If we already have a panel, show it.
     // Otherwise, create a new panel.
@@ -62,8 +62,8 @@ class ReactPanel {
       ReactPanel.currentPanel = new ReactPanel(
         extensionPath,
         column || vscode.ViewColumn.One
-      );
-    }
+        );
+      }
   }
 
   private constructor(extensionPath: string, column: vscode.ViewColumn) {
@@ -194,8 +194,8 @@ class ReactPanel {
     }
   }
 
-  public getCompilerVersion(): void {
-    const solcWorker = this.createWorker();   
+  public getCompilerVersion() {
+    const solcWorker = this.createWorker();
     solcWorker.send({ command: "fetch_compiler_verison" });
     solcWorker.on("message", (m: any) => {
       if (m.versions) {

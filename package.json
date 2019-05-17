@@ -68,6 +68,7 @@
   "devDependencies": {
     "@types/jest": "^22.2.3",
     "@types/node": "^10.14.4",
+    "@types/react": "^16.8.17",
     "typescript": "^3.4.5",
     "vscode": "^1.1.34"
   }
