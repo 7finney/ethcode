@@ -50,7 +50,6 @@ class ReactPanel {
   private _disposables: vscode.Disposable[] = [];
   // @ts-ignore
   private compiler: any;
-  static getCompilerVersion: any;
 
   public static createOrShow(extensionPath: string) {
     const column = vscode.window.activeTextEditor ? -2 : undefined;
@@ -196,7 +195,7 @@ class ReactPanel {
   }
 
   public getCompilerVersion(): void {
-    const solcWorker = this.createWorker();
+    const solcWorker = this.createWorker();   
     solcWorker.send({ command: "fetch_compiler_verison" });
     solcWorker.on("message", (m: any) => {
       if (m.versions) {

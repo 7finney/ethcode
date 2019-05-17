@@ -12,6 +12,7 @@ interface IState {
   error: Error | null;
   fileName: any;
   processMessage: string;
+  availableVersions: any[];
 }
 interface IOpt {
   value: string;
@@ -30,7 +31,8 @@ class App extends Component<IProps, IState> {
       compiled: "",
       error: null,
       fileName: "",
-      processMessage: ""
+      processMessage: "",
+      availableVersions: new Array()
     };
   }
   public componentDidMount() {
@@ -45,6 +47,12 @@ class App extends Component<IProps, IState> {
         const { processMessage } = data;
         this.setState({ fileName: "", compiled: "", processMessage });
       }
+
+      if (data.versions) {
+        this.setState({
+          availableVersions: Object.keys(data.versions.data.releases)
+        });
+      }
       // TODO: handle error message
     });
   }
@@ -53,13 +61,19 @@ class App extends Component<IProps, IState> {
   };
 
   public render() {
-    const { compiled, message, fileName, processMessage } = this.state;
+    const {
+      compiled,
+      message,
+      fileName,
+      processMessage,
+      availableVersions
+    } = this.state;
     return (
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        <CompilerVersionSelector />
+        <CompilerVersionSelector availableVersions={availableVersions} />
         {compiled && compiled.sources && (
           <Dropdown
             files={Object.keys(compiled.sources)}
