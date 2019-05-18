@@ -1,4 +1,3 @@
-// @ts-ignore
 import React, { Component } from "react";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
