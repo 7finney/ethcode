@@ -49,7 +49,7 @@ class ReactPanel {
   private _disposables: vscode.Disposable[] = [];
   // @ts-ignore
   private compiler: any;
-  public version: any;
+  private version: any;
 
   public static createOrShow(extensionPath: string) {
     const column = vscode.window.activeTextEditor ? -2 : undefined;
@@ -57,19 +57,20 @@ class ReactPanel {
     // Otherwise, create a new panel.
     if (ReactPanel.currentPanel) {
       ReactPanel.currentPanel.getCompilerVersion();
+      ReactPanel.currentPanel.version = "latest";
       ReactPanel.currentPanel._panel.reveal(column);
     } else {
       ReactPanel.currentPanel = new ReactPanel(
         extensionPath,
         column || vscode.ViewColumn.One
       );
+      ReactPanel.currentPanel.version = "latest";
       ReactPanel.currentPanel.getCompilerVersion();
     }
   }
 
   private constructor(extensionPath: string, column: vscode.ViewColumn) {
     this._extensionPath = extensionPath;
-    this.version = "latest";
     // Create and show a new webview panel
     this._panel = vscode.window.createWebviewPanel(
       ReactPanel.viewType,
@@ -144,6 +145,8 @@ class ReactPanel {
     // more on this - https://github.com/Microsoft/vscode/issues/40875
     const solcWorker = this.createWorker();
     console.log("WorkerID: ", solcWorker.pid);
+    console.log("Compiling with", this.version);
+
     // Reset Components State before compilation
     this._panel.webview.postMessage({ processMessage: "Compiling..." });
     solcWorker.send({

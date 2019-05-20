@@ -6,7 +6,7 @@ import CompilerVersionSelector from "./CompilerVersionSelector";
 
 type IProps = any;
 interface IState {
-  message: string;
+  message: any[];
   compiled: any;
   error: Error | null;
   fileName: any;
@@ -26,7 +26,7 @@ class App extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      message: "",
+      message: new Array(),
       compiled: "",
       error: null,
       fileName: "",
@@ -40,11 +40,16 @@ class App extends Component<IProps, IState> {
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
         const fileName = Object.keys(compiled.sources)[0];
+
+        if (compiled.errors && compiled.errors.length > 0) {
+          this.setState({ message: compiled.errors });
+        }
+
         this.setState({ compiled, fileName, processMessage: "" });
       }
       if (data.processMessage) {
         const { processMessage } = data;
-        this.setState({ fileName: "", compiled: "", processMessage });
+        this.setState({ fileName: "", compiled: "", processMessage, message: [] });
       }
 
       if (data.versions) {
@@ -58,6 +63,13 @@ class App extends Component<IProps, IState> {
   }
   public changeFile = (selectedOpt: IOpt) => {
     this.setState({ fileName: selectedOpt.value });
+  };
+
+  public getSelectedVersion = (version: any) => {
+    vscode.postMessage({
+      command: "version",
+      version: version.value
+    });
   };
 
   public render() {
@@ -74,15 +86,36 @@ class App extends Component<IProps, IState> {
           <h1 className="App-title">ETHcode</h1>
         </header>
         {availableVersions && (
-          <CompilerVersionSelector availableVersions={availableVersions} />
+          <CompilerVersionSelector
+            getSelectedVersion={this.getSelectedVersion}
+            availableVersions={availableVersions}
+          />
         )}
-        {compiled && compiled.sources && (
+        {compiled && Object.keys(compiled.sources).length > 0 && (
           <Dropdown
             files={Object.keys(compiled.sources)}
             changeFile={this.changeFile}
           />
         )}
-        <pre>{message}</pre>
+        {message.map((m, i) => {
+          return (
+            <div key={i}>
+              {m.severity === "warning" && (
+                <pre className="error-message yellow-text">
+                  {m.formattedMessage}
+                </pre>
+              )}
+              {m.severity === "error" && (
+                <pre className="error-message red-text">
+                  {m.formattedMessage}
+                </pre>
+              )}
+              {!m.severity && (
+                <pre className="error-message">{m.formattedMessage}</pre>
+              )}
+            </div>
+          );
+        })}
         <p>
           {compiled && fileName && (
             <div className="compiledOutput">

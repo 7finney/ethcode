@@ -38,10 +38,10 @@ const customStyles = {
     ...base,
     color: "#fff"
   }),
-  option: (base: any, {isFocused}: any) => ({
+  option: (base: any, { isFocused }: any) => ({
     ...base,
     color: "#fff",
-    backgroundColor: isFocused ? "#aaa": null
+    backgroundColor: isFocused ? "#aaa" : null
   })
 };
 

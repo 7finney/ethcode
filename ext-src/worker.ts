@@ -57,17 +57,27 @@ function findImports(path: any) {
     });
 }
 
-process.on("message", async m => {
+process.on("message", m => {
   if (m.command === "compile") {
-    try {
-      const input = m.payload;
-      const output = await solc.compile(JSON.stringify(input), findImports);
-      // @ts-ignore
-      process.send({ compiled: output });
-    } catch (e) {
-      // @ts-ignore
-      process.send({ error: e });
-    }
+    const input = m.payload;
+    solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
+      if (err) {
+        // @ts-ignore
+        process.send({ error: e });
+      } else {
+        try {
+          const output = await newSolc.compile(
+            JSON.stringify(input),
+            findImports
+          );
+          // @ts-ignore
+          process.send({ compiled: output });
+        } catch (e) {
+          // @ts-ignore
+          process.send({ error: e });
+        }
+      }
+    });
   }
   if (m.command === "fetch_compiler_verison") {
     axios

@@ -5,6 +5,7 @@ import Select from "react-select";
 
 interface IProps {
   availableVersions: object;
+  getSelectedVersion: any;
 }
 interface IOpt {
   value: string;
@@ -13,7 +14,7 @@ interface IOpt {
 
 interface IState {
   availableVersions: any[];
-  selectedVersion: string;
+  selectedVersion: any;
   options: IOpt[];
 }
 
@@ -56,8 +57,9 @@ class CompilerVersionSelector extends Component<IProps, IState> {
 
     this._handleVersionSelector = this._handleVersionSelector.bind(this);
   }
-  public async _handleVersionSelector(selectedVersion: any, val: any) {
+  public async _handleVersionSelector(selectedVersion: any) {
     await this.setState({ selectedVersion });
+    this.props.getSelectedVersion(this.state.selectedVersion);
   }
 
   public componentDidMount() {
@@ -69,8 +71,6 @@ class CompilerVersionSelector extends Component<IProps, IState> {
           .split(".js")[0],
         label: v
       };
-      console.log(optItm.value);
-
       options.push(optItm);
     });
     this.setState({ options });

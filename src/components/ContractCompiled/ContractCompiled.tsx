@@ -18,7 +18,7 @@ class ContractCompiled extends Component<IProps> {
         const { contractName, bytecode, abi } = this.props;
         return(
             <div>
-                <span className="contract-name inline-block highlight-success">{ contractName }</span>
+                <span className="contract-name inline-block highlight-success">Contract Name: { contractName }</span>
                 <div className="byte-code">
                     <pre className="large-code">{ JSON.stringify(bytecode) }</pre>
                 </div>
