@@ -49,6 +49,7 @@ class ReactPanel {
   private _disposables: vscode.Disposable[] = [];
   // @ts-ignore
   private compiler: any;
+  public version: any;
 
   public static createOrShow(extensionPath: string) {
     const column = vscode.window.activeTextEditor ? -2 : undefined;
@@ -61,13 +62,14 @@ class ReactPanel {
       ReactPanel.currentPanel = new ReactPanel(
         extensionPath,
         column || vscode.ViewColumn.One
-        );
-      }
+      );
+      ReactPanel.currentPanel.getCompilerVersion();
+    }
   }
 
   private constructor(extensionPath: string, column: vscode.ViewColumn) {
     this._extensionPath = extensionPath;
-
+    this.version = "latest";
     // Create and show a new webview panel
     this._panel = vscode.window.createWebviewPanel(
       ReactPanel.viewType,
@@ -95,9 +97,8 @@ class ReactPanel {
     this._panel.webview.onDidReceiveMessage(
       (message: any) => {
         switch (message.command) {
-          case "alert":
-            vscode.window.showErrorMessage(message.text);
-            return;
+          case "version":
+            this.version = message.version;
         }
       },
       null,
@@ -145,13 +146,21 @@ class ReactPanel {
     console.log("WorkerID: ", solcWorker.pid);
     // Reset Components State before compilation
     this._panel.webview.postMessage({ processMessage: "Compiling..." });
-    solcWorker.send({ command: "compile", payload: input });
+    solcWorker.send({
+      command: "compile",
+      payload: input,
+      version: this.version
+    });
     solcWorker.on("message", (m: any) => {
       if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content
         };
-        solcWorker.send({ command: "compile", payload: input });
+        solcWorker.send({
+          command: "compile",
+          payload: input,
+          version: this.version
+        });
       }
       if (m.compiled) {
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
@@ -196,22 +205,27 @@ class ReactPanel {
   public getCompilerVersion() {
     const solcWorker = this.createWorker();
     solcWorker.send({ command: "fetch_compiler_verison" });
+    this._panel.webview.postMessage({
+      processMessage: "Fetching Compiler Versions..."
+    });
+
     solcWorker.on("message", (m: any) => {
       if (m.versions) {
         const { versions } = m;
         this._panel.webview.postMessage({ versions });
+        this._panel.webview.postMessage({ processMessage: "" });
         solcWorker.kill();
       }
     });
     solcWorker.on("error", (error: Error) => {
       console.log(
-        "%c Compile worker process exited with error" + `${error.message}`,
+        "%c getVersion worker process exited with error" + `${error.message}`,
         "background: rgba(36, 194, 203, 0.3); color: #EF525B"
       );
     });
     solcWorker.on("exit", (code: number, signal: string) => {
       console.log(
-        "%c Compile worker process exited with " +
+        "%c getVersion worker process exited with " +
           `code ${code} and signal ${signal}`,
         "background: rgba(36, 194, 203, 0.3); color: #EF525B"
       );

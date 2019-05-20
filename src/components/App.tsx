@@ -11,7 +11,7 @@ interface IState {
   error: Error | null;
   fileName: any;
   processMessage: string;
-  availableVersions: any[];
+  availableVersions: any;
 }
 interface IOpt {
   value: string;
@@ -31,7 +31,7 @@ class App extends Component<IProps, IState> {
       error: null,
       fileName: "",
       processMessage: "",
-      availableVersions: new Array()
+      availableVersions: ""
     };
   }
   public componentDidMount() {
@@ -49,7 +49,8 @@ class App extends Component<IProps, IState> {
 
       if (data.versions) {
         this.setState({
-          availableVersions: Object.keys(data.versions.data.releases)
+          availableVersions: data.versions.releases,
+          processMessage: ""
         });
       }
       // TODO: handle error message
@@ -72,7 +73,9 @@ class App extends Component<IProps, IState> {
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        <CompilerVersionSelector availableVersions={availableVersions} />
+        {availableVersions && (
+          <CompilerVersionSelector availableVersions={availableVersions} />
+        )}
         {compiled && compiled.sources && (
           <Dropdown
             files={Object.keys(compiled.sources)}
