@@ -1,4 +1,4 @@
-import '@types/jest';
+import 'jest';
 // @ts-ignore
 import * as React from 'react';
 // @ts-ignore
