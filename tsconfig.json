@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
+    "baseUrl": "src",
+    "outDir": "build/",
     "target": "es5",
-    "outDir": "build",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
+    "sourceMap": true,
     "allowJs": true,
+    "jsx": "preserve",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -17,16 +20,20 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noEmit": true,
-    "jsx": "preserve",
-    "isolatedModules": true,
-    "rootDir": ".",
-    "sourceMap": true
+    "isolatedModules": true
   },
   "include": [
     "src"
   ],
   "exclude": [
     "node_modules",
+    ".vscode-test",
+    "build",
+    "scripts",
+    "acceptance-tests",
+    "webpack",
+    "jest",
+    "src/setupTests.ts",
     ".vscode-test"
   ]
 }

@@ -56,11 +56,11 @@
     "react-select": "^2.4.3",
     "redux": "^4.0.1",
     "remix-url-resolver": "^0.0.5",
-    "typescript": "3.4.5",
-    "vscode": "^1.1.34"
+    "typescript": "3.4.5"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "vscode:prepublish": "react-scripts build && tsc -p tsconfig.extension.json",
+    "postinstall": "node ./node_modules/vscode/bin/install",
     "build": "react-scripts build && tsc -p tsconfig.extension.json",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -81,5 +81,7 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "vscode": "^1.1.34"
+  }
 }
