@@ -1,6 +1,6 @@
-interface ISource {
+export interface ISource {
     content: string | undefined
 }
-interface ISources {
+export interface ISources {
     [key: string]: ISource
 }

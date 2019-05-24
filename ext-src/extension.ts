@@ -1,6 +1,8 @@
 import * as path from "path";
+// @ts-ignore
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
+import { ISources } from './types';
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -56,12 +58,20 @@ class ReactPanel {
     // If we already have a panel, show it.
     // Otherwise, create a new panel.
     if (ReactPanel.currentPanel) {
-      ReactPanel.currentPanel._panel.reveal(column);
+      try {
+        ReactPanel.currentPanel._panel.reveal(column);
+      } catch (error) {
+        console.error(error);
+      }
     } else {
-      ReactPanel.currentPanel = new ReactPanel(
-        extensionPath,
-        column || vscode.ViewColumn.One
-      );
+      try {
+        ReactPanel.currentPanel = new ReactPanel(
+          extensionPath,
+          column || vscode.ViewColumn.One
+        );
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 
@@ -198,10 +208,9 @@ class ReactPanel {
       this._extensionPath,
       "build",
       "asset-manifest.json"
-    ));
+    )).files;
     const mainScript = manifest["main.js"];
     const mainStyle = manifest["main.css"];
-
     const scriptPathOnDisk = vscode.Uri.file(
       path.join(this._extensionPath, "build", mainScript)
     );
@@ -210,7 +219,6 @@ class ReactPanel {
       path.join(this._extensionPath, "build", mainStyle)
     );
     const styleUri = stylePathOnDisk.with({ scheme: "vscode-resource" });
-
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
 
