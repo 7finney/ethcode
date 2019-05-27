@@ -49,7 +49,7 @@ const customStyles = {
 class Dropdown extends Component<IProps, IState> {
   public state = {
     selectedOption: null,
-    options: new Array()
+    options: []
   };
   constructor(props: IProps) {
     super(props);
@@ -57,13 +57,14 @@ class Dropdown extends Component<IProps, IState> {
     props.files.map((file: string) => {
       const optItm: IOpt = {
         value: file,
-        label: file.replace(/^.*[\\\/]/, "")
+        label: file.replace(/^.*[\\]\//, "")
       };
-      options.push(optItm);
+      // @ts-ignore
+      return options.push(optItm);
     });
   }
   public componentWillUnmount() {
-    this.setState({ selectedOption: null, options: new Array() });
+    this.setState({ selectedOption: null, options: [] });
   }
   public handleChange = (selectedOption: any) => {
     this.setState({ selectedOption });

@@ -27,7 +27,7 @@ class App extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      message: new Array(),
+      message: [],
       compiled: "",
       error: null,
       fileName: "",

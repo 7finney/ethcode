@@ -52,7 +52,7 @@ class CompilerVersionSelector extends Component<IProps, IState> {
     this.state = {
       availableVersions: [],
       selectedVersion: "",
-      options: new Array()
+      options: []
     };
 
     this._handleVersionSelector = this._handleVersionSelector.bind(this);
@@ -71,7 +71,8 @@ class CompilerVersionSelector extends Component<IProps, IState> {
           .split(".js")[0],
         label: v
       };
-      options.push(optItm);
+      return options.push(optItm);
+      
     });
     this.setState({ options });
   }

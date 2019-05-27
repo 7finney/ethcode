@@ -8,9 +8,6 @@ interface IProps {
   abi: any;
 }
 class ContractCompiled extends Component<IProps> {
-  constructor(props: IProps) {
-    super(props);
-  }
   public _handleInput() {
     console.log("Will handle input");
   }
