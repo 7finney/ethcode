@@ -21,7 +21,8 @@ const customStyles = {
   control: (base: any, state: any) => ({
     ...base,
     backgroundColor: "#000",
-    color: "#fff"
+    color: "#fff",
+    menu: "20px"
   }),
 
   menu: (base: any) => ({
@@ -38,17 +39,17 @@ const customStyles = {
     ...base,
     color: "#fff"
   }),
-  option: (base: any, {isFocused}: any) => ({
+  option: (base: any, { isFocused }: any) => ({
     ...base,
     color: "#fff",
-    backgroundColor: isFocused ? "#aaa": null
+    backgroundColor: isFocused ? "#aaa" : null
   })
 };
 
 class Dropdown extends Component<IProps, IState> {
   public state = {
     selectedOption: null,
-    options: new Array()
+    options: new Array<IOpt>()
   };
   constructor(props: IProps) {
     super(props);
@@ -56,13 +57,13 @@ class Dropdown extends Component<IProps, IState> {
     props.files.map((file: string) => {
       const optItm: IOpt = {
         value: file,
-        label: file.replace(/^.*[\\\/]/, "")
+        label: file.substring(file.lastIndexOf('/') + 1)
       };
-      options.push(optItm);
+      return options.push(optItm);
     });
   }
   public componentWillUnmount() {
-    this.setState({ selectedOption: null, options: new Array() });
+    this.setState({ selectedOption: null, options: [] });
   }
   public handleChange = (selectedOption: any) => {
     this.setState({ selectedOption });

@@ -51,6 +51,7 @@ class ReactPanel {
   private _disposables: vscode.Disposable[] = [];
   // @ts-ignore
   private compiler: any;
+  private version: any;
 
   public static createOrShow(extensionPath: string) {
     const column = vscode.window.activeTextEditor ? -2 : undefined;
@@ -59,6 +60,9 @@ class ReactPanel {
     // Otherwise, create a new panel.
     if (ReactPanel.currentPanel) {
       try {
+        ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel.version = "latest";
+
         ReactPanel.currentPanel._panel.reveal(column);
       } catch (error) {
         console.error(error);
@@ -69,6 +73,8 @@ class ReactPanel {
           extensionPath,
           column || vscode.ViewColumn.One
         );
+        ReactPanel.currentPanel.version = "latest";
+        ReactPanel.currentPanel.getCompilerVersion();
       } catch (error) {
         console.error(error);
       }
@@ -105,9 +111,8 @@ class ReactPanel {
     this._panel.webview.onDidReceiveMessage(
       (message: any) => {
         switch (message.command) {
-          case "alert":
-            vscode.window.showErrorMessage(message.text);
-            return;
+          case "version":
+            this.version = message.version;
         }
       },
       null,
@@ -153,22 +158,34 @@ class ReactPanel {
     // more on this - https://github.com/Microsoft/vscode/issues/40875
     const solcWorker = this.createWorker();
     console.log("WorkerID: ", solcWorker.pid);
+    console.log("Compiling with", this.version);
+
     // Reset Components State before compilation
     this._panel.webview.postMessage({ processMessage: "Compiling..." });
-    solcWorker.send({ command: "compile", payload: input });
+    solcWorker.send({
+      command: "compile",
+      payload: input,
+      version: this.version
+    });
     solcWorker.on("message", (m: any) => {
       if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content
         };
-        solcWorker.send({ command: "compile", payload: input });
+        solcWorker.send({
+          command: "compile",
+          payload: input,
+          version: this.version
+        });
       }
       if (m.compiled) {
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
       }
       if (m.processMessage) {
-        this._panel.webview.postMessage({ processMessage: m.processMessage });
+        this._panel.webview.postMessage({
+          processMessage: m.processMessage
+        });
       }
     });
     solcWorker.on("error", (error: Error) => {
@@ -201,6 +218,39 @@ class ReactPanel {
         x.dispose();
       }
     }
+  }
+
+  public getCompilerVersion() {
+    const solcWorker = this.createWorker();
+    solcWorker.send({ command: "fetch_compiler_verison" });
+    this._panel.webview.postMessage({
+      processMessage: "Fetching Compiler Versions..."
+    });
+
+    solcWorker.on("message", (m: any) => {
+      if (m.versions) {
+        const { versions } = m;
+        this._panel.webview.postMessage({ versions });
+        this._panel.webview.postMessage({ processMessage: "" });
+        solcWorker.kill();
+      }
+    });
+    solcWorker.on("error", (error: Error) => {
+      console.log(
+        "%c getVersion worker process exited with error" + `${error.message}`,
+        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+      );
+    });
+    solcWorker.on("exit", (code: number, signal: string) => {
+      console.log(
+        "%c getVersion worker process exited with " +
+          `code ${code} and signal ${signal}`,
+        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+      );
+      this._panel.webview.postMessage({
+        message: `Error code ${code} : Error signal ${signal}`
+      });
+    });
   }
 
   private _getHtmlForWebview() {

@@ -21,11 +21,11 @@
 .compiledOutput {
   height: 100%;
   width: 95vw;
-  overflow: scroll;
+  overflow-x: scroll;
   font-size: 15px;
-  margin: 20px;
   padding: 7px;
   border: 1px solid rgba(218, 218, 218, 0.555);
+  margin-top: 20px;
 }
 
 .contract-container {
@@ -43,4 +43,25 @@
   padding: 5px;
   text-align: left;
   text-transform: uppercase;
+}
+
+.error-message {
+  background-color: #000000;
+  /* position: absolute;
+  top: 50%; */
+  width: 95vw;
+  font-size: 18px;
+  padding: 5px;
+  text-align: left;
+  text-transform: uppercase;
+  overflow-x: scroll;
+  margin-top: 20px;
+  border: 1px solid rgba(218, 218, 218, 0.555);
+}
+
+.red-text {
+  color: rgb(226, 49, 49);
+}
+.yellow-text {
+  color: rgb(236, 218, 53);
 }

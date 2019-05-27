@@ -8,9 +8,6 @@ interface IProps {
   abi: any;
 }
 class ContractCompiled extends Component<IProps> {
-  constructor(props: IProps) {
-    super(props);
-  }
   public _handleInput() {
     console.log("Will handle input");
   }
@@ -19,8 +16,9 @@ class ContractCompiled extends Component<IProps> {
     return (
       <div>
         <span className="contract-name inline-block highlight-success">
-          {contractName}
+          Contract Name: {contractName}
         </span>
+
         <div className="byte-code">
           <pre className="large-code">{JSON.stringify(bytecode)}</pre>
         </div>

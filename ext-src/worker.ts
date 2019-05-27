@@ -2,6 +2,7 @@
 import * as solc from "solc";
 import * as path from "path";
 import * as fs from "fs";
+import axios from "axios";
 
 import { RemixURLResolver } from "remix-url-resolver";
 
@@ -57,14 +58,36 @@ function findImports(path: any) {
 
 process.on("message", async m => {
   if (m.command === "compile") {
-    try {
-      const input = m.payload;
-      const output = await solc.compile(JSON.stringify(input), findImports);
-      // @ts-ignore
-      process.send({ compiled: output });
-    } catch (e) {
-      // @ts-ignore
-      process.send({ error: e });
-    }
+    const input = m.payload;
+    solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
+      if (err) {
+        // @ts-ignore
+        process.send({ error: e });
+      } else {
+        try {
+          const output = await newSolc.compile(
+            JSON.stringify(input),
+            findImports
+          );
+          // @ts-ignore
+          process.send({ compiled: output });
+        } catch (e) {
+          // @ts-ignore
+          process.send({ error: e });
+        }
+      }
+    });
+  }
+  if (m.command === "fetch_compiler_verison") {
+    axios
+      .get("https://ethereum.github.io/solc-bin/bin/list.json")
+      .then((res: any) => {
+        // @ts-ignore
+        process.send({ versions: res.data });
+      })
+      .catch((e: Error) => {
+        // @ts-ignore
+        process.send({ error: e });
+      });
   }
 });
