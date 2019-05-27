@@ -18,7 +18,7 @@ interface IOpt {
   label: string;
 }
 // @ts-ignore
-const vscode = acquireVsCodeApi();
+const vscode = acquireVsCodeApi(); // eslint-disable-line
 class App extends Component<IProps, IState> {
   public state: IState;
   public props: IProps;
