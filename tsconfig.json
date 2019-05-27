@@ -16,7 +16,6 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-<<<<<<< HEAD
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noImplicitAny": true,
@@ -27,16 +26,6 @@
     "typeRoots": [
       "@types",
       "node_modules/@types"
-=======
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "isolatedModules": true,
-    "typeRoots": [
-      "./@types",
-      "./node_modules/@types"
->>>>>>> e072683b85489fb5e8069276b5d053a4b87b3d44
     ]
   },
   "include": [

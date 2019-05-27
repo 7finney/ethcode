@@ -58,7 +58,6 @@ class ReactPanel {
     // If we already have a panel, show it.
     // Otherwise, create a new panel.
     if (ReactPanel.currentPanel) {
-<<<<<<< HEAD
       ReactPanel.currentPanel.getCompilerVersion();
       ReactPanel.currentPanel.version = "latest";
       ReactPanel.currentPanel._panel.reveal(column);
@@ -69,22 +68,6 @@ class ReactPanel {
       );
       ReactPanel.currentPanel.version = "latest";
       ReactPanel.currentPanel.getCompilerVersion();
-=======
-      try {
-        ReactPanel.currentPanel._panel.reveal(column);
-      } catch (error) {
-        console.error(error);
-      }
-    } else {
-      try {
-        ReactPanel.currentPanel = new ReactPanel(
-          extensionPath,
-          column || vscode.ViewColumn.One
-        );
-      } catch (error) {
-        console.error(error);
-      }
->>>>>>> e072683b85489fb5e8069276b5d053a4b87b3d44
     }
   }
 
@@ -168,15 +151,11 @@ class ReactPanel {
 
     // Reset Components State before compilation
     this._panel.webview.postMessage({ processMessage: "Compiling..." });
-<<<<<<< HEAD
     solcWorker.send({
       command: "compile",
       payload: input,
       version: this.version
     });
-=======
-    solcWorker.send({ command: "compile", payload: input });
->>>>>>> e072683b85489fb5e8069276b5d053a4b87b3d44
     solcWorker.on("message", (m: any) => {
       if (m.data && m.path) {
         sources[m.path] = {
