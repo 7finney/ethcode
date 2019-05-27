@@ -10,6 +10,11 @@ yarn run build
 ```
 And then press F5, in Extension Development Host session, run `Ethereum: Solidity compile` command from command palette.
 
+## Packaging
+```
+vsce package --yarn
+```
+
 ## Under the hood
 
 Things we did on top of Create React App TypeScript template

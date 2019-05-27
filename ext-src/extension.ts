@@ -1,6 +1,8 @@
 import * as path from "path";
+// @ts-ignore
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
+import { ISources } from "./types";
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -56,12 +58,20 @@ class ReactPanel {
     // If we already have a panel, show it.
     // Otherwise, create a new panel.
     if (ReactPanel.currentPanel) {
-      ReactPanel.currentPanel._panel.reveal(column);
+      try {
+        ReactPanel.currentPanel._panel.reveal(column);
+      } catch (error) {
+        console.error(error);
+      }
     } else {
-      ReactPanel.currentPanel = new ReactPanel(
-        extensionPath,
-        column || vscode.ViewColumn.One
-      );
+      try {
+        ReactPanel.currentPanel = new ReactPanel(
+          extensionPath,
+          column || vscode.ViewColumn.One
+        );
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 
@@ -144,7 +154,7 @@ class ReactPanel {
     const solcWorker = this.createWorker();
     console.log("WorkerID: ", solcWorker.pid);
     // Reset Components State before compilation
-    this._panel.webview.postMessage({ processMessage: "Compiling..." }); 
+    this._panel.webview.postMessage({ processMessage: "Compiling..." });
     solcWorker.send({ command: "compile", payload: input });
     solcWorker.on("message", (m: any) => {
       if (m.data && m.path) {
@@ -157,8 +167,8 @@ class ReactPanel {
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
       }
-      if (m.processMessage){
-        this._panel.webview.postMessage({ processMessage: m.processMessage }); 
+      if (m.processMessage) {
+        this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
     });
     solcWorker.on("error", (error: Error) => {
@@ -198,10 +208,9 @@ class ReactPanel {
       this._extensionPath,
       "build",
       "asset-manifest.json"
-    ));
+    )).files;
     const mainScript = manifest["main.js"];
     const mainStyle = manifest["main.css"];
-
     const scriptPathOnDisk = vscode.Uri.file(
       path.join(this._extensionPath, "build", mainScript)
     );
@@ -210,31 +219,32 @@ class ReactPanel {
       path.join(this._extensionPath, "build", mainStyle)
     );
     const styleUri = stylePathOnDisk.with({ scheme: "vscode-resource" });
-
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
 
     return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="utf-8">
-				<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
-				<meta name="theme-color" content="#000000">
-				<title>ETH code</title>
-				<link rel="stylesheet" type="text/css" href="${styleUri}">
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-				<base href="${vscode.Uri.file(path.join(this._extensionPath, "build")).with({
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+        <meta name="theme-color" content="#000000">
+        <title>ETH code</title>
+        <link rel="stylesheet" type="text/css" href="${styleUri}">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
+        <base href="${vscode.Uri.file(
+          path.join(this._extensionPath, "build")
+        ).with({
           scheme: "vscode-resource"
         })}/">
-			</head>
+      </head>
 
-			<body>
-				<noscript>You need to enable JavaScript to run this app.</noscript>
-				<div id="root"></div>
-				
-				<script nonce="${nonce}" src="${scriptUri}"></script>
-			</body>
-			</html>`;
+      <body>
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+        <div id="root"></div>
+        
+        <script nonce="${nonce}" src="${scriptUri}"></script>
+      </body>
+      </html>`;
   }
 }
 
