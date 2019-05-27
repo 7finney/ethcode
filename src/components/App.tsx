@@ -3,14 +3,16 @@ import React, { Component } from "react";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
 import Dropdown from "./Dropdown";
+import CompilerVersionSelector from "./CompilerVersionSelector";
 
 type IProps = any;
 interface IState {
-  message: string;
+  message: any[];
   compiled: any;
   error: Error | null;
   fileName: any;
   processMessage: string;
+  availableVersions: any;
 }
 interface IOpt {
   value: string;
@@ -25,11 +27,12 @@ class App extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      message: "",
+      message: new Array(),
       compiled: "",
       error: null,
       fileName: "",
-      processMessage: ""
+      processMessage: "",
+      availableVersions: ""
     };
   }
   public componentDidMount() {
@@ -38,11 +41,27 @@ class App extends Component<IProps, IState> {
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
         const fileName = Object.keys(compiled.sources)[0];
+
+        if (compiled.errors && compiled.errors.length > 0) {
+          this.setState({ message: compiled.errors });
+        }
         this.setState({ compiled, fileName, processMessage: "" });
       }
       if (data.processMessage) {
         const { processMessage } = data;
-        this.setState({ fileName: "", compiled: "", processMessage });
+        this.setState({
+          fileName: "",
+          compiled: "",
+          processMessage,
+          message: []
+        });
+      }
+
+      if (data.versions) {
+        this.setState({
+          availableVersions: data.versions.releases,
+          processMessage: ""
+        });
       }
       // TODO: handle error message
     });
@@ -51,20 +70,58 @@ class App extends Component<IProps, IState> {
     this.setState({ fileName: selectedOpt.value });
   };
 
+  public getSelectedVersion = (version: any) => {
+    vscode.postMessage({
+      command: "version",
+      version: version.value
+    });
+  };
+
   public render() {
-    const { compiled, message, fileName, processMessage } = this.state;
+    const {
+      compiled,
+      message,
+      fileName,
+      processMessage,
+      availableVersions
+    } = this.state;
+
     return (
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        {compiled && compiled.sources && (
+        {availableVersions && (
+          <CompilerVersionSelector
+            getSelectedVersion={this.getSelectedVersion}
+            availableVersions={availableVersions}
+          />
+        )}
+        {compiled && Object.keys(compiled.sources).length > 0 && (
           <Dropdown
             files={Object.keys(compiled.sources)}
             changeFile={this.changeFile}
           />
         )}
-        <pre>{message}</pre>
+        {message.map((m, i) => {
+          return (
+            <div key={i}>
+              {m.severity === "warning" && (
+                <pre className="error-message yellow-text">
+                  {m.formattedMessage}
+                </pre>
+              )}
+              {m.severity === "error" && (
+                <pre className="error-message red-text">
+                  {m.formattedMessage}
+                </pre>
+              )}
+              {!m.severity && (
+                <pre className="error-message">{m.formattedMessage}</pre>
+              )}
+            </div>
+          );
+        })}{" "}
         <p>
           {compiled && fileName && (
             <div className="compiledOutput">

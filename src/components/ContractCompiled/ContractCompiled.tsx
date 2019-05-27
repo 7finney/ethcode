@@ -19,8 +19,9 @@ class ContractCompiled extends Component<IProps> {
     return (
       <div>
         <span className="contract-name inline-block highlight-success">
-          {contractName}
+          Contract Name: {contractName}
         </span>
+
         <div className="byte-code">
           <pre className="large-code">{JSON.stringify(bytecode)}</pre>
         </div>

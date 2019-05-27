@@ -44,3 +44,23 @@
   text-align: left;
   text-transform: uppercase;
 }
+
+
+.error-message {
+  background-color: #000000;
+  position: absolute;
+  top: 50%;
+  width: 98vw;
+  font-size: 18px;
+  padding: 5px;
+  text-align: left;
+  text-transform: uppercase;
+  overflow: scroll;
+}
+
+.red-text {
+  color: rgb(226, 49, 49);
+}
+.yellow-text {
+  color: rgb(236, 218, 53)
+}
