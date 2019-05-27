@@ -1,5 +1,5 @@
 .large-code {
-  overflow: scroll;
+  overflow-x: scroll;
   background-color: #000;
   color: #fff;
   padding: 5px;

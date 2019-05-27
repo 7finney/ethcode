@@ -21,7 +21,8 @@ const customStyles = {
   control: (base: any, state: any) => ({
     ...base,
     backgroundColor: "#000",
-    color: "#fff"
+    color: "#fff",
+    menu: "20px"
   }),
 
   menu: (base: any) => ({
@@ -38,10 +39,10 @@ const customStyles = {
     ...base,
     color: "#fff"
   }),
-  option: (base: any, {isFocused}: any) => ({
+  option: (base: any, { isFocused }: any) => ({
     ...base,
     color: "#fff",
-    backgroundColor: isFocused ? "#aaa": null
+    backgroundColor: isFocused ? "#aaa" : null
   })
 };
 
