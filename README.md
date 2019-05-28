@@ -5,6 +5,11 @@
 * Mac - ETHcode supports upto latest version
 * Windows - unknown
 
+## Usage instructions
+`ctrl+alt+e` - activate the plugin.
+
+`ctrl+alt+c` - compile contracts.
+
 ## Development
 Run following commands in the terminal
 
