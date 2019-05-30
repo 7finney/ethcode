@@ -59,6 +59,16 @@ function findImports(path: any) {
 process.on("message", async m => {
   if (m.command === "compile") {
     const input = m.payload;
+    if(m.version === 'latest') {
+      try {
+        const output = await solc.compile(JSON.stringify(input), findImports);
+        // @ts-ignore
+        process.send({ compiled: output });
+      } catch (e) {
+        // @ts-ignore
+        process.send({ error: e });
+      }
+    }
     solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
       if (err) {
         // @ts-ignore

@@ -24,15 +24,6 @@ export function activate(context: vscode.ExtensionContext) {
       ReactPanel.currentPanel.sendCompiledContract(editorContent, fileName);
     })
   );
-  context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.refactor", () => {
-      if (!ReactPanel.currentPanel) {
-        return;
-      }
-      console.log("Doing refactor");
-      ReactPanel.currentPanel.doRefactor();
-    })
-  );
 }
 
 /**
@@ -50,8 +41,7 @@ class ReactPanel {
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
   // @ts-ignore
-  private compiler: any;
-  private version: any;
+  private version: string;
 
   public static createOrShow(extensionPath: string) {
     const column = vscode.window.activeTextEditor ? -2 : undefined;
@@ -118,12 +108,6 @@ class ReactPanel {
       null,
       this._disposables
     );
-  }
-
-  public doRefactor() {
-    // Send a message to the webview
-    // You can send any JSON serializable data.
-    this._panel.webview.postMessage({ command: "refactor view" });
   }
 
   private createWorker(): ChildProcess {
