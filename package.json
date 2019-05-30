@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "publisher": "0mkara",
   "icon": "images/ethcode_tsp.png",
   "repository": {
