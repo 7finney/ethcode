@@ -2,9 +2,9 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "1.0.0",
-  "private": true,
+  "version": "0.0.1",
   "publisher": "0mkara",
+  "icon": "images/ethcode_tsp.png",
   "repository": "https://github.com/0mkara/ethcode",
   "engines": {
     "vscode": "^1.25.0"
@@ -120,18 +120,6 @@
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
     "vscode": "^1.1.34"
   },
@@ -159,7 +147,7 @@
       "^.+\\.module\\.(css|sass|scss)$"
     ],
     "modulePaths": [
-      "/home/ayanrocks/web/ethcode/src"
+      "./src"
     ],
     "moduleNameMapper": {
       "^react-native$": "react-native-web",
@@ -186,5 +174,27 @@
     "presets": [
       "react-app"
     ]
-  }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "author": {
+    "name": "0mkara",
+    "email": "0mkar@protonmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Ayan Banerjee",
+      "email": "ayanb1999@gmail.com"
+    }
+  ]
 }
