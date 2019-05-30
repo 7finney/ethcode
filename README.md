@@ -10,6 +10,8 @@
 
 `ctrl+alt+c` - compile contracts.
 
+**Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from web.*
+
 ## Development
 Run following commands in the terminal
 
