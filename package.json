@@ -2,8 +2,8 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.0.1",
-  "publisher": "0mkara",
+  "version": "0.0.0",
+  "publisher": "mathcody",
   "icon": "images/ethcode_tsp.png",
   "repository": {
     "type": "git",
