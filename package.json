@@ -5,7 +5,10 @@
   "version": "0.0.1",
   "publisher": "0mkara",
   "icon": "images/ethcode_tsp.png",
-  "repository": "https://github.com/0mkara/ethcode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/0mkara/ethcode"
+  },
   "engines": {
     "vscode": "^1.25.0"
   },
