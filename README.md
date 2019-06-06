@@ -26,6 +26,13 @@ And then press F5, in Extension Development Host session, run `Ethereum: Solidit
 vsce package --yarn
 ```
 
+## Publishing
+```
+vsce login mathcody
+vsce publish 0.0.1 -p <access token> --yarn
+```
+Find extension at - https://marketplace.visualstudio.com/manage/publishers/mathcody
+
 ## Under the hood
 
 Things we did on top of Create React App TypeScript template
