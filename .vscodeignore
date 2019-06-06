@@ -14,4 +14,3 @@ ext-src/**
 *.sol
 .gitignore
 tsconfig.extension.json
-README.md
