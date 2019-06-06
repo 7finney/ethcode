@@ -1,0 +1,17 @@
+node_modules/
+.vscode/**
+src/**
+test/**
+config/**
+scripts/**
+public/**
+tsconfig.json
+tsconfig.json
+webpack.config.js
+yarn.lock
+ext-src/**
+*.ts
+*.sol
+.gitignore
+tsconfig.extension.json
+README.md
