@@ -10,12 +10,14 @@
     "url": "https://github.com/0mkara/ethcode"
   },
   "engines": {
-    "vscode": "^1.25.0"
+    "vscode": "^1.25.0",
+    "node": ">=8.16.0"
   },
   "activationEvents": [
     "onCommand:ethcode.activate",
     "onCommand:ethcode.compile",
-    "onCommand:ethcode.refactor"
+    "onCommand:ethcode.refactor",
+    "onCommand:ethcode.runTest"
   ],
   "main": "./build/ext-src/extension.js",
   "contributes": {
@@ -34,6 +36,11 @@
         "command": "ethcode.refactor",
         "title": "Solidity compile refactor",
         "category": "Ethereum"
+      },
+      {
+        "command": "ethcode.runTest",
+        "title": "Solidity unit test",
+        "category": "Ethereum"
       }
     ],
     "keybindings": [
@@ -44,6 +51,10 @@
       {
         "key": "ctrl+alt+c",
         "command": "ethcode.compile"
+      },
+      {
+        "key": "ctrl+alt+t",
+        "command": "ethcode.runTest"
       }
     ]
   },
@@ -98,9 +109,11 @@
     "react-redux": "^7.0.3",
     "react-select": "^2.4.3",
     "redux": "^4.0.1",
+    "remix-tests": "file:/home/0mkar/Karma/remix/remix-tests",
     "remix-url-resolver": "^0.0.5",
     "resolve": "1.10.0",
     "sass-loader": "7.1.0",
+    "scrypt": "^6.0.3",
     "semver": "6.0.0",
     "solc": "0.5.7",
     "style-loader": "0.23.1",
@@ -117,6 +130,7 @@
     "vscode:prepublish": "node scripts/build.js && tsc -p tsconfig.extension.json",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "build": "node scripts/build.js && tsc -p tsconfig.extension.json",
+    "build:stats": "node scripts/build.js --json > stats.json",
     "test": "node scripts/test.js",
     "watch": "tsc -watch -p ./"
   },

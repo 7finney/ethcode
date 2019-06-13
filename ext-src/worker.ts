@@ -3,6 +3,7 @@ import * as solc from "solc";
 import * as path from "path";
 import * as fs from "fs";
 import axios from "axios";
+import { runTest } from 'remix-tests';
 
 import { RemixURLResolver } from "remix-url-resolver";
 
@@ -70,7 +71,7 @@ process.on("message", async m => {
       }
     }
     solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-      if (err) {
+      if(err) {
         // @ts-ignore
         process.send({ error: e });
       } else {
@@ -88,7 +89,7 @@ process.on("message", async m => {
       }
     });
   }
-  if (m.command === "fetch_compiler_verison") {
+  if(m.command === "fetch_compiler_verison") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")
       .then((res: any) => {
@@ -99,5 +100,10 @@ process.on("message", async m => {
         // @ts-ignore
         process.send({ error: e });
       });
+  }
+  if(m.command === "run-test") {
+    console.log(runTest);
+    // @ts-ignore
+    process.send({ test: 'testing...' })
   }
 });

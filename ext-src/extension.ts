@@ -22,6 +22,10 @@ export function activate(context: vscode.ExtensionContext) {
         ? vscode.window.activeTextEditor.document.getText()
         : undefined;
       ReactPanel.currentPanel.sendCompiledContract(editorContent, fileName);
+    }),
+    vscode.commands.registerCommand("ethcode.runTest", () => {
+      console.log("We are running tests");
+      
     })
   );
 }
