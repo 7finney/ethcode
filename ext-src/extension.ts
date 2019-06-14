@@ -195,6 +195,15 @@ class ReactPanel {
     solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
     solcWorker.on("message", (m: any) => {
       console.log(m);
+      if (m.data && m.path) {
+        sources[m.path] = {
+          content: m.data.content
+        };
+        solcWorker.send({
+          command: "run-test",
+          payload: JSON.stringify(sources)
+        });
+      }
     })
     this._panel.webview.postMessage({
       processMessage: "Running unit tests..."
