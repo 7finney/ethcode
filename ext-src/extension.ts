@@ -25,7 +25,14 @@ export function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
       console.log("We are running tests");
+      if (!ReactPanel.currentPanel) {
+        return;
+      }
+      const fileName = vscode.window.activeTextEditor
+        ? vscode.window.activeTextEditor.document.fileName
+        : undefined;
       
+      ReactPanel.currentPanel.sendTestContract(fileName);
     })
   );
 }
@@ -63,10 +70,7 @@ class ReactPanel {
       }
     } else {
       try {
-        ReactPanel.currentPanel = new ReactPanel(
-          extensionPath,
-          column || vscode.ViewColumn.One
-        );
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel.getCompilerVersion();
       } catch (error) {
@@ -119,10 +123,7 @@ class ReactPanel {
       execArgv: ["--inspect=" + (process.debugPort + 1)]
     });
   }
-  public sendCompiledContract(
-    editorContent: string | undefined,
-    fn: string | undefined
-  ) {
+  public sendCompiledContract(editorContent: string | undefined, fn: string | undefined) {
     // send JSON serializable compiled data
     const sources: ISources = {};
     if (fn) {
@@ -167,6 +168,9 @@ class ReactPanel {
         });
       }
       if (m.compiled) {
+        console.log(m.compiled);
+        console.log(JSON.stringify(sources));
+        
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
       }
@@ -177,20 +181,24 @@ class ReactPanel {
       }
     });
     solcWorker.on("error", (error: Error) => {
-      console.log(
-        "%c Compile worker process exited with error" + `${error.message}`,
-        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-      );
+      console.log("%c Compile worker process exited with error" + `${error.message}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
     });
     solcWorker.on("exit", (code: number, signal: string) => {
-      console.log(
-        "%c Compile worker process exited with " +
-          `code ${code} and signal ${signal}`,
-        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-      );
-      this._panel.webview.postMessage({
-        message: `Error code ${code} : Error signal ${signal}`
-      });
+      console.log("%c Compile worker process exited with " + `code ${code} and signal ${signal}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
+      this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` });
+    });
+  }
+
+  public sendTestContract(fn: string | undefined) {
+    console.log(fn);
+    const sources = JSON.stringify({"string.sol":{"content":"pragma solidity ^0.5.0;\n\ncontract Strings {\n    function get() public view returns (string memory res) {\n        return \"Hello\";\n    }\n}\n"},"string_test.sol":{"content":"pragma solidity ^0.5.0;\nimport 'string.sol';\n\ncontract StringTest {\n    Strings foo;\n\n    function beforeAll() public {\n        foo = new Strings();\n    }\n\n    function initialValueShouldBeHello() public returns (bool) {\n        return Assert.equal(foo.get(), \"Hello\", \"initial value is correct\");\n    }\n\n    function initialValueShouldNotBeHelloWorld() public returns (bool) {\n        return Assert.notEqual(foo.get(), \"Hello world\", \"initial value is correct\");\n    }\n}\n"}});
+    const solcWorker = this.createWorker();
+    solcWorker.send({ command: "run-test", payload: sources });
+    solcWorker.on("message", (m: any) => {
+      console.log(m);
+    })
+    this._panel.webview.postMessage({
+      processMessage: "Running unit tests..."
     });
   }
 
@@ -224,17 +232,10 @@ class ReactPanel {
       }
     });
     solcWorker.on("error", (error: Error) => {
-      console.log(
-        "%c getVersion worker process exited with error" + `${error.message}`,
-        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-      );
+      console.log("%c getVersion worker process exited with error" + `${error.message}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
     });
     solcWorker.on("exit", (code: number, signal: string) => {
-      console.log(
-        "%c getVersion worker process exited with " +
-          `code ${code} and signal ${signal}`,
-        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-      );
+      console.log("%c getVersion worker process exited with " + `code ${code} and signal ${signal}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
       this._panel.webview.postMessage({
         message: `Error code ${code} : Error signal ${signal}`
       });
@@ -242,11 +243,7 @@ class ReactPanel {
   }
 
   private _getHtmlForWebview() {
-    const manifest = require(path.join(
-      this._extensionPath,
-      "build",
-      "asset-manifest.json"
-    )).files;
+    const manifest = require(path.join(this._extensionPath, "build", "asset-manifest.json")).files;
     const mainScript = manifest["main.js"];
     const mainStyle = manifest["main.css"];
     const scriptPathOnDisk = vscode.Uri.file(

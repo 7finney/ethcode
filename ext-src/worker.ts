@@ -3,7 +3,9 @@ import * as solc from "solc";
 import * as path from "path";
 import * as fs from "fs";
 import axios from "axios";
-import { runTest } from 'remix-tests';
+import { runTestSources } from 'remix-tests';
+// @ts-ignore
+import Web3 = require('web3');
 
 import { RemixURLResolver } from "remix-url-resolver";
 
@@ -57,6 +59,40 @@ function findImports(path: any) {
     });
 }
 
+function _testCallback(result: any) {
+  try {
+      // @ts-ignore
+      process.send({ _testCallback: '_testCallback', result });
+  } catch (e) {
+      // @ts-ignore
+      process.send({ error: e });
+  }
+}
+function _resultsCallback(e: Error, result: any) {
+  if(e) {
+      // @ts-ignore
+      process.send({ error: e });
+  }
+  // @ts-ignore
+  process.send({ _resultsCallback: '_resultsCallback', result });
+}
+function _finalCallback(e: Error, result: any) {
+  if(e) {
+      // @ts-ignore
+      process.send({ error: e });
+  }
+  // @ts-ignore
+  process.send({ _finalCallback: '_finalCallback', result });
+  // @ts-ignore
+  process.exit(0);
+}
+function _importFileCb(e: Error, result: any) {
+  if(e) {
+      // @ts-ignore
+      process.send({ error: e });
+  }
+}
+
 process.on("message", async m => {
   if (m.command === "compile") {
     const input = m.payload;
@@ -102,8 +138,11 @@ process.on("message", async m => {
       });
   }
   if(m.command === "run-test") {
-    console.log(runTest);
     // @ts-ignore
     process.send({ test: 'testing...' })
+    const sources = JSON.parse(m.payload);
+    const web3 = new Web3();
+    web3.setProvider(new Web3.providers.HttpProvider('http://127.0.0.1:8545'))
+    runTestSources(sources, _testCallback, _resultsCallback, _finalCallback, _importFileCb, null);
   }
 });
