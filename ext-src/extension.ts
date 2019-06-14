@@ -15,12 +15,8 @@ export function activate(context: vscode.ExtensionContext) {
       if (!ReactPanel.currentPanel) {
         return;
       }
-      const fileName = vscode.window.activeTextEditor
-        ? vscode.window.activeTextEditor.document.fileName
-        : undefined;
-      const editorContent = vscode.window.activeTextEditor
-        ? vscode.window.activeTextEditor.document.getText()
-        : undefined;
+      const fileName = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : undefined;
+      const editorContent = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.getText() : undefined;
       ReactPanel.currentPanel.sendCompiledContract(context, editorContent, fileName);
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
@@ -28,11 +24,9 @@ export function activate(context: vscode.ExtensionContext) {
       if (!ReactPanel.currentPanel) {
         return;
       }
-      const fileName = vscode.window.activeTextEditor
-        ? vscode.window.activeTextEditor.document.fileName
-        : undefined;
-      
-      ReactPanel.currentPanel.sendTestContract(context, fileName);
+      const fileName = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : undefined;
+      const editorContent = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.getText() : undefined;
+      ReactPanel.currentPanel.sendTestContract(editorContent, fileName);
     })
   );
 }
@@ -177,9 +171,7 @@ class ReactPanel {
         solcWorker.kill();
       }
       if (m.processMessage) {
-        this._panel.webview.postMessage({
-          processMessage: m.processMessage
-        });
+        this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
     });
     solcWorker.on("error", (error: Error) => {
@@ -191,12 +183,16 @@ class ReactPanel {
     });
   }
 
-  public sendTestContract(context: vscode.ExtensionContext, fn: string | undefined) {
-    console.log(context.workspaceState.get("sources"));
+  public sendTestContract(editorContent: string | undefined, fn: string | undefined) {
+    const sources: ISources = {};
+    if (fn) {
+      sources[fn] = {
+        content: editorContent
+      };
+    }
     // const sources = JSON.stringify({"string.sol":{"content":"pragma solidity ^0.5.0;\n\ncontract Strings {\n    function get() public view returns (string memory res) {\n        return \"Hello\";\n    }\n}\n"},"string_test.sol":{"content":"pragma solidity ^0.5.0;\nimport 'string.sol';\n\ncontract StringTest {\n    Strings foo;\n\n    function beforeAll() public {\n        foo = new Strings();\n    }\n\n    function initialValueShouldBeHello() public returns (bool) {\n        return Assert.equal(foo.get(), \"Hello\", \"initial value is correct\");\n    }\n\n    function initialValueShouldNotBeHelloWorld() public returns (bool) {\n        return Assert.notEqual(foo.get(), \"Hello world\", \"initial value is correct\");\n    }\n}\n"}});
-    const sources = context.workspaceState.get("sources");
     const solcWorker = this.createWorker();
-    solcWorker.send({ command: "run-test", payload: sources });
+    solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
     solcWorker.on("message", (m: any) => {
       console.log(m);
     })

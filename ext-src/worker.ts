@@ -4,8 +4,6 @@ import * as path from "path";
 import * as fs from "fs";
 import axios from "axios";
 import { runTestSources } from 'remix-tests';
-// @ts-ignore
-import Web3 = require('web3');
 
 import { RemixURLResolver } from "remix-url-resolver";
 
@@ -31,7 +29,7 @@ function handleLocal(pathString: string, filePath: any) {
 function findImports(path: any) {
   // TODO: We need current solc file path here for relative local import
   // @ts-ignore
-  process.send({ processMessage: "importing files..." });
+  process.send({ processMessage: "importing file: " + path });
   const FSHandler = [
     {
       type: "local",
@@ -138,12 +136,8 @@ process.on("message", async m => {
       });
   }
   if(m.command === "run-test") {
-    // @ts-ignore
-    process.send({ test: 'testing...' });
     // TODO: move parsing to extension.ts
     const sources = JSON.parse(m.payload);
-    const web3 = new Web3();
-    web3.setProvider(new Web3.providers.HttpProvider('http://127.0.0.1:8545'))
-    runTestSources(sources, _testCallback, _resultsCallback, _finalCallback, _importFileCb, null);
+    runTestSources(sources, _testCallback, _resultsCallback, _finalCallback, findImports, null);
   }
 });
