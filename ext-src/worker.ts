@@ -86,10 +86,10 @@ function _finalCallback(e: Error, result: any) {
   // @ts-ignore
   process.exit(0);
 }
-function _importFileCb(e: Error, result: any) {
-  if(e) {
+function _importFileCb(fn: string) {
+  if(fn) {
       // @ts-ignore
-      process.send({ error: e });
+      process.send({ import: fn });
   }
 }
 
@@ -139,7 +139,8 @@ process.on("message", async m => {
   }
   if(m.command === "run-test") {
     // @ts-ignore
-    process.send({ test: 'testing...' })
+    process.send({ test: 'testing...' });
+    // TODO: move parsing to extension.ts
     const sources = JSON.parse(m.payload);
     const web3 = new Web3();
     web3.setProvider(new Web3.providers.HttpProvider('http://127.0.0.1:8545'))

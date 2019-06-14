@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
       const editorContent = vscode.window.activeTextEditor
         ? vscode.window.activeTextEditor.document.getText()
         : undefined;
-      ReactPanel.currentPanel.sendCompiledContract(editorContent, fileName);
+      ReactPanel.currentPanel.sendCompiledContract(context, editorContent, fileName);
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
       console.log("We are running tests");
@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
         ? vscode.window.activeTextEditor.document.fileName
         : undefined;
       
-      ReactPanel.currentPanel.sendTestContract(fileName);
+      ReactPanel.currentPanel.sendTestContract(context, fileName);
     })
   );
 }
@@ -123,13 +123,14 @@ class ReactPanel {
       execArgv: ["--inspect=" + (process.debugPort + 1)]
     });
   }
-  public sendCompiledContract(editorContent: string | undefined, fn: string | undefined) {
+  public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
     // send JSON serializable compiled data
     const sources: ISources = {};
     if (fn) {
       sources[fn] = {
         content: editorContent
       };
+      context.workspaceState.update("sources", JSON.stringify(sources))
     }
     var input = {
       language: "Solidity",
@@ -170,6 +171,7 @@ class ReactPanel {
       if (m.compiled) {
         console.log(m.compiled);
         console.log(JSON.stringify(sources));
+        context.workspaceState.update("sources", JSON.stringify(sources))
         
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
@@ -189,9 +191,10 @@ class ReactPanel {
     });
   }
 
-  public sendTestContract(fn: string | undefined) {
-    console.log(fn);
-    const sources = JSON.stringify({"string.sol":{"content":"pragma solidity ^0.5.0;\n\ncontract Strings {\n    function get() public view returns (string memory res) {\n        return \"Hello\";\n    }\n}\n"},"string_test.sol":{"content":"pragma solidity ^0.5.0;\nimport 'string.sol';\n\ncontract StringTest {\n    Strings foo;\n\n    function beforeAll() public {\n        foo = new Strings();\n    }\n\n    function initialValueShouldBeHello() public returns (bool) {\n        return Assert.equal(foo.get(), \"Hello\", \"initial value is correct\");\n    }\n\n    function initialValueShouldNotBeHelloWorld() public returns (bool) {\n        return Assert.notEqual(foo.get(), \"Hello world\", \"initial value is correct\");\n    }\n}\n"}});
+  public sendTestContract(context: vscode.ExtensionContext, fn: string | undefined) {
+    console.log(context.workspaceState.get("sources"));
+    // const sources = JSON.stringify({"string.sol":{"content":"pragma solidity ^0.5.0;\n\ncontract Strings {\n    function get() public view returns (string memory res) {\n        return \"Hello\";\n    }\n}\n"},"string_test.sol":{"content":"pragma solidity ^0.5.0;\nimport 'string.sol';\n\ncontract StringTest {\n    Strings foo;\n\n    function beforeAll() public {\n        foo = new Strings();\n    }\n\n    function initialValueShouldBeHello() public returns (bool) {\n        return Assert.equal(foo.get(), \"Hello\", \"initial value is correct\");\n    }\n\n    function initialValueShouldNotBeHelloWorld() public returns (bool) {\n        return Assert.notEqual(foo.get(), \"Hello world\", \"initial value is correct\");\n    }\n}\n"}});
+    const sources = context.workspaceState.get("sources");
     const solcWorker = this.createWorker();
     solcWorker.send({ command: "run-test", payload: sources });
     solcWorker.on("message", (m: any) => {
