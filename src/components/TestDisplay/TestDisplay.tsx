@@ -30,13 +30,13 @@ const TestDisplay = ({ test }: IProps) => {
         renderItem={({ index }) => (
           <div key={index} className="test-result-list-item">
             {test.testResults[index].type === "contract" && (
-              <span className="status-renamed .octicon-check" />
+              <span className="status-renamed fa fa-list" />
             )}
             {test.testResults[index].type === "testPass" && (
-              <span className="status-added icon icon-check" />
+              <span className="status-added fa fa-check" />
             )}
             {test.testResults[index].type === "testFailure" && (
-              <span className="status-removed icon icon-x" />
+              <span className="status-removed fa fa-times" />
             )}
             <span className="padded text-warning">
               {test.testResults[index].value}

@@ -28,7 +28,15 @@
 }
 
 .status-renamed {
-  color: rgb(121, 32, 223);
+  color: rgb(219, 30, 30);
+}
+
+.status-added {
+  color: rgb(49, 224, 87);
+}
+
+.status-removed {
+  color: rgb(233, 31, 31);
 }
 
 .padded {

@@ -1142,13 +1142,6 @@
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
-"@primer/octicons@^9.1.0":
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/@primer/octicons/-/octicons-9.1.0.tgz#8aa3cd7416da39307e9963e30d21c858509e54ae"
-  integrity sha512-dHRcL2ME14EHidGzja+qJAMWi93Qo5H4g2Rk5ltwTrswP+b7HF7vl7Wnrpwqpyj/Zan4oOCKXhBYtsa5R8DjwQ==
-  dependencies:
-    object-assign "^4.1.1"
-
 "@svgr/babel-plugin-add-jsx-attribute@^4.2.0":
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-add-jsx-attribute/-/babel-plugin-add-jsx-attribute-4.2.0.tgz#dadcb6218503532d6884b210e7f3c502caaa44b1"
