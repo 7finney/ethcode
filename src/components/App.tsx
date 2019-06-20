@@ -1,7 +1,11 @@
 // @ts-ignore
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { addTestResults, addFinalResultCallback } from "../actions";
+import {
+  addTestResults,
+  addFinalResultCallback,
+  clearFinalResult
+} from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
 import Dropdown from "./Dropdown";
@@ -11,6 +15,8 @@ import TestDisplay from "./TestDisplay";
 interface IProps {
   addTestResults: (result: any) => void;
   addFinalResultCallback: (result: any) => void;
+  clearFinalResult: () => void;
+  test: any;
 }
 
 interface IState {
@@ -73,7 +79,11 @@ class App extends Component<IProps, IState> {
         });
       }
 
-      if (data._testCallback.context) {
+      if (data.resetTestState === "resetTestState") {
+        this.props.clearFinalResult();
+      }
+
+      if (data._testCallback) {
         const result = data._testCallback;
         this.props.addTestResults(result);
       }
@@ -91,10 +101,6 @@ class App extends Component<IProps, IState> {
       if (data._importFileCb) {
         const result = data.result;
         console.log("IMPORT", result);
-      }
-      if (data.error) {
-        console.log(data);
-        const e = data.error;
       }
 
       // TODO: handle error message
@@ -156,7 +162,7 @@ class App extends Component<IProps, IState> {
             </div>
           );
         })}{" "}
-        <TestDisplay />
+        {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
           {compiled && fileName && (
             <div className="compiledOutput">
@@ -199,18 +205,7 @@ function mapStateToProps({ test }: any) {
   };
 }
 
-function mapDispatchToProps(dispatch: Function) {
-  return {
-    addTestResults: (results: any) => {
-      return dispatch(addTestResults(results));
-    },
-    addFinalResultCallback: (results: any) => {
-      return dispatch(addFinalResultCallback(results));
-    }
-  };
-}
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  { addTestResults, addFinalResultCallback, clearFinalResult }
 )(App);

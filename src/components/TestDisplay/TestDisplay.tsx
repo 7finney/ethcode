@@ -10,7 +10,7 @@ interface IProps {
 const TestDisplay = ({ test }: IProps) => {
   return (
     <div id="remix-tests">
-      {test.testResult && (
+      {test.testResult && test.testResults.length > 0 && (
         <div className="test-result">
           <span className="text-error">
             Total failing: {test.testResult.totalFailing}{" "}
@@ -30,7 +30,7 @@ const TestDisplay = ({ test }: IProps) => {
         renderItem={({ index }) => (
           <div key={index} className="test-result-list-item">
             {test.testResults[index].type === "contract" && (
-              <span className="status-renamed icon icon-checklist" />
+              <span className="status-renamed .octicon-check" />
             )}
             {test.testResults[index].type === "testPass" && (
               <span className="status-added icon icon-check" />

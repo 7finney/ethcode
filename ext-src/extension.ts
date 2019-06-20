@@ -222,9 +222,10 @@ class ReactPanel {
       };
     }
     const solcWorker = this.createWorker();
+    this._panel.webview.postMessage({ resetTestState: "resetTestState" });
     solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
     solcWorker.on("message", (m: any) => {
-      console.log(m);
+      // console.log(m);
       if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content

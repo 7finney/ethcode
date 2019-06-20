@@ -1,8 +1,12 @@
-import { ADD_TEST_RESULTS, ADD_FINAL_RESULT_CALLBACK } from "../actions/types";
+import {
+  ADD_TEST_RESULTS,
+  ADD_FINAL_RESULT_CALLBACK,
+  CLEAR_FINAL_RESULT
+} from "../actions/types";
 
 const initialState = {
   testResults: [],
-  testResult: { totalFailing: 0, totalPassing: 0, totalTime: 0 }
+  testResult: {}
 };
 
 export default (state: any = initialState, action: any) => {
@@ -11,6 +15,8 @@ export default (state: any = initialState, action: any) => {
       return { ...state, testResults: [...state.testResults, action.payload] };
     case ADD_FINAL_RESULT_CALLBACK:
       return { ...state, testResult: action.payload };
+    case CLEAR_FINAL_RESULT:
+      return { ...state, testResults: [] };
     default:
       return state;
   }
