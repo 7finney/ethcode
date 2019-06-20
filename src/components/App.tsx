@@ -1,11 +1,18 @@
 // @ts-ignore
 import React, { Component } from "react";
+import { connect } from "react-redux";
+import { addTestResults, addFinalResultCallback } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
 import Dropdown from "./Dropdown";
 import CompilerVersionSelector from "./CompilerVersionSelector";
+import TestDisplay from "./TestDisplay";
 
-type IProps = any;
+interface IProps {
+  addTestResults: (result: any) => void;
+  addFinalResultCallback: (result: any) => void;
+}
+
 interface IState {
   message: any[];
   compiled: any;
@@ -22,7 +29,7 @@ interface IOpt {
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 class App extends Component<IProps, IState> {
   public state: IState;
-  public props: IProps;
+  // public props: IProps;
 
   constructor(props: IProps) {
     super(props);
@@ -38,6 +45,7 @@ class App extends Component<IProps, IState> {
   public componentDidMount() {
     window.addEventListener("message", event => {
       const { data } = event;
+
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
         const fileName = Object.keys(compiled.sources)[0];
@@ -47,6 +55,7 @@ class App extends Component<IProps, IState> {
         }
         this.setState({ compiled, fileName, processMessage: "" });
       }
+
       if (data.processMessage) {
         const { processMessage } = data;
         this.setState({
@@ -63,6 +72,31 @@ class App extends Component<IProps, IState> {
           processMessage: ""
         });
       }
+
+      if (data._testCallback.context) {
+        const result = data._testCallback;
+        this.props.addTestResults(result);
+      }
+
+      if (data._resultsCallback) {
+        const result = data._resultCallback;
+      }
+      if (data._finalCallback) {
+        const result = data._finalCallback;
+        this.props.addFinalResultCallback(result);
+        this.setState({
+          processMessage: ""
+        });
+      }
+      if (data._importFileCb) {
+        const result = data.result;
+        console.log("IMPORT", result);
+      }
+      if (data.error) {
+        console.log(data);
+        const e = data.error;
+      }
+
       // TODO: handle error message
     });
   }
@@ -122,6 +156,7 @@ class App extends Component<IProps, IState> {
             </div>
           );
         })}{" "}
+        <TestDisplay />
         <p>
           {compiled && fileName && (
             <div className="compiledOutput">
@@ -157,4 +192,25 @@ class App extends Component<IProps, IState> {
     );
   }
 }
-export default App;
+
+function mapStateToProps({ test }: any) {
+  return {
+    test
+  };
+}
+
+function mapDispatchToProps(dispatch: Function) {
+  return {
+    addTestResults: (results: any) => {
+      return dispatch(addTestResults(results));
+    },
+    addFinalResultCallback: (results: any) => {
+      return dispatch(addFinalResultCallback(results));
+    }
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(App);

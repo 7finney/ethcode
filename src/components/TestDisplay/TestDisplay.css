@@ -1,0 +1,24 @@
+#test-error ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.test-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.test-result-list-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.test-header {
+  text-align: center;
+}

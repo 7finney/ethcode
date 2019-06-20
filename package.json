@@ -65,6 +65,7 @@
     "@types/node": "^12.0.2",
     "@types/react": "16.8.18",
     "@types/react-dom": "16.8.4",
+    "@types/react-redux": "^7.1.0",
     "@typescript-eslint/eslint-plugin": "1.6.0",
     "@typescript-eslint/parser": "1.6.0",
     "babel-eslint": "10.0.1",
@@ -108,8 +109,10 @@
     "react-dom": "^16.8.6",
     "react-redux": "^7.0.3",
     "react-select": "^2.4.3",
+    "react-tiny-virtual-list": "^2.2.0",
     "redux": "^4.0.1",
-    "remix-tests": "file:/home/0mkar/Karma/remix/remix-tests",
+    "redux-thunk": "^2.3.0",
+    "remix-tests": "/home/ayanrocks/web/remix/remix-tests",
     "remix-url-resolver": "^0.0.5",
     "resolve": "1.10.0",
     "sass-loader": "7.1.0",
@@ -138,6 +141,8 @@
     "extends": "react-app"
   },
   "devDependencies": {
+    "@types/redux-logger": "^3.0.7",
+    "redux-logger": "^3.0.6",
     "vscode": "^1.1.34"
   },
   "jest": {
