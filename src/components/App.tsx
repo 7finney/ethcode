@@ -87,10 +87,6 @@ class App extends Component<IProps, IState> {
         const result = data._testCallback;
         this.props.addTestResults(result);
       }
-
-      if (data._resultsCallback) {
-        const result = data._resultCallback;
-      }
       if (data._finalCallback) {
         const result = data._finalCallback;
         this.props.addFinalResultCallback(result);
@@ -100,7 +96,6 @@ class App extends Component<IProps, IState> {
       }
       if (data._importFileCb) {
         const result = data.result;
-        console.log("IMPORT", result);
       }
 
       // TODO: handle error message

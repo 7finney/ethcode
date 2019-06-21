@@ -2,6 +2,7 @@ import React from "react";
 import VirtualList from "react-tiny-virtual-list";
 import { connect } from "react-redux";
 import "./TestDisplay.css";
+import Octicon, { Check, X, Checklist } from "@primer/octicons-react";
 
 interface IProps {
   test: any;
@@ -30,13 +31,19 @@ const TestDisplay = ({ test }: IProps) => {
         renderItem={({ index }) => (
           <div key={index} className="test-result-list-item">
             {test.testResults[index].type === "contract" && (
-              <span className="status-renamed fa fa-list" />
+              <span className="status-renamed">
+                <Octicon icon={Checklist} />
+              </span>
             )}
             {test.testResults[index].type === "testPass" && (
-              <span className="status-added fa fa-check" />
+              <span className="status-added fa fa-check fa-2x">
+                <Octicon icon={Check} />
+              </span>
             )}
             {test.testResults[index].type === "testFailure" && (
-              <span className="status-removed fa fa-times" />
+              <span className="status-removed fa fa-times">
+                <Octicon icon={X} />
+              </span>
             )}
             <span className="padded text-warning">
               {test.testResults[index].value}

@@ -18,8 +18,8 @@
   justify-content: flex-start;
   align-items: center;
   font-size: 16px;
-  color: rgb(230, 198, 21);
-  padding: 7px;
+  padding: 10px;
+  margin-left: 15px;
 }
 .test-result {
   display: block;
@@ -28,20 +28,31 @@
 }
 
 .status-renamed {
-  color: rgb(219, 30, 30);
+  color: rgb(131, 32, 224);
+  display: inline-block;
+  margin-left: 5px;
+  padding: 5px;
+  width: 14px;
 }
 
 .status-added {
   color: rgb(49, 224, 87);
+  display: inline-block;
+  padding: 5px;
+  margin-left: 5px;
+  width: 14px;
 }
 
 .status-removed {
   color: rgb(233, 31, 31);
+  padding: 5px;
+  margin-left: 5px;
+  width: 14px;
 }
 
 .padded {
   padding: 5px;
-  color: rgb(240, 159, 38);
+  color: rgb(245, 225, 115);
 }
 
 .text-error {
@@ -67,5 +78,4 @@
   display: block;
   margin: 20px auto;
   padding: 10px;
-  border: 1px solid #f0f0f0da;
 }
