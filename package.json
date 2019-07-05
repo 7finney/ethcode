@@ -113,7 +113,7 @@
     "react-tiny-virtual-list": "^2.2.0",
     "redux": "^4.0.1",
     "redux-thunk": "^2.3.0",
-    "remix-tests": "/home/ayanrocks/web/remix/remix-tests",
+    "remix-tests": "^0.1.13",
     "remix-url-resolver": "^0.0.5",
     "resolve": "1.10.0",
     "sass-loader": "7.1.0",
