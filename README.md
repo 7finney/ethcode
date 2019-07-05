@@ -12,6 +12,11 @@
 
 **Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from web.*
 
+## Help
+Please help ethcode developers continue their work.
+
+Ethereum donation address: 0xd22fE4aEFed0A984B1165dc24095728EE7005a36
+
 ## Development
 Run following commands in the terminal
 
@@ -31,7 +36,7 @@ vsce package --yarn
 vsce login mathcody
 vsce publish 0.0.1 -p <access token> --yarn
 ```
-Find extension at - https://marketplace.visualstudio.com/manage/publishers/mathcody
+Find extension at - https://marketplace.visualstudio.com/items?itemName=mathcody.ethcode
 
 ## Under the hood
 

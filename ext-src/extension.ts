@@ -21,7 +21,24 @@ export function activate(context: vscode.ExtensionContext) {
       const editorContent = vscode.window.activeTextEditor
         ? vscode.window.activeTextEditor.document.getText()
         : undefined;
-      ReactPanel.currentPanel.sendCompiledContract(editorContent, fileName);
+      ReactPanel.currentPanel.sendCompiledContract(
+        context,
+        editorContent,
+        fileName
+      );
+    }),
+    vscode.commands.registerCommand("ethcode.runTest", () => {
+      console.log("We are running tests");
+      if (!ReactPanel.currentPanel) {
+        return;
+      }
+      const fileName = vscode.window.activeTextEditor
+        ? vscode.window.activeTextEditor.document.fileName
+        : undefined;
+      const editorContent = vscode.window.activeTextEditor
+        ? vscode.window.activeTextEditor.document.getText()
+        : undefined;
+      ReactPanel.currentPanel.sendTestContract(editorContent, fileName);
     })
   );
 }
@@ -116,6 +133,7 @@ class ReactPanel {
     });
   }
   public sendCompiledContract(
+    context: vscode.ExtensionContext,
     editorContent: string | undefined,
     fn: string | undefined
   ) {
@@ -125,6 +143,7 @@ class ReactPanel {
       sources[fn] = {
         content: editorContent
       };
+      context.workspaceState.update("sources", JSON.stringify(sources));
     }
     var input = {
       language: "Solidity",
@@ -163,13 +182,15 @@ class ReactPanel {
         });
       }
       if (m.compiled) {
+        console.log(m.compiled);
+        console.log(JSON.stringify(sources));
+        context.workspaceState.update("sources", JSON.stringify(sources));
+
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         solcWorker.kill();
       }
       if (m.processMessage) {
-        this._panel.webview.postMessage({
-          processMessage: m.processMessage
-        });
+        this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
     });
     solcWorker.on("error", (error: Error) => {
@@ -187,6 +208,45 @@ class ReactPanel {
       this._panel.webview.postMessage({
         message: `Error code ${code} : Error signal ${signal}`
       });
+    });
+  }
+
+  public sendTestContract(
+    editorContent: string | undefined,
+    fn: string | undefined
+  ) {
+    const sources: ISources = {};
+    if (fn) {
+      sources[fn] = {
+        content: editorContent
+      };
+    }
+    const solcWorker = this.createWorker();
+    this._panel.webview.postMessage({ resetTestState: "resetTestState" });
+    solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
+    solcWorker.on("message", (m: any) => {
+      if (m.data && m.path) {
+        sources[m.path] = {
+          content: m.data.content
+        };
+        solcWorker.send({
+          command: "run-test",
+          payload: JSON.stringify(sources)
+        });
+      }
+      if (m._testCallback) {
+        this._panel.webview.postMessage({ _testCallback: m.result });
+      }
+      if (m._resultsCallback) {
+        this._panel.webview.postMessage({ _resultsCallback: m.result });
+      }
+      if (m._finalCallback) {
+        this._panel.webview.postMessage({ _finalCallback: m.result });
+        solcWorker.kill();
+      }
+    });
+    this._panel.webview.postMessage({
+      processMessage: "Running unit tests..."
     });
   }
 

@@ -3,6 +3,7 @@ import * as solc from "solc";
 import * as path from "path";
 import * as fs from "fs";
 import axios from "axios";
+import { runTestSources } from 'remix-tests';
 
 import { RemixURLResolver } from "remix-url-resolver";
 
@@ -28,7 +29,7 @@ function handleLocal(pathString: string, filePath: any) {
 function findImports(path: any) {
   // TODO: We need current solc file path here for relative local import
   // @ts-ignore
-  process.send({ processMessage: "importing files..." });
+  process.send({ processMessage: "importing file: " + path });
   const FSHandler = [
     {
       type: "local",
@@ -56,6 +57,40 @@ function findImports(path: any) {
     });
 }
 
+function _testCallback(result: any) {
+  try {
+      // @ts-ignore
+      process.send({ _testCallback: '_testCallback', result });
+  } catch (e) {
+      // @ts-ignore
+      process.send({ error: e });
+  }
+}
+function _resultsCallback(e: Error, result: any) {
+  if(e) {
+      // @ts-ignore
+      process.send({ error: e });
+  }
+  // @ts-ignore
+  process.send({ _resultsCallback: '_resultsCallback', result });
+}
+function _finalCallback(e: Error, result: any) {
+  if(e) {
+      // @ts-ignore
+      process.send({ error: e });
+  }
+  // @ts-ignore
+  process.send({ _finalCallback: '_finalCallback', result });
+  // @ts-ignore
+  process.exit(0);
+}
+function _importFileCb(fn: string) {
+  if(fn) {
+      // @ts-ignore
+      process.send({ import: fn });
+  }
+}
+
 process.on("message", async m => {
   if (m.command === "compile") {
     const input = m.payload;
@@ -70,7 +105,7 @@ process.on("message", async m => {
       }
     }
     solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-      if (err) {
+      if(err) {
         // @ts-ignore
         process.send({ error: e });
       } else {
@@ -88,7 +123,7 @@ process.on("message", async m => {
       }
     });
   }
-  if (m.command === "fetch_compiler_verison") {
+  if(m.command === "fetch_compiler_verison") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")
       .then((res: any) => {
@@ -99,5 +134,10 @@ process.on("message", async m => {
         // @ts-ignore
         process.send({ error: e });
       });
+  }
+  if(m.command === "run-test") {
+    // TODO: move parsing to extension.ts
+    const sources = JSON.parse(m.payload);
+    runTestSources(sources, _testCallback, _resultsCallback, _finalCallback, findImports, null);
   }
 });

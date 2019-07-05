@@ -1,11 +1,24 @@
 // @ts-ignore
 import React, { Component } from "react";
+import { connect } from "react-redux";
+import {
+  addTestResults,
+  addFinalResultCallback,
+  clearFinalResult
+} from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
 import Dropdown from "./Dropdown";
 import CompilerVersionSelector from "./CompilerVersionSelector";
+import TestDisplay from "./TestDisplay";
 
-type IProps = any;
+interface IProps {
+  addTestResults: (result: any) => void;
+  addFinalResultCallback: (result: any) => void;
+  clearFinalResult: () => void;
+  test: any;
+}
+
 interface IState {
   message: any[];
   compiled: any;
@@ -22,7 +35,7 @@ interface IOpt {
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 class App extends Component<IProps, IState> {
   public state: IState;
-  public props: IProps;
+  // public props: IProps;
 
   constructor(props: IProps) {
     super(props);
@@ -38,6 +51,7 @@ class App extends Component<IProps, IState> {
   public componentDidMount() {
     window.addEventListener("message", event => {
       const { data } = event;
+
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
         const fileName = Object.keys(compiled.sources)[0];
@@ -47,6 +61,7 @@ class App extends Component<IProps, IState> {
         }
         this.setState({ compiled, fileName, processMessage: "" });
       }
+
       if (data.processMessage) {
         const { processMessage } = data;
         this.setState({
@@ -63,6 +78,26 @@ class App extends Component<IProps, IState> {
           processMessage: ""
         });
       }
+
+      if (data.resetTestState === "resetTestState") {
+        this.props.clearFinalResult();
+      }
+
+      if (data._testCallback) {
+        const result = data._testCallback;
+        this.props.addTestResults(result);
+      }
+      if (data._finalCallback) {
+        const result = data._finalCallback;
+        this.props.addFinalResultCallback(result);
+        this.setState({
+          processMessage: ""
+        });
+      }
+      if (data._importFileCb) {
+        const result = data.result;
+      }
+
       // TODO: handle error message
     });
   }
@@ -122,6 +157,7 @@ class App extends Component<IProps, IState> {
             </div>
           );
         })}{" "}
+        {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
           {compiled && fileName && (
             <div className="compiledOutput">
@@ -157,4 +193,14 @@ class App extends Component<IProps, IState> {
     );
   }
 }
-export default App;
+
+function mapStateToProps({ test }: any) {
+  return {
+    test
+  };
+}
+
+export default connect(
+  mapStateToProps,
+  { addTestResults, addFinalResultCallback, clearFinalResult }
+)(App);

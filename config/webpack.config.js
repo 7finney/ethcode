@@ -619,7 +619,7 @@ module.exports = function(webpackEnv) {
       http2: 'empty',
       net: 'empty',
       tls: 'empty',
-      child_process: 'empty',
+      child_process: 'empty'
     },
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
