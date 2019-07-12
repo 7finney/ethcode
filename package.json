@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "mathcody",
   "icon": "images/ethcode_tsp.png",
   "repository": {
@@ -143,6 +143,7 @@
   },
   "devDependencies": {
     "@types/redux-logger": "^3.0.7",
+    "@types/web3": "^1.0.19",
     "redux-logger": "^3.0.6",
     "vscode": "^1.1.34"
   },
