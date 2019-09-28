@@ -2,8 +2,8 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.0.4",
-  "publisher": "mathcody",
+  "version": "0.0.5",
+  "publisher": "quantanetwork",
   "categories": [
     "Debuggers",
     "Programming Languages"
