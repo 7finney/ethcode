@@ -1,4 +1,3 @@
-// @ts-ignore
 import React, { Component } from "react";
 // @ts-ignore
 import Select from "react-select";

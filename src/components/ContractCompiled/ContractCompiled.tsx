@@ -1,4 +1,3 @@
-// @ts-ignore
 import React, { Component } from "react";
 import "./ContractCompiled.css";
 
@@ -8,8 +7,8 @@ interface IProps {
   abi: any;
 }
 class ContractCompiled extends Component<IProps> {
-  public _handleInput() {
-    console.log("Will handle input");
+  constructor(props: IProps) {
+    super(props);
   }
   public render() {
     const { contractName, bytecode, abi } = this.props;
