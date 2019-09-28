@@ -1,14 +1,15 @@
 # Ethereum IDE in VSCode
 
 ## System support
-* Linux - ETHcode now only works upto [vscode version 1.30.2](https://code.visualstudio.com/updates/v1_30)
-* Mac - ETHcode supports upto latest version
+* Linux, Mac - latest
 * Windows - unknown
 
 ## Usage instructions
 `ctrl+alt+e` - activate the plugin.
+![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/65820327-15ed3a00-e245-11e9-9836-606bb1a71de6.png)
 
 `ctrl+alt+c` - compile contracts.
+![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/65820336-33ba9f00-e245-11e9-9918-3d210c52297e.png)
 
 **Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from web.*
 
