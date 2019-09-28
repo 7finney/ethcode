@@ -3,7 +3,7 @@ import * as solc from "solc";
 import * as path from "path";
 import * as fs from "fs";
 import axios from "axios";
-import { runTestSources } from 'remix-tests';
+// import { runTestSources } from 'remix-tests';
 
 import { RemixURLResolver } from "remix-url-resolver";
 
@@ -135,9 +135,9 @@ process.on("message", async m => {
         process.send({ error: e });
       });
   }
-  if(m.command === "run-test") {
-    // TODO: move parsing to extension.ts
-    const sources = JSON.parse(m.payload);
-    runTestSources(sources, _testCallback, _resultsCallback, _finalCallback, findImports, null);
-  }
+  // if(m.command === "run-test") {
+  //   // TODO: move parsing to extension.ts
+  //   const sources = JSON.parse(m.payload);
+  //   runTestSources(sources, _testCallback, _resultsCallback, _finalCallback, findImports, null);
+  // }
 });
