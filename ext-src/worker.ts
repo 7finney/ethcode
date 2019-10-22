@@ -4,8 +4,10 @@ import * as path from "path";
 import * as fs from "fs";
 import axios from "axios";
 // import { runTestSources } from 'remix-tests';
-
 import { RemixURLResolver } from "remix-url-resolver";
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
+var PROTO_PATH = path.join(__dirname, '../services/greet.proto');
 
 function handleLocal(pathString: string, filePath: any) {
   // if no relative/absolute path given then search in node_modules folder
@@ -135,9 +137,34 @@ process.on("message", async m => {
         process.send({ error: e });
       });
   }
-  // if(m.command === "run-test") {
-  //   // TODO: move parsing to extension.ts
-  //   const sources = JSON.parse(m.payload);
-  //   runTestSources(sources, _testCallback, _resultsCallback, _finalCallback, findImports, null);
-  // }
+  if(m.command === "run-test") {
+    // TODO: move parsing to extension.ts
+    const sources = JSON.parse(m.payload);
+    var packageDefinition = protoLoader.loadSync(PROTO_PATH,
+      {
+        keepCase: true,
+        longs: String,
+        enums: String,
+        defaults: true,
+        oneofs: true
+      }
+    );
+    var protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
+    var remix_tests_pb = protoDescriptor.remix_tests;
+    const remix_tests_client = new remix_tests_pb.RemixTestsService('127.0.0.1:50051', grpc.credentials.createInsecure());
+    
+    var greeting = {
+        greeting : {
+            first_name : "node" 
+        }
+    }
+    const call = remix_tests_client.RunTests(greeting);
+    call.on('data', (data: any) => {
+      // TODO: parse data and set test results
+      console.log(data);
+    });
+    call.on('end', function() {
+      console.log("Execution ended!");
+    });
+  }
 });

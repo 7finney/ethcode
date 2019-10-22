@@ -64,6 +64,8 @@
   },
   "dependencies": {
     "@babel/core": "7.4.3",
+    "@grpc/grpc-js": "^0.6.9",
+    "@grpc/proto-loader": "^0.5.2",
     "@primer/octicons-react": "^9.1.1",
     "@svgr/webpack": "4.1.0",
     "babel-eslint": "10.0.1",
@@ -132,10 +134,11 @@
     "@types/react": "^16.9.3",
     "@types/react-dom": "16.8.4",
     "@types/react-redux": "^7.1.0",
-    "@typescript-eslint/eslint-plugin": "1.6.0",
-    "@typescript-eslint/parser": "1.6.0",
     "@types/redux-logger": "^3.0.7",
     "@types/web3": "^1.0.19",
+    "@typescript-eslint/eslint-plugin": "1.6.0",
+    "@typescript-eslint/parser": "1.6.0",
+    "copy-webpack-plugin": "^5.0.4",
     "redux-logger": "^3.0.6",
     "vscode": "^1.1.34"
   },
