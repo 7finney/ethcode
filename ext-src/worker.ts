@@ -139,7 +139,7 @@ process.on("message", async m => {
   }
   if(m.command === "run-test") {
     // TODO: move parsing to extension.ts
-    const sources = JSON.parse(m.payload);
+    // const sources = JSON.parse(m.payload);
     var packageDefinition = protoLoader.loadSync(PROTO_PATH,
       {
         keepCase: true,
@@ -158,7 +158,13 @@ process.on("message", async m => {
             first_name : "node" 
         }
     }
-    const call = remix_tests_client.RunTests(greeting);
+    const rt = {
+      testInterface: {
+        command: 'run-test-sources',
+        payload: m.payload
+      }
+    }
+    const call = remix_tests_client.RunTests(rt);
     call.on('data', (data: any) => {
       // TODO: parse data and set test results
       // console.log(data);
