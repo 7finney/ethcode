@@ -161,7 +161,9 @@ process.on("message", async m => {
     const call = remix_tests_client.RunTests(greeting);
     call.on('data', (data: any) => {
       // TODO: parse data and set test results
-      console.log(data);
+      // console.log(data);
+      // @ts-ignore
+      process.send({ utResp: data });
     });
     call.on('end', function() {
       console.log("Execution ended!");

@@ -225,6 +225,7 @@ class ReactPanel {
     this._panel.webview.postMessage({ resetTestState: "resetTestState" });
     solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
     solcWorker.on("message", (m: any) => {
+      console.log("ut-msg", m);
       if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content
@@ -234,16 +235,25 @@ class ReactPanel {
           payload: JSON.stringify(sources)
         });
       }
-      if (m._testCallback) {
-        this._panel.webview.postMessage({ _testCallback: m.result });
+      if(m.utResp) {
+        const res = JSON.parse(m.utResp.result);
+        if(res.type) {
+          this._panel.webview.postMessage({ _testCallback: res });
+        } else {
+          this._panel.webview.postMessage({ _finalCallback: m.result });
+          solcWorker.kill();
+        }
       }
-      if (m._resultsCallback) {
-        this._panel.webview.postMessage({ _resultsCallback: m.result });
-      }
-      if (m._finalCallback) {
-        this._panel.webview.postMessage({ _finalCallback: m.result });
-        solcWorker.kill();
-      }
+      // if (m._testCallback) {
+      //   this._panel.webview.postMessage({ _testCallback: m.result });
+      // }
+      // if (m._resultsCallback) {
+      //   this._panel.webview.postMessage({ _resultsCallback: m.result });
+      // }
+      // if (m._finalCallback) {
+      //   this._panel.webview.postMessage({ _finalCallback: m.result });
+      //   solcWorker.kill();
+      // }
     });
     this._panel.webview.postMessage({
       processMessage: "Running unit tests..."
