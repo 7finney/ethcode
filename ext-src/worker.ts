@@ -7,7 +7,7 @@ import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
-const PROTO_PATH = path.join(__dirname, '../services/greet.proto');
+const PROTO_PATH = path.join(__dirname, '../services/remix-tests.proto');
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
   {
     keepCase: true,
