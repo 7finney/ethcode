@@ -1,4 +1,5 @@
 # Ethereum IDE in VSCode
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/Ethereum-Devtools-Developers-Studio/ethcode)
 
 ## System support
 * Linux, Mac - latest
@@ -11,7 +12,7 @@
 `ctrl+alt+c` - compile contracts.
 ![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/65820336-33ba9f00-e245-11e9-9918-3d210c52297e.png)
 
-**Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from web.*
+**Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
 
 ## Help
 Please help ethcode developers continue their work.
