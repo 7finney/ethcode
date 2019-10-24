@@ -28,7 +28,6 @@ export function activate(context: vscode.ExtensionContext) {
       );
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
-      console.log("We are running tests");
       if (!ReactPanel.currentPanel) {
         return;
       }
@@ -160,8 +159,8 @@ class ReactPanel {
     // child_process will work when launched with ctrl+F5
     // more on this - https://github.com/Microsoft/vscode/issues/40875
     const solcWorker = this.createWorker();
-    console.log("WorkerID: ", solcWorker.pid);
-    console.log("Compiling with", this.version);
+    console.dir("WorkerID: ", solcWorker.pid);
+    console.dir("Compiling with solidity version ", this.version);
 
     // Reset Components State before compilation
     this._panel.webview.postMessage({ processMessage: "Compiling..." });
@@ -182,8 +181,8 @@ class ReactPanel {
         });
       }
       if (m.compiled) {
-        console.log(m.compiled);
-        console.log(JSON.stringify(sources));
+        // console.dir(m.compiled);
+        // console.dir(JSON.stringify(sources));
         context.workspaceState.update("sources", JSON.stringify(sources));
 
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
@@ -223,9 +222,11 @@ class ReactPanel {
     }
     const solcWorker = this.createWorker();
     this._panel.webview.postMessage({ resetTestState: "resetTestState" });
+    this._panel.webview.postMessage({
+      processMessage: "Running unit tests..."
+    });
     solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
     solcWorker.on("message", (m: any) => {
-      console.log("ut-msg", m);
       if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content
@@ -240,23 +241,13 @@ class ReactPanel {
         if(res.type) {
           this._panel.webview.postMessage({ _testCallback: res });
         } else {
-          this._panel.webview.postMessage({ _finalCallback: m.result });
+          this._panel.webview.postMessage({ _finalCallback: res });
           solcWorker.kill();
         }
       }
-      // if (m._testCallback) {
-      //   this._panel.webview.postMessage({ _testCallback: m.result });
-      // }
-      // if (m._resultsCallback) {
-      //   this._panel.webview.postMessage({ _resultsCallback: m.result });
-      // }
-      // if (m._finalCallback) {
-      //   this._panel.webview.postMessage({ _finalCallback: m.result });
-      //   solcWorker.kill();
-      // }
     });
-    this._panel.webview.postMessage({
-      processMessage: "Running unit tests..."
+    solcWorker.on("exit", () => {
+      console.dir("Tests worker exited");
     });
   }
 

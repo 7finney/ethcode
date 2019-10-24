@@ -7,7 +7,20 @@ import axios from "axios";
 import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-var PROTO_PATH = path.join(__dirname, '../services/greet.proto');
+
+const PROTO_PATH = path.join(__dirname, '../services/greet.proto');
+const packageDefinition = protoLoader.loadSync(PROTO_PATH,
+  {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true
+  }
+);
+const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
+const remix_tests_pb = protoDescriptor.remix_tests;
+const remix_tests_client = new remix_tests_pb.RemixTestsService('127.0.0.1:50051', grpc.credentials.createInsecure());
 
 function handleLocal(pathString: string, filePath: any) {
   // if no relative/absolute path given then search in node_modules folder
@@ -54,7 +67,6 @@ function findImports(path: any) {
       process.send({ data, path });
     })
     .catch((e: Error) => {
-      // console.log(e);
       throw e;
     });
 }
@@ -140,24 +152,6 @@ process.on("message", async m => {
   if(m.command === "run-test") {
     // TODO: move parsing to extension.ts
     // const sources = JSON.parse(m.payload);
-    var packageDefinition = protoLoader.loadSync(PROTO_PATH,
-      {
-        keepCase: true,
-        longs: String,
-        enums: String,
-        defaults: true,
-        oneofs: true
-      }
-    );
-    var protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
-    var remix_tests_pb = protoDescriptor.remix_tests;
-    const remix_tests_client = new remix_tests_pb.RemixTestsService('127.0.0.1:50051', grpc.credentials.createInsecure());
-    
-    var greeting = {
-        greeting : {
-            first_name : "node" 
-        }
-    }
     const rt = {
       testInterface: {
         command: 'run-test-sources',
@@ -166,13 +160,16 @@ process.on("message", async m => {
     }
     const call = remix_tests_client.RunTests(rt);
     call.on('data', (data: any) => {
-      // TODO: parse data and set test results
-      // console.log(data);
-      // @ts-ignore
-      process.send({ utResp: data });
+      const result = JSON.parse(data.result);
+      if(result.filePath) {
+        findImports(result.filePath);
+      } else {
+        // @ts-ignore
+        process.send({ utResp: data });
+      }
     });
     call.on('end', function() {
-      console.log("Execution ended!");
+      process.exit(0);
     });
   }
 });
