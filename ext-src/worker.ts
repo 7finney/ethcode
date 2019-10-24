@@ -3,7 +3,6 @@ import * as solc from "solc";
 import * as path from "path";
 import * as fs from "fs";
 import axios from "axios";
-// import { runTestSources } from 'remix-tests';
 import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
@@ -20,7 +19,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH,
 );
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 const remix_tests_pb = protoDescriptor.remix_tests;
-const remix_tests_client = new remix_tests_pb.RemixTestsService('127.0.0.1:50051', grpc.credentials.createInsecure());
+const remix_tests_client = new remix_tests_pb.RemixTestsService('api.ethcode.dev:50051', grpc.credentials.createInsecure());
 
 function handleLocal(pathString: string, filePath: any) {
   // if no relative/absolute path given then search in node_modules folder
@@ -69,40 +68,6 @@ function findImports(path: any) {
     .catch((e: Error) => {
       throw e;
     });
-}
-
-function _testCallback(result: any) {
-  try {
-      // @ts-ignore
-      process.send({ _testCallback: '_testCallback', result });
-  } catch (e) {
-      // @ts-ignore
-      process.send({ error: e });
-  }
-}
-function _resultsCallback(e: Error, result: any) {
-  if(e) {
-      // @ts-ignore
-      process.send({ error: e });
-  }
-  // @ts-ignore
-  process.send({ _resultsCallback: '_resultsCallback', result });
-}
-function _finalCallback(e: Error, result: any) {
-  if(e) {
-      // @ts-ignore
-      process.send({ error: e });
-  }
-  // @ts-ignore
-  process.send({ _finalCallback: '_finalCallback', result });
-  // @ts-ignore
-  process.exit(0);
-}
-function _importFileCb(fn: string) {
-  if(fn) {
-      // @ts-ignore
-      process.send({ import: fn });
-  }
 }
 
 process.on("message", async m => {
