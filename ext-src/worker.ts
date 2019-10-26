@@ -19,7 +19,13 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH,
 );
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 const remix_tests_pb = protoDescriptor.remix_tests;
-const remix_tests_client = new remix_tests_pb.RemixTestsService('api.ethcode.dev:50051', grpc.credentials.createInsecure());
+let remix_tests_client: any;
+try {
+  remix_tests_client = new remix_tests_pb.RemixTestsService('api.ethcode.dev:50051', grpc.credentials.createInsecure());
+} catch (e) {
+  // @ts-ignore
+  process.send({ error: e });
+}
 
 function handleLocal(pathString: string, filePath: any) {
   // if no relative/absolute path given then search in node_modules folder
