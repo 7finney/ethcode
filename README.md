@@ -12,6 +12,9 @@
 `ctrl+alt+c` - compile contracts.
 ![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/65820336-33ba9f00-e245-11e9-9918-3d210c52297e.png)
 
+`ctrl+alt+t` - run unit testing.
+![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/67867273-26e4e000-fb50-11e9-9956-5f06e27c5a29.png)
+
 **Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
 
 ## Help
@@ -35,10 +38,10 @@ vsce package --yarn
 
 ## Publishing
 ```
-vsce login mathcody
+vsce login quantanetwork
 vsce publish 0.0.1 -p <access token> --yarn
 ```
-Find extension at - https://marketplace.visualstudio.com/items?itemName=mathcody.ethcode
+Extension marketplace link - https://marketplace.visualstudio.com/items?itemName=quantanetwork.ethcode
 
 ## Under the hood
 
