@@ -8,9 +8,8 @@
 }
 
 .App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
+  height: 75px;
+  padding: 15px;
   color: white;
 }
 
@@ -64,4 +63,8 @@
 }
 .yellow-text {
   color: rgb(236, 218, 53);
+}
+
+.hot-keys {
+  display: inline;
 }

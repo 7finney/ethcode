@@ -126,6 +126,14 @@ class App extends Component<IProps, IState> {
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
+        <div className="instructions">
+          <p>
+            <pre className="hot-keys">ctrl+alt+c</pre> - Compile contracts
+          </p>
+          <p>
+            <pre className="hot-keys">ctrl+alt+t</pre> - Run unit tests
+          </p>
+        </div>
         {availableVersions && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}
