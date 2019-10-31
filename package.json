@@ -8,6 +8,13 @@
     "Debuggers",
     "Programming Languages"
   ],
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "remix-tests",
+    "dapp",
+    "blockchain"
+  ],
   "icon": "images/ethcode_tsp.png",
   "repository": {
     "type": "git",
