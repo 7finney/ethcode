@@ -126,24 +126,8 @@ class ReactPanel {
     );
   }
 
-  private createWorker(): ChildProcess {
-    return fork(path.join(__dirname, "worker.js"), [], {
-      execArgv: ["--inspect=" + (process.debugPort + 1)]
-    });
-  }
-  public sendCompiledContract(
-    context: vscode.ExtensionContext,
-    editorContent: string | undefined,
-    fn: string | undefined
-  ) {
-    // send JSON serializable compiled data
-    const sources: ISources = {};
-    if (fn) {
-      sources[fn] = {
-        content: editorContent
-      };
-      context.workspaceState.update("sources", JSON.stringify(sources));
-    }
+  private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
+    // solidity compiler code goes bellow
     var input = {
       language: "Solidity",
       sources,
@@ -208,6 +192,38 @@ class ReactPanel {
         message: `Error code ${code} : Error signal ${signal}`
       });
     });
+  }
+  private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
+    // yul compiler code goes bellow
+    console.log("Will invoke vyper compiler");
+  }
+  private createWorker(): ChildProcess {
+    return fork(path.join(__dirname, "worker.js"), [], {
+      execArgv: ["--inspect=" + (process.debugPort + 1)]
+    });
+  }
+  public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
+    // send JSON serializable compiled data
+    const sources: ISources = {};
+    if (fn) {
+      sources[fn] = {
+        content: editorContent
+      };
+      context.workspaceState.update("sources", JSON.stringify(sources));
+      var re = /(?:\.([^.]+))?$/;
+      // @ts-ignore
+      var ext = re.exec(fn)[1];
+      console.log(ext);
+      if(ext === "vy") {
+        // invoke yul compiler
+        this.invokeVyperCompiler(context, sources);
+      } else if(ext === "sol") {
+        // invoke solidity compiler
+        this.invokeSolidityCompiler(context, sources);
+      } else {
+        throw new Error("No matching file found!");
+      }
+    }
   }
 
   public sendTestContract(
