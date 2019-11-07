@@ -193,19 +193,22 @@ class ReactPanel {
       });
     });
   }
-  private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
+  private invokeVyperCompiler(file: string): void {
     console.log("invoked vyper compiler");
     
     // TODO: vyper compiler code goes bellow, as follows
     
-    // const vyperWorker = this.createVyperWorker();
+    const vyperWorker = this.createVyperWorker();
     // console.dir("WorkerID: ", vyperWorker.pid);
     // console.dir("Compiling with solidity version ", this.version);
-    // vyperWorker.send({
-    //   command: "compile",
-    //   payload: input,
-    //   version: this.version
-    // });
+    vyperWorker.send({
+      command: "compile",
+      File: file,
+      version: this.version
+    });
+    vyperWorker.on('message', (m) => {
+      console.log("Worker message: ", m);
+    });
   }
   private createWorker(): ChildProcess {
     return fork(path.join(__dirname, "worker.js"), [], {
@@ -227,14 +230,12 @@ class ReactPanel {
       context.workspaceState.update("sources", JSON.stringify(sources));
       var re = /(?:\.([^.]+))?$/;
       // @ts-ignore
-      // var ext = re.exec(fn)[1];
-      // console.log(ext);
       const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
       // @ts-ignore
       if(fn.match(regexVyp) && fn.match(regexVyp).length > 0) {
-        // invoke yul compiler
-        this.invokeVyperCompiler(context, sources);
+        // @ts-ignore
+        this.invokeVyperCompiler(vscode.window.activeTextEditor.document.fileName);
       // @ts-ignore
       } else if(fn.match(regexSol) && fn.match(regexSol).length > 0) {
         // invoke solidity compiler
