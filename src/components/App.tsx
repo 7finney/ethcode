@@ -11,6 +11,7 @@ import ContractCompiled from "./ContractCompiled";
 import Dropdown from "./Dropdown";
 import CompilerVersionSelector from "./CompilerVersionSelector";
 import TestDisplay from "./TestDisplay";
+import DebugDisplay from "./DebugDisplay";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -134,6 +135,7 @@ class App extends Component<IProps, IState> {
             <pre className="hot-keys">ctrl+alt+t</pre> - Run unit tests
           </p>
         </div>
+        <DebugDisplay vscode={vscode} />
         {availableVersions && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}

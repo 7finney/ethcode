@@ -75,10 +75,7 @@ class ReactPanel {
       }
     } else {
       try {
-        ReactPanel.currentPanel = new ReactPanel(
-          extensionPath,
-          column || vscode.ViewColumn.One
-        );
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel.getCompilerVersion();
       } catch (error) {
@@ -91,10 +88,7 @@ class ReactPanel {
     this._extensionPath = extensionPath;
 
     // Create and show a new webview panel
-    this._panel = vscode.window.createWebviewPanel(
-      ReactPanel.viewType,
-      "ETHcode",
-      column,
+    this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "ETHcode", column,
       {
         // Enable javascript in the webview
         enableScripts: true,
@@ -119,6 +113,8 @@ class ReactPanel {
         switch (message.command) {
           case "version":
             this.version = message.version;
+          case "debugTransaction":
+            this.debug(message.txHash);
         }
       },
       null,
@@ -131,11 +127,17 @@ class ReactPanel {
       execArgv: ["--inspect=" + (process.debugPort + 1)]
     });
   }
-  public sendCompiledContract(
-    context: vscode.ExtensionContext,
-    editorContent: string | undefined,
-    fn: string | undefined
-  ) {
+  private debug(txHash: string): void {
+    const debugWorker = this.createWorker();
+    console.dir("WorkerID: ", debugWorker.pid);
+    debugWorker.on("message", (m: any) => {
+      console.log("Debug message: ");
+      console.dir(m.debugResp);
+      this._panel.webview.postMessage({ txTrace: m.debugResp });
+    });
+    debugWorker.send({ command: "debug-transaction", payload: txHash });
+  }
+  public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
     // send JSON serializable compiled data
     const sources: ISources = {};
     if (fn) {
@@ -210,10 +212,7 @@ class ReactPanel {
     });
   }
 
-  public sendTestContract(
-    editorContent: string | undefined,
-    fn: string | undefined
-  ) {
+  public sendTestContract(editorContent: string | undefined, fn: string | undefined) {
     const sources: ISources = {};
     if (fn) {
       sources[fn] = {
