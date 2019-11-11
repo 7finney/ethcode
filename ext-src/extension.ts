@@ -193,7 +193,7 @@ class ReactPanel {
 			});
 		});
 	}
-	private invokeVyperCompiler(source: ISources): void {
+	private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
 		console.log("invoked vyper compiler");
 
 		// TODO: vyper compiler code goes bellow, as follows
@@ -204,13 +204,21 @@ class ReactPanel {
 		this._panel.webview.postMessage({ processMessage: "Compiling..." });
 		vyperWorker.send({
 			command: "compile",
-			src: source,
+			source: sources,
 			version: this.version
 		});
 		vyperWorker.on('message', (m) => {
-			console.log("gggggg", m);
-			
-			// if()
+			if (m.compiled) {
+				// console.dir(m.compiled);
+				// console.dir(JSON.stringify(sources));
+				context.workspaceState.update("sources", JSON.stringify(sources));
+
+				this._panel.webview.postMessage({ compiled: m.compiled, sources });
+				vyperWorker.kill();
+			}
+			if (m.processMessage) {
+				this._panel.webview.postMessage({ processMessage: m.processMessage });
+			}
 		});
 	}
 	private createWorker(): ChildProcess {
@@ -238,7 +246,8 @@ class ReactPanel {
 			// @ts-ignore
 			if (fn.match(regexVyp) && fn.match(regexVyp).length > 0) {
 				// @ts-ignore
-				this.invokeVyperCompiler(sources);
+				// invoke vyper compiler
+				this.invokeVyperCompiler(context, sources);
 				// @ts-ignore
 			} else if (fn.match(regexSol) && fn.match(regexSol).length > 0) {
 				// invoke solidity compiler
