@@ -131,7 +131,7 @@ class ReactPanel {
     const debugWorker = this.createWorker();
     console.dir("WorkerID: ", debugWorker.pid);
     debugWorker.on("message", (m: any) => {
-      console.log("Debug message: ");
+      console.log("Debug message: ", m.debugResp);
       console.dir(m.debugResp);
       this._panel.webview.postMessage({ txTrace: m.debugResp });
     });

@@ -27,6 +27,7 @@ interface IState {
   fileName: any;
   processMessage: string;
   availableVersions: any;
+  txTrace: object
 }
 interface IOpt {
   value: string;
@@ -46,7 +47,8 @@ class App extends Component<IProps, IState> {
       error: null,
       fileName: "",
       processMessage: "",
-      availableVersions: ""
+      availableVersions: "",
+      txTrace: {}
     };
   }
   public componentDidMount() {
@@ -98,6 +100,9 @@ class App extends Component<IProps, IState> {
       if (data._importFileCb) {
         const result = data.result;
       }
+      if (data.txTrace) {
+        this.setState({ txTrace: data.txTrace });
+      }
 
       // TODO: handle error message
     });
@@ -119,7 +124,8 @@ class App extends Component<IProps, IState> {
       message,
       fileName,
       processMessage,
-      availableVersions
+      availableVersions,
+      txTrace
     } = this.state;
 
     return (
@@ -135,7 +141,7 @@ class App extends Component<IProps, IState> {
             <pre className="hot-keys">ctrl+alt+t</pre> - Run unit tests
           </p>
         </div>
-        <DebugDisplay vscode={vscode} />
+        <DebugDisplay vscode={vscode} txTrace={txTrace}/>
         {availableVersions && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}

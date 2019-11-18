@@ -2,9 +2,11 @@ import React, { Component } from "react";
 
 interface IProps {
     vscode: any;
+    txTrace: object;
 }
 interface IState {
     txHash: string | null;
+    txTrace: object;
 }
 // @ts-ignore
 // const vscode = acquireVsCodeApi(); // eslint-disable-line
@@ -12,6 +14,7 @@ interface IState {
 class DebugDisplay extends Component<IProps, IState> {
     public state = {
         txHash: '',
+        txTrace: {}
     };
     constructor(props: IProps) {
         super(props);
@@ -31,7 +34,7 @@ class DebugDisplay extends Component<IProps, IState> {
         this.setState({ txHash: event.target.value });
     }
     public render() {
-        const { txHash } = this.state;
+        const { txTrace } = this.props;
         return (
             <div>
                 <form onSubmit={this.handleSubmit}>
@@ -41,6 +44,10 @@ class DebugDisplay extends Component<IProps, IState> {
                     </label>
                     <input type="submit" value="Submit" />
                 </form>
+                {
+                    Object.entries(txTrace).length > 0 &&
+                    <div><pre>{JSON.stringify(txTrace)}</pre></div>
+                }
             </div>
         );
     }
