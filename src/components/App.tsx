@@ -187,6 +187,7 @@ class App extends Component<IProps, IState> {
                           contractName={contractName}
                           bytecode={bytecode}
                           abi={ContractABI}
+                          vscode={vscode}
                         />
                       }
                     </div>

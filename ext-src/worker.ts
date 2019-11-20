@@ -7,7 +7,7 @@ import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
-const PROTO_PATH = path.join(__dirname, '../services/remix-tests.proto');
+const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
   {
     keepCase: true,
@@ -18,10 +18,24 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH,
   }
 );
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
+console.log(protoDescriptor);
+
+
+// remix-tests grpc
 const remix_tests_pb = protoDescriptor.remix_tests;
 let remix_tests_client: any;
 try {
   remix_tests_client = new remix_tests_pb.RemixTestsService('api.ethcode.dev:50051', grpc.credentials.createInsecure());
+} catch (e) {
+  // @ts-ignore
+  process.send({ error: e });
+}
+
+// client-call grpc
+const client_call_pb = protoDescriptor.eth_client_call;
+let client_call_client: any;
+try {
+  client_call_client = new client_call_pb.ClientCallService('127.0.0.1:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -138,6 +152,22 @@ process.on("message", async m => {
         // @ts-ignore
         process.send({ utResp: data });
       }
+    });
+    call.on('end', function() {
+      process.exit(0);
+    });
+  }
+  // Deploy
+  if(m.command === "deploy-contract") {
+    const c = {
+      callInterface: {
+        command: 'deploy-contract',
+        payload: JSON.stringify(m.payload)
+      }
+    };
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      console.dir(data);
     });
     call.on('end', function() {
       process.exit(0);

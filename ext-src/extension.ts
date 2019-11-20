@@ -119,23 +119,28 @@ class ReactPanel {
         switch (message.command) {
           case "version":
             this.version = message.version;
+          case "run-deploy":
+            this.runDeploy(message.payload);
         }
       },
       null,
       this._disposables
     );
   }
-
   private createWorker(): ChildProcess {
     return fork(path.join(__dirname, "worker.js"), [], {
       execArgv: ["--inspect=" + (process.debugPort + 1)]
     });
   }
-  public sendCompiledContract(
-    context: vscode.ExtensionContext,
-    editorContent: string | undefined,
-    fn: string | undefined
-  ) {
+  private runDeploy(payload: any) {
+    const deployWorker = this.createWorker();
+    deployWorker.on("message", (m: any) => {
+      console.log("Deploy message: ");
+      console.dir(m);
+    });
+    deployWorker.send({ command: "deploy-contract", payload });
+  }
+  public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
     // send JSON serializable compiled data
     const sources: ISources = {};
     if (fn) {
