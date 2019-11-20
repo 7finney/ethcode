@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import "./DebugDisplay.css";
 
 interface IProps {
     vscode: any;
@@ -6,8 +7,8 @@ interface IProps {
 }
 interface IState {
     txHash: string | null;
-    debugObj: object
-    indx: any
+    debugObj: object;
+    indx: any;
 }
 // @ts-ignore
 // const vscode = acquireVsCodeApi(); // eslint-disable-line
@@ -76,7 +77,7 @@ class DebugDisplay extends Component<IProps, IState> {
         const { indx, debugObj } = this.state;
         const { txTrace } = this.props;
         return (
-            <div>
+            <div className="container">
                 <div>
                     <form onSubmit={this.handleSubmit}>
                         <label>
@@ -93,22 +94,27 @@ class DebugDisplay extends Component<IProps, IState> {
                             <button className="input text-subtle" onClick={this.stopDebug}>Stop</button>
                         </p>
                         <div>
-                            <p>OPCodes</p>
-                            <pre>
+                            <p>OPCodes:</p>
+                            <div className="opDiv">
                                 <ul>
                                     { txTrace.map((obj: any, index: any) => {
-                                        return <li key={index}>{obj.op}</li>
+                                        if (index == indx)
+                                            return <li className="selected" key={index}>{obj.op}</li>;
+                                        else 
+                                            return <li key={index}>{obj.op}</li>;
                                     }) }
                                 </ul>
-                            </pre>
-                            <p>
-                                <button className="input text-subtle" onClick={this.debugBack}>Step Back</button>
-                                <button className="input text-subtle" onClick={this.debugInto}>Step Into</button>
-                            </p>
+                            </div>
+                            <div>
+                                <p>
+                                    <button onClick={this.debugBack}>Step Back</button>
+                                    <button onClick={this.debugInto}>Step Into</button>
+                                </p>
+                            </div>
                         </div>
                         <div>
-                            <p>
-                                <pre>
+                            <div className="opDiv">
+                                <p>
                                     <ul>
                                         {/* 
                                             // @ts-ignore */}
@@ -117,32 +123,46 @@ class DebugDisplay extends Component<IProps, IState> {
                                             // @ts-ignore */}
                                         <li>gas remaining:{debugObj.gas}</li>
                                     </ul>
-                                </pre>
-                            </p>
-                            <p>
-                                Memory:
-                                <pre>
-                                    {/* 
-                                            // @ts-ignore */}
-                                    {debugObj.memory}
-                                </pre>
-                            </p>
-                            <p>
-                                Stack:
-                                <pre>
-                                    {/* 
-                                            // @ts-ignore */}
-                                    {debugObj.stack}
-                                </pre>
-                            </p>
-                            <p>
-                                Storage:
-                                <pre>
-                                    {/* 
-                                            // @ts-ignore */}
-                                    {debugObj.storage}
-                                </pre>
-                            </p>
+                                </p>
+                            </div>
+                            <div>
+                                <div className="row">
+                                    <div className="title">
+                                        Memory:
+                                    </div>
+                                    <div>
+                                        <div className="value">
+                                            {/* 
+                                                    // @ts-ignore */}
+                                            {JSON.stringify(debugObj.memory)}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="title">
+                                        Stack:
+                                    </div>
+                                    <div>
+                                        <div className="value">
+                                            {/* 
+                                                    // @ts-ignore */}
+                                            {JSON.stringify(debugObj.stack)}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="title">
+                                        Storage:
+                                    </div>
+                                    <div>
+                                        <div className="value">
+                                            {/* 
+                                                    // @ts-ignore */}
+                                            {JSON.stringify(debugObj.storage)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 }
