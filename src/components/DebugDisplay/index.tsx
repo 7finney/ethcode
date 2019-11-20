@@ -16,7 +16,7 @@ class DebugDisplay extends Component<IProps, IState> {
     public state = {
         txHash: '',
         debugObj: {},
-        indx: 0
+        indx: -1
     };
     constructor(props: IProps) {
         super(props);
@@ -38,7 +38,8 @@ class DebugDisplay extends Component<IProps, IState> {
     componentDidUpdate(prevProps: IProps) {
         if(this.props.txTrace !== prevProps.txTrace) {
             this.setState({
-                debugObj: this.props.txTrace[this.state.indx]
+                indx: 0,
+                debugObj: this.props.txTrace[0]
             })
         }
     }
@@ -46,19 +47,29 @@ class DebugDisplay extends Component<IProps, IState> {
         this.setState({ txHash: event.target.value });
     }
     stopDebug() {
-        this.setState({ indx: 0, debugObj: {} });
+        this.setState({ indx: -1, debugObj: {} });
     }
     debugInto() {
-        this.setState({ 
-            indx: this.state.indx+1, 
-            debugObj: this.props.txTrace[this.state.indx+1] 
-        });
+        const { txTrace } = this.props;
+        if(txTrace.length > 0) {
+            const index = (this.state.indx < txTrace.length-1) ?
+            this.state.indx+1 : 
+            txTrace.length-1;
+            this.setState({ 
+                indx: index, 
+                debugObj: txTrace[index] 
+            });
+        }
     }
     debugBack() {
-        this.setState({ 
-            indx: this.state.indx-1, 
-            debugObj: this.props.txTrace[this.state.indx-1] 
-        });
+        const { txTrace } = this.props;
+        if(txTrace.length > 0) {
+            const index = this.state.indx > 0 ? this.state.indx-1 : 0;
+            this.setState({ 
+                indx: index, 
+                debugObj: txTrace[index] 
+            });
+        }
 
     }
     public render() {
@@ -76,7 +87,7 @@ class DebugDisplay extends Component<IProps, IState> {
                     </form>
                 </div>
                 {
-                    Object.entries(txTrace).length > 0 &&
+                    indx >= 0 &&
                     <div>
                         <p>
                             <button className="input text-subtle" onClick={this.stopDebug}>Stop</button>
@@ -101,7 +112,7 @@ class DebugDisplay extends Component<IProps, IState> {
                                     <ul>
                                         {/* 
                                             // @ts-ignore */}
-                                        <li>gas:{debugObj.gasCost}</li>
+                                        {indx > 0 ? <li>gas cost:{debugObj.gasCost}</li>:<li>gas cost:</li>}
                                         {/* 
                                             // @ts-ignore */}
                                         <li>gas remaining:{debugObj.gas}</li>
