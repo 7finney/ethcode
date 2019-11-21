@@ -52,10 +52,10 @@ class DebugDisplay extends Component<IProps, IState> {
     }
     debugInto() {
         const { txTrace } = this.props;
+        const index = (this.state.indx < txTrace.length-1) ?
+        this.state.indx+1 : 
+        txTrace.length-1;
         if(txTrace.length > 0) {
-            const index = (this.state.indx < txTrace.length-1) ?
-            this.state.indx+1 : 
-            txTrace.length-1;
             this.setState({ 
                 indx: index, 
                 debugObj: txTrace[index] 
@@ -64,8 +64,8 @@ class DebugDisplay extends Component<IProps, IState> {
     }
     debugBack() {
         const { txTrace } = this.props;
+        const index = this.state.indx > 0 ? this.state.indx-1 : 0;
         if(txTrace.length > 0) {
-            const index = this.state.indx > 0 ? this.state.indx-1 : 0;
             this.setState({ 
                 indx: index, 
                 debugObj: txTrace[index] 
@@ -95,13 +95,13 @@ class DebugDisplay extends Component<IProps, IState> {
                         </p>
                         <div>
                             <p>OPCodes:</p>
-                            <div className="opDiv">
-                                <ul>
+                            <div>
+                                <ul className="opDiv">
                                     { txTrace.map((obj: any, index: any) => {
                                         if (index == indx)
-                                            return <li className="selected" key={index}>{obj.op}</li>;
+                                            return <li className="selected" key={index} id={index}>{obj.op}</li>;
                                         else 
-                                            return <li key={index}>{obj.op}</li>;
+                                            return <li key={index} id={index}>{obj.op}</li>;
                                     }) }
                                 </ul>
                             </div>
