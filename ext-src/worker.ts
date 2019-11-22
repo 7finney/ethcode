@@ -35,7 +35,7 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('127.0.0.1:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('clientcall.localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -159,10 +159,16 @@ process.on("message", async m => {
   }
   // Deploy
   if(m.command === "deploy-contract") {
+    const { abi, bytecode, gasSupply } = m.payload;
+    const inp = {
+      abi,
+      bytecode,
+      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
+    }
     const c = {
       callInterface: {
         command: 'deploy-contract',
-        payload: JSON.stringify(m.payload)
+        payload: JSON.stringify(inp)
       }
     };
     const call = client_call_client.RunDeploy(c);
@@ -172,5 +178,9 @@ process.on("message", async m => {
     call.on('end', function() {
       process.exit(0);
     });
+    call.on('error', function(err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    })
   }
 });

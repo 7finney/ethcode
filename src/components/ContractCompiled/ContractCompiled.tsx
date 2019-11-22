@@ -7,26 +7,44 @@ interface IProps {
   abi: any;
   vscode: any;
 }
-class ContractCompiled extends Component<IProps> {
-  constructor(props: IProps) {
+interface IState {
+  gasSupply: number;
+  errors: any
+}
+class ContractCompiled extends Component<IProps, IState> {
+  public state: IState = {
+    gasSupply: 1500000,
+    errors: null
+  };
+  constructor(props: IProps, state: IState) {
     super(props);
     this.handleDeploy = this.handleDeploy.bind(this);
   }
   
   private handleDeploy() {
     const { vscode, bytecode, abi } = this.props;
-    vscode.postMessage({
-      command: "run-deploy",
-      payload: {
-        abi,
-        bytecode,
-        gasSupply: 1500000
-      }
-    });
+    const { gasSupply } = this.state;
+    try {
+      vscode.postMessage({
+        command: "run-deploy",
+        payload: {
+          abi,
+          bytecode,
+          gasSupply
+        }
+      });
+    } catch (err) {
+      this.setState({ errors: err });
+    }
+  }
+
+  handleChange(event: any) {
+    this.setState({ gasSupply: event.target.value });
   }
   
   public render() {
     const { contractName, bytecode, abi } = this.props;
+    const { gasSupply, errors } = this.state;
     return (
       <div>
         <span className="contract-name inline-block highlight-success">
@@ -41,8 +59,20 @@ class ContractCompiled extends Component<IProps> {
         </div>
         <div>
           <form onSubmit={this.handleDeploy}>
+            <label>
+              Gas Supply:
+              <input type="number" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/>
+            </label>
             <input type="submit" value="Deploy" />
           </form>
+        </div>
+        <div>
+          {
+            errors &&
+            <div>
+              {errors}
+            </div>
+          }
         </div>
       </div>
     );
