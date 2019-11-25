@@ -97,6 +97,9 @@ class App extends Component<IProps, IState> {
       if (data._importFileCb) {
         const result = data.result;
       }
+      if(data.errors) {
+        this.setState({ error: data.errors });
+      }
 
       // TODO: handle error message
     });
@@ -118,9 +121,10 @@ class App extends Component<IProps, IState> {
       message,
       fileName,
       processMessage,
-      availableVersions
+      availableVersions,
+      error
     } = this.state;
-
+    
     return (
       <div className="App">
         <header className="App-header">
@@ -188,6 +192,8 @@ class App extends Component<IProps, IState> {
                           bytecode={bytecode}
                           abi={ContractABI}
                           vscode={vscode}
+                          compiled={compiled}
+                          errors={error}
                         />
                       }
                     </div>

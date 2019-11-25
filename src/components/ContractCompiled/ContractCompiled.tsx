@@ -6,6 +6,8 @@ interface IProps {
   bytecode: any;
   abi: any;
   vscode: any;
+  compiled: any;
+  errors: any;
 }
 interface IState {
   gasSupply: number;
@@ -14,27 +16,29 @@ interface IState {
 class ContractCompiled extends Component<IProps, IState> {
   public state: IState = {
     gasSupply: 1500000,
-    errors: null
+    errors: undefined
   };
   constructor(props: IProps, state: IState) {
     super(props);
     this.handleDeploy = this.handleDeploy.bind(this);
   }
   
-  private handleDeploy() {
+  public handleDeploy() {
     const { vscode, bytecode, abi } = this.props;
     const { gasSupply } = this.state;
-    try {
-      vscode.postMessage({
-        command: "run-deploy",
-        payload: {
-          abi,
-          bytecode,
-          gasSupply
-        }
-      });
-    } catch (err) {
-      this.setState({ errors: err });
+    vscode.postMessage({
+      command: "run-deploy",
+      payload: {
+        abi,
+        bytecode,
+        gasSupply
+      }
+    });
+  }
+  componentDidUpdate(prevProps: any) {
+    if(this.props.errors !== prevProps.errors) {
+      const { errors } = this.props;
+      if(this.props.errors) this.setState({ errors: errors });
     }
   }
 
@@ -70,7 +74,7 @@ class ContractCompiled extends Component<IProps, IState> {
           {
             errors &&
             <div>
-              {errors}
+              <pre>{JSON.stringify(errors)}</pre>
             </div>
           }
         </div>
