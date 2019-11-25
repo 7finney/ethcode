@@ -18,8 +18,6 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH,
   }
 );
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
-console.log(protoDescriptor);
-
 
 // remix-tests grpc
 const remix_tests_pb = protoDescriptor.remix_tests;
@@ -35,7 +33,7 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('127.0.0.1:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('clientcall.localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
