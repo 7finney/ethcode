@@ -121,6 +121,8 @@ class ReactPanel {
             this.version = message.version;
           case "run-deploy":
             this.runDeploy(message.payload);
+          case "run-get-gas-estimate":
+            this.runGetGasEstimate(message.payload);
         }
       },
       null,
@@ -142,6 +144,17 @@ class ReactPanel {
       console.dir(m);
     });
     deployWorker.send({ command: "deploy-contract", payload });
+  }
+  private runGetGasEstimate(payload: any) {
+    const deployWorker = this.createWorker();
+    deployWorker.on("message", (m: any) => {
+      if(m.error) {
+        this._panel.webview.postMessage({ errors: m.error });
+      }
+      console.log("Gas estimate message: ");
+      console.dir(m);
+    });
+    deployWorker.send({ command: "get-gas-estimate", payload });
   }
   public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
     // send JSON serializable compiled data

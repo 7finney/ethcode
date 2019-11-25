@@ -19,6 +19,7 @@ class ContractCompiled extends Component<IProps, IState> {
   constructor(props: IProps, state: IState) {
     super(props);
     this.handleDeploy = this.handleDeploy.bind(this);
+    this.handleGetGasEstimate = this.handleGetGasEstimate.bind(this);
   }
   
   private handleDeploy() {
@@ -31,6 +32,21 @@ class ContractCompiled extends Component<IProps, IState> {
           abi,
           bytecode,
           gasSupply
+        }
+      });
+    } catch (err) {
+      this.setState({ errors: err });
+    }
+  }
+
+  private handleGetGasEstimate() {
+    const { vscode, bytecode, abi } = this.props;
+    try {
+      vscode.postMessage({
+        command: "run-get-gas-estimate",
+        payload: {
+          abi,
+          bytecode
         }
       });
     } catch (err) {
@@ -64,6 +80,9 @@ class ContractCompiled extends Component<IProps, IState> {
               <input type="number" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/>
             </label>
             <input type="submit" value="Deploy" />
+          </form>
+          <form onSubmit={this.handleGetGasEstimate}>
+            <input type="submit" value="Get gas estimate" />
           </form>
         </div>
         <div>

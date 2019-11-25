@@ -181,4 +181,29 @@ process.on("message", async m => {
       process.send({ "error": err });
     })
   }
+  // Gas Estimate
+  if(m.command === "get-gas-estimate") {
+    const { abi, bytecode, gasSupply } = m.payload;
+    const inp = {
+      abi,
+      bytecode
+    }
+    const c = {
+      callInterface: {
+        command: 'get-gas-estimate',
+        payload: JSON.stringify(inp)
+      }
+    };
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      console.dir(data);
+    });
+    call.on('end', function() {
+      process.exit(0);
+    });
+    call.on('error', function(err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    })
+  }
 });
