@@ -7,13 +7,13 @@ interface IProps {
     abi: any;
     vscode: any;
     compiled: any;
-    errors: any;
+    error: Error | null;
 }
 interface IState {
     constructorInput: object[];
     gasSupply: number;
     inputABI: any;
-    errors: any;
+    error: Error | null;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -21,7 +21,7 @@ class ContractDeploy extends Component<IProps, IState> {
         constructorInput: [],
         gasSupply: 1500000,
         inputABI: [],
-        errors: undefined
+        error: null
     };
     constructor(props: IProps, state: IState) {
         super(props);
@@ -38,9 +38,9 @@ class ContractDeploy extends Component<IProps, IState> {
         }
     }
     componentDidUpdate(prevProps: any) {
-        if(this.props.errors !== prevProps.errors) {
-          const { errors } = this.props;
-          if(errors) this.setState({ errors: errors });
+        if(this.props.error !== prevProps.error) {
+          const { error } = this.props;
+          if(error) this.setState({ error });
         }
     }
     public handleDeploy() {
@@ -73,7 +73,7 @@ class ContractDeploy extends Component<IProps, IState> {
         this.setState({ constructorInput: constructorInput });
     }
     public render() {
-        const { gasSupply, errors, constructorInput } = this.state;
+        const { gasSupply, error, constructorInput } = this.state;
         
         return(
             <div>
@@ -109,13 +109,13 @@ class ContractDeploy extends Component<IProps, IState> {
                 </div>
                 <div className="error_message">
                 {
-                    errors &&
+                    error &&
                     <div>
                         <span className="contract-name inline-block highlight-success">
                             Error Message:
                         </span>
                         <div>
-                            <pre className="large-code-error">{JSON.stringify(errors)}</pre>
+                            <pre className="large-code-error">{JSON.stringify(error)}</pre>
                         </div>
                     </div>
                 }

@@ -36,8 +36,6 @@ interface IOpt {
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 class App extends Component<IProps, IState> {
   public state: IState;
-  // public props: IProps;
-
   constructor(props: IProps) {
     super(props);
     this.state = {
@@ -225,7 +223,7 @@ class App extends Component<IProps, IState> {
                           abi={ContractABI}
                           vscode={vscode}
                           compiled={compiled}
-                          errors={error}
+                          error={error}
                         />
                       }
                     </div>
