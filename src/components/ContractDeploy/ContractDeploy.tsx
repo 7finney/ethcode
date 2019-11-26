@@ -26,13 +26,15 @@ class ContractDeploy extends Component<IProps, IState> {
     constructor(props: IProps, state: IState) {
         super(props);
         this.handleDeploy = this.handleDeploy.bind(this);
-    }
+        this.handleGetGasEstimate = this.handleGetGasEstimate.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.constructorInput = this.constructorInput.bind(this);    }
 
     componentDidMount() {
         const { abi } = this.props;
         for (var i in abi ) {
-            if(abi[i].type == 'constructor' && abi[i].inputs.length>0) {
-                this.setState({ constructorInput: abi[i].inputs, inputABI: abi });
+            if(abi[i].type == 'constructor' && abi[i].inputs.length > 0) {
+                this.setState({ constructorInput: JSON.parse(JSON.stringify(abi[i].inputs)) });
                 break;
             }
         }
@@ -43,28 +45,39 @@ class ContractDeploy extends Component<IProps, IState> {
           if(error) this.setState({ error });
         }
     }
-    public handleDeploy() {
-        const { vscode, bytecode } = this.props;
+    private handleDeploy() {
+        const { vscode, bytecode, abi } = this.props;
         const { gasSupply, inputABI, constructorInput } = this.state;
-        for (var i in inputABI ) {
-            if(inputABI[i].type == 'constructor' && inputABI[i].inputs.length>0) {
-                inputABI[i].inputs = constructorInput;
-                break;
-            }
-        }        
         vscode.postMessage({
           command: "run-deploy",
           payload: {
-                abi: inputABI,
+                abi,
                 bytecode,
+                params: constructorInput,
                 gasSupply
             }
         });
     }
-    handleChange(event: any) {
+    private handleGetGasEstimate() {
+        const { vscode, bytecode, abi } = this.props;
+        const { constructorInput } = this.state;
+        try {
+          vscode.postMessage({
+            command: "run-get-gas-estimate",
+            payload: {
+              abi,
+              bytecode,
+              params: constructorInput
+            }
+          });
+        } catch (err) {
+          this.setState({ error: err });
+        }
+    }
+    private handleChange(event: any) {
         this.setState({ gasSupply: event.target.value });
     }
-    constructorInput(event: any) {
+    private constructorInput(event: any) {
         const { constructorInput } = this.state;
         const item = constructorInput[event.target.id];
         // @ts-ignore
@@ -105,6 +118,9 @@ class ContractDeploy extends Component<IProps, IState> {
                             <input type="number" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/>
                         </label>
                         <input type="submit" value="Deploy" />
+                    </form>
+                    <form onSubmit={this.handleGetGasEstimate}>
+                        <input type="submit" value="Get gas estimate" />
                     </form>
                 </div>
                 <div className="error_message">

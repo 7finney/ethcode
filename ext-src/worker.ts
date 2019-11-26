@@ -157,10 +157,11 @@ process.on("message", async m => {
   }
   // Deploy
   if(m.command === "deploy-contract") {
-    const { abi, bytecode, gasSupply } = m.payload;
+    const { abi, bytecode, params, gasSupply } = m.payload;
     const inp = {
       abi,
       bytecode,
+      params,
       gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
     }
     const c = {
@@ -183,10 +184,11 @@ process.on("message", async m => {
   }
   // Gas Estimate
   if(m.command === "get-gas-estimate") {
-    const { abi, bytecode, gasSupply } = m.payload;
+    const { abi, bytecode, params } = m.payload;
     const inp = {
       abi,
-      bytecode
+      bytecode,
+      params
     }
     const c = {
       callInterface: {

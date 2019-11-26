@@ -115,14 +115,14 @@ class ReactPanel {
 
     // Handle messages from the webview
     this._panel.webview.onDidReceiveMessage(
+      
       (message: any) => {
-        switch (message.command) {
-          case "version":
-            this.version = message.version;
-          case "run-deploy":
-            this.runDeploy(message.payload);
-          case "run-get-gas-estimate":
-            this.runGetGasEstimate(message.payload);
+        if(message.command === 'version') {
+          this.version = message.version;
+        } else if(message.command === 'run-deploy') {
+          this.runDeploy(message.payload);
+        } else if(message.command === 'run-get-gas-estimate') {
+          this.runGetGasEstimate(message.payload);
         }
       },
       null,
