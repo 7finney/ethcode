@@ -12,12 +12,16 @@ interface IProps {
 
 interface IState {
   gasSupply: number;
-  error: Error;
+  error: Error | null;
 }
 
 class ContractCompiled extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
+    this.state = {
+      gasSupply: 1500000,
+      error: null
+    };
     this.handleDeploy = this.handleDeploy.bind(this);
     this.handleGetGasEstimate = this.handleGetGasEstimate.bind(this);
   }
