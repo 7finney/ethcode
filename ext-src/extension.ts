@@ -137,11 +137,11 @@ class ReactPanel {
   private runDeploy(payload: any) {
     const deployWorker = this.createWorker();
     deployWorker.on("message", (m: any) => {
+      console.log("Deploy message: ");
+      console.dir(m);
       if(m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
-      console.log("Deploy message: ");
-      console.dir(m);
     });
     deployWorker.send({ command: "deploy-contract", payload });
   }

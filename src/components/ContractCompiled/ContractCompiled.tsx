@@ -6,18 +6,22 @@ interface IProps {
   bytecode: any;
   abi: any;
   vscode: any;
+  compiled: any;
+  errors: any;
 }
+
 interface IState {
   gasSupply: number;
-  errors: any
+  error: Error | null;
 }
+
 class ContractCompiled extends Component<IProps, IState> {
-  public state: IState = {
-    gasSupply: 1500000,
-    errors: null
-  };
-  constructor(props: IProps, state: IState) {
+  constructor(props: IProps) {
     super(props);
+    this.state = {
+      gasSupply: 1500000,
+      error: null
+    };
     this.handleDeploy = this.handleDeploy.bind(this);
     this.handleGetGasEstimate = this.handleGetGasEstimate.bind(this);
   }
@@ -35,7 +39,7 @@ class ContractCompiled extends Component<IProps, IState> {
         }
       });
     } catch (err) {
-      this.setState({ errors: err });
+      this.setState({ error: err });
     }
   }
 
@@ -50,7 +54,7 @@ class ContractCompiled extends Component<IProps, IState> {
         }
       });
     } catch (err) {
-      this.setState({ errors: err });
+      this.setState({ error: err });
     }
   }
 
@@ -60,13 +64,12 @@ class ContractCompiled extends Component<IProps, IState> {
   
   public render() {
     const { contractName, bytecode, abi } = this.props;
-    const { gasSupply, errors } = this.state;
+    const { gasSupply, error } = this.state;
     return (
       <div>
         <span className="contract-name inline-block highlight-success">
           Contract Name: {contractName}
         </span>
-
         <div className="byte-code">
           <pre className="large-code">{JSON.stringify(bytecode)}</pre>
         </div>
@@ -87,9 +90,9 @@ class ContractCompiled extends Component<IProps, IState> {
         </div>
         <div>
           {
-            errors &&
+            error &&
             <div>
-              {errors}
+              {error}
             </div>
           }
         </div>
