@@ -199,6 +199,8 @@ process.on("message", async m => {
     const call = client_call_client.RunDeploy(c);
     call.on('data', (data: any) => {
       console.dir(data);
+      // @ts-ignore
+      process.send({ gasEstimate: data.result });
     });
     call.on('end', function() {
       process.exit(0);

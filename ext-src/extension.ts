@@ -151,8 +151,9 @@ class ReactPanel {
       if(m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
+      this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       console.log("Gas estimate message: ");
-      console.dir(m);
+      console.dir(JSON.stringify(m));
     });
     deployWorker.send({ command: "get-gas-estimate", payload });
   }

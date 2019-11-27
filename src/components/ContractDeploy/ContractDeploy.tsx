@@ -8,6 +8,7 @@ interface IProps {
     vscode: any;
     compiled: any;
     error: Error | null;
+    gasEstimate: number;
 }
 interface IState {
     constructorInput: object[];
@@ -19,7 +20,7 @@ interface IState {
 class ContractDeploy extends Component<IProps, IState> {
     public state: IState = {
         constructorInput: [],
-        gasSupply: 1500000,
+        gasSupply: 0,
         inputABI: [],
         error: null
     };
@@ -40,9 +41,12 @@ class ContractDeploy extends Component<IProps, IState> {
         }
     }
     componentDidUpdate(prevProps: any) {
-        if(this.props.error !== prevProps.error) {
-          const { error } = this.props;
-          if(error) this.setState({ error });
+        const { gasEstimate, error } = this.props;
+        if(gasEstimate !== prevProps.gasEstimate || error !== prevProps.error) {
+          if(error) this.setState({ error, gasSupply: gasEstimate });
+          else {
+              this.setState({ gasSupply: gasEstimate });
+          }
         }
     }
     private handleDeploy() {
@@ -115,7 +119,11 @@ class ContractDeploy extends Component<IProps, IState> {
                         </div>
                         <label>
                             Gas Supply:
-                            <input type="number" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/>
+                            {
+                                (gasSupply > 0) ?
+                                <input type="number" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
+                                <input type="number" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
+                            }
                         </label>
                         <input type="submit" value="Deploy" />
                     </form>

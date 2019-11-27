@@ -27,6 +27,7 @@ interface IState {
   fileName: any;
   processMessage: string;
   availableVersions: any;
+  gasEstimate: number;
 }
 interface IOpt {
   value: string;
@@ -44,7 +45,8 @@ class App extends Component<IProps, IState> {
       error: null,
       fileName: "",
       processMessage: "",
-      availableVersions: ""
+      availableVersions: "",
+      gasEstimate: 0
     };
   }
   public componentDidMount() {
@@ -99,7 +101,10 @@ class App extends Component<IProps, IState> {
       if(data.errors) {
         this.setState({ error: data.errors });
       }
-
+      if(data.gasEstimate) {
+        // @ts-ignore
+        this.setState({ gasEstimate: data.gasEstimate });
+      }
       // TODO: handle error message
     });
   }
@@ -121,8 +126,10 @@ class App extends Component<IProps, IState> {
       fileName,
       processMessage,
       availableVersions,
-      error
+      error,
+      gasEstimate
     } = this.state;
+    
     
     return (
       <div className="App">
@@ -224,6 +231,7 @@ class App extends Component<IProps, IState> {
                           vscode={vscode}
                           compiled={compiled}
                           error={error}
+                          gasEstimate={gasEstimate}
                         />
                       }
                     </div>
