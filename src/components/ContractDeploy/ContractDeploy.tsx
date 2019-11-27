@@ -28,7 +28,7 @@ class ContractDeploy extends Component<IProps, IState> {
         this.handleDeploy = this.handleDeploy.bind(this);
         this.handleGetGasEstimate = this.handleGetGasEstimate.bind(this);
         this.handleChange = this.handleChange.bind(this);
-        this.constructorInput = this.constructorInput.bind(this);    }
+        this.handleConstructorInputChange = this.handleConstructorInputChange.bind(this);    }
 
     componentDidMount() {
         const { abi } = this.props;
@@ -77,13 +77,13 @@ class ContractDeploy extends Component<IProps, IState> {
     private handleChange(event: any) {
         this.setState({ gasSupply: event.target.value });
     }
-    private constructorInput(event: any) {
+    private handleConstructorInputChange(event: any) {
         const { constructorInput } = this.state;
         const item = constructorInput[event.target.id];
         // @ts-ignore
         item['value'] = event.target.value;
         constructorInput[event.target.id] = item;
-        this.setState({ constructorInput: constructorInput });
+        this.setState({ constructorInput });
     }
     public render() {
         const { gasSupply, error, constructorInput } = this.state;
@@ -105,7 +105,7 @@ class ContractDeploy extends Component<IProps, IState> {
                                                     {x.name}:
                                                     {/* 
                                                         // @ts-ignore */}
-                                                    <input type={x.type} id={index} name={x.name} onChange={(e) => this.constructorInput(e)}/>
+                                                    <input type={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)}/>
                                                 </label>
                                             )
                                         })
