@@ -163,7 +163,7 @@ process.on("message", async m => {
       bytecode,
       params,
       gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
-    }
+    };
     const c = {
       callInterface: {
         command: 'deploy-contract',
@@ -173,6 +173,8 @@ process.on("message", async m => {
     const call = client_call_client.RunDeploy(c);
     call.on('data', (data: any) => {
       console.dir(data);
+      // @ts-ignore
+      process.send({ deployedResult: data.result });
     });
     call.on('end', function() {
       process.exit(0);
@@ -197,11 +199,7 @@ process.on("message", async m => {
       }
     };
     const call = client_call_client.RunDeploy(c);
-    if(call)console.log("llllllllllllllllllllllllllll");
-    
     call.on('data', (data: any) => {
-      console.log("edeeeeeeeeeeeeeeeeeeeeeeeeeeee");
-      
       console.dir(data);
       // @ts-ignore
       process.send({ gasEstimate: data.result });

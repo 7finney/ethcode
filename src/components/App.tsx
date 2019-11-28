@@ -28,6 +28,7 @@ interface IState {
   processMessage: string;
   availableVersions: any;
   gasEstimate: number;
+  deployedResult: object;
 }
 interface IOpt {
   value: string;
@@ -46,7 +47,8 @@ class App extends Component<IProps, IState> {
       fileName: "",
       processMessage: "",
       availableVersions: "",
-      gasEstimate: 0
+      gasEstimate: 0,
+      deployedResult: {}
     };
   }
   public componentDidMount() {
@@ -105,8 +107,12 @@ class App extends Component<IProps, IState> {
         // @ts-ignore
         this.setState({ gasEstimate: data.gasEstimate });
       }
-      console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-      console.dir(JSON.stringify(data));
+      if(data.deployedResult) {
+        console.log("hhhhhhhhhhhhhhhhhhhhhhhh")
+        console.dir(JSON.stringify(data.deployedResult.deployedResult));
+        
+        this.setState({ deployedResult: data.deployedResult.deployedResult });
+      }
       // TODO: handle error message
     });
   }
@@ -129,7 +135,8 @@ class App extends Component<IProps, IState> {
       processMessage,
       availableVersions,
       error,
-      gasEstimate
+      gasEstimate,
+      deployedResult
     } = this.state;
     
     
@@ -234,6 +241,7 @@ class App extends Component<IProps, IState> {
                           compiled={compiled}
                           error={error}
                           gasEstimate={gasEstimate}
+                          deployedResult={deployedResult}
                         />
                       }
                     </div>

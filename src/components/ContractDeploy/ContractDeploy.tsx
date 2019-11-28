@@ -9,20 +9,21 @@ interface IProps {
     compiled: any;
     error: Error | null;
     gasEstimate: number;
+    deployedResult: object;
 }
 interface IState {
     constructorInput: object[];
     gasSupply: number;
-    inputABI: any;
     error: Error | null;
+    deployed: object;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
     public state: IState = {
         constructorInput: [],
         gasSupply: 0,
-        inputABI: [],
-        error: null
+        error: null,
+        deployed: {}
     };
     constructor(props: IProps, state: IState) {
         super(props);
@@ -41,17 +42,22 @@ class ContractDeploy extends Component<IProps, IState> {
         }
     }
     componentDidUpdate(prevProps: any) {
-        const { gasEstimate, error } = this.props;
-        if(gasEstimate !== prevProps.gasEstimate || error !== prevProps.error) {
-          if(error) this.setState({ error, gasSupply: gasEstimate });
-          else {
-              this.setState({ gasSupply: gasEstimate });
-          }
+        const { gasEstimate, deployedResult, error } = this.props;
+        // const { deployed } = this.state;
+        if(error !== prevProps.error) {
+            if(error) this.setState({ error });
         }
+        else if(deployedResult !== prevProps.deployedResult) {
+            this.setState({ deployed: deployedResult });
+        }
+        else if((this.state.gasSupply == 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
+            this.setState({ gasSupply: gasEstimate });
+        }
+
     }
     private handleDeploy() {
         const { vscode, bytecode, abi } = this.props;
-        const { gasSupply, inputABI, constructorInput } = this.state;
+        const { gasSupply, constructorInput } = this.state;
         vscode.postMessage({
           command: "run-deploy",
           payload: {
@@ -90,8 +96,7 @@ class ContractDeploy extends Component<IProps, IState> {
         this.setState({ constructorInput });
     }
     public render() {
-        const { gasSupply, error, constructorInput } = this.state;
-        
+        const { gasSupply, error, constructorInput, deployed } = this.state;
         return(
             <div>
                 <div>
@@ -130,6 +135,19 @@ class ContractDeploy extends Component<IProps, IState> {
                     <form onSubmit={this.handleGetGasEstimate}>
                         <input type="submit" value="Get gas estimate" />
                     </form>
+                </div>
+                <div className="error_message">
+                    {
+                        Object.entries(deployed).length !== 0 &&
+                        <div>
+                            <span className="contract-name inline-block highlight-success">
+                                Transaction Receipt:
+                            </span>
+                            <div>
+                                <pre className="large-code">{JSON.stringify(deployed)}</pre>
+                            </div>
+                        </div>
+                    }
                 </div>
                 <div className="error_message">
                 {

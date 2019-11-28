@@ -142,20 +142,22 @@ class ReactPanel {
       if(m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
+      else {
+        this._panel.webview.postMessage({ deployedResult: m });
+      }
     });
     deployWorker.send({ command: "deploy-contract", payload });
   }
   private runGetGasEstimate(payload: any) {
-    console.log("ppppppppppppppppppppppppppp");
     const deployWorker = this.createWorker();
-    if(deployWorker) console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhh");
     
     deployWorker.on("message", (m: any) => {
-      console.log("ggggggggggggggggggggggggggggg");
       if(m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
-      this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
+      else {
+        this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
+      }
       console.log("Gas estimate message: ");
       console.dir(JSON.stringify(m));
     });
