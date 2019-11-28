@@ -49,8 +49,5 @@
   .button_group {
     display: flex;
     justify-content: center;
-  }
-
-  .deploy_btn {
-    margin-right: 10px;
+    margin-bottom: 10px;
   }

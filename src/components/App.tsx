@@ -108,9 +108,6 @@ class App extends Component<IProps, IState> {
         this.setState({ gasEstimate: data.gasEstimate });
       }
       if(data.deployedResult) {
-        console.log("hhhhhhhhhhhhhhhhhhhhhhhh")
-        console.dir(JSON.stringify(data.deployedResult.deployedResult));
-        
         this.setState({ deployedResult: data.deployedResult.deployedResult });
       }
       // TODO: handle error message

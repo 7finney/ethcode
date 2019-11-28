@@ -43,9 +43,8 @@ class ContractDeploy extends Component<IProps, IState> {
     }
     componentDidUpdate(prevProps: any) {
         const { gasEstimate, deployedResult, error } = this.props;
-        // const { deployed } = this.state;
         if(error !== prevProps.error) {
-            if(error) this.setState({ error });
+            this.setState({ error: error });
         }
         else if(deployedResult !== prevProps.deployedResult) {
             this.setState({ deployed: deployedResult });
@@ -58,6 +57,7 @@ class ContractDeploy extends Component<IProps, IState> {
     private handleDeploy() {
         const { vscode, bytecode, abi } = this.props;
         const { gasSupply, constructorInput } = this.state;
+        this.setState({ error: null });
         vscode.postMessage({
           command: "run-deploy",
           payload: {
@@ -131,16 +131,14 @@ class ContractDeploy extends Component<IProps, IState> {
                             }
                         </div>
                         <div className="button_group">
-                            <div className="deploy_btn">
-                                <input type="submit" value="Deploy" />
-                            </div>
-                            <div>
-                                <form onSubmit={this.handleGetGasEstimate}>
-                                    <input type="submit" value="Get gas estimate" />
-                                </form>
-                            </div>
+                            <input type="submit" value="Deploy" />
                         </div>
                     </form>
+                    <div className="button_group">
+                        <form onSubmit={this.handleGetGasEstimate}>
+                            <input type="submit" value="Get gas estimate" />
+                        </form>
+                    </div>
                 </div>
                 <div className="error_message">
                     {
@@ -150,7 +148,7 @@ class ContractDeploy extends Component<IProps, IState> {
                                 Transaction Receipt:
                             </span>
                             <div>
-                                <pre className="large-code">{JSON.stringify(deployed)}</pre>
+                                <pre className="large-code">{deployed}</pre>
                             </div>
                         </div>
                     }
