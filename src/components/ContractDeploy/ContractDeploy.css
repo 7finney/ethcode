@@ -15,14 +15,42 @@
   }
 
   .form-container {
-    margin-bottom: 5px;
-    margin-inline-end: 5px;
+    margin: 35px 0;
+    max-height: 25vh;
+    overflow: scroll;
   }
   
   .contract-name {
-      text-align: left;
+    text-align: left;
   }
   
   .error_message {
     margin-top: 5px;
+  }
+
+  .constructorInput {
+    margin: 10px 0 !important;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .label_name {
+    width: 40%;
+  }
+  .input {
+    width: 60%;
+  }
+
+  .gas_supply {
+    margin: 20px 10px;
+    display: flex;
+    justify-content: space-around;
+  }
+  .button_group {
+    display: flex;
+    justify-content: center;
+  }
+
+  .deploy_btn {
+    margin-right: 10px;
   }

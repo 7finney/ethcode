@@ -165,25 +165,7 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
-        {message.map((m, i) => {
-          return (
-            <div key={i}>
-              {m.severity === "warning" && (
-                <pre className="error-message yellow-text">
-                  {m.formattedMessage}
-                </pre>
-              )}
-              {m.severity === "error" && (
-                <pre className="error-message red-text">
-                  {m.formattedMessage}
-                </pre>
-              )}
-              {!m.severity && (
-                <pre className="error-message">{m.formattedMessage}</pre>
-              )}
-            </div>
-          );
-        })}{" "}
+        
         {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
           {compiled && fileName && (
@@ -251,6 +233,27 @@ class App extends Component<IProps, IState> {
               }
             </div>
           )}
+          <div className="err_warning_container">
+            {message.map((m, i) => {
+              return (
+                <div key={i}>
+                  {m.severity === "warning" && (
+                    <pre className="error-message yellow-text">
+                      {m.formattedMessage}
+                    </pre>
+                  )}
+                  {m.severity === "error" && (
+                    <pre className="error-message red-text">
+                      {m.formattedMessage}
+                    </pre>
+                  )}
+                  {!m.severity && (
+                    <pre className="error-message">{m.formattedMessage}</pre>
+                  )}
+                </div>
+              );
+            })}{" "}
+          </div>
         </p>
         <pre className="processMessage">{processMessage}</pre>
       </div>

@@ -108,32 +108,38 @@ class ContractDeploy extends Component<IProps, IState> {
                                     {
                                         constructorInput.map((x: object, index) => {
                                             return(
-                                                <label>
+                                                <div className="constructorInput">
                                                     {/* 
                                                         // @ts-ignore */}
-                                                    {x.name}:
+                                                    <label className="label_name">{x.name}:</label>
                                                     {/* 
                                                         // @ts-ignore */}
-                                                    <input type={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)}/>
-                                                </label>
+                                                    <input className="input" type={x.type} placeholder={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)}/>
+                                                </div>
                                             )
                                         })
                                     }
                                 </div>
                             }
                         </div>
-                        <label>
-                            Gas Supply:
+                        <div className="gas_supply">
+                            <label className="label_name">Gas Supply:</label>
                             {
                                 (gasSupply > 0) ?
-                                <input type="number" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
-                                <input type="number" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
+                                <input type="number" className="input" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
+                                <input type="number" className="input" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
                             }
-                        </label>
-                        <input type="submit" value="Deploy" />
-                    </form>
-                    <form onSubmit={this.handleGetGasEstimate}>
-                        <input type="submit" value="Get gas estimate" />
+                        </div>
+                        <div className="button_group">
+                            <div className="deploy_btn">
+                                <input type="submit" value="Deploy" />
+                            </div>
+                            <div>
+                                <form onSubmit={this.handleGetGasEstimate}>
+                                    <input type="submit" value="Get gas estimate" />
+                                </form>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div className="error_message">
