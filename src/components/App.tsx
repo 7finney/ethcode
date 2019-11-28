@@ -105,6 +105,8 @@ class App extends Component<IProps, IState> {
         // @ts-ignore
         this.setState({ gasEstimate: data.gasEstimate });
       }
+      console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+      console.dir(JSON.stringify(data));
       // TODO: handle error message
     });
   }
