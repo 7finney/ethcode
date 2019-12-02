@@ -8,6 +8,7 @@ import {
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
+import ContractDeploy from "./ContractDeploy";
 import Dropdown from "./Dropdown";
 import CompilerVersionSelector from "./CompilerVersionSelector";
 import TestDisplay from "./TestDisplay";
@@ -26,6 +27,8 @@ interface IState {
   fileName: any;
   processMessage: string;
   availableVersions: any;
+  gasEstimate: number;
+  deployedResult: object;
 }
 interface IOpt {
   value: string;
@@ -35,8 +38,6 @@ interface IOpt {
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 class App extends Component<IProps, IState> {
   public state: IState;
-  // public props: IProps;
-
   constructor(props: IProps) {
     super(props);
     this.state = {
@@ -45,7 +46,9 @@ class App extends Component<IProps, IState> {
       error: null,
       fileName: "",
       processMessage: "",
-      availableVersions: ""
+      availableVersions: "",
+      gasEstimate: 0,
+      deployedResult: {}
     };
   }
   public componentDidMount() {
@@ -97,7 +100,16 @@ class App extends Component<IProps, IState> {
       if (data._importFileCb) {
         const result = data.result;
       }
-
+      if(data.errors) {
+        this.setState({ error: data.errors });
+      }
+      if(data.gasEstimate) {
+        // @ts-ignore
+        this.setState({ gasEstimate: data.gasEstimate });
+      }
+      if(data.deployedResult) {
+        this.setState({ deployedResult: data.deployedResult.deployedResult });
+      }
       // TODO: handle error message
     });
   }
@@ -118,9 +130,13 @@ class App extends Component<IProps, IState> {
       message,
       fileName,
       processMessage,
-      availableVersions
+      availableVersions,
+      error,
+      gasEstimate,
+      deployedResult
     } = this.state;
-
+    
+    
     return (
       <div className="App">
         <header className="App-header">
@@ -146,25 +162,7 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
-        {message.map((m, i) => {
-          return (
-            <div key={i}>
-              {m.severity === "warning" && (
-                <pre className="error-message yellow-text">
-                  {m.formattedMessage}
-                </pre>
-              )}
-              {m.severity === "error" && (
-                <pre className="error-message red-text">
-                  {m.formattedMessage}
-                </pre>
-              )}
-              {!m.severity && (
-                <pre className="error-message">{m.formattedMessage}</pre>
-              )}
-            </div>
-          );
-        })}{" "}
+        
         {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
           {compiled && fileName && (
@@ -187,6 +185,9 @@ class App extends Component<IProps, IState> {
                           contractName={contractName}
                           bytecode={bytecode}
                           abi={ContractABI}
+                          vscode={vscode}
+                          compiled={compiled}
+                          errors={error}
                         />
                       }
                     </div>
@@ -195,6 +196,61 @@ class App extends Component<IProps, IState> {
               )}
             </div>
           )}
+          {compiled && fileName && (
+            <div className="compiledOutput">
+              {
+                Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                  const bytecode =
+                      compiled.contracts[fileName][contractName].evm.bytecode
+                        .object;
+                    const ContractABI =
+                      compiled.contracts[fileName][contractName].abi;
+                  return(
+                    <div
+                      id={contractName}
+                      className="contract-container"
+                      key={i}
+                    >
+                      {
+                        <ContractDeploy
+                          contractName={contractName}
+                          bytecode={bytecode}
+                          abi={ContractABI}
+                          vscode={vscode}
+                          compiled={compiled}
+                          error={error}
+                          gasEstimate={gasEstimate}
+                          deployedResult={deployedResult}
+                        />
+                      }
+                    </div>
+                  );
+
+                })
+              }
+            </div>
+          )}
+          <div className="err_warning_container">
+            {message.map((m, i) => {
+              return (
+                <div key={i}>
+                  {m.severity === "warning" && (
+                    <pre className="error-message yellow-text">
+                      {m.formattedMessage}
+                    </pre>
+                  )}
+                  {m.severity === "error" && (
+                    <pre className="error-message red-text">
+                      {m.formattedMessage}
+                    </pre>
+                  )}
+                  {!m.severity && (
+                    <pre className="error-message">{m.formattedMessage}</pre>
+                  )}
+                </div>
+              );
+            })}{" "}
+          </div>
         </p>
         <pre className="processMessage">{processMessage}</pre>
       </div>

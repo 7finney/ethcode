@@ -7,7 +7,7 @@ import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
-const PROTO_PATH = path.join(__dirname, '../services/remix-tests.proto');
+const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
   {
     keepCase: true,
@@ -18,10 +18,22 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH,
   }
 );
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
+
+// remix-tests grpc
 const remix_tests_pb = protoDescriptor.remix_tests;
 let remix_tests_client: any;
 try {
   remix_tests_client = new remix_tests_pb.RemixTestsService('api.ethcode.dev:50051', grpc.credentials.createInsecure());
+} catch (e) {
+  // @ts-ignore
+  process.send({ error: e });
+}
+
+// client-call grpc
+const client_call_pb = protoDescriptor.eth_client_call;
+let client_call_client: any;
+try {
+  client_call_client = new client_call_pb.ClientCallService('clientcall.localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -142,5 +154,60 @@ process.on("message", async m => {
     call.on('end', function() {
       process.exit(0);
     });
+  }
+  // Deploy
+  if(m.command === "deploy-contract") {
+    const { abi, bytecode, params, gasSupply } = m.payload;
+    const inp = {
+      abi,
+      bytecode,
+      params,
+      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
+    };
+    const c = {
+      callInterface: {
+        command: 'deploy-contract',
+        payload: JSON.stringify(inp)
+      }
+    };
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ deployedResult: data.result });
+    });
+    call.on('end', function() {
+      process.exit(0);
+    });
+    call.on('error', function(err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    })
+  }
+  // Gas Estimate
+  if(m.command === "get-gas-estimate") {
+    const { abi, bytecode, params } = m.payload;
+    const inp = {
+      abi,
+      bytecode,
+      params
+    }
+    const c = {
+      callInterface: {
+        command: 'get-gas-estimate',
+        payload: JSON.stringify(inp)
+      }
+    };
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ gasEstimate: data.result });
+    });
+    call.on('end', function() {
+      process.exit(0);
+    });
+    call.on('error', function(err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    })
   }
 });

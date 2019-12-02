@@ -87,6 +87,17 @@ class ReactPanel {
 		}
 	}
 
+	private createWorker(): ChildProcess {
+		return fork(path.join(__dirname, "worker.js"), [], {
+			execArgv: ["--inspect=" + (process.debugPort + 1)]
+		});
+	}
+	private createVyperWorker(): ChildProcess {
+		return fork(path.join(__dirname, "vyp-worker.js"), [], {
+			execArgv: ["--inspect=" + (process.debugPort + 1)]
+		});
+	}
+
 	private constructor(extensionPath: string, column: vscode.ViewColumn) {
 		this._extensionPath = extensionPath;
 
@@ -115,15 +126,19 @@ class ReactPanel {
 
 		// Handle messages from the webview
 		this._panel.webview.onDidReceiveMessage(
+      
 			(message: any) => {
-				switch (message.command) {
-					case "version":
-						this.version = message.version;
-				}
+			  if(message.command === 'version') {
+				this.version = message.version;
+			  } else if(message.command === 'run-deploy') {
+				this.runDeploy(message.payload);
+			  } else if(message.command === 'run-get-gas-estimate') {
+				this.runGetGasEstimate(message.payload);
+			  }
 			},
 			null,
 			this._disposables
-		);
+		  );
 	}
 
 	private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
@@ -145,7 +160,6 @@ class ReactPanel {
 		const solcWorker = this.createWorker();
 		console.dir("WorkerID: ", solcWorker.pid);
 		console.dir("Compiling with solidity version ", this.version);
-
 		// Reset Components State before compilation
 		this._panel.webview.postMessage({ processMessage: "Compiling..." });
 		solcWorker.send({
@@ -221,17 +235,36 @@ class ReactPanel {
 			}
 		});
 	}
-	private createWorker(): ChildProcess {
-		return fork(path.join(__dirname, "worker.js"), [], {
-			execArgv: ["--inspect=" + (process.debugPort + 1)]
+  	private runDeploy(payload: any) {
+		const deployWorker = this.createWorker();
+		deployWorker.on("message", (m: any) => {
+		console.log("Deploy message: ");
+		console.dir(m);
+		if(m.error) {
+			this._panel.webview.postMessage({ errors: m.error });
+		}
+		else {
+			this._panel.webview.postMessage({ deployedResult: m });
+		}
 		});
-	}
-	private createVyperWorker(): ChildProcess {
-		return fork(path.join(__dirname, "vyp-worker.js"), [], {
-			execArgv: ["--inspect=" + (process.debugPort + 1)]
+		deployWorker.send({ command: "deploy-contract", payload });
+  	}
+  	private runGetGasEstimate(payload: any) {
+		const deployWorker = this.createWorker();
+		
+		deployWorker.on("message", (m: any) => {
+		if(m.error) {
+			this._panel.webview.postMessage({ errors: m.error });
+		}
+		else {
+			this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
+		}
+		console.log("Gas estimate message: ");
+		console.dir(JSON.stringify(m));
 		});
-	}
-	public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
+		deployWorker.send({ command: "get-gas-estimate", payload });
+  	}
+ 	public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
 		// send JSON serializable compiled data
 		const sources: ISources = {};
 		if (fn) {
