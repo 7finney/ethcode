@@ -75,10 +75,7 @@ class ReactPanel {
       }
     } else {
       try {
-        ReactPanel.currentPanel = new ReactPanel(
-          extensionPath,
-          column || vscode.ViewColumn.One
-        );
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel.getCompilerVersion();
       } catch (error) {
@@ -91,10 +88,7 @@ class ReactPanel {
     this._extensionPath = extensionPath;
 
     // Create and show a new webview panel
-    this._panel = vscode.window.createWebviewPanel(
-      ReactPanel.viewType,
-      "ETHcode",
-      column,
+    this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "ETHcode", column,
       {
         // Enable javascript in the webview
         enableScripts: true,
@@ -119,6 +113,8 @@ class ReactPanel {
         switch (message.command) {
           case "version":
             this.version = message.version;
+          case "debugTransaction":
+            this.debug(message.txHash);
         }
       },
       null,
@@ -131,11 +127,17 @@ class ReactPanel {
       execArgv: ["--inspect=" + (process.debugPort + 1)]
     });
   }
-  public sendCompiledContract(
-    context: vscode.ExtensionContext,
-    editorContent: string | undefined,
-    fn: string | undefined
-  ) {
+  private debug(txHash: string): void {
+    const debugWorker = this.createWorker();
+    console.dir("WorkerID: ", debugWorker.pid);
+    debugWorker.on("message", (m: any) => {
+      console.log("Debug message: ");
+      console.dir(m.debugResp);
+      this._panel.webview.postMessage({ txTrace: m.debugResp });
+    });
+    debugWorker.send({ command: "debug-transaction", payload: txHash });
+  }
+  public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
     // send JSON serializable compiled data
     const sources: ISources = {};
     if (fn) {
@@ -201,7 +203,7 @@ class ReactPanel {
     solcWorker.on("exit", (code: number, signal: string) => {
       console.log(
         "%c Compile worker process exited with " +
-          `code ${code} and signal ${signal}`,
+        `code ${code} and signal ${signal}`,
         "background: rgba(36, 194, 203, 0.3); color: #EF525B"
       );
       this._panel.webview.postMessage({
@@ -210,10 +212,7 @@ class ReactPanel {
     });
   }
 
-  public sendTestContract(
-    editorContent: string | undefined,
-    fn: string | undefined
-  ) {
+  public sendTestContract(editorContent: string | undefined, fn: string | undefined) {
     const sources: ISources = {};
     if (fn) {
       sources[fn] = {
@@ -236,9 +235,9 @@ class ReactPanel {
           payload: JSON.stringify(sources)
         });
       }
-      if(m.utResp) {
+      if (m.utResp) {
         const res = JSON.parse(m.utResp.result);
-        if(res.type) {
+        if (res.type) {
           this._panel.webview.postMessage({ _testCallback: res });
         } else {
           this._panel.webview.postMessage({ _finalCallback: res });
@@ -289,7 +288,7 @@ class ReactPanel {
     solcWorker.on("exit", (code: number, signal: string) => {
       console.log(
         "%c getVersion worker process exited with " +
-          `code ${code} and signal ${signal}`,
+        `code ${code} and signal ${signal}`,
         "background: rgba(36, 194, 203, 0.3); color: #EF525B"
       );
       this._panel.webview.postMessage({
@@ -327,10 +326,10 @@ class ReactPanel {
         <link rel="stylesheet" type="text/css" href="${styleUri}">
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
         <base href="${vscode.Uri.file(
-          path.join(this._extensionPath, "build")
-        ).with({
-          scheme: "vscode-resource"
-        })}/">
+      path.join(this._extensionPath, "build")
+    ).with({
+      scheme: "vscode-resource"
+    })}/">
       </head>
 
       <body>

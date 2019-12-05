@@ -6,6 +6,7 @@ interface IProps {
   bytecode: any;
   abi: any;
 }
+
 class ContractCompiled extends Component<IProps> {
   constructor(props: IProps) {
     super(props);

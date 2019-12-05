@@ -1,0 +1,36 @@
+ul {
+    overflow-y: auto;
+}
+
+li {
+    list-style-type: none;
+}
+
+.opDiv {
+    background-color: black;
+    height: 200px;
+    overflow: scroll;
+}
+
+.selected {
+    color: black;
+    background-color:white;
+}
+
+.row {
+    width: 100%;
+    padding: 10px;
+    display: flex;
+}
+
+.title {
+    padding-right: 20px;
+}
+.value {
+    overflow: auto;
+    white-space: nowrap;
+    background-color: #000;
+    max-width: 1000px;
+    padding: 5px;
+    height: 40px;
+}
