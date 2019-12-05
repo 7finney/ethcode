@@ -32,18 +32,19 @@ try {
   process.send({ error: e });
 }
 
-// client-call grpc
-const client_call_pb = protoDescriptor.eth_client_call;
-let client_call_client: any;
+// remix-debug grpc
 try {
-  client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
+  remix_debug_client = new remix_debug_pb.RemixDebugService('remixdebug.ethcode.dev:50052', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
 }
 
+// client-call grpc
+const client_call_pb = protoDescriptor.eth_client_call;
+let client_call_client: any;
 try {
-  remix_debug_client = new remix_debug_pb.RemixDebugService('localhost:50052', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -237,6 +238,6 @@ process.on("message", async m => {
     call.on('error', function(err: Error) {
       // @ts-ignore
       process.send({ "error": err });
-    })
+    });
   }
 });

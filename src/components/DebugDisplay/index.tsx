@@ -98,7 +98,7 @@ class DebugDisplay extends Component<IProps, IState> {
                             <div>
                                 <ul className="opDiv">
                                     { txTrace.map((obj: any, index: any) => {
-                                        if (index == indx)
+                                        if (index === indx)
                                             return <li className="selected" key={index} id={index}>{obj.op}</li>;
                                         else 
                                             return <li key={index} id={index}>{obj.op}</li>;

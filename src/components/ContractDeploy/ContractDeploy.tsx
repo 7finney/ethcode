@@ -35,7 +35,7 @@ class ContractDeploy extends Component<IProps, IState> {
     componentDidMount() {
         const { abi } = this.props;
         for (var i in abi ) {
-            if(abi[i].type == 'constructor' && abi[i].inputs.length > 0) {
+            if(abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
                 this.setState({ constructorInput: JSON.parse(JSON.stringify(abi[i].inputs)) });
                 break;
             }
@@ -49,7 +49,7 @@ class ContractDeploy extends Component<IProps, IState> {
         else if(deployedResult !== prevProps.deployedResult) {
             this.setState({ deployed: deployedResult });
         }
-        else if((this.state.gasSupply == 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
+        else if((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
             this.setState({ gasSupply: gasEstimate });
         }
 
