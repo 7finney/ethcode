@@ -12,6 +12,7 @@ import ContractDeploy from "./ContractDeploy";
 import Dropdown from "./Dropdown";
 import CompilerVersionSelector from "./CompilerVersionSelector";
 import TestDisplay from "./TestDisplay";
+import DebugDisplay from "./DebugDisplay";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -29,6 +30,7 @@ interface IState {
   availableVersions: any;
   gasEstimate: number;
   deployedResult: object;
+  txTrace: object
 }
 interface IOpt {
   value: string;
@@ -48,7 +50,8 @@ class App extends Component<IProps, IState> {
       processMessage: "",
       availableVersions: "",
       gasEstimate: 0,
-      deployedResult: {}
+      deployedResult: {},
+      txTrace: {}
     };
   }
   public componentDidMount() {
@@ -110,6 +113,10 @@ class App extends Component<IProps, IState> {
       if(data.deployedResult) {
         this.setState({ deployedResult: data.deployedResult.deployedResult });
       }
+      if (data.txTrace) {
+        this.setState({ txTrace: data.txTrace });
+      }
+
       // TODO: handle error message
     });
   }
@@ -133,7 +140,8 @@ class App extends Component<IProps, IState> {
       availableVersions,
       error,
       gasEstimate,
-      deployedResult
+      deployedResult,
+      txTrace
     } = this.state;
     
     
@@ -150,6 +158,7 @@ class App extends Component<IProps, IState> {
             <pre className="hot-keys">ctrl+alt+t</pre> - Run unit tests
           </p>
         </div>
+        <DebugDisplay vscode={vscode} txTrace={txTrace}/>
         {availableVersions && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}

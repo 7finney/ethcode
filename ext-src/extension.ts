@@ -69,6 +69,7 @@ class ReactPanel {
 				ReactPanel.currentPanel.getCompilerVersion();
 				ReactPanel.currentPanel.version = "latest";
 
+<<<<<<< HEAD
 				ReactPanel.currentPanel._panel.reveal(column);
 			} catch (error) {
 				console.error(error);
@@ -86,6 +87,22 @@ class ReactPanel {
 			}
 		}
 	}
+=======
+        ReactPanel.currentPanel._panel.reveal(column);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      try {
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+        ReactPanel.currentPanel.version = "latest";
+        ReactPanel.currentPanel.getCompilerVersion();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+>>>>>>> master
 
 	private createWorker(): ChildProcess {
 		return fork(path.join(__dirname, "worker.js"), [], {
@@ -98,8 +115,16 @@ class ReactPanel {
 		});
 	}
 
+<<<<<<< HEAD
 	private constructor(extensionPath: string, column: vscode.ViewColumn) {
 		this._extensionPath = extensionPath;
+=======
+    // Create and show a new webview panel
+    this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "ETHcode", column,
+      {
+        // Enable javascript in the webview
+        enableScripts: true,
+>>>>>>> master
 
 		// Create and show a new webview panel
 		this._panel = vscode.window.createWebviewPanel(
@@ -120,6 +145,7 @@ class ReactPanel {
 		// Set the webview's initial html content
 		this._panel.webview.html = this._getHtmlForWebview();
 
+<<<<<<< HEAD
 		// Listen for when the panel is disposed
 		// This happens when the user closes the panel or when the panel is closed programatically
 		this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
@@ -140,6 +166,64 @@ class ReactPanel {
 			this._disposables
 		  );
 	}
+=======
+    // Handle messages from the webview
+    this._panel.webview.onDidReceiveMessage(
+      (message: any) => {
+        switch (message.command) {
+          case "version":
+            this.version = message.version;
+          case "debugTransaction":
+            this.debug(message.txHash);
+        }
+      },
+      null,
+      this._disposables
+    );
+  }
+
+  private createWorker(): ChildProcess {
+    return fork(path.join(__dirname, "worker.js"), [], {
+      execArgv: ["--inspect=" + (process.debugPort + 1)]
+    });
+  }
+  private debug(txHash: string): void {
+    const debugWorker = this.createWorker();
+    console.dir("WorkerID: ", debugWorker.pid);
+    debugWorker.on("message", (m: any) => {
+      console.log("Debug message: ");
+      console.dir(m.debugResp);
+      this._panel.webview.postMessage({ txTrace: m.debugResp });
+    });
+    debugWorker.send({ command: "debug-transaction", payload: txHash });
+  }
+  public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
+    // send JSON serializable compiled data
+    const sources: ISources = {};
+    if (fn) {
+      sources[fn] = {
+        content: editorContent
+      };
+      context.workspaceState.update("sources", JSON.stringify(sources));
+    }
+    var input = {
+      language: "Solidity",
+      sources,
+      settings: {
+        outputSelection: {
+          "*": {
+            "*": ["*"]
+          }
+        }
+      }
+    };
+    // child_process won't work because of debugging issue if launched with F5
+    // child_process will work when launched with ctrl+F5
+    // more on this - https://github.com/Microsoft/vscode/issues/40875
+    const solcWorker = this.createWorker();
+    console.dir("WorkerID: ", solcWorker.pid);
+    console.dir("Compiling with solidity version ", this.version);
+>>>>>>> master
 
 	private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
 		// solidity compiler code goes bellow
@@ -183,6 +267,7 @@ class ReactPanel {
 				// console.dir(JSON.stringify(sources));
 				context.workspaceState.update("sources", JSON.stringify(sources));
 
+<<<<<<< HEAD
 				this._panel.webview.postMessage({ compiled: m.compiled, sources });
 				solcWorker.kill();
 			}
@@ -211,6 +296,70 @@ class ReactPanel {
 		console.log("invoked vyper compiler");
 
 		// TODO: vyper compiler code goes bellow, as follows
+=======
+        this._panel.webview.postMessage({ compiled: m.compiled, sources });
+        solcWorker.kill();
+      }
+      if (m.processMessage) {
+        this._panel.webview.postMessage({ processMessage: m.processMessage });
+      }
+    });
+    solcWorker.on("error", (error: Error) => {
+      console.log(
+        "%c Compile worker process exited with error" + `${error.message}`,
+        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+      );
+    });
+    solcWorker.on("exit", (code: number, signal: string) => {
+      console.log(
+        "%c Compile worker process exited with " +
+        `code ${code} and signal ${signal}`,
+        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+      );
+      this._panel.webview.postMessage({
+        message: `Error code ${code} : Error signal ${signal}`
+      });
+    });
+  }
+
+  public sendTestContract(editorContent: string | undefined, fn: string | undefined) {
+    const sources: ISources = {};
+    if (fn) {
+      sources[fn] = {
+        content: editorContent
+      };
+    }
+    const solcWorker = this.createWorker();
+    this._panel.webview.postMessage({ resetTestState: "resetTestState" });
+    this._panel.webview.postMessage({
+      processMessage: "Running unit tests..."
+    });
+    solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
+    solcWorker.on("message", (m: any) => {
+      if (m.data && m.path) {
+        sources[m.path] = {
+          content: m.data.content
+        };
+        solcWorker.send({
+          command: "run-test",
+          payload: JSON.stringify(sources)
+        });
+      }
+      if (m.utResp) {
+        const res = JSON.parse(m.utResp.result);
+        if (res.type) {
+          this._panel.webview.postMessage({ _testCallback: res });
+        } else {
+          this._panel.webview.postMessage({ _finalCallback: res });
+          solcWorker.kill();
+        }
+      }
+    });
+    solcWorker.on("exit", () => {
+      console.dir("Tests worker exited");
+    });
+  }
+>>>>>>> master
 
 		const vyperWorker = this.createVyperWorker();
 		// console.dir("WorkerID: ", vyperWorker.pid);
@@ -335,8 +484,36 @@ class ReactPanel {
 	public dispose() {
 		ReactPanel.currentPanel = undefined;
 
+<<<<<<< HEAD
 		// Clean up our resources
 		this._panel.dispose();
+=======
+    solcWorker.on("message", (m: any) => {
+      if (m.versions) {
+        const { versions } = m;
+        this._panel.webview.postMessage({ versions });
+        this._panel.webview.postMessage({ processMessage: "" });
+        solcWorker.kill();
+      }
+    });
+    solcWorker.on("error", (error: Error) => {
+      console.log(
+        "%c getVersion worker process exited with error" + `${error.message}`,
+        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+      );
+    });
+    solcWorker.on("exit", (code: number, signal: string) => {
+      console.log(
+        "%c getVersion worker process exited with " +
+        `code ${code} and signal ${signal}`,
+        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+      );
+      this._panel.webview.postMessage({
+        message: `Error code ${code} : Error signal ${signal}`
+      });
+    });
+  }
+>>>>>>> master
 
 		while (this._disposables.length) {
 			const x = this._disposables.pop();
@@ -408,10 +585,17 @@ class ReactPanel {
         <link rel="stylesheet" type="text/css" href="${styleUri}">
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
         <base href="${vscode.Uri.file(
+<<<<<<< HEAD
 			path.join(this._extensionPath, "build")
 		).with({
 			scheme: "vscode-resource"
 		})}/">
+=======
+      path.join(this._extensionPath, "build")
+    ).with({
+      scheme: "vscode-resource"
+    })}/">
+>>>>>>> master
       </head>
 
       <body>

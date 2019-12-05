@@ -7,7 +7,7 @@ import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 
-const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto')];
+const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
   {
     keepCase: true,
@@ -21,7 +21,10 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 
 // remix-tests grpc
 const remix_tests_pb = protoDescriptor.remix_tests;
+const remix_debug_pb = protoDescriptor.remix_debug;
+
 let remix_tests_client: any;
+let remix_debug_client: any;
 try {
   remix_tests_client = new remix_tests_pb.RemixTestsService('rtapi.ethcode.dev:50051', grpc.credentials.createInsecure());
 } catch (e) {
@@ -34,6 +37,13 @@ const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
   client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
+} catch (e) {
+  // @ts-ignore
+  process.send({ error: e });
+}
+
+try {
+  remix_debug_client = new remix_debug_pb.RemixDebugService('localhost:50052', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -201,6 +211,25 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ gasEstimate: data.result });
+    });
+    call.on('error', function(err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    });
+  }
+  // Debug transaction
+  if(m.command === "debug-transaction") {
+    const dt = {
+      debugInterface: {
+        command: 'debug',
+        payload: m.payload
+      }
+    };
+    const call = remix_debug_client.RunDebug(dt);
+    call.on('data', (data: any) => {
+      const result = JSON.parse(data.result);
+      // @ts-ignore
+      process.send({ debugResp: result });
     });
     call.on('end', function() {
       process.exit(0);
