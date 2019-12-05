@@ -27,6 +27,8 @@ interface IState {
   fileName: any;
   processMessage: string;
   availableVersions: any;
+  gasEstimate: number;
+  deployedResult: object;
 }
 interface IOpt {
   value: string;
@@ -44,7 +46,9 @@ class App extends Component<IProps, IState> {
       error: null,
       fileName: "",
       processMessage: "",
-      availableVersions: ""
+      availableVersions: "",
+      gasEstimate: 0,
+      deployedResult: {}
     };
   }
   public componentDidMount() {
@@ -99,7 +103,13 @@ class App extends Component<IProps, IState> {
       if(data.errors) {
         this.setState({ error: data.errors });
       }
-
+      if(data.gasEstimate) {
+        // @ts-ignore
+        this.setState({ gasEstimate: data.gasEstimate });
+      }
+      if(data.deployedResult) {
+        this.setState({ deployedResult: data.deployedResult.deployedResult });
+      }
       // TODO: handle error message
     });
   }
@@ -121,8 +131,11 @@ class App extends Component<IProps, IState> {
       fileName,
       processMessage,
       availableVersions,
-      error
+      error,
+      gasEstimate,
+      deployedResult
     } = this.state;
+    
     
     return (
       <div className="App">
@@ -149,25 +162,7 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
-        {message.map((m, i) => {
-          return (
-            <div key={i}>
-              {m.severity === "warning" && (
-                <pre className="error-message yellow-text">
-                  {m.formattedMessage}
-                </pre>
-              )}
-              {m.severity === "error" && (
-                <pre className="error-message red-text">
-                  {m.formattedMessage}
-                </pre>
-              )}
-              {!m.severity && (
-                <pre className="error-message">{m.formattedMessage}</pre>
-              )}
-            </div>
-          );
-        })}{" "}
+        
         {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
           {compiled && fileName && (
@@ -224,6 +219,8 @@ class App extends Component<IProps, IState> {
                           vscode={vscode}
                           compiled={compiled}
                           error={error}
+                          gasEstimate={gasEstimate}
+                          deployedResult={deployedResult}
                         />
                       }
                     </div>
@@ -233,6 +230,27 @@ class App extends Component<IProps, IState> {
               }
             </div>
           )}
+          <div className="err_warning_container">
+            {message.map((m, i) => {
+              return (
+                <div key={i}>
+                  {m.severity === "warning" && (
+                    <pre className="error-message yellow-text">
+                      {m.formattedMessage}
+                    </pre>
+                  )}
+                  {m.severity === "error" && (
+                    <pre className="error-message red-text">
+                      {m.formattedMessage}
+                    </pre>
+                  )}
+                  {!m.severity && (
+                    <pre className="error-message">{m.formattedMessage}</pre>
+                  )}
+                </div>
+              );
+            })}{" "}
+          </div>
         </p>
         <pre className="processMessage">{processMessage}</pre>
       </div>

@@ -68,3 +68,9 @@
 .hot-keys {
   display: inline;
 }
+
+.err_warning_container {
+  margin-top: 25px;
+  max-height: 25vh;
+  overflow-y: scroll;
+}
