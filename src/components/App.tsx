@@ -174,7 +174,7 @@ class App extends Component<IProps, IState> {
           />
         )}
 
-        {compiled ? <DebugDisplay vscode={vscode} txTrace={txTrace} /> : null}
+        {compiled ? <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} /> : null}
         
         {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
