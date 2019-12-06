@@ -216,8 +216,8 @@ class ReactPanel {
 			version: this.version
 		});
 		vyperWorker.on('message', (m) => {
+      console.dir(m);
 			if (m.compiled) {
-				// console.dir(m.compiled);
 				// console.dir(JSON.stringify(sources));
 				context.workspaceState.update("sources", JSON.stringify(sources));
 

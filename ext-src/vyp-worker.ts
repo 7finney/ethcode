@@ -14,14 +14,13 @@ function compileVyper(sources: ISources) {
             "*": ["evm.bytecode", "abi", "ast"],
         }
     };
+    // @ts-ignore
+    process.send(input_json);
     fs.writeFileSync(__dirname + "/" + ".temp-vy.json", JSON.stringify(input_json, null, 4), 'UTF-8');
     var args: string = "vyper-json " + __dirname + "/" + ".temp-vy.json";
     var escaped = shell.exec(args);
-    var m: object = {
-        "processMessage": "",
-        "compiled": escaped
-    }
-    fs.unlink(__dirname + "/" + ".temp-vy.json", ()=>{});
+    var m: object = { "compiled": escaped }
+    fs.unlink(__dirname + "/" + ".temp-vy.json", () => {});
     // @ts-ignore
     process.send(m);
 }
