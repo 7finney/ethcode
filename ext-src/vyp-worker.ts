@@ -14,6 +14,7 @@ function compileVyper(sources: ISources) {
             "*": ["evm.bytecode", "abi", "ast"],
         }
     };
+    shell.config.execPath = shell.which('node').toString();
     // @ts-ignore
     process.send(input_json);
     fs.writeFileSync(__dirname + "/" + ".temp-vy.json", JSON.stringify(input_json, null, 4), 'UTF-8');
