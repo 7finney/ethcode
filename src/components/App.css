@@ -8,7 +8,7 @@
 }
 
 .App-header {
-  height: 75px;
+  /* height: 75px; */
   padding: 15px;
   color: white;
 }
@@ -73,4 +73,11 @@
   margin-top: 25px;
   max-height: 25vh;
   overflow-y: scroll;
+}
+
+.instructions {
+  border: 1px solid white;
+  margin: 10px 30%;
+  text-align: center;
+  border-radius: 2px;
 }
