@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import "./ContractDeploy.css";
+import JSONPretty from 'react-json-pretty';
 
 interface IProps {
     contractName: string;
@@ -148,7 +149,10 @@ class ContractDeploy extends Component<IProps, IState> {
                                 Transaction Receipt:
                             </span>
                             <div>
-                                <pre className="large-code">{deployed}</pre>
+                                <pre className="large-code">
+                                    <JSONPretty id="json-pretty" data={deployed}></JSONPretty>
+                                    {/* {deployed} */}
+                                </pre>
                             </div>
                         </div>
                     }
