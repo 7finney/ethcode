@@ -4,11 +4,13 @@ import "./DebugDisplay.css";
 interface IProps {
     vscode: any;
     txTrace: any;
+    deployedResult: object;
 }
 interface IState {
     txHash: string | null;
     debugObj: object;
     indx: any;
+    deployedResult: object
 }
 // @ts-ignore
 // const vscode = acquireVsCodeApi(); // eslint-disable-line
@@ -17,7 +19,8 @@ class DebugDisplay extends Component<IProps, IState> {
     public state = {
         txHash: '',
         debugObj: {},
-        indx: -1
+        indx: -1,
+        deployedResult: {}
     };
     constructor(props: IProps) {
         super(props);
@@ -37,6 +40,16 @@ class DebugDisplay extends Component<IProps, IState> {
         });
     }
     componentDidUpdate(prevProps: IProps) {
+        console.log("outside")
+        const { deployedResult } = this.props
+        // @ts-ignore
+        console.dir(deployedResult['transactionHash']);
+        // if(deployedResult) {
+        //     console.log("inside");
+        //     this.setState({
+        //         txHash: this.props.deployedResult.transactionHash
+        //     })
+        // }
         if(this.props.txTrace !== prevProps.txTrace) {
             this.setState({
                 indx: 0,
@@ -81,10 +94,10 @@ class DebugDisplay extends Component<IProps, IState> {
                 <div>
                     <form onSubmit={this.handleSubmit}>
                         <label>
-                            Transaction hash:
+                            <span style={{ marginRight: '5px' }}>Transaction hash:</span>
                             <input type="text" value={this.state.txHash} onChange={this.handleChange} />
                         </label>
-                        <input type="submit" value="Submit" />
+                        <input type="submit" value="Debug" />
                     </form>
                 </div>
                 {

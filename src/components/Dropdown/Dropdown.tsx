@@ -72,14 +72,16 @@ class Dropdown extends Component<IProps, IState> {
   public render() {
     const { selectedOption } = this.state;
     return (
-      <Select
-        placeholder="Select Files"
-        value={selectedOption}
-        onChange={this.handleChange}
-        options={this.state.options}
-        className="optStyle"
-        styles={customStyles}
-      />
+      <div style={{ marginBottom: '30px' }}>
+        <Select
+          placeholder="Select Files"
+          value={selectedOption}
+          onChange={this.handleChange}
+          options={this.state.options}
+          className="optStyle"
+          styles={customStyles}
+        />
+      </div>
     );
   }
 }

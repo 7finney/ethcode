@@ -63,7 +63,7 @@ class CompilerVersionSelector extends Component<IProps, IState> {
 
   public componentDidMount() {
     const options: any = [];
-    Object.keys(this.props.availableVersions).map((v: any, i: any) => {
+    Object.keys(this.props.availableVersions).reverse().map((v: any, i: any) => {
       const optItm: IOpt = {
         value: this.props.availableVersions[v]
           .split("soljson-")[1]
@@ -79,7 +79,7 @@ class CompilerVersionSelector extends Component<IProps, IState> {
     const { selectedVersion } = this.state;
     return (
       <div className="content">
-        <div className="row">
+        <div style={{ marginBottom: '30px' }}>
           <Select
             placeholder="Select Compiler Version"
             value={selectedVersion}

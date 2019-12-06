@@ -150,15 +150,17 @@ class App extends Component<IProps, IState> {
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        <div className="instructions">
-          <p>
-            <pre className="hot-keys">ctrl+alt+c</pre> - Compile contracts
-          </p>
-          <p>
-            <pre className="hot-keys">ctrl+alt+t</pre> - Run unit tests
-          </p>
-        </div>
-        <DebugDisplay vscode={vscode} txTrace={txTrace}/>
+        { !compiled ?
+          <div className="instructions">
+            <p>
+              <pre className="hot-keys"><b>ctrl+alt+c</b> - Compile contracts</pre>
+            </p>
+            <p>
+              <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
+            </p>
+          </div>
+          : null
+        }
         {availableVersions && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}
@@ -171,6 +173,8 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
+
+        {compiled ? <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} /> : null}
         
         {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
