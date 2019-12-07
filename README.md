@@ -17,6 +17,9 @@
 
 **Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
 
+## Vyper support
+Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
+
 ## Help
 Please help ethcode developers continue their work.
 
