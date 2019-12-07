@@ -15,8 +15,6 @@ function compileVyper(sources: ISources) {
         }
     };
     shell.config.execPath = shell.which('node').toString();
-    // @ts-ignore
-    process.send(input_json);
     fs.writeFileSync(__dirname + "/" + ".temp-vy.json", JSON.stringify(input_json, null, 4), 'UTF-8');
     var args: string = "vyper-json " + __dirname + "/" + ".temp-vy.json";
     var escaped = shell.exec(args);

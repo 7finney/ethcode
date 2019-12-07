@@ -2,7 +2,7 @@ import * as path from "path";
 // @ts-ignore
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
-import { ISources, ISource } from "./types";
+import { ISources } from "./types";
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -126,14 +126,18 @@ class ReactPanel {
   }
 
   private createWorker(): ChildProcess {
-    return fork(path.join(__dirname, "worker.js"), [], {
-      execArgv: ["--inspect=" + (process.debugPort + 1)]
-    });
+    // enable --inspect for debug
+    // return fork(path.join(__dirname, "worker.js"), [], {
+    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
+    // });
+    return fork(path.join(__dirname, "worker.js"));
   }
   private createVyperWorker(): ChildProcess {
-    return fork(path.join(__dirname, "vyp-worker.js"), [], {
-      execArgv: ["--inspect=" + (process.debugPort + 1)]
-    });
+    // enable --inspect for debug
+    // return fork(path.join(__dirname, "vyp-worker.js"), [], {
+    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
+    // });
+    return fork(path.join(__dirname, "vyp-worker.js"));
   }
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
 		// solidity compiler code goes bellow
@@ -202,13 +206,9 @@ class ReactPanel {
 		});
 	}
 	private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
-		console.log("invoked vyper compiler");
-
-		// TODO: vyper compiler code goes bellow, as follows
-
 		const vyperWorker = this.createVyperWorker();
-		// console.dir("WorkerID: ", vyperWorker.pid);
-		// console.dir("Compiling with solidity version ", this.version);
+		console.dir("WorkerID: ", vyperWorker.pid);
+		console.dir("Compiling with vyper compiler version ", this.version);
 		this._panel.webview.postMessage({ processMessage: "Compiling..." });
 		vyperWorker.send({
 			command: "compile",
@@ -216,9 +216,7 @@ class ReactPanel {
 			version: this.version
 		});
 		vyperWorker.on('message', (m) => {
-      console.dir(m);
 			if (m.compiled) {
-				// console.dir(JSON.stringify(sources));
 				context.workspaceState.update("sources", JSON.stringify(sources));
 
 				this._panel.webview.postMessage({ compiled: m.compiled, sources });
