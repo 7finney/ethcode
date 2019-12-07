@@ -230,9 +230,8 @@ class ReactPanel {
   private debug(txHash: string): void {
     const debugWorker = this.createWorker();
     console.dir("WorkerID: ", debugWorker.pid);
+    console.dir("Debugging transaction with remix-debug...");
     debugWorker.on("message", (m: any) => {
-      console.log("Debug message: ");
-      console.dir(m.debugResp);
       this._panel.webview.postMessage({ txTrace: m.debugResp });
     });
     debugWorker.send({ command: "debug-transaction", payload: txHash });
@@ -241,8 +240,6 @@ class ReactPanel {
   private runDeploy(payload: any) {
     const deployWorker = this.createWorker();
     deployWorker.on("message", (m: any) => {
-      console.log("Deploy message: ");
-      console.dir(m);
       if(m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
@@ -263,8 +260,6 @@ class ReactPanel {
       else {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       }
-      console.log("Gas estimate message: ");
-      console.dir(JSON.stringify(m));
     });
     deployWorker.send({ command: "get-gas-estimate", payload });
   }

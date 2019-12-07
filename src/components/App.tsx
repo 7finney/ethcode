@@ -101,7 +101,7 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data._importFileCb) {
-        const result = data.result;
+        return;
       }
       if(data.errors) {
         this.setState({ error: data.errors });
@@ -178,15 +178,13 @@ class App extends Component<IProps, IState> {
         
         {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
-          {compiled && fileName && (
-            <div className="compiledOutput">
-              {Object.keys(compiled.contracts[fileName]).map(
-                (contractName: string, i: number) => {
-                  const bytecode =
-                    compiled.contracts[fileName][contractName].evm.bytecode
-                      .object;
-                  const ContractABI =
-                    compiled.contracts[fileName][contractName].abi;
+          {
+            compiled && fileName && (
+              <div className="compiledOutput">
+                {
+                Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                  const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                  const ContractABI = compiled.contracts[fileName][contractName].abi;
                   return (
                     <div
                       id={contractName}
@@ -204,21 +202,19 @@ class App extends Component<IProps, IState> {
                         />
                       }
                     </div>
-                  );
-                }
-              )}
-            </div>
-          )}
-          {compiled && fileName && (
-            <div className="compiledOutput">
-              {
-                Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                  const bytecode =
-                      compiled.contracts[fileName][contractName].evm.bytecode
-                        .object;
-                    const ContractABI =
-                      compiled.contracts[fileName][contractName].abi;
-                  return(
+                  )}
+                )}
+              </div>
+            )
+          }
+          {
+            compiled && fileName && (
+              <div className="compiledOutput">
+                {
+                  Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                    const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                    const ContractABI = compiled.contracts[fileName][contractName].abi;
+                    return(
                     <div
                       id={contractName}
                       className="contract-container"
@@ -237,12 +233,12 @@ class App extends Component<IProps, IState> {
                         />
                       }
                     </div>
-                  );
-
-                })
-              }
-            </div>
-          )}
+                    );
+                  })
+                }
+              </div>
+            )
+          }
           <div className="err_warning_container">
             {message.map((m, i) => {
               return (
