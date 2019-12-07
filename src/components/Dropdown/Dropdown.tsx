@@ -70,16 +70,18 @@ class Dropdown extends Component<IProps, IState> {
     this.props.changeFile(selectedOption);
   };
   public render() {
-    const { selectedOption } = this.state;
+    const { selectedOption, options } = this.state;
     return (
-      <Select
-        placeholder="Select Files"
-        value={selectedOption}
-        onChange={this.handleChange}
-        options={this.state.options}
-        className="optStyle"
-        styles={customStyles}
-      />
+      <div style={{ marginBottom: '30px' }}>
+        <Select
+          placeholder="Select Files"
+          value={selectedOption}
+          onChange={this.handleChange}
+          options={options}
+          className="optStyle"
+          styles={customStyles}
+        />
+      </div>
     );
   }
 }

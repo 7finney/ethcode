@@ -4,20 +4,21 @@ import "./DebugDisplay.css";
 interface IProps {
     vscode: any;
     txTrace: any;
+    deployedResult: object;
 }
 interface IState {
     txHash: string | null;
     debugObj: object;
     indx: any;
+    deployedResult: object
 }
-// @ts-ignore
-// const vscode = acquireVsCodeApi(); // eslint-disable-line
 
 class DebugDisplay extends Component<IProps, IState> {
     public state = {
         txHash: '',
         debugObj: {},
-        indx: -1
+        indx: -1,
+        deployedResult: {}
     };
     constructor(props: IProps) {
         super(props);
@@ -81,10 +82,10 @@ class DebugDisplay extends Component<IProps, IState> {
                 <div>
                     <form onSubmit={this.handleSubmit}>
                         <label>
-                            Transaction hash:
+                            <span style={{ marginRight: '5px' }}>Transaction hash:</span>
                             <input type="text" value={this.state.txHash} onChange={this.handleChange} />
                         </label>
-                        <input type="submit" value="Submit" />
+                        <input type="submit" value="Debug" />
                     </form>
                 </div>
                 {
@@ -98,7 +99,7 @@ class DebugDisplay extends Component<IProps, IState> {
                             <div>
                                 <ul className="opDiv">
                                     { txTrace.map((obj: any, index: any) => {
-                                        if (index == indx)
+                                        if (index === indx)
                                             return <li className="selected" key={index} id={index}>{obj.op}</li>;
                                         else 
                                             return <li key={index} id={index}>{obj.op}</li>;

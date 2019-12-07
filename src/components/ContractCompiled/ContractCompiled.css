@@ -6,6 +6,18 @@
   height: 40px;
 }
 
+.large-code-error {
+  overflow-x: scroll;
+  background-color: #000;
+  color: rgb(255, 37, 37);
+  padding: 5px;
+  height: 40px;
+}
+
 .contract-name {
     text-align: left;
+}
+
+.error_message {
+  margin-top: 5px;
 }
