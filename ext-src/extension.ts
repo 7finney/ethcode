@@ -277,12 +277,10 @@ class ReactPanel {
 			};
 			context.workspaceState.update("sources", JSON.stringify(sources));
 			var re = /(?:\.([^.]+))?$/;
-			// @ts-ignore
 			const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
-			const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
-			// @ts-ignore
+      const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
+      // @ts-ignore
 			if (fn.match(regexVyp) && fn.match(regexVyp).length > 0) {
-				// @ts-ignore
 				// invoke vyper compiler
 				this.invokeVyperCompiler(context, sources);
 				// @ts-ignore

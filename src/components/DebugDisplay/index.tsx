@@ -12,8 +12,6 @@ interface IState {
     indx: any;
     deployedResult: object
 }
-// @ts-ignore
-// const vscode = acquireVsCodeApi(); // eslint-disable-line
 
 class DebugDisplay extends Component<IProps, IState> {
     public state = {
@@ -40,16 +38,6 @@ class DebugDisplay extends Component<IProps, IState> {
         });
     }
     componentDidUpdate(prevProps: IProps) {
-        console.log("outside")
-        const { deployedResult } = this.props
-        // @ts-ignore
-        console.dir(deployedResult['transactionHash']);
-        // if(deployedResult) {
-        //     console.log("inside");
-        //     this.setState({
-        //         txHash: this.props.deployedResult.transactionHash
-        //     })
-        // }
         if(this.props.txTrace !== prevProps.txTrace) {
             this.setState({
                 indx: 0,

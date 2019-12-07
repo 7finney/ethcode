@@ -151,7 +151,6 @@ class ContractDeploy extends Component<IProps, IState> {
                             <div>
                                 <pre className="large-code">
                                     <JSONPretty id="json-pretty" data={deployed}></JSONPretty>
-                                    {/* {deployed} */}
                                 </pre>
                             </div>
                         </div>
