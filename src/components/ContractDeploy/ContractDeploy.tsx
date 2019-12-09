@@ -17,6 +17,7 @@ interface IState {
     gasSupply: number;
     error: Error | null;
     deployed: object;
+    methodName: string;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -24,11 +25,13 @@ class ContractDeploy extends Component<IProps, IState> {
         constructorInput: [],
         gasSupply: 0,
         error: null,
-        deployed: {}
+        deployed: {},
+        methodName: ''
     };
     constructor(props: IProps, state: IState) {
         super(props);
         this.handleDeploy = this.handleDeploy.bind(this);
+        this.handleCall = this.handleCall.bind(this);
         this.handleGetGasEstimate = this.handleGetGasEstimate.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleConstructorInputChange = this.handleConstructorInputChange.bind(this);    }
@@ -65,6 +68,31 @@ class ContractDeploy extends Component<IProps, IState> {
                 abi,
                 bytecode,
                 params: constructorInput,
+                gasSupply
+            }
+        });
+    }
+    private handleCall() {
+        const { vscode, abi } = this.props;
+        const { gasSupply, methodName } = this.state;
+        this.setState({ error: null });
+        vscode.postMessage({
+          command: "contract-method-call",
+          payload: {
+                abi,
+                methodName: 'cal',
+                params: [
+                    {
+                        "name": "base",
+                        "type": "uint256",
+                        "value": 7
+                    },
+                    {
+                        "name": "height",
+                        "type": "uint256",
+                        "value": 3
+                    }
+                ],
                 gasSupply
             }
         });
@@ -138,6 +166,11 @@ class ContractDeploy extends Component<IProps, IState> {
                     <div className="button_group">
                         <form onSubmit={this.handleGetGasEstimate}>
                             <input type="submit" value="Get gas estimate" />
+                        </form>
+                    </div>
+                    <div className="button_group">
+                        <form onSubmit={this.handleCall}>
+                            <input type="submit" value="Call function" />
                         </form>
                     </div>
                 </div>
