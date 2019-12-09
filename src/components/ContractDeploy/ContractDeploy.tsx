@@ -18,6 +18,7 @@ interface IState {
     error: Error | null;
     deployed: object;
     methodName: string;
+    deployedAddress: string;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -26,7 +27,8 @@ class ContractDeploy extends Component<IProps, IState> {
         gasSupply: 0,
         error: null,
         deployed: {},
-        methodName: ''
+        methodName: '',
+        deployedAddress: ''
     };
     constructor(props: IProps, state: IState) {
         super(props);
@@ -74,12 +76,13 @@ class ContractDeploy extends Component<IProps, IState> {
     }
     private handleCall() {
         const { vscode, abi } = this.props;
-        const { gasSupply, methodName } = this.state;
+        const { gasSupply, methodName, deployedAddress } = this.state;
         this.setState({ error: null });
         vscode.postMessage({
           command: "contract-method-call",
           payload: {
                 abi,
+                address: deployedAddress,
                 methodName: 'cal',
                 params: [
                     {

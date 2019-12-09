@@ -197,9 +197,10 @@ process.on("message", async m => {
   }
   // Method call
   if(m.command === "contract-method-call") {
-    const { abi, methodName, params, gasSupply } = m.payload;
+    const { abi, address, methodName, params, gasSupply } = m.payload;
     const inp = {
       abi,
+      address,
       methodName,
       params,
       gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
