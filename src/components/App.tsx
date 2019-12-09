@@ -4,7 +4,8 @@ import { connect } from "react-redux";
 import {
   addTestResults,
   addFinalResultCallback,
-  clearFinalResult
+  clearFinalResult,
+  setDeployedResult
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
@@ -21,7 +22,9 @@ interface IProps {
   addTestResults: (result: any) => void;
   addFinalResultCallback: (result: any) => void;
   clearFinalResult: () => void;
+  setDeployedResult: (result: any) => void;
   test: any;
+  compiledResult: any;
 }
 
 interface IState {
@@ -58,6 +61,7 @@ class App extends Component<IProps, IState> {
     };
   }
   public componentDidMount() {
+    // this.setState({ deployedResult: this.props.compiledResult})
     window.addEventListener("message", event => {
       const { data } = event;
 
@@ -114,6 +118,9 @@ class App extends Component<IProps, IState> {
         this.setState({ gasEstimate: data.gasEstimate });
       }
       if(data.deployedResult) {
+        const result = data.deployedResult.deployedResult
+        console.dir(result);
+        this.props.setDeployedResult(result);
         this.setState({ deployedResult: data.deployedResult.deployedResult });
       }
       if (data.txTrace) {
@@ -282,13 +289,14 @@ class App extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps({ test }: any) {
+function mapStateToProps({ test, compiledResult }: any) {
   return {
-    test
+    test,
+    compiledResult
   };
 }
 
 export default connect(
   mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult }
+  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult }
 )(App);
