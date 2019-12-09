@@ -19,6 +19,7 @@ interface IState {
     deployed: object;
     methodName: string;
     deployedAddress: string;
+    methodInputs: string;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -28,7 +29,8 @@ class ContractDeploy extends Component<IProps, IState> {
         error: null,
         deployed: {},
         methodName: '',
-        deployedAddress: ''
+        deployedAddress: '',
+        methodInputs: ''
     };
     constructor(props: IProps, state: IState) {
         super(props);
@@ -36,7 +38,11 @@ class ContractDeploy extends Component<IProps, IState> {
         this.handleCall = this.handleCall.bind(this);
         this.handleGetGasEstimate = this.handleGetGasEstimate.bind(this);
         this.handleChange = this.handleChange.bind(this);
-        this.handleConstructorInputChange = this.handleConstructorInputChange.bind(this);    }
+        this.handleConstructorInputChange = this.handleConstructorInputChange.bind(this);
+        this.handleMethodnameInput = this.handleMethodnameInput.bind(this);
+        this.handleMethodInputs = this.handleMethodInputs.bind(this);
+        this.handleContractAddrInput = this.handleContractAddrInput.bind(this);
+    }
 
     componentDidMount() {
         const { abi } = this.props;
@@ -76,26 +82,15 @@ class ContractDeploy extends Component<IProps, IState> {
     }
     private handleCall() {
         const { vscode, abi } = this.props;
-        const { gasSupply, methodName, deployedAddress } = this.state;
+        const { gasSupply, methodName, deployedAddress, methodInputs } = this.state;
         this.setState({ error: null });
         vscode.postMessage({
           command: "contract-method-call",
           payload: {
                 abi,
                 address: deployedAddress,
-                methodName: 'cal',
-                params: [
-                    {
-                        "name": "base",
-                        "type": "uint256",
-                        "value": 7
-                    },
-                    {
-                        "name": "height",
-                        "type": "uint256",
-                        "value": 3
-                    }
-                ],
+                methodName: methodName,
+                params: methodInputs,
                 gasSupply
             }
         });
@@ -127,8 +122,34 @@ class ContractDeploy extends Component<IProps, IState> {
         constructorInput[event.target.id] = item;
         this.setState({ constructorInput });
     }
+    private handleContractAddrInput(event: any) {
+        this.setState({ deployedAddress: event.target.value });
+    }
+    private handleMethodnameInput(event: any) {
+        const { abi } = this.props;
+        for(var obj in abi) {
+            // @ts-ignore
+            if(abi[obj]['name'] == event.target.value) {
+                var funcObj: object = abi[obj];
+                this.setState({ methodName: event.target.value });
+                // @ts-ignore
+                for(var i in funcObj['inputs']) {
+                    // @ts-ignore
+                    funcObj['inputs'][i]['value'] = "";
+                }
+                // @ts-ignore
+                this.setState({ methodInputs: JSON.stringify(funcObj['inputs'], null, '\t') });
+                break;
+            }
+        }
+        
+    }
+    private handleMethodInputs(event: any) {
+        this.setState({ methodInputs: event.target.value });
+
+    }
     public render() {
-        const { gasSupply, error, constructorInput, deployed } = this.state;
+        const { gasSupply, error, constructorInput, deployed, methodName, methodInputs } = this.state;
         return(
             <div>
                 <div>
@@ -173,6 +194,14 @@ class ContractDeploy extends Component<IProps, IState> {
                     </div>
                     <div className="button_group">
                         <form onSubmit={this.handleCall}>
+                            <input type="text" name="contractAddress" onChange={this.handleContractAddrInput}/>
+                            <input type="text" name="methodName" onChange={this.handleMethodnameInput}/>
+                            {
+                                methodName !=='' && methodInputs !== '' &&
+                                <div className="constructorInput">
+                                    <textarea className="textarea" value={methodInputs} onChange={this.handleMethodInputs}></textarea>                            
+                                </div>
+                            }
                             <input type="submit" value="Call function" />
                         </form>
                     </div>
