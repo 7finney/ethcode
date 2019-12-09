@@ -14,6 +14,9 @@ import CompilerVersionSelector from "./CompilerVersionSelector";
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+
 interface IProps {
   addTestResults: (result: any) => void;
   addFinalResultCallback: (result: any) => void;
@@ -173,72 +176,84 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
-
-        { compiled ? <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} /> : null }
         
         {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
-          {
-            compiled && fileName && (
-              <div className="compiledOutput">
+          {compiled ?
+            <Tabs>
+              <TabList>
+                <Tab>Main</Tab>
+                <Tab>Debug</Tab>
+              </TabList>
+
+              <TabPanel>
                 {
-                Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                  const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                  const ContractABI = compiled.contracts[fileName][contractName].abi;
-                  return (
-                    <div
-                      id={contractName}
-                      className="contract-container"
-                      key={i}
-                    >
+                  compiled && fileName && (
+                    <div className="compiledOutput">
                       {
-                        <ContractCompiled
-                          contractName={contractName}
-                          bytecode={bytecode}
-                          abi={ContractABI}
-                          vscode={vscode}
-                          compiled={compiled}
-                          errors={error}
-                        />
-                      }
+                        Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                          const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                          const ContractABI = compiled.contracts[fileName][contractName].abi;
+                          return (
+                            <div
+                              id={contractName}
+                              className="contract-container"
+                              key={i}
+                            >
+                              {
+                                <ContractCompiled
+                                  contractName={contractName}
+                                  bytecode={bytecode}
+                                  abi={ContractABI}
+                                  vscode={vscode}
+                                  compiled={compiled}
+                                  errors={error}
+                                />
+                              }
+                            </div>
+                          )
+                        }
+                        )}
                     </div>
-                  )}
-                )}
-              </div>
-            )
-          }
-          {
-            compiled && fileName && (
-              <div className="compiledOutput">
-                {
-                  Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                    const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                    const ContractABI = compiled.contracts[fileName][contractName].abi;
-                    return(
-                    <div
-                      id={contractName}
-                      className="contract-container"
-                      key={i}
-                    >
-                      {
-                        <ContractDeploy
-                          contractName={contractName}
-                          bytecode={bytecode}
-                          abi={ContractABI}
-                          vscode={vscode}
-                          compiled={compiled}
-                          error={error}
-                          gasEstimate={gasEstimate}
-                          deployedResult={deployedResult}
-                        />
-                      }
-                    </div>
-                    );
-                  })
+                  )
                 }
-              </div>
-            )
-          }
+                {
+                  compiled && fileName && (
+                    <div className="compiledOutput">
+                      {
+                        Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                          const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                          const ContractABI = compiled.contracts[fileName][contractName].abi;
+                          return (
+                            <div
+                              id={contractName}
+                              className="contract-container"
+                              key={i}
+                            >
+                              {
+                                <ContractDeploy
+                                  contractName={contractName}
+                                  bytecode={bytecode}
+                                  abi={ContractABI}
+                                  vscode={vscode}
+                                  compiled={compiled}
+                                  error={error}
+                                  gasEstimate={gasEstimate}
+                                  deployedResult={deployedResult}
+                                />
+                              }
+                            </div>
+                          );
+                        })
+                      }
+                    </div>
+                  )
+                }
+              </TabPanel>
+              <TabPanel>
+                {compiled ? <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} /> : null}
+              </TabPanel>
+            </Tabs>: null }
           <div className="err_warning_container">
             {message.map((m, i) => {
               return (

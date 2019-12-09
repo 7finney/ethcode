@@ -21,6 +21,10 @@ class ContractCompiled extends Component<IProps, IState> {
       error: null
     };
   }
+
+  componentDidMount() {
+    console.log("componentDidMount ContractCompiled");
+  }
   
   public render() {
     const { contractName, bytecode, abi } = this.props;
