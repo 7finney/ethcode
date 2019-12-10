@@ -146,7 +146,7 @@ class ContractDeploy extends Component<IProps, IState> {
                 </div>
                 <div className="error_message">
                     {
-                        Object.entries(deployed).length !== 0 &&
+                        Object.entries(deployed).length !== 1 &&
                         <div>
                             <span className="contract-name inline-block highlight-success">
                                 Transaction Receipt:
