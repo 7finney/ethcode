@@ -181,7 +181,7 @@ class ReactPanel {
 				// console.dir(JSON.stringify(sources));
 				context.workspaceState.update("sources", JSON.stringify(sources));
 
-				this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true });
+        this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true, testPanel: 'main' });
 				solcWorker.kill();
 			}
 			if (m.processMessage) {
@@ -314,9 +314,9 @@ class ReactPanel {
       if (m.utResp) {
         const res = JSON.parse(m.utResp.result);
         if (res.type) {
-          this._panel.webview.postMessage({ _testCallback: res });
+          this._panel.webview.postMessage({ _testCallback: res, testPanel: 'test' });
         } else {
-          this._panel.webview.postMessage({ _finalCallback: res });
+          this._panel.webview.postMessage({ _finalCallback: res, testPanel: 'test' });
           solcWorker.kill();
         }
       }

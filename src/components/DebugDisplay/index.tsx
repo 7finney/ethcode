@@ -29,10 +29,6 @@ class DebugDisplay extends Component<IProps, IState> {
         this.debugBack = this.debugBack.bind(this);
     }
 
-    // componentDidMount() {
-    //     console.log("componentDidMount DebugDisplay");
-    // }
-
     handleSubmit(event: any) {
         const { txHash } = this.state;
         event.preventDefault();

@@ -10,7 +10,6 @@ const initialState = {
 };
 
 export default (state: any = initialState, action: any) => {
-  console.log(JSON.stringify(action));
   switch (action.type) {
     case ADD_TEST_RESULTS:
       return { ...state, testResults: [...state.testResults, action.payload] };

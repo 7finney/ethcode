@@ -37,7 +37,8 @@ interface IState {
   availableVersions: any;
   gasEstimate: number;
   deployedResult: object;
-  txTrace: object
+  txTrace: object;
+  tabIndex: number
 }
 interface IOpt {
   value: string;
@@ -58,7 +59,8 @@ class App extends Component<IProps, IState> {
       availableVersions: "",
       gasEstimate: 0,
       deployedResult: {},
-      txTrace: {}
+      txTrace: {},
+      tabIndex: 0
     };
   }
   public componentDidMount() {
@@ -102,6 +104,14 @@ class App extends Component<IProps, IState> {
         this.props.clearFinalResult();
       }
 
+      if (data.testPanel === 'test') {
+        this.setState({ tabIndex: 2 })
+      }
+
+      if (data.testPanel === 'main') {
+        this.setState({ tabIndex: 0 })
+      }
+
       if (data._testCallback) {
         const result = data._testCallback;
         this.props.addTestResults(result);
@@ -125,7 +135,6 @@ class App extends Component<IProps, IState> {
       }
       if(data.deployedResult) {
         const result = data.deployedResult.deployedResult
-        console.dir(result);
         this.props.setDeployedResult(result);
         this.setState({ deployedResult: data.deployedResult.deployedResult });
       }
@@ -157,7 +166,8 @@ class App extends Component<IProps, IState> {
       error,
       gasEstimate,
       deployedResult,
-      txTrace
+      txTrace,
+      tabIndex
     } = this.state;
     
     return (
@@ -188,17 +198,16 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
-        
-        {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
-          {compiled ?
-            <Tabs>
-              <TabList>
+          {compiled || this.props.test.testResults.length > 0 ?
+            <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
+              <TabList className="react-tabs">
                 <Tab>Main</Tab>
                 <Tab>Debug</Tab>
+                <Tab>Test</Tab>
               </TabList>
 
-              <TabPanel>
+              <TabPanel className="react-tab-panel">
                 {
                   compiled && fileName && (
                     <div className="compiledOutput">
@@ -262,8 +271,11 @@ class App extends Component<IProps, IState> {
                   )
                 }
               </TabPanel>
-              <TabPanel>
+              <TabPanel className="react-tab-panel">
                 {compiled ? <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} /> : null}
+              </TabPanel>
+              <TabPanel className="react-tab-panel">
+                {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
               </TabPanel>
             </Tabs>: null }
           <div className="err_warning_container">

@@ -80,3 +80,10 @@
   text-align: center;
   border-radius: 2px;
 }
+
+.react-tabs {
+  text-align: left;
+}
+.react-tab-panel {
+  text-align: center !important;
+}
