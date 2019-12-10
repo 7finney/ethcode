@@ -21,10 +21,6 @@ interface IState {
     deployed: object;
 }
 
-// interface CompResIface {
-//     compiledResult: object
-// }
-
 class ContractDeploy extends Component<IProps, IState> {
     public state: IState = {
         constructorInput: [],
@@ -40,8 +36,6 @@ class ContractDeploy extends Component<IProps, IState> {
         this.handleConstructorInputChange = this.handleConstructorInputChange.bind(this);    }
 
     componentDidMount() {
-        console.log("kldsnlkd");
-        console.log(JSON.stringify(this.props.compiledResult));
         this.setState({ deployed: this.props.compiledResult })
         const { abi } = this.props;
         for (var i in abi ) {
@@ -53,7 +47,6 @@ class ContractDeploy extends Component<IProps, IState> {
     }
     componentDidUpdate(prevProps: any) {
         const { gasEstimate, deployedResult, error } = this.props;
-        // console.log(this.state.deployed);
         if(error !== prevProps.error) {
             this.setState({ error: error });
         }

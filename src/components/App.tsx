@@ -5,7 +5,8 @@ import {
   addTestResults,
   addFinalResultCallback,
   clearFinalResult,
-  setDeployedResult
+  setDeployedResult,
+  clearDeployedResult
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
@@ -23,8 +24,8 @@ interface IProps {
   addFinalResultCallback: (result: any) => void;
   clearFinalResult: () => void;
   setDeployedResult: (result: any) => void;
+  clearDeployedResult: () => void;
   test: any;
-  compiledResult: any;
 }
 
 interface IState {
@@ -61,12 +62,17 @@ class App extends Component<IProps, IState> {
     };
   }
   public componentDidMount() {
-    // this.setState({ deployedResult: this.props.compiledResult})
     window.addEventListener("message", event => {
       const { data } = event;
 
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
+        const newCompile = JSON.stringify(data.newCompile)
+
+        if (newCompile) {
+          this.props.clearDeployedResult()
+        }
+
         const fileName = Object.keys(compiled.sources)[0];
 
         if (compiled.errors && compiled.errors.length > 0) {
@@ -153,7 +159,6 @@ class App extends Component<IProps, IState> {
       deployedResult,
       txTrace
     } = this.state;
-    
     
     return (
       <div className="App">
@@ -289,14 +294,13 @@ class App extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps({ test, compiledResult }: any) {
+function mapStateToProps({ test }: any) {
   return {
     test,
-    compiledResult
   };
 }
 
 export default connect(
   mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult }
+  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, clearDeployedResult }
 )(App);

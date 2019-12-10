@@ -181,7 +181,7 @@ class ReactPanel {
 				// console.dir(JSON.stringify(sources));
 				context.workspaceState.update("sources", JSON.stringify(sources));
 
-				this._panel.webview.postMessage({ compiled: m.compiled, sources });
+				this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true });
 				solcWorker.kill();
 			}
 			if (m.processMessage) {

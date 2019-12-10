@@ -1,5 +1,6 @@
 import {
-  SET_DEPLOYED_RESULT
+  SET_DEPLOYED_RESULT,
+  CLEAR_DEPLOYED_RESULT
 } from "../actions/types";
 
 const initialState = {
@@ -7,14 +8,17 @@ const initialState = {
 };
 
 export default (state: any = initialState, action: any) => {
-  console.log("action");
-  console.table(JSON.stringify(action));
   switch (action.type) {
     case SET_DEPLOYED_RESULT:
       return {
         ...state,
         compiledresult: action.payload
       };
+    case CLEAR_DEPLOYED_RESULT:
+      return {
+        ...state,
+        compiledresult: {}
+      }
     default:
       return state;
   }
