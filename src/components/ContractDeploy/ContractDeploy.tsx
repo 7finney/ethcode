@@ -10,7 +10,7 @@ interface IProps {
   compiled: any;
   error: Error | null;
   gasEstimate: number;
-  deployedResult: object;
+  deployedResult: string;
 }
 interface IState {
   constructorInput: object[];
@@ -59,7 +59,8 @@ class ContractDeploy extends Component<IProps, IState> {
       this.setState({ error: error });
     }
     else if(deployedResult !== prevProps.deployedResult) {
-      this.setState({ deployed: deployedResult });
+      const deployedObj = JSON.parse(deployedResult);
+      this.setState({ deployed: deployedObj, deployedAddress: deployedObj.contractAddress });
     }
     else if((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
       this.setState({ gasSupply: gasEstimate });
@@ -149,7 +150,7 @@ class ContractDeploy extends Component<IProps, IState> {
 
   }
   public render() {
-    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs } = this.state;
+    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
     return(
       <div>
         <div>
@@ -194,7 +195,7 @@ class ContractDeploy extends Component<IProps, IState> {
           </div>
           <div className="button_group">
             <form onSubmit={this.handleCall}>
-              <input type="text" name="contractAddress" onChange={this.handleContractAddrInput}/>
+              <input type="text" name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput}/>
               <input type="text" name="methodName" onChange={this.handleMethodnameInput}/>
               {
                 methodName !=='' && methodInputs !== '' &&
