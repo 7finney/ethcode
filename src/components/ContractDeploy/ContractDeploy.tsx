@@ -90,7 +90,7 @@ class ContractDeploy extends Component<IProps, IState> {
         abi,
         address: deployedAddress,
         methodName: methodName,
-        params: methodInputs,
+        params: JSON.parse(methodInputs),
         gasSupply
       }
     });
