@@ -114,6 +114,8 @@ class ReactPanel {
           this.version = message.version;
         } else if(message.command === 'run-deploy') {
           this.runDeploy(message.payload);
+        } else if(message.command === 'contract-method-call') {
+          this.runContractCall(message.payload);
         } else if(message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload);
         } else if(message.command === 'debugTransaction') {
@@ -248,6 +250,14 @@ class ReactPanel {
       }
     });
     deployWorker.send({ command: "deploy-contract", payload });
+  }
+  // Call contract method
+  private runContractCall(payload: any) {
+    const callWorker = this.createWorker();
+    callWorker.on("message", (m: any) => {
+      console.dir(m);
+    })
+    callWorker.send({ command: "contract-method-call", payload })
   }
   // Get gas estimates
   private runGetGasEstimate(payload: any) {

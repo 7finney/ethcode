@@ -29,7 +29,7 @@ interface IState {
   processMessage: string;
   availableVersions: any;
   gasEstimate: number;
-  deployedResult: object;
+  deployedResult: string;
   txTrace: object
 }
 interface IOpt {
@@ -50,7 +50,7 @@ class App extends Component<IProps, IState> {
       processMessage: "",
       availableVersions: "",
       gasEstimate: 0,
-      deployedResult: {},
+      deployedResult: "",
       txTrace: {}
     };
   }
