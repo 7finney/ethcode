@@ -114,6 +114,7 @@
     "react": "^16.8.6",
     "react-app-polyfill": "^1.0.1",
     "react-dev-utils": "^9.0.1",
+    "react-diff-viewer": "^2.0.6",
     "react-dom": "^16.8.6",
     "react-json-pretty": "^2.2.0",
     "react-redux": "^7.0.3",
