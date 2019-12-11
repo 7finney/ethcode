@@ -60,7 +60,7 @@ class App extends Component<IProps, IState> {
       gasEstimate: 0,
       deployedResult: {},
       txTrace: {},
-      tabIndex: 0
+      tabIndex: 1
     };
   }
   public componentDidMount() {

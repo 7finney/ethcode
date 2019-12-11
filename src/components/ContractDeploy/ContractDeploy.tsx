@@ -146,7 +146,7 @@ class ContractDeploy extends Component<IProps, IState> {
                 </div>
                 <div className="error_message">
                     {
-                        Object.entries(deployed).length !== 1 &&
+                        Object.keys(deployed).length !== 0 &&
                         <div>
                             <span className="contract-name inline-block highlight-success">
                                 Transaction Receipt:
@@ -177,9 +177,9 @@ class ContractDeploy extends Component<IProps, IState> {
     }
 }
 
-function mapStateToProps({ compiledResult }: any) {
+function mapStateToProps(state: any) {
     return {
-        compiledResult
+        compiledResult: state.compiledStore.compiledresult
     };
 }
 

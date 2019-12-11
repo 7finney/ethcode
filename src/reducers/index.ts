@@ -4,5 +4,5 @@ import compiledReducer from "./compiledReducer";
 
 export default combineReducers({
   test: testReducer,
-  compiledResult: compiledReducer,
+  compiledStore: compiledReducer,
 });
