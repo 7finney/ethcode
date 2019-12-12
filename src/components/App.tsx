@@ -199,85 +199,84 @@ class App extends Component<IProps, IState> {
           />
         )}
         <p>
-          {/* {compiled || this.props.test.testResults.length > 0 ? */}
-            <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
-              <TabList className="react-tabs">
-                <Tab>Main</Tab>
-                <Tab>Debug</Tab>
-                <Tab>Test</Tab>
-              </TabList>
+          <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
+            <TabList className="react-tabs">
+              <Tab>Main</Tab>
+              <Tab>Debug</Tab>
+              <Tab>Test</Tab>
+            </TabList>
 
-              <TabPanel className="react-tab-panel">
-                {
-                  compiled && fileName && (
-                    <div className="compiledOutput">
-                      {
-                        Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                          const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                          const ContractABI = compiled.contracts[fileName][contractName].abi;
-                          return (
-                            <div
-                              id={contractName}
-                              className="contract-container"
-                              key={i}
-                            >
-                              {
-                                <ContractCompiled
-                                  contractName={contractName}
-                                  bytecode={bytecode}
-                                  abi={ContractABI}
-                                  vscode={vscode}
-                                  compiled={compiled}
-                                  errors={error}
-                                />
-                              }
-                            </div>
-                          )
-                        }
-                        )}
-                    </div>
-                  )
-                }
-                {
-                  compiled && fileName && (
-                    <div className="compiledOutput">
-                      {
-                        Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                          const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                          const ContractABI = compiled.contracts[fileName][contractName].abi;
-                          return (
-                            <div
-                              id={contractName}
-                              className="contract-container"
-                              key={i}
-                            >
-                              {
-                                <ContractDeploy
-                                  contractName={contractName}
-                                  bytecode={bytecode}
-                                  abi={ContractABI}
-                                  vscode={vscode}
-                                  compiled={compiled}
-                                  error={error}
-                                  gasEstimate={gasEstimate}
-                                  deployedResult={deployedResult}
-                                />
-                              }
-                            </div>
-                          );
-                        })
+            <TabPanel className="react-tab-panel">
+              {
+                compiled && fileName && (
+                  <div className="compiledOutput">
+                    {
+                      Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                        const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                        const ContractABI = compiled.contracts[fileName][contractName].abi;
+                        return (
+                          <div
+                            id={contractName}
+                            className="contract-container"
+                            key={i}
+                          >
+                            {
+                              <ContractCompiled
+                                contractName={contractName}
+                                bytecode={bytecode}
+                                abi={ContractABI}
+                                vscode={vscode}
+                                compiled={compiled}
+                                errors={error}
+                              />
+                            }
+                          </div>
+                        )
                       }
-                    </div>
-                  )
-                }
-              </TabPanel>
-              <TabPanel className="react-tab-panel">
-                <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} />
-              </TabPanel>
-              <TabPanel className="react-tab-panel">
-                {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
-              </TabPanel>
-            </Tabs>
+                      )}
+                  </div>
+                )
+              }
+              {
+                compiled && fileName && (
+                  <div className="compiledOutput">
+                    {
+                      Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                        const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                        const ContractABI = compiled.contracts[fileName][contractName].abi;
+                        return (
+                          <div
+                            id={contractName}
+                            className="contract-container"
+                            key={i}
+                          >
+                            {
+                              <ContractDeploy
+                                contractName={contractName}
+                                bytecode={bytecode}
+                                abi={ContractABI}
+                                vscode={vscode}
+                                compiled={compiled}
+                                error={error}
+                                gasEstimate={gasEstimate}
+                                deployedResult={deployedResult}
+                              />
+                            }
+                          </div>
+                        );
+                      })
+                    }
+                  </div>
+                )
+              }
+            </TabPanel>
+            <TabPanel className="react-tab-panel">
+              <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} />
+            </TabPanel>
+            <TabPanel className="react-tab-panel">
+              {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
+            </TabPanel>
+          </Tabs>
           <div className="err_warning_container">
             {message.map((m, i) => {
               return (
