@@ -199,7 +199,7 @@ class App extends Component<IProps, IState> {
           />
         )}
         <p>
-          {compiled || this.props.test.testResults.length > 0 ?
+          {/* {compiled || this.props.test.testResults.length > 0 ? */}
             <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
               <TabList className="react-tabs">
                 <Tab>Main</Tab>
@@ -272,12 +272,12 @@ class App extends Component<IProps, IState> {
                 }
               </TabPanel>
               <TabPanel className="react-tab-panel">
-                {compiled ? <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} /> : null}
+                <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} />
               </TabPanel>
               <TabPanel className="react-tab-panel">
                 {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
               </TabPanel>
-            </Tabs>: null }
+            </Tabs>
           <div className="err_warning_container">
             {message.map((m, i) => {
               return (
