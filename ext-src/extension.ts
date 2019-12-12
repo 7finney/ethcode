@@ -67,6 +67,7 @@ class ReactPanel {
     if (ReactPanel.currentPanel) {
       try {
         ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel.getAccounts();
         ReactPanel.currentPanel.version = "latest";
 
         ReactPanel.currentPanel._panel.reveal(column);
@@ -78,6 +79,7 @@ class ReactPanel {
         ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel.getAccounts();
       } catch (error) {
         console.error(error);
       }
@@ -120,6 +122,8 @@ class ReactPanel {
           this.runGetGasEstimate(message.payload);
         } else if(message.command === 'debugTransaction') {
           this.debug(message.txHash);
+        } else if(message.command === 'get-balance') {
+          this.getBalance(message.account);
         }
       },
       null,
@@ -250,6 +254,23 @@ class ReactPanel {
       }
     });
     deployWorker.send({ command: "deploy-contract", payload });
+    // deployWorker.send({ command: "get-accounts" })
+  }
+  // get accounts
+  public getAccounts() {
+    const accountsWorker = this.createWorker();
+    accountsWorker.on("message", (m: any) => {
+      console.dir(JSON.stringify(m));
+    })
+    accountsWorker.send({ command: "get-accounts" });
+  }
+  // get balance of a particular account
+  private getBalance(account: string) {
+    const balanceWorker = this.createWorker();
+    balanceWorker.on("message", (m: any) => {
+      console.dir(m);
+    })
+    balanceWorker.send({ command: "get-balance" });
   }
   // Call contract method
   private runContractCall(payload: any) {
