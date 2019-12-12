@@ -29,9 +29,15 @@
   }
 
   .constructorInput {
-    margin: 10px 0 !important;
-    display: flex;
-    justify-content: space-around;
+    height: 150px;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+
+  .textarea {
+    height: 100%;
+    width: 100%;
   }
 
   .label_name {
