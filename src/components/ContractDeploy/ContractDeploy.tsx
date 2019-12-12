@@ -48,7 +48,11 @@ class ContractDeploy extends Component<IProps, IState> {
     const { abi } = this.props;
     for (var i in abi ) {
       if(abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
-        this.setState({ constructorInput: JSON.parse(JSON.stringify(abi[i].inputs)) });
+        const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
+        for(var i in constructorInput) {
+          constructorInput[i]['value'] = "";
+        }
+        this.setState({ constructorInput: constructorInput });
         break;
       }
     }
@@ -117,11 +121,15 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleConstructorInputChange(event: any) {
     const { constructorInput } = this.state;
-    const item = constructorInput[event.target.id];
-    // @ts-ignore
-    item['value'] = event.target.value;
-    constructorInput[event.target.id] = item;
-    this.setState({ constructorInput });
+    if(constructorInput.length > 3) {
+      this.setState({ constructorInput: JSON.parse(event.target.value) });
+    } else {
+      const item = constructorInput[event.target.id];
+      // @ts-ignore
+      item['value'] = event.target.value;
+      constructorInput[event.target.id] = item;
+      this.setState({ constructorInput });
+    }
   }
   private handleContractAddrInput(event: any) {
     this.setState({ deployedAddress: event.target.value });
@@ -157,7 +165,7 @@ class ContractDeploy extends Component<IProps, IState> {
           <form onSubmit={this.handleDeploy}>
             <div className="form-container">
               {
-                (constructorInput && constructorInput.length > 0) && 
+                (constructorInput && constructorInput.length > 0) && (constructorInput.length <= 3) ?
                 <div>
                   {
                     constructorInput.map((x: object, index) => {
@@ -173,6 +181,10 @@ class ContractDeploy extends Component<IProps, IState> {
                       )
                     })
                   }
+                </div> :
+                <div className="constructorInput">
+                  <textarea className="textarea" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
+                  </textarea>
                 </div>
               }
             </div>
