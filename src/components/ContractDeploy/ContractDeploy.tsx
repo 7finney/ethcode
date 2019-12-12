@@ -1,16 +1,18 @@
 import React, { Component } from "react";
 import "./ContractDeploy.css";
 import JSONPretty from 'react-json-pretty';
+import { connect } from "react-redux";
 
 interface IProps {
-  contractName: string;
-  bytecode: any;
-  abi: any;
-  vscode: any;
-  compiled: any;
-  error: Error | null;
-  gasEstimate: number;
-  deployedResult: string;
+    contractName: string;
+    bytecode: any;
+    abi: any;
+    vscode: any;
+    compiled: any;
+    error: Error | null;
+    gasEstimate: number;
+    deployedResult: string;
+    compiledResult: object;
 }
 interface IState {
   constructorInput: object[];
@@ -45,6 +47,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 
   componentDidMount() {
+    this.setState({ deployed: this.props.compiledResult })
     const { abi } = this.props;
     for (var i in abi ) {
       if(abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
@@ -252,4 +255,10 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 }
 
-export default ContractDeploy;
+function mapStateToProps(state: any) {
+    return {
+      compiledResult: state.compiledStore.compiledresult
+    };
+}
+
+export default connect(mapStateToProps, { } )(ContractDeploy);

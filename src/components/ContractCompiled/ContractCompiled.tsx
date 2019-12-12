@@ -21,7 +21,7 @@ class ContractCompiled extends Component<IProps, IState> {
       error: null
     };
   }
-  
+
   public render() {
     const { contractName, bytecode, abi } = this.props;
     const { error } = this.state;

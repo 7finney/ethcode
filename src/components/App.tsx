@@ -4,7 +4,9 @@ import { connect } from "react-redux";
 import {
   addTestResults,
   addFinalResultCallback,
-  clearFinalResult
+  clearFinalResult,
+  setDeployedResult,
+  clearDeployedResult
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
@@ -14,10 +16,15 @@ import CompilerVersionSelector from "./CompilerVersionSelector";
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+
 interface IProps {
   addTestResults: (result: any) => void;
   addFinalResultCallback: (result: any) => void;
   clearFinalResult: () => void;
+  setDeployedResult: (result: any) => void;
+  clearDeployedResult: () => void;
   test: any;
 }
 
@@ -30,7 +37,8 @@ interface IState {
   availableVersions: any;
   gasEstimate: number;
   deployedResult: string;
-  txTrace: object
+  txTrace: object,
+  tabIndex: number
 }
 interface IOpt {
   value: string;
@@ -51,7 +59,8 @@ class App extends Component<IProps, IState> {
       availableVersions: "",
       gasEstimate: 0,
       deployedResult: "",
-      txTrace: {}
+      txTrace: {},
+      tabIndex: 1
     };
   }
   public componentDidMount() {
@@ -60,6 +69,12 @@ class App extends Component<IProps, IState> {
 
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
+        const newCompile = JSON.stringify(data.newCompile)
+
+        if (newCompile) {
+          this.props.clearDeployedResult()
+        }
+
         const fileName = Object.keys(compiled.sources)[0];
 
         if (compiled.errors && compiled.errors.length > 0) {
@@ -89,6 +104,14 @@ class App extends Component<IProps, IState> {
         this.props.clearFinalResult();
       }
 
+      if (data.testPanel === 'test') {
+        this.setState({ tabIndex: 2 })
+      }
+
+      if (data.testPanel === 'main') {
+        this.setState({ tabIndex: 0 })
+      }
+
       if (data._testCallback) {
         const result = data._testCallback;
         this.props.addTestResults(result);
@@ -111,6 +134,8 @@ class App extends Component<IProps, IState> {
         this.setState({ gasEstimate: data.gasEstimate });
       }
       if(data.deployedResult) {
+        const result = data.deployedResult.deployedResult
+        this.props.setDeployedResult(result);
         this.setState({ deployedResult: data.deployedResult.deployedResult });
       }
       if (data.txTrace) {
@@ -141,9 +166,9 @@ class App extends Component<IProps, IState> {
       error,
       gasEstimate,
       deployedResult,
-      txTrace
+      txTrace,
+      tabIndex
     } = this.state;
-    
     
     return (
       <div className="App">
@@ -173,72 +198,85 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
-
-        { compiled ? <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} /> : null }
-        
-        {this.props.test.testResults.length > 0 && <TestDisplay />}
         <p>
-          {
-            compiled && fileName && (
-              <div className="compiledOutput">
-                {
-                Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                  const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                  const ContractABI = compiled.contracts[fileName][contractName].abi;
-                  return (
-                    <div
-                      id={contractName}
-                      className="contract-container"
-                      key={i}
-                    >
-                      {
-                        <ContractCompiled
-                          contractName={contractName}
-                          bytecode={bytecode}
-                          abi={ContractABI}
-                          vscode={vscode}
-                          compiled={compiled}
-                          errors={error}
-                        />
+          <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
+            <TabList className="react-tabs">
+              <Tab>Main</Tab>
+              <Tab>Debug</Tab>
+              <Tab>Test</Tab>
+            </TabList>
+
+            <TabPanel className="react-tab-panel">
+              {
+                compiled && fileName && (
+                  <div className="compiledOutput">
+                    {
+                      Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                        const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                        const ContractABI = compiled.contracts[fileName][contractName].abi;
+                        return (
+                          <div
+                            id={contractName}
+                            className="contract-container"
+                            key={i}
+                          >
+                            {
+                              <ContractCompiled
+                                contractName={contractName}
+                                bytecode={bytecode}
+                                abi={ContractABI}
+                                vscode={vscode}
+                                compiled={compiled}
+                                errors={error}
+                              />
+                            }
+                          </div>
+                        )
                       }
-                    </div>
-                  )}
-                )}
-              </div>
-            )
-          }
-          {
-            compiled && fileName && (
-              <div className="compiledOutput">
-                {
-                  Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                    const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                    const ContractABI = compiled.contracts[fileName][contractName].abi;
-                    return(
-                    <div
-                      id={contractName}
-                      className="contract-container"
-                      key={i}
-                    >
-                      {
-                        <ContractDeploy
-                          contractName={contractName}
-                          bytecode={bytecode}
-                          abi={ContractABI}
-                          vscode={vscode}
-                          compiled={compiled}
-                          error={error}
-                          gasEstimate={gasEstimate}
-                          deployedResult={deployedResult}
-                        />
-                      }
-                    </div>
-                    );
-                  })
-                }
-              </div>
-            )
-          }
+                      )}
+                  </div>
+                )
+              }
+              {
+                compiled && fileName && (
+                  <div className="compiledOutput">
+                    {
+                      Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                        const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                        const ContractABI = compiled.contracts[fileName][contractName].abi;
+                        return (
+                          <div
+                            id={contractName}
+                            className="contract-container"
+                            key={i}
+                          >
+                            {
+                              <ContractDeploy
+                                contractName={contractName}
+                                bytecode={bytecode}
+                                abi={ContractABI}
+                                vscode={vscode}
+                                compiled={compiled}
+                                error={error}
+                                gasEstimate={gasEstimate}
+                                deployedResult={deployedResult}
+                              />
+                            }
+                          </div>
+                        );
+                      })
+                    }
+                  </div>
+                )
+              }
+            </TabPanel>
+            <TabPanel className="react-tab-panel">
+              <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} />
+            </TabPanel>
+            <TabPanel className="react-tab-panel">
+              {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
+            </TabPanel>
+          </Tabs>
           <div className="err_warning_container">
             {message.map((m, i) => {
               return (
@@ -269,11 +307,11 @@ class App extends Component<IProps, IState> {
 
 function mapStateToProps({ test }: any) {
   return {
-    test
+    test,
   };
 }
 
 export default connect(
   mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult }
+  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, clearDeployedResult }
 )(App);
