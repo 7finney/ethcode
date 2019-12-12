@@ -4,13 +4,13 @@ import "./DebugDisplay.css";
 interface IProps {
     vscode: any;
     txTrace: any;
-    deployedResult: object;
+    deployedResult: string;
 }
 interface IState {
     txHash: string | null;
     debugObj: object;
     indx: any;
-    deployedResult: object
+    deployedResult: string
 }
 
 class DebugDisplay extends Component<IProps, IState> {
@@ -18,7 +18,7 @@ class DebugDisplay extends Component<IProps, IState> {
         txHash: '',
         debugObj: {},
         indx: -1,
-        deployedResult: {}
+        deployedResult: ""
     };
     constructor(props: IProps) {
         super(props);
