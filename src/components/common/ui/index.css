@@ -1,0 +1,17 @@
+.custom_input_css {
+  border: 1px solid #38ffAf;
+  background: black;
+  padding: 6px 12px;
+  color: white;
+}
+
+.custom_button_css {
+  border: 1px solid #38ffAf;
+  background: #38ffAf;
+  color: black;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+}

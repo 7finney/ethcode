@@ -168,26 +168,31 @@ class ContractDeploy extends Component<IProps, IState> {
           <form onSubmit={this.handleDeploy}>
             <div className="form-container">
               {
-                (constructorInput && constructorInput.length > 0) && (constructorInput.length <= 3) ?
+                (constructorInput && constructorInput.length > 0) &&
                 <div>
                   {
-                    constructorInput.map((x: object, index) => {
-                      return(
-                        <div className="constructorInput">
-                          {/* 
+                    (constructorInput.length <= 3) ?
+                      <div>
+                        {
+                          constructorInput.map((x: object, index) => {
+                            return (
+                              <div className="constructorInput">
+                                {/* 
                             // @ts-ignore */}
-                          <label className="label_name">{x.name}:</label>
-                          {/* 
+                                <label className="label_name">{x.name}:</label>
+                                {/* 
                             // @ts-ignore */}
-                          <input className="input" type={x.type} placeholder={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)}/>
-                        </div>
-                      )
-                    })
+                                <input className="input custom_input_css" type={x.type} placeholder={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
+                              </div>
+                            )
+                          })
+                        }
+                      </div> :
+                      <div className="constructorInput">
+                        <textarea className="textarea custom_input_css" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
+                        </textarea>
+                      </div>
                   }
-                </div> :
-                <div className="constructorInput">
-                  <textarea className="textarea" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
-                  </textarea>
                 </div>
               }
             </div>
@@ -195,17 +200,17 @@ class ContractDeploy extends Component<IProps, IState> {
               <label className="label_name">Gas Supply:</label>
               {
                 (gasSupply > 0) ?
-                <input type="number" className="input" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
-                <input type="number" className="input" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
+                <input type="number" className="input custom_input_css" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
+                <input type="number" className="input custom_input_css" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
               }
             </div>
             <div className="button_group">
-              <input type="submit" value="Deploy" />
+              <input type="submit" className="custom_button_css" value="Deploy" />
             </div>
           </form>
           <div className="button_group">
             <form onSubmit={this.handleGetGasEstimate}>
-              <input type="submit" value="Get gas estimate" />
+              <input type="submit" className="custom_button_css" value="Get gas estimate" />
             </form>
           </div>
           <div className="button_group">
