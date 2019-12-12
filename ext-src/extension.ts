@@ -114,6 +114,8 @@ class ReactPanel {
           this.version = message.version;
         } else if(message.command === 'run-deploy') {
           this.runDeploy(message.payload);
+        } else if(message.command === 'contract-method-call') {
+          this.runContractCall(message.payload);
         } else if(message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload);
         } else if(message.command === 'debugTransaction') {
@@ -181,7 +183,7 @@ class ReactPanel {
 				// console.dir(JSON.stringify(sources));
 				context.workspaceState.update("sources", JSON.stringify(sources));
 
-				this._panel.webview.postMessage({ compiled: m.compiled, sources });
+        this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true, testPanel: 'main' });
 				solcWorker.kill();
 			}
 			if (m.processMessage) {
@@ -249,6 +251,14 @@ class ReactPanel {
     });
     deployWorker.send({ command: "deploy-contract", payload });
   }
+  // Call contract method
+  private runContractCall(payload: any) {
+    const callWorker = this.createWorker();
+    callWorker.on("message", (m: any) => {
+      console.dir(m);
+    })
+    callWorker.send({ command: "contract-method-call", payload })
+  }
   // Get gas estimates
   private runGetGasEstimate(payload: any) {
     const deployWorker = this.createWorker();
@@ -314,9 +324,9 @@ class ReactPanel {
       if (m.utResp) {
         const res = JSON.parse(m.utResp.result);
         if (res.type) {
-          this._panel.webview.postMessage({ _testCallback: res });
+          this._panel.webview.postMessage({ _testCallback: res, testPanel: 'test' });
         } else {
-          this._panel.webview.postMessage({ _finalCallback: res });
+          this._panel.webview.postMessage({ _finalCallback: res, testPanel: 'test' });
           solcWorker.kill();
         }
       }
