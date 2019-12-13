@@ -60,7 +60,7 @@ class App extends Component<IProps, IState> {
       gasEstimate: 0,
       deployedResult: "",
       txTrace: {},
-      tabIndex: 1
+      tabIndex: 0
     };
   }
   public componentDidMount() {
@@ -175,17 +175,6 @@ class App extends Component<IProps, IState> {
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        { !compiled ?
-          <div className="instructions">
-            <p>
-              <pre className="hot-keys"><b>ctrl+alt+c</b> - Compile contracts</pre>
-            </p>
-            <p>
-              <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
-            </p>
-          </div>
-          : null
-        }
         {availableVersions && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}
@@ -200,13 +189,26 @@ class App extends Component<IProps, IState> {
         )}
         <p>
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
-            <TabList className="react-tabs" style={{ marginLeft: "-20px" }}>
-              <Tab>Main</Tab>
-              <Tab>Debug</Tab>
-              <Tab>Test</Tab>
+            <TabList className="react-tabs tab-padding">
+              <div className="tab-container">
+                <Tab>Main</Tab>
+                <Tab>Debug</Tab>
+                <Tab>Test</Tab>
+              </div>
             </TabList>
 
             <TabPanel className="react-tab-panel">
+            { !compiled ?
+              <div className="instructions">
+                <p>
+                  <pre className="hot-keys"><b>ctrl+alt+c</b> - Compile contracts</pre>
+                </p>
+                <p>
+                  <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
+                </p>
+              </div>
+              : null
+            }
               {
                 compiled && fileName && (
                   <div className="compiledOutput">
