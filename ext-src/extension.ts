@@ -124,6 +124,8 @@ class ReactPanel {
           this.debug(message.txHash);
         } else if(message.command === 'get-balance') {
           this.getBalance(message.account);
+        } else if(message.command === 'send-ether') {
+          this.sendEther(message.payload);
         }
       },
       null,
@@ -260,7 +262,9 @@ class ReactPanel {
   public getAccounts() {
     const accountsWorker = this.createWorker();
     accountsWorker.on("message", (m: any) => {
+      console.log("accounts: ")
       console.dir(JSON.stringify(m));
+      this._panel.webview.postMessage({ fetchAccounts: m });
     })
     accountsWorker.send({ command: "get-accounts" });
   }
@@ -293,6 +297,13 @@ class ReactPanel {
       }
     });
     deployWorker.send({ command: "get-gas-estimate", payload });
+  }
+  private sendEther(payload: any) {
+    const sendEtherWorker = this.createWorker();
+    sendEtherWorker.on("message", (m: any) => {
+      this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+    });
+    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload });
   }
   public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
 		// send JSON serializable compiled data

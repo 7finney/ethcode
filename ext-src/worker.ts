@@ -182,6 +182,22 @@ process.on("message", async m => {
       process.send({ accounts: result.accounts, balance: result.balance });
     })
   }
+  // send wei_value to a address
+  if(m.command === "send-ether") {
+    const transactionInfo = m.transactionInfo;
+    const c = {
+      callInterface: {
+        command: 'send-ether',
+        payload: JSON.stringify(transactionInfo)
+      }
+    };
+    console.dir(JSON.stringify(c));
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ transactionResult: data.result });
+    })
+  }
   // fetch balance of a account
   if(m.command === "get-balance") {
     const c = {
