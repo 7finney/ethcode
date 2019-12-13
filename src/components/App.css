@@ -135,3 +135,10 @@
 .tab-padding {
   padding: 5px 10px;
 }
+
+.select-width {
+  width: 350px;
+  height: 20px;
+  font-size: 17px;
+  margin: 20px auto;
+}

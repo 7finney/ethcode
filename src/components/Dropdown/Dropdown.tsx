@@ -2,7 +2,6 @@
 import React, { Component } from "react";
 // @ts-ignore
 import Select from "react-select";
-import "./Dropdown.css";
 
 interface IProps {
   files: any;
@@ -22,7 +21,8 @@ const customStyles = {
     ...base,
     backgroundColor: "#000",
     color: "#fff",
-    menu: "20px"
+    menu: "20px",
+    borderColor: '#38ffAf'
   }),
 
   menu: (base: any) => ({
@@ -78,7 +78,7 @@ class Dropdown extends Component<IProps, IState> {
           value={selectedOption}
           onChange={this.handleChange}
           options={options}
-          className="optStyle"
+          className="select-width"
           styles={customStyles}
         />
       </div>

@@ -21,7 +21,8 @@ const customStyles = {
   control: (base: any, state: any) => ({
     ...base,
     backgroundColor: "#000",
-    color: "#fff"
+    color: "#fff",
+    borderColor: '#38ffAf'
   }),
 
   menu: (base: any) => ({
@@ -85,7 +86,7 @@ class CompilerVersionSelector extends Component<IProps, IState> {
             value={selectedVersion}
             onChange={this._handleVersionSelector}
             options={this.state.options}
-            className="optStyle"
+            className="select-width"
             styles={customStyles}
           />
         </div>
