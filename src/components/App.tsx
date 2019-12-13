@@ -299,7 +299,10 @@ class App extends Component<IProps, IState> {
             })}{" "}
           </div>
         </p>
-        <pre className="processMessage">{processMessage}</pre>
+        {
+          processMessage &&
+          <pre className="processMessage">{processMessage}</pre>
+        }
       </div>
     );
   }
