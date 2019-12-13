@@ -14,32 +14,32 @@ code {
 
 .custom_input_css {
   padding: 6px 12px;
-  border: 1px solid #38ffAf;
+  margin: 0px 10px;
 }
 
-.custom_input_css.vscode-dark {
+.vscode-dark .custom_input_css {
   border: 1px solid #38ffAf;
-  background: red;
-  color: white;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
 }
 
-.custom_input_css.vscode-high-contrast {
+.vscode-high-contrast .custom_input_css {
   border: 1px solid #38ffAf;
-  background: white;
-  color: black;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
 }
 
-.custom_input_css.vscode-light {
+.vscode-light .custom_input_css {
   border: 1px solid black;
-  background: white;
-  color: black;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
 }
 
 .custom_button_css {
   border: 1px solid #38ffAf;
   background: #38ffAf;
   color: black;
-  padding: 10px 20px;
+  padding: 5px 15px;
   text-align: center;
   text-decoration: none;
   display: inline-block;

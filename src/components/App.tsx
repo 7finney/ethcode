@@ -199,8 +199,8 @@ class App extends Component<IProps, IState> {
           />
         )}
         <p>
-          <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
-            <TabList className="react-tabs">
+          <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
+            <TabList className="react-tabs" style={{ marginLeft: "-20px" }}>
               <Tab>Main</Tab>
               <Tab>Debug</Tab>
               <Tab>Test</Tab>

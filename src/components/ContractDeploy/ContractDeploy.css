@@ -1,59 +1,39 @@
+.form-container {
+  padding-right: 20px;
+}
+
+.constructorInput {
+  width: 100%;
+}
+
+.json_input_container {
+  height: 150px;
+  width: 100%;
+}
+
+.transaction_receipt {
+  height: 150px;
+}
+
 .large-code {
-    overflow-x: scroll;
-    background-color: #000;
-    color: #fff;
-    padding: 5px;
-    height: 100%;
-  }
-  
-  .large-code-error {
-    overflow-x: scroll;
-    background-color: #000;
-    color: rgb(255, 37, 37);
-    padding: 5px;
-    height: 40px;
-  }
+  height: 100%;
+}
 
-  .form-container {
-    margin: 35px 0;
-    max-height: 25vh;
-    overflow: scroll;
-  }
-  
-  .contract-name {
-    text-align: left;
-  }
-  
-  .error_message {
-    margin-top: 5px;
-  }
+.json_input {
+  height: 100%;
+  width: 100%;
+}
 
-  .constructorInput {
-    height: 150px;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: hidden;
-  }
+.gas_supply {
+  margin: 20px 0;
+}
 
-  .textarea {
-    height: 100%;
-    width: 100%;
-  }
+.input-flex {
+  display: flex;
+  justify-content: space-between;
+}
 
-  .label_name {
-    width: 40%;
-  }
-  .input {
-    width: 60%;
-  }
-
-  .gas_supply {
-    margin: 20px 10px;
-    display: flex;
-    justify-content: space-around;
-  }
-  .button_group {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 10px;
-  }
+.form_align {
+  margin: 20px 0px;
+  margin-left: -10px;
+}

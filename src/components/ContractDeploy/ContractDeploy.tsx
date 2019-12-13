@@ -176,20 +176,20 @@ class ContractDeploy extends Component<IProps, IState> {
                         {
                           constructorInput.map((x: object, index) => {
                             return (
-                              <div className="constructorInput">
+                              <div className="constructorInput input-flex" style={{ marginTop: '10px', marginBottom: '10px' }}>
                                 {/* 
-                            // @ts-ignore */}
+                                // @ts-ignore */}
                                 <label className="label_name">{x.name}:</label>
                                 {/* 
-                            // @ts-ignore */}
-                                <input className="input custom_input_css" type={x.type} placeholder={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
+                                // @ts-ignore */}
+                                <input className="custom_input_css" type={x.type} placeholder={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
                               </div>
                             )
                           })
                         }
                       </div> :
-                      <div className="constructorInput">
-                        <textarea className="textarea custom_input_css" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
+                      <div className="json_input_container">
+                        <textarea className="json_input custom_input_css" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
                         </textarea>
                       </div>
                   }
@@ -197,37 +197,37 @@ class ContractDeploy extends Component<IProps, IState> {
               }
             </div>
             <div className="gas_supply">
-              <label className="label_name">Gas Supply:</label>
+              <label className="label_name" style={{ marginRight: '10px' }}>Gas Supply:</label>
               {
                 (gasSupply > 0) ?
                 <input type="number" className="input custom_input_css" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
                 <input type="number" className="input custom_input_css" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
               }
             </div>
-            <div className="button_group">
+            <div style={{ marginBottom: '5px' }}>
               <input type="submit" className="custom_button_css" value="Deploy" />
             </div>
           </form>
-          <div className="button_group">
+          <div>
             <form onSubmit={this.handleGetGasEstimate}>
               <input type="submit" className="custom_button_css" value="Get gas estimate" />
             </form>
           </div>
-          <div className="button_group">
-            <form onSubmit={this.handleCall}>
-              <input type="text" name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput}/>
-              <input type="text" name="methodName" onChange={this.handleMethodnameInput}/>
+          <div>
+            <form onSubmit={this.handleCall} className="form_align" >
+              <input type="text" className="custom_input_css" style={{ marginRight: '5px' }} name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput}/>
+              <input type="text" className="custom_input_css" name="methodName" onChange={this.handleMethodnameInput}/>
               {
-                methodName !=='' && methodInputs !== '' &&
+                methodName !=='' && methodInputs !== '[]' &&
                 <div className="constructorInput">
-                  <textarea className="textarea" value={methodInputs} onChange={this.handleMethodInputs}></textarea> 
+                  <textarea className="custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea> 
                 </div>
               }
-              <input type="submit" value="Call function" />
+              <input type="submit" style={{ marginLeft: '5px' }} className="custom_button_css" value="Call function" />
             </form>
           </div>
         </div>
-        <div className="error_message">
+        <div className="transaction_receipt">
           {
             Object.entries(deployed).length !== 0 &&
             <div>
