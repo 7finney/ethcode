@@ -13,18 +13,33 @@ code {
 }
 
 .custom_input_css {
-  border: 1px solid #38ffAf;
-  background: black;
   padding: 6px 12px;
+  border: 1px solid #38ffAf;
+}
+
+.custom_input_css.vscode-dark {
+  border: 1px solid #38ffAf;
+  background: red;
   color: white;
+}
+
+.custom_input_css.vscode-high-contrast {
+  border: 1px solid #38ffAf;
+  background: white;
+  color: black;
+}
+
+.custom_input_css.vscode-light {
+  border: 1px solid black;
+  background: white;
+  color: black;
 }
 
 .custom_button_css {
   border: 1px solid #38ffAf;
   background: #38ffAf;
   color: black;
-  padding: 5px 10px;
-  font-weight: 400;
+  padding: 10px 20px;
   text-align: center;
   text-decoration: none;
   display: inline-block;

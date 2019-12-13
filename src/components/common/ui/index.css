@@ -1,8 +1,23 @@
-.custom_input_css {
-  border: 1px solid #38ffAf;
-  background: black;
+/* .custom_input_css {
   padding: 6px 12px;
+}
+
+.custom_input_css.vscode-dark {
+  border: 1px solid #38ffAf;
+  background: red;
   color: white;
+}
+
+.custom_input_css.vscode-high-contrast {
+  border: 1px solid #38ffAf;
+  background: white;
+  color: black;
+}
+
+.custom_input_css.vscode-light {
+  border: 1px solid black;
+  background: white;
+  color: black;
 }
 
 .custom_button_css {
@@ -14,4 +29,4 @@
   text-decoration: none;
   display: inline-block;
   cursor: pointer;
-}
+} */

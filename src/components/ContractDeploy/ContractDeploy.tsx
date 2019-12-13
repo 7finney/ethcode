@@ -52,8 +52,8 @@ class ContractDeploy extends Component<IProps, IState> {
     for (var i in abi ) {
       if(abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-        for(var i in constructorInput) {
-          constructorInput[i]['value'] = "";
+        for(var j in constructorInput) {
+          constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
         break;
@@ -141,7 +141,7 @@ class ContractDeploy extends Component<IProps, IState> {
     const { abi } = this.props;
     for(var obj in abi) {
       // @ts-ignore
-      if(abi[obj]['name'] == event.target.value) {
+      if(abi[obj]['name'] === event.target.value) {
         var funcObj: object = abi[obj];
         this.setState({ methodName: event.target.value });
         // @ts-ignore
