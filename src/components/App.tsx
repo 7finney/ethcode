@@ -6,7 +6,8 @@ import {
   addFinalResultCallback,
   clearFinalResult,
   setDeployedResult,
-  clearDeployedResult
+  clearDeployedResult,
+  setCallResult
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
@@ -25,6 +26,7 @@ interface IProps {
   clearFinalResult: () => void;
   setDeployedResult: (result: any) => void;
   clearDeployedResult: () => void;
+  setCallResult: (result: any) => void;
   test: any;
 }
 
@@ -140,6 +142,10 @@ class App extends Component<IProps, IState> {
       }
       if (data.txTrace) {
         this.setState({ txTrace: data.txTrace });
+      }
+      if(data.callResult) {
+        const result = data.callResult;
+        this.props.setCallResult(result);
       }
 
       // TODO: handle error message
@@ -318,5 +324,5 @@ function mapStateToProps({ test }: any) {
 
 export default connect(
   mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, clearDeployedResult }
+  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, clearDeployedResult, setCallResult }
 )(App);

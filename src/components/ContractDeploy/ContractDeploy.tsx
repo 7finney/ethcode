@@ -13,6 +13,7 @@ interface IProps {
     gasEstimate: number;
     deployedResult: string;
     compiledResult: object;
+    callResult: object;
 }
 interface IState {
   constructorInput: object[];
@@ -47,7 +48,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    this.setState({ deployed: this.props.compiledResult })
+    this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
     for (var i in abi ) {
       if(abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
@@ -61,7 +62,9 @@ class ContractDeploy extends Component<IProps, IState> {
     }
   }
   componentDidUpdate(prevProps: any) {
-    const { gasEstimate, deployedResult, error } = this.props;
+    const { gasEstimate, deployedResult, callResult, error } = this.props;
+    console.log("callResult");
+    console.dir(JSON.stringify(callResult));
     if(error !== prevProps.error) {
       this.setState({ error: error });
     }
@@ -162,6 +165,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   public render() {
     const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
+    const { callResult } = this.props;
     return(
       <div>
         <div>
@@ -242,6 +246,14 @@ class ContractDeploy extends Component<IProps, IState> {
             </div>
           }
         </div>
+        <div className="call-result">
+          <span className="contract-name inline-block highlight-success">
+            Call result:
+          </span>
+          <div>
+            <pre className="large-code-error">{JSON.stringify(callResult)}</pre>
+          </div>
+        </div>
         <div className="error_message">
         {
           error &&
@@ -262,7 +274,8 @@ class ContractDeploy extends Component<IProps, IState> {
 
 function mapStateToProps(state: any) {
     return {
-      compiledResult: state.compiledStore.compiledresult
+      compiledResult: state.compiledStore.compiledresult,
+      callResult: state.compiledStore.callResult
     };
 }
 
