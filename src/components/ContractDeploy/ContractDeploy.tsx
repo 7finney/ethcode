@@ -229,21 +229,6 @@ class ContractDeploy extends Component<IProps, IState> {
             </form>
           </div>
         </div>
-        <div className="transaction_receipt">
-          {
-            Object.entries(deployed).length > 0 &&
-            <div>
-              <span className="contract-name inline-block highlight-success">
-                Transaction Receipt:
-              </span>
-              <div>
-                <pre className="large-code">
-                  <JSONPretty id="json-pretty" data={deployed}></JSONPretty>
-                </pre>
-              </div>
-            </div>
-          }
-        </div>
         {
           // @ts-ignore
           Object.entries(callResult).length > 0 &&
@@ -252,10 +237,28 @@ class ContractDeploy extends Component<IProps, IState> {
               Call result:
             </span>
             <div>
-              <pre className="large-code">{JSON.stringify(callResult)}</pre>
+              <pre className="large-code">
+                {
+                  // @ts-ignore
+                  callResult.callResult
+                }
+              </pre>
             </div>
           </div>
         }
+        {
+          Object.entries(deployed).length > 0 &&
+          <div className="transaction_receipt">
+            <span className="contract-name inline-block highlight-success">
+              Transaction Receipt:
+            </span>
+            <div>
+              <pre className="large-code">
+                <JSONPretty id="json-pretty" data={deployed}></JSONPretty>
+              </pre>
+            </div>
+          </div>
+          }
         <div className="error_message">
         {
           error &&
