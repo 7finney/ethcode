@@ -7,12 +7,14 @@
 }
 
 .json_input_container {
-  height: 150px;
+  max-height: 25vh;
+  min-height: 5vh;
   width: 100%;
 }
 
 .transaction_receipt {
-  height: 150px;
+  min-height: 5vh;
+  max-height: 25vh;
 }
 
 .large-code {
@@ -36,4 +38,8 @@
 .form_align {
   margin: 20px 0px;
   margin-left: -10px;
+}
+
+.call-result {
+
 }

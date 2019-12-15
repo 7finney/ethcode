@@ -204,78 +204,54 @@ class App extends Component<IProps, IState> {
             </TabList>
 
             <TabPanel className="react-tab-panel">
-            { !compiled ?
-              <div className="instructions">
-                <p>
-                  <pre className="hot-keys"><b>ctrl+alt+c</b> - Compile contracts</pre>
-                </p>
-                <p>
-                  <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
-                </p>
-              </div>
-              : null
-            }
               {
-                compiled && fileName && (
-                  <div className="compiledOutput">
-                    {
-                      Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                        const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                        const ContractABI = compiled.contracts[fileName][contractName].abi;
-                        return (
-                          <div
-                            id={contractName}
-                            className="contract-container"
-                            key={i}
-                          >
-                            {
-                              <ContractCompiled
-                                contractName={contractName}
-                                bytecode={bytecode}
-                                abi={ContractABI}
-                                vscode={vscode}
-                                compiled={compiled}
-                                errors={error}
-                              />
-                            }
-                          </div>
-                        )
-                      }
-                      )}
-                  </div>
-                )
+                !compiled ?
+                <div className="instructions">
+                  <p>
+                    <pre className="hot-keys"><b>ctrl+alt+c</b> - Compile contracts</pre>
+                  </p>
+                  <p>
+                    <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
+                  </p>
+                </div> : null
               }
               {
-                compiled && fileName && (
-                  <div className="compiledOutput">
-                    {
-                      Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                        const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                        const ContractABI = compiled.contracts[fileName][contractName].abi;
-                        return (
-                          <div
-                            id={contractName}
-                            className="contract-container"
-                            key={i}
-                          >
-                            {
-                              <ContractDeploy
-                                contractName={contractName}
-                                bytecode={bytecode}
-                                abi={ContractABI}
-                                vscode={vscode}
-                                compiled={compiled}
-                                error={error}
-                                gasEstimate={gasEstimate}
-                                deployedResult={deployedResult}
-                              />
-                            }
-                          </div>
-                        );
-                      })
-                    }
-                  </div>
-                )
+                compiled && fileName && Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
+                  const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
+                  const ContractABI = compiled.contracts[fileName][contractName].abi;
+                  return (
+                    <div className="compiledOutput">
+                      <div
+                        id={contractName}
+                        className="contract-container"
+                        key={i}
+                      >
+                        {
+                          <ContractCompiled
+                            contractName={contractName}
+                            bytecode={bytecode}
+                            abi={ContractABI}
+                            vscode={vscode}
+                            compiled={compiled}
+                            errors={error}
+                          />
+                        }
+                        {
+                          <ContractDeploy
+                            contractName={contractName}
+                            bytecode={bytecode}
+                            abi={ContractABI}
+                            vscode={vscode}
+                            compiled={compiled}
+                            error={error}
+                            gasEstimate={gasEstimate}
+                            deployedResult={deployedResult}
+                          />
+                        }
+                      </div>
+                    </div>
+                  );
+                })
               }
             </TabPanel>
             <TabPanel className="react-tab-panel">

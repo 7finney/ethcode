@@ -62,9 +62,7 @@ class ContractDeploy extends Component<IProps, IState> {
     }
   }
   componentDidUpdate(prevProps: any) {
-    const { gasEstimate, deployedResult, callResult, error } = this.props;
-    console.log("callResult");
-    console.dir(JSON.stringify(callResult));
+    const { gasEstimate, deployedResult, error } = this.props;
     if(error !== prevProps.error) {
       this.setState({ error: error });
     }
@@ -233,7 +231,7 @@ class ContractDeploy extends Component<IProps, IState> {
         </div>
         <div className="transaction_receipt">
           {
-            Object.entries(deployed).length !== 0 &&
+            Object.entries(deployed).length > 0 &&
             <div>
               <span className="contract-name inline-block highlight-success">
                 Transaction Receipt:
@@ -246,14 +244,18 @@ class ContractDeploy extends Component<IProps, IState> {
             </div>
           }
         </div>
-        <div className="call-result">
-          <span className="contract-name inline-block highlight-success">
-            Call result:
-          </span>
-          <div>
-            <pre className="large-code-error">{JSON.stringify(callResult)}</pre>
+        {
+          // @ts-ignore
+          Object.entries(callResult).length > 0 &&
+          <div className="call-result">
+            <span>
+              Call result:
+            </span>
+            <div>
+              <pre className="large-code">{JSON.stringify(callResult)}</pre>
+            </div>
           </div>
-        </div>
+        }
         <div className="error_message">
         {
           error &&
