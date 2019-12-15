@@ -237,10 +237,11 @@ class ContractDeploy extends Component<IProps, IState> {
               Call result:
             </span>
             <div>
+              {/* TODO: incase of call error (calllResult.error) render in red text and heading should be "Call error:" */}
               <pre className="large-code">
                 {
                   // @ts-ignore
-                  callResult.callResult
+                  callResult.callResult || JSON.stringify(callResult.error)
                 }
               </pre>
             </div>
