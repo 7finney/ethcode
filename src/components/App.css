@@ -95,6 +95,10 @@
   border-radius: 2px;
 }
 
+.contractSelect_container {
+  height: 100px;
+}
+
 .react-tabs {
   text-align: left;
   overflow-y: hidden;
