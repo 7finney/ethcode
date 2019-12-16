@@ -6,10 +6,10 @@
   width: 100%;
 }
 
-.json_input_container {
+.json_input_container, .json_input {
   max-height: 25vh;
-  min-height: 5vh;
-  width: 100%;
+  min-height: 15vh;
+  width: 80vw;
 }
 
 .transaction_receipt {
@@ -19,11 +19,6 @@
 
 .large-code {
   height: 100%;
-}
-
-.json_input {
-  height: 100%;
-  width: 100%;
 }
 
 .gas_supply {

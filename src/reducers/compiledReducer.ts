@@ -19,7 +19,8 @@ export default (state: any = initialState, action: any) => {
     case CLEAR_DEPLOYED_RESULT:
       return {
         ...state,
-        compiledresult: {}
+        compiledresult: {},
+        callResult: {}
       }
     case SET_CALL_RESULT:
       return {

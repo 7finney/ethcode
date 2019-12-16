@@ -221,8 +221,8 @@ class ContractDeploy extends Component<IProps, IState> {
               <input type="text" className="custom_input_css" name="methodName" onChange={this.handleMethodnameInput}/>
               {
                 methodName !=='' && methodInputs !== '[]' &&
-                <div className="constructorInput">
-                  <textarea className="custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea> 
+                <div className="json_input_container" style={{ marginTop: '10px' }}>
+                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea> 
                 </div>
               }
               <input type="submit" style={{ marginLeft: '5px' }} className="custom_button_css" value="Call function" />
@@ -234,16 +234,27 @@ class ContractDeploy extends Component<IProps, IState> {
           Object.entries(callResult).length > 0 &&
           <div className="call-result">
             <span>
-              Call result:
+              {/* 
+              // @ts-ignore */}
+              {callResult && callResult.callResult ? 'Call result:' : 'Call error:' }
             </span>
             <div>
-              {/* TODO: incase of call error (calllResult.error) render in red text and heading should be "Call error:" */}
-              <pre className="large-code">
-                {
-                  // @ts-ignore
-                  callResult.callResult || JSON.stringify(callResult.error)
-                }
-              </pre>
+              {/* 
+              // @ts-ignore */}
+              { callResult && callResult.callResult ? 
+                <pre className="large-code">
+                  {
+                    // @ts-ignore
+                    callResult.callResult
+                  }
+                </pre> :
+                <pre className="large-code" style={{ color: 'red' }}>
+                  {
+                    // @ts-ignore
+                    JSON.stringify(callResult.error)
+                  }
+                </pre>
+              }
             </div>
           </div>
         }
