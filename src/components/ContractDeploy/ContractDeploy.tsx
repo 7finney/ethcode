@@ -190,7 +190,7 @@ class ContractDeploy extends Component<IProps, IState> {
                           })
                         }
                       </div> :
-                      <div className="json_input_container">
+                      <div className="json_input_container" style={{ marginLeft: '-10px' }}>
                         <textarea className="json_input custom_input_css" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
                         </textarea>
                       </div>
@@ -225,7 +225,7 @@ class ContractDeploy extends Component<IProps, IState> {
                   <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea> 
                 </div>
               }
-              <input type="submit" style={{ marginLeft: '5px' }} className="custom_button_css" value="Call function" />
+              <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
             </form>
           </div>
         </div>
