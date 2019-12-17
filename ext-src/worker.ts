@@ -167,6 +167,51 @@ process.on("message", async m => {
       process.exit(0);
     });
   }
+ // Fetch accounts and balance
+  if(m.command === "get-accounts") {
+    const c = {
+      callInterface: {
+        command: 'get-accounts',
+      }
+    }
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) =>{
+      // @ts-ignore
+      const result = JSON.parse(data.result);
+      // @ts-ignore
+      process.send({ accounts: result.accounts, balance: result.balance });
+    })
+  }
+  // send wei_value to a address
+  if(m.command === "send-ether") {
+    const transactionInfo = m.transactionInfo;
+    const c = {
+      callInterface: {
+        command: 'send-ether',
+        payload: JSON.stringify(transactionInfo)
+      }
+    };
+    console.dir(JSON.stringify(c));
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ transactionResult: data.result });
+    })
+  }
+  // fetch balance of a account
+  if(m.command === "get-balance") {
+    const c = {
+      callInterface: {
+        command: 'get-balance',
+        account: m.account
+      }
+    }
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ balance: data.balance });
+    })
+  }
   // Deploy
   if(m.command === "deploy-contract") {
     const { abi, bytecode, params, gasSupply } = m.payload;

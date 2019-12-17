@@ -41,8 +41,12 @@ interface IState {
   availableVersions: any;
   gasEstimate: number;
   deployedResult: string;
-  txTrace: object,
-  tabIndex: number
+  tabIndex: number,
+  txTrace: object;
+  accounts: string[];
+  currAccount: string;
+  balance: number;
+  transactionResult: string;
 }
 interface IOpt {
   value: string;
@@ -64,9 +68,14 @@ class App extends Component<IProps, IState> {
       availableVersions: "",
       gasEstimate: 0,
       deployedResult: "",
+      tabIndex: 0,
       txTrace: {},
-      tabIndex: 0
+      accounts: [],
+      currAccount: "",
+      balance: 0,
+      transactionResult: ""
     };
+    this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
   public componentDidMount() {
     window.addEventListener("message", event => {
@@ -150,9 +159,33 @@ class App extends Component<IProps, IState> {
         const result = data.callResult;
         this.props.setCallResult(result);
       }
+      if (data.fetchAccounts) {
+        this.setState({ accounts: data.fetchAccounts.accounts, currAccount: data.fetchAccounts.accounts[0], balance: data.fetchAccounts.balance });
+      }
+      if(data.transactionResult) {
+        this.setState({ transactionResult: data.transactionResult });
+      }
 
       // TODO: handle error message
     });
+  }
+  private handleTransactionSubmit(event: any) {
+    event.preventDefault();
+    const { currAccount } = this.state;
+    const data = new FormData(event.target);
+    const transactionInfo = {
+      fromAddress: currAccount,
+      toAddress: data.get("toAddress"),
+      amount: data.get("amount")
+    };
+    try {
+     vscode.postMessage({
+      command: "send-ether",
+      payload: transactionInfo
+     });
+    } catch (err) {
+     this.setState({ error: err });
+    }
   }
   public changeFile = (selectedOpt: IOpt) => {
     this.setState({ fileName: selectedOpt.value });
@@ -179,9 +212,11 @@ class App extends Component<IProps, IState> {
       error,
       gasEstimate,
       deployedResult,
-      txTrace,
       tabIndex,
-      contractName
+      contractName,
+      txTrace,
+      currAccount,
+      transactionResult
     } = this.state;
 
     return (
@@ -201,6 +236,20 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
+        {
+          <form onSubmit={this.handleTransactionSubmit}>
+            <input type="text" name="fromAddress" value={currAccount} placeholder="fromAddress"/>
+            <input type="text" name="toAddress" placeholder="toAddress"/>
+            <input type="text" name="amount" placeholder="wei_value"/>
+            <input type="submit" value="Send"/>
+          </form>
+        }
+        {
+          transactionResult &&
+          <div>
+            <pre>{transactionResult}</pre>
+          </div>
+        }
         <p>
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
             <TabList className="react-tabs tab-padding">
