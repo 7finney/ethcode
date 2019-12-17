@@ -223,22 +223,20 @@ class App extends Component<IProps, IState> {
                   </p>
                 </div> : null
               }
-              <div className="contractSelect_container">
-                {compiled && fileName ?
-                  <ContractSelector
-                    contractName={Object.keys(compiled.contracts[fileName]).map((contractName: string) => contractName)}
-                    changeContract={this.changeContract}
-                  /> :
-                  null
-                }
-              </div>
-              
+              {
+                (compiled && fileName) &&
+                <div className="container-margin">
+                  <div className="contractSelect_container">
+                    <ContractSelector
+                      contractName={Object.keys(compiled.contracts[fileName]).map((contractName: string) => contractName)}
+                      changeContract={this.changeContract}
+                    />
+                  </div>
+                </div>
+              }
               { contractName &&
                 <div className="compiledOutput">
-                  <div
-                    id={contractName}
-                    className="contract-container"
-                  >
+                  <div id={contractName} className="contract-container">
                     {
                       <ContractCompiled
                         contractName={contractName}

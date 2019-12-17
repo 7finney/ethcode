@@ -71,7 +71,7 @@ class ContractSelector extends Component<IProps, IState> {
     const { selectedOption, options } = this.state;
 
     return (
-      <div style={{ marginBottom: '30px' }}>
+      <div style={{ marginBottom: '30px', position: 'absolute' }}>
         <Select
           placeholder="Select Contract"
           value={selectedOption}

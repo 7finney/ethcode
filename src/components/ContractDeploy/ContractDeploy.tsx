@@ -4,16 +4,16 @@ import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
 
 interface IProps {
-    contractName: string;
-    bytecode: any;
-    abi: any;
-    vscode: any;
-    compiled: any;
-    error: Error | null;
-    gasEstimate: number;
-    deployedResult: string;
-    compiledResult: object;
-    callResult: object;
+  contractName: string;
+  bytecode: any;
+  abi: any;
+  vscode: any;
+  compiled: any;
+  error: Error | null;
+  gasEstimate: number;
+  deployedResult: string;
+  compiledResult: object;
+  callResult: object;
 }
 interface IState {
   constructorInput: object[];
@@ -90,7 +90,7 @@ class ContractDeploy extends Component<IProps, IState> {
   private handleDeploy() {
     const { vscode, bytecode, abi } = this.props;
     const { gasSupply, constructorInput } = this.state;
-    this.setState({ error: null });
+    this.setState({ error: null, deployed: {} });
     vscode.postMessage({
      command: "run-deploy",
      payload: {
@@ -167,11 +167,9 @@ class ContractDeploy extends Component<IProps, IState> {
         break;
       }
     }
-    
   }
   private handleMethodInputs(event: any) {
     this.setState({ methodInputs: event.target.value });
-
   }
   public render() {
     const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
@@ -241,6 +239,19 @@ class ContractDeploy extends Component<IProps, IState> {
             </form>
           </div>
         </div>
+        <div className="error_message">
+          {
+            error &&
+            <div>
+              <span className="contract-name inline-block highlight-success">
+                Error Message:
+            </span>
+              <div>
+                <pre className="large-code-error">{JSON.stringify(error)}</pre>
+              </div>
+            </div>
+          }
+        </div>
         {
           // @ts-ignore
           Object.entries(callResult).length > 0 &&
@@ -282,20 +293,7 @@ class ContractDeploy extends Component<IProps, IState> {
               </pre>
             </div>
           </div>
-          }
-        <div className="error_message">
-        {
-          error &&
-          <div>
-            <span className="contract-name inline-block highlight-success">
-              Error Message:
-            </span>
-            <div>
-              <pre className="large-code-error">{JSON.stringify(error)}</pre>
-            </div>
-          </div>
         }
-        </div>
       </div>
     );
   }
