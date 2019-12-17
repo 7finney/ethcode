@@ -32,7 +32,6 @@ export const setDeployedResult = (data: any) => {
 };
 
 export const clearDeployedResult = () => {
-  console.log("action");
   return (dispatch: Function) => {
     dispatch({ type: CLEAR_DEPLOYED_RESULT })
   };

@@ -78,7 +78,7 @@ class ContractDeploy extends Component<IProps, IState> {
     if(prevProps.abi !== abi) {
       if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
-        for (var j in constructorInput) {
+        for (let j in constructorInput) {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput }); 
