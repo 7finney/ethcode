@@ -95,6 +95,17 @@
   border-radius: 2px;
 }
 
+.container-margin {
+  margin-bottom: 40px;
+  height: 6vh;
+}
+
+.contractSelect_container {
+  position: absolute;
+  left: 30vw;
+  /* TODO: Align middle contarct selector */
+}
+
 .react-tabs {
   text-align: left;
   overflow-y: hidden;
@@ -123,6 +134,7 @@
 .react-tab-panel {
   text-align: center !important;
 }
+
 
 /* .react-tabs {
   border: 1px solid red;

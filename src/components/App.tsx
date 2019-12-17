@@ -14,6 +14,7 @@ import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
 import Dropdown from "./Dropdown";
 import CompilerVersionSelector from "./CompilerVersionSelector";
+import ContractSelector from "./ContractSelector";
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 
@@ -35,6 +36,7 @@ interface IState {
   compiled: any;
   error: Error | null;
   fileName: any;
+  contractName: any;
   processMessage: string;
   availableVersions: any;
   gasEstimate: number;
@@ -57,6 +59,7 @@ class App extends Component<IProps, IState> {
       compiled: "",
       error: null,
       fileName: "",
+      contractName: "",
       processMessage: "",
       availableVersions: "",
       gasEstimate: 0,
@@ -155,6 +158,10 @@ class App extends Component<IProps, IState> {
     this.setState({ fileName: selectedOpt.value });
   };
 
+  public changeContract = (selectedOpt: IOpt) => {
+    this.setState({ contractName: selectedOpt.value })
+  }
+
   public getSelectedVersion = (version: any) => {
     vscode.postMessage({
       command: "version",
@@ -173,9 +180,10 @@ class App extends Component<IProps, IState> {
       gasEstimate,
       deployedResult,
       txTrace,
-      tabIndex
+      tabIndex,
+      contractName
     } = this.state;
-    
+
     return (
       <div className="App">
         <header className="App-header">
@@ -216,43 +224,43 @@ class App extends Component<IProps, IState> {
                 </div> : null
               }
               {
-                compiled && fileName && Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                  const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                  const ContractABI = compiled.contracts[fileName][contractName].abi;
-                  return (
-                    <div className="compiledOutput">
-                      <div
-                        id={contractName}
-                        className="contract-container"
-                        key={i}
-                      >
-                        {
-                          <ContractCompiled
-                            contractName={contractName}
-                            bytecode={bytecode}
-                            abi={ContractABI}
-                            vscode={vscode}
-                            compiled={compiled}
-                            errors={error}
-                          />
-                        }
-                        {
-                          <ContractDeploy
-                            contractName={contractName}
-                            bytecode={bytecode}
-                            abi={ContractABI}
-                            vscode={vscode}
-                            compiled={compiled}
-                            error={error}
-                            gasEstimate={gasEstimate}
-                            deployedResult={deployedResult}
-                          />
-                        }
-                      </div>
-                    </div>
-                  );
-                })
+                (compiled && fileName) &&
+                <div className="container-margin">
+                  <div className="contractSelect_container">
+                    <ContractSelector
+                      contractName={Object.keys(compiled.contracts[fileName]).map((contractName: string) => contractName)}
+                      changeContract={this.changeContract}
+                    />
+                  </div>
+                </div>
               }
+              { contractName &&
+                <div className="compiledOutput">
+                  <div id={contractName} className="contract-container">
+                    {
+                      <ContractCompiled
+                        contractName={contractName}
+                        bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                        abi={compiled.contracts[fileName][contractName].abi}
+                        vscode={vscode}
+                        compiled={compiled}
+                        errors={error}
+                      />
+                    }
+                    {
+                      <ContractDeploy
+                        contractName={contractName}
+                        bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                        abi={compiled.contracts[fileName][contractName].abi}
+                        vscode={vscode}
+                        compiled={compiled}
+                        error={error}
+                        gasEstimate={gasEstimate}
+                        deployedResult={deployedResult}
+                      />
+                    }
+                  </div>
+                </div>  }
             </TabPanel>
             <TabPanel className="react-tab-panel">
               <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} />
