@@ -20,6 +20,7 @@ import DebugDisplay from "./DebugDisplay";
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import AccountsSelector from "./AccountsSelector";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -160,10 +161,19 @@ class App extends Component<IProps, IState> {
         this.props.setCallResult(result);
       }
       if (data.fetchAccounts) {
+        console.log("fetchAcc:")
+        console.dir(JSON.stringify(data.fetchAccounts));
+        console.log("currAcc:")
+        console.dir(JSON.stringify(data.fetchAccounts.accounts[0]));
+        console.log("balance:")
+        console.dir(JSON.stringify(data.fetchAccounts.balance));
         this.setState({ accounts: data.fetchAccounts.accounts, currAccount: data.fetchAccounts.accounts[0], balance: data.fetchAccounts.balance });
       }
       if(data.transactionResult) {
         this.setState({ transactionResult: data.transactionResult });
+      }
+      if(data.balance) {
+        this.setState({ balance: data.balance });
       }
 
       // TODO: handle error message
@@ -201,6 +211,14 @@ class App extends Component<IProps, IState> {
       version: version.value
     });
   };
+  
+  public getSelectedAccount = (account: any) => {
+    this.setState({ currAccount: account });
+    vscode.postMessage({
+      command: 'get-balance',
+      account: account
+    });
+  }
 
   public render() {
     const {
@@ -216,7 +234,9 @@ class App extends Component<IProps, IState> {
       contractName,
       txTrace,
       currAccount,
-      transactionResult
+      transactionResult,
+      accounts,
+      balance
     } = this.state;
 
     return (
@@ -228,6 +248,13 @@ class App extends Component<IProps, IState> {
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}
             availableVersions={availableVersions}
+          />
+        )}
+        {accounts && (
+          <AccountsSelector
+            availableAccounts={accounts}
+            currAccountBalance={balance}
+            getSelectedAccount={this.getSelectedAccount}
           />
         )}
         {compiled && Object.keys(compiled.sources).length > 0 && (
