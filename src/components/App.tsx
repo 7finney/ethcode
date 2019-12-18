@@ -259,11 +259,11 @@ class App extends Component<IProps, IState> {
           </div>
         )}
         {
-          <form onSubmit={this.handleTransactionSubmit}>
-            <input type="text" name="fromAddress" value={currAccount} placeholder="fromAddress" />
-            <input type="text" name="toAddress" placeholder="toAddress" />
-            <input type="text" name="amount" placeholder="wei_value" />
-            <input type="submit" value="Send" />
+          <form onSubmit={this.handleTransactionSubmit} className="account_form">
+            <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} placeholder="fromAddress" />
+            <input type="text" className="custom_input_css" name="toAddress" placeholder="toAddress" />
+            <input type="text" className="custom_input_css" name="amount" placeholder="wei_value" />
+            <input type="submit" className="custom_button_css" value="Send" />
           </form>
         }
         {compiled && Object.keys(compiled.sources).length > 0 && (
