@@ -246,26 +246,6 @@ class App extends Component<IProps, IState> {
             availableVersions={availableVersions}
           />
         )}
-        {accounts && (
-          <div>
-            <AccountsSelector
-              availableAccounts={accounts}
-              getSelectedAccount={this.getSelectedAccount}
-            />
-            <div className="account_balance">
-              <label>Account Balance:</label>
-              <pre>{balance}</pre>
-            </div>
-          </div>
-        )}
-        {
-          <form onSubmit={this.handleTransactionSubmit} className="account_form">
-            <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} placeholder="fromAddress" />
-            <input type="text" className="custom_input_css" name="toAddress" placeholder="toAddress" />
-            <input type="text" className="custom_input_css" name="amount" placeholder="wei_value" />
-            <input type="submit" className="custom_button_css" value="Send" />
-          </form>
-        }
         {compiled && Object.keys(compiled.sources).length > 0 && (
           <Dropdown
             files={Object.keys(compiled.sources)}
@@ -299,6 +279,26 @@ class App extends Component<IProps, IState> {
                     <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
                   </p>
                 </div> : null
+              }
+              {accounts && (
+                <div>
+                  <AccountsSelector
+                    availableAccounts={accounts}
+                    getSelectedAccount={this.getSelectedAccount}
+                  />
+                  <div className="account_balance">
+                    <label>Account Balance:</label>
+                    <pre>{balance}</pre>
+                  </div>
+                </div>
+              )}
+              {
+                <form onSubmit={this.handleTransactionSubmit} className="account_form">
+                  <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} placeholder="fromAddress" />
+                  <input type="text" className="custom_input_css" name="toAddress" placeholder="toAddress" />
+                  <input type="text" className="custom_input_css" name="amount" placeholder="wei_value" />
+                  <input type="submit" className="custom_button_css" value="Send" />
+                </form>
               }
               {
                 (compiled && fileName) &&
