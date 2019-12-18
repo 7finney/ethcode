@@ -258,20 +258,20 @@ class App extends Component<IProps, IState> {
             </div>
           </div>
         )}
+        {
+          <form onSubmit={this.handleTransactionSubmit}>
+            <input type="text" name="fromAddress" value={currAccount} placeholder="fromAddress" />
+            <input type="text" name="toAddress" placeholder="toAddress" />
+            <input type="text" name="amount" placeholder="wei_value" />
+            <input type="submit" value="Send" />
+          </form>
+        }
         {compiled && Object.keys(compiled.sources).length > 0 && (
           <Dropdown
             files={Object.keys(compiled.sources)}
             changeFile={this.changeFile}
           />
         )}
-        {
-          <form onSubmit={this.handleTransactionSubmit}>
-            <input type="text" name="fromAddress" value={currAccount} placeholder="fromAddress"/>
-            <input type="text" name="toAddress" placeholder="toAddress"/>
-            <input type="text" name="amount" placeholder="wei_value"/>
-            <input type="submit" value="Send"/>
-          </form>
-        }
         {
           transactionResult &&
           <div>

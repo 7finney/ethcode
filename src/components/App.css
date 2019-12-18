@@ -154,3 +154,10 @@
   font-size: 17px;
   margin: 20px auto;
 }
+
+.select-width-account {
+  width: 500px;
+  height: 20px;
+  font-size: 17px;
+  margin: 20px auto;
+}

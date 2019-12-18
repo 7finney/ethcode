@@ -58,11 +58,6 @@ class AccountsSelector extends Component<IProps, IState> {
     this._handleAccountSelector = this._handleAccountSelector.bind(this);
   }
 
-  public componentDidMount() {
-    console.log("componentDidMount");
-    console.log(JSON.stringify(this.props));
-  }
-
   componentDidUpdate(prevProps: any) {
     const options: any = [];
     const { availableAccounts } = this.props
@@ -95,7 +90,7 @@ class AccountsSelector extends Component<IProps, IState> {
             value={selectedAccount}
             onChange={this._handleAccountSelector}
             options={options}
-            className="select-width"
+            className="select-width-account"
             styles={customStyles}
           />
         </div>
