@@ -195,7 +195,7 @@ class App extends Component<IProps, IState> {
   };
 
   public changeContract = (selectedOpt: IOpt) => {
-    this.setState({ contractName: selectedOpt.value })
+    this.setState({ contractName: selectedOpt })
   }
 
   public getSelectedVersion = (version: any) => {
