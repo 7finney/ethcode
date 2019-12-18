@@ -232,7 +232,7 @@ class App extends Component<IProps, IState> {
       balance
     } = this.state;
 
-    console.log("currAccount");
+    console.log("currAccount:");
     console.log(JSON.stringify(currAccount));
 
     return (
@@ -334,6 +334,7 @@ class App extends Component<IProps, IState> {
                         error={error}
                         gasEstimate={gasEstimate}
                         deployedResult={deployedResult}
+                        deployAccount={currAccount}
                       />
                     }
                   </div>

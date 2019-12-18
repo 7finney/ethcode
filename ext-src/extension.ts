@@ -277,6 +277,8 @@ class ReactPanel {
   // Call contract method
   private runContractCall(payload: any) {
     const callWorker = this.createWorker();
+    console.log("payload log:")
+    console.dir(JSON.stringify(payload));
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
     })

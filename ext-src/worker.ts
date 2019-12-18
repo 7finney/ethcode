@@ -44,8 +44,8 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -242,13 +242,14 @@ process.on("message", async m => {
   }
   // Method call
   if(m.command === "contract-method-call") {
-    const { abi, address, methodName, params, gasSupply } = m.payload;
+    const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
       abi,
       address,
       methodName,
       params,
-      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
+      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
+      deployAccount
     };
     const c = {
       callInterface: {
