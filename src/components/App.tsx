@@ -213,6 +213,10 @@ class App extends Component<IProps, IState> {
     });
   }
 
+  public handelChangeFromAddress = (event: any) => {
+    this.setState({ currAccount: event.target.value })
+  }
+
   public render() {
     const {
       compiled,
@@ -231,9 +235,6 @@ class App extends Component<IProps, IState> {
       accounts,
       balance
     } = this.state;
-
-    console.log("currAccount:");
-    console.log(JSON.stringify(currAccount));
 
     return (
       <div className="App">
@@ -294,7 +295,7 @@ class App extends Component<IProps, IState> {
               )}
               {
                 <form onSubmit={this.handleTransactionSubmit} className="account_form">
-                  <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} placeholder="fromAddress" />
+                  <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} onChange={this.handelChangeFromAddress} placeholder="fromAddress" />
                   <input type="text" className="custom_input_css" name="toAddress" placeholder="toAddress" />
                   <input type="text" className="custom_input_css" name="amount" placeholder="wei_value" />
                   <input type="submit" className="custom_button_css" value="Send" />
