@@ -3,8 +3,7 @@ import React, { Component } from "react";
 import Select from "react-select";
 
 interface IProps {
-  availableAccounts: any;
-  currAccountBalance: any;
+  availableAccounts: string[];
   getSelectedAccount: any;
 }
 interface IOpt {
@@ -13,7 +12,7 @@ interface IOpt {
 }
 
 interface IState {
-  availableAccounts: any[];
+  availableAccounts: string[];
   selectedAccount: any;
   options: IOpt[];
 }
@@ -58,37 +57,41 @@ class AccountsSelector extends Component<IProps, IState> {
 
     this._handleAccountSelector = this._handleAccountSelector.bind(this);
   }
-  public async _handleAccountSelector(selectedAccount: any) {
-    await this.setState({ selectedAccount });
-    this.props.getSelectedAccount(this.state.selectedAccount);
+
+  public componentDidMount() {
+    console.log("componentDidMount");
+    console.log(JSON.stringify(this.props));
   }
 
-  // public componentDidMount() {
-  //   const options: any = [];
-  //   console.log("accounts:\n")
-  //   console.dir(JSON.stringify(this.props.availableAccounts));    
-  //   if(this.props.availableAccounts.length>0)Object.keys(this.props.availableAccounts).map((v: any, i: any) => {
-  //     const optItm: IOpt = {
-  //       value: this.props.availableAccounts[v],
-  //       label: v
-  //     };
-  //     return options.push(optItm);
-  //   });
-  //   console.log("hhhhhhhhhhhhhhhhhhhhhhhhhh")
-  //   console.dir(JSON.stringify(options));
-    
-  //   this.setState({ options: options });
-  // }
+  componentDidUpdate(prevProps: any) {
+    const options: any = [];
+    const { availableAccounts } = this.props
+
+    if (this.props !== prevProps) {
+      availableAccounts.map((name: string) => {
+        const optItm: IOpt = {
+          value: name,
+          label: name
+        };
+        return options.push(optItm);
+      });
+      this.setState({ options })
+    }
+  }
+
+  public async _handleAccountSelector(selectedAccount: any) {
+    await this.setState({ selectedAccount });
+    this.props.getSelectedAccount(this.state.selectedAccount.value);
+  }
+
   public render() {
     const { selectedAccount, options } = this.state;
-    console.log("hjhhhhhhhhhhhhhhh")
-    console.dir(JSON.stringify(options));
     
     return (
       <div className="content">
         <div style={{ marginBottom: '30px' }}>
           <Select
-            placeholder="Select Compiler Version"
+            placeholder="Select Accounts"
             value={selectedAccount}
             onChange={this._handleAccountSelector}
             options={options}

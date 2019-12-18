@@ -239,6 +239,9 @@ class App extends Component<IProps, IState> {
       balance
     } = this.state;
 
+    console.log("currAccount");
+    console.log(JSON.stringify(currAccount));
+
     return (
       <div className="App">
         <header className="App-header">
@@ -251,11 +254,16 @@ class App extends Component<IProps, IState> {
           />
         )}
         {accounts && (
-          <AccountsSelector
-            availableAccounts={accounts}
-            currAccountBalance={balance}
-            getSelectedAccount={this.getSelectedAccount}
-          />
+          <div>
+            <AccountsSelector
+              availableAccounts={accounts}
+              getSelectedAccount={this.getSelectedAccount}
+            />
+            <div className="account_balance">
+              <label>Account Balance:</label>
+              <pre>{balance}</pre>
+            </div>
+          </div>
         )}
         {compiled && Object.keys(compiled.sources).length > 0 && (
           <Dropdown
