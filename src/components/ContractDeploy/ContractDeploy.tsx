@@ -104,8 +104,6 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleCall() {
     const { vscode, abi, deployAccount } = this.props;
-    console.log("call deploy acc")
-    console.dir(deployAccount);
     const { gasSupply, methodName, deployedAddress, methodInputs } = this.state;
     this.setState({ error: null });
     vscode.postMessage({

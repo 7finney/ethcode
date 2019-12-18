@@ -261,7 +261,6 @@ class ReactPanel {
   public getAccounts() {
     const accountsWorker = this.createWorker();
     accountsWorker.on("message", (m: any) => {
-      console.dir(JSON.stringify(m));
       this._panel.webview.postMessage({ fetchAccounts: m });
     })
     accountsWorker.send({ command: "get-accounts" });
@@ -277,8 +276,6 @@ class ReactPanel {
   // Call contract method
   private runContractCall(payload: any) {
     const callWorker = this.createWorker();
-    console.log("payload log:")
-    console.dir(JSON.stringify(payload));
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
     })

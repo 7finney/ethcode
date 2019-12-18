@@ -191,7 +191,6 @@ process.on("message", async m => {
         payload: JSON.stringify(transactionInfo)
       }
     };
-    console.dir(JSON.stringify(c));
     const call = client_call_client.RunDeploy(c);
     call.on('data', (data: any) => {
       // @ts-ignore
