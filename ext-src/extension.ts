@@ -270,15 +270,14 @@ class ReactPanel {
   private getBalance(account: string) {
     const balanceWorker = this.createWorker();
     balanceWorker.on("message", (m: any) => {
-      console.dir(m);
+      this._panel.webview.postMessage({ balance: m.balance });
     })
-    balanceWorker.send({ command: "get-balance" });
+    balanceWorker.send({ command: "get-balance", account: account });
   }
   // Call contract method
   private runContractCall(payload: any) {
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
-      console.dir(m);
       this._panel.webview.postMessage({ callResult: m });
     })
     callWorker.send({ command: "contract-method-call", payload })

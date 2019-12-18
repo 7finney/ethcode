@@ -44,8 +44,8 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -203,13 +203,13 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'get-balance',
-        account: m.account
+        payload: m.account
       }
     }
     const call = client_call_client.RunDeploy(c);
     call.on('data', (data: any) => {
       // @ts-ignore
-      process.send({ balance: data.balance });
+      process.send({ balance: data.result });
     })
   }
   // Deploy

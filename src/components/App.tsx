@@ -161,21 +161,14 @@ class App extends Component<IProps, IState> {
         this.props.setCallResult(result);
       }
       if (data.fetchAccounts) {
-        console.log("fetchAcc:")
-        console.dir(JSON.stringify(data.fetchAccounts));
-        console.log("currAcc:")
-        console.dir(JSON.stringify(data.fetchAccounts.accounts[0]));
-        console.log("balance:")
-        console.dir(JSON.stringify(data.fetchAccounts.balance));
         this.setState({ accounts: data.fetchAccounts.accounts, currAccount: data.fetchAccounts.accounts[0], balance: data.fetchAccounts.balance });
       }
       if(data.transactionResult) {
         this.setState({ transactionResult: data.transactionResult });
       }
       if(data.balance) {
-        this.setState({ balance: data.balance });
+        this.setState({ balance: +data.balance });
       }
-
       // TODO: handle error message
     });
   }
