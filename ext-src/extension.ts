@@ -185,10 +185,7 @@ class ReactPanel {
 				});
 			}
 			if (m.compiled) {
-				// console.dir(m.compiled);
-				// console.dir(JSON.stringify(sources));
 				context.workspaceState.update("sources", JSON.stringify(sources));
-
         this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true, testPanel: 'main' });
 				solcWorker.kill();
 			}
@@ -197,20 +194,11 @@ class ReactPanel {
 			}
 		});
 		solcWorker.on("error", (error: Error) => {
-			console.log(
-				"%c Compile worker process exited with error" + `${error.message}`,
-				"background: rgba(36, 194, 203, 0.3); color: #EF525B"
-			);
+			console.log("%c Compile worker process exited with error" + `${error.message}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
 		});
 		solcWorker.on("exit", (code: number, signal: string) => {
-			console.log(
-				"%c Compile worker process exited with " +
-				`code ${code} and signal ${signal}`,
-				"background: rgba(36, 194, 203, 0.3); color: #EF525B"
-			);
-			this._panel.webview.postMessage({
-				message: `Error code ${code} : Error signal ${signal}`
-			});
+			console.log("%c Compile worker process exited with " + `code ${code} and signal ${signal}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
+			this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` });
 		});
 	}
 	private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
