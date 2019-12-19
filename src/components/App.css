@@ -30,8 +30,8 @@
 }
 
 .compiledOutput {
-  height: 100%;
-  width: 90%;
+  height: 100vh;
+  width: 85vw;
   overflow-x: scroll;
   font-size: 15px;
   padding: 10px 20px;
