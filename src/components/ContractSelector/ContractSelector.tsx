@@ -62,9 +62,13 @@ class ContractSelector extends Component<IProps, IState> {
     });
   }
 
+  public componentDidMount() {
+    this.props.changeContract(this.props.contractName[0]);
+  }
+
   public handleChange = (selectedOption: any) => {
     this.setState({ selectedOption });
-    this.props.changeContract(selectedOption);
+    this.props.changeContract(selectedOption.value);
   };
 
   public render() {

@@ -20,6 +20,7 @@ import DebugDisplay from "./DebugDisplay";
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import AccountsSelector from "./AccountsSelector";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -41,8 +42,12 @@ interface IState {
   availableVersions: any;
   gasEstimate: number;
   deployedResult: string;
-  txTrace: object,
-  tabIndex: number
+  tabIndex: number,
+  txTrace: object;
+  accounts: string[];
+  currAccount: string;
+  balance: number;
+  transactionResult: string;
 }
 interface IOpt {
   value: string;
@@ -64,9 +69,14 @@ class App extends Component<IProps, IState> {
       availableVersions: "",
       gasEstimate: 0,
       deployedResult: "",
+      tabIndex: 0,
       txTrace: {},
-      tabIndex: 0
+      accounts: [],
+      currAccount: "",
+      balance: 0,
+      transactionResult: ""
     };
+    this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
   public componentDidMount() {
     window.addEventListener("message", event => {
@@ -150,16 +160,42 @@ class App extends Component<IProps, IState> {
         const result = data.callResult;
         this.props.setCallResult(result);
       }
-
+      if (data.fetchAccounts) {
+        this.setState({ accounts: data.fetchAccounts.accounts, currAccount: data.fetchAccounts.accounts[0], balance: data.fetchAccounts.balance });
+      }
+      if(data.transactionResult) {
+        this.setState({ transactionResult: data.transactionResult });
+      }
+      if(data.balance) {
+        this.setState({ balance: +data.balance });
+      }
       // TODO: handle error message
     });
+  }
+  private handleTransactionSubmit(event: any) {
+    event.preventDefault();
+    const { currAccount } = this.state;
+    const data = new FormData(event.target);
+    const transactionInfo = {
+      fromAddress: currAccount,
+      toAddress: data.get("toAddress"),
+      amount: data.get("amount")
+    };
+    try {
+     vscode.postMessage({
+      command: "send-ether",
+      payload: transactionInfo
+     });
+    } catch (err) {
+     this.setState({ error: err });
+    }
   }
   public changeFile = (selectedOpt: IOpt) => {
     this.setState({ fileName: selectedOpt.value });
   };
 
   public changeContract = (selectedOpt: IOpt) => {
-    this.setState({ contractName: selectedOpt.value })
+    this.setState({ contractName: selectedOpt })
   }
 
   public getSelectedVersion = (version: any) => {
@@ -168,6 +204,18 @@ class App extends Component<IProps, IState> {
       version: version.value
     });
   };
+  
+  public getSelectedAccount = (account: any) => {
+    this.setState({ currAccount: account });
+    vscode.postMessage({
+      command: 'get-balance',
+      account: account
+    });
+  }
+
+  public handelChangeFromAddress = (event: any) => {
+    this.setState({ currAccount: event.target.value })
+  }
 
   public render() {
     const {
@@ -179,9 +227,13 @@ class App extends Component<IProps, IState> {
       error,
       gasEstimate,
       deployedResult,
-      txTrace,
       tabIndex,
-      contractName
+      contractName,
+      txTrace,
+      currAccount,
+      transactionResult,
+      accounts,
+      balance
     } = this.state;
 
     return (
@@ -201,6 +253,12 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
+        {
+          transactionResult &&
+          <div>
+            <pre>{transactionResult}</pre>
+          </div>
+        }
         <p>
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
             <TabList className="react-tabs tab-padding">
@@ -222,6 +280,26 @@ class App extends Component<IProps, IState> {
                     <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
                   </p>
                 </div> : null
+              }
+              {accounts && (
+                <div>
+                  <AccountsSelector
+                    availableAccounts={accounts}
+                    getSelectedAccount={this.getSelectedAccount}
+                  />
+                  <div className="account_balance">
+                    <label>Account Balance:</label>
+                    <pre>{balance}</pre>
+                  </div>
+                </div>
+              )}
+              {
+                <form onSubmit={this.handleTransactionSubmit} className="account_form">
+                  <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} onChange={this.handelChangeFromAddress} placeholder="fromAddress" />
+                  <input type="text" className="custom_input_css" name="toAddress" placeholder="toAddress" />
+                  <input type="text" className="custom_input_css" name="amount" placeholder="wei_value" />
+                  <input type="submit" className="custom_button_css" value="Send" />
+                </form>
               }
               {
                 (compiled && fileName) &&
@@ -257,6 +335,7 @@ class App extends Component<IProps, IState> {
                         error={error}
                         gasEstimate={gasEstimate}
                         deployedResult={deployedResult}
+                        deployAccount={currAccount}
                       />
                     }
                   </div>

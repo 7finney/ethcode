@@ -135,11 +135,6 @@
   text-align: center !important;
 }
 
-
-/* .react-tabs {
-  border: 1px solid red;
-} */
-
 .react-tabs .tab-container {
   border-bottom: 1px solid #38ffAf;
 }
@@ -153,4 +148,21 @@
   height: 20px;
   font-size: 17px;
   margin: 20px auto;
+}
+
+.select-width-account {
+  width: 500px;
+  height: 20px;
+  font-size: 17px;
+  margin: 20px auto;
+}
+
+.account_form {
+  display: flex;
+  flex-direction: column;
+  margin: 0 20vw;
+}
+
+.account_form > input {
+  margin: 5px 0;
 }

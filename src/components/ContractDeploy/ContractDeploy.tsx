@@ -14,6 +14,7 @@ interface IProps {
   deployedResult: string;
   compiledResult: object;
   callResult: object;
+  deployAccount: string;
 }
 interface IState {
   constructorInput: object[];
@@ -102,7 +103,7 @@ class ContractDeploy extends Component<IProps, IState> {
     });
   }
   private handleCall() {
-    const { vscode, abi } = this.props;
+    const { vscode, abi, deployAccount } = this.props;
     const { gasSupply, methodName, deployedAddress, methodInputs } = this.state;
     this.setState({ error: null });
     vscode.postMessage({
@@ -112,7 +113,8 @@ class ContractDeploy extends Component<IProps, IState> {
         address: deployedAddress,
         methodName: methodName,
         params: JSON.parse(methodInputs),
-        gasSupply
+        gasSupply,
+        deployAccount
       }
     });
   }
