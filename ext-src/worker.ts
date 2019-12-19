@@ -45,7 +45,6 @@ const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
   client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -167,6 +166,50 @@ process.on("message", async m => {
       process.exit(0);
     });
   }
+ // Fetch accounts and balance
+  if(m.command === "get-accounts") {
+    const c = {
+      callInterface: {
+        command: 'get-accounts',
+      }
+    }
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) =>{
+      // @ts-ignore
+      const result = JSON.parse(data.result);
+      // @ts-ignore
+      process.send({ accounts: result.accounts, balance: result.balance });
+    })
+  }
+  // send wei_value to a address
+  if(m.command === "send-ether") {
+    const transactionInfo = m.transactionInfo;
+    const c = {
+      callInterface: {
+        command: 'send-ether',
+        payload: JSON.stringify(transactionInfo)
+      }
+    };
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ transactionResult: data.result });
+    })
+  }
+  // fetch balance of a account
+  if(m.command === "get-balance") {
+    const c = {
+      callInterface: {
+        command: 'get-balance',
+        payload: m.account
+      }
+    }
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ balance: data.result });
+    })
+  }
   // Deploy
   if(m.command === "deploy-contract") {
     const { abi, bytecode, params, gasSupply } = m.payload;
@@ -197,13 +240,14 @@ process.on("message", async m => {
   }
   // Method call
   if(m.command === "contract-method-call") {
-    const { abi, address, methodName, params, gasSupply } = m.payload;
+    const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
       abi,
       address,
       methodName,
       params,
-      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
+      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
+      deployAccount
     };
     const c = {
       callInterface: {

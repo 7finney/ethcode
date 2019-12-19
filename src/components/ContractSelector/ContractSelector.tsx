@@ -4,8 +4,8 @@ import React, { Component } from "react";
 import Select from "react-select";
 
 interface IProps {
-  files: any;
-  changeFile: (val: any) => void;
+  contractName: any;
+  changeContract: (val: any) => void;
 }
 interface IOpt {
   value: string;
@@ -21,7 +21,6 @@ const customStyles = {
     ...base,
     backgroundColor: "#000",
     color: "#fff",
-    menu: "20px",
     borderColor: '#38ffAf'
   }),
 
@@ -46,7 +45,7 @@ const customStyles = {
   })
 };
 
-class Dropdown extends Component<IProps, IState> {
+class ContractSelector extends Component<IProps, IState> {
   public state = {
     selectedOption: null,
     options: new Array<IOpt>()
@@ -54,27 +53,31 @@ class Dropdown extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     const { options } = this.state;
-    props.files.map((file: string) => {
+    props.contractName.map((name: string) => {
       const optItm: IOpt = {
-        value: file,
-        label: file.substring(file.lastIndexOf('/') + 1)
+        value: name,
+        label: name
       };
       return options.push(optItm);
     });
   }
-  public componentWillUnmount() {
-    this.setState({ selectedOption: null, options: [] });
+
+  public componentDidMount() {
+    this.props.changeContract(this.props.contractName[0]);
   }
+
   public handleChange = (selectedOption: any) => {
     this.setState({ selectedOption });
-    this.props.changeFile(selectedOption);
+    this.props.changeContract(selectedOption.value);
   };
+
   public render() {
     const { selectedOption, options } = this.state;
+
     return (
-      <div style={{ marginBottom: '30px' }}>
+      <div style={{ marginBottom: '30px', position: 'absolute' }}>
         <Select
-          placeholder="Select Files"
+          placeholder="Select Contract"
           value={selectedOption}
           onChange={this.handleChange}
           options={options}
@@ -84,5 +87,7 @@ class Dropdown extends Component<IProps, IState> {
       </div>
     );
   }
+
 }
-export default Dropdown;
+
+export default ContractSelector;

@@ -84,9 +84,9 @@ class DebugDisplay extends Component<IProps, IState> {
                     <form onSubmit={this.handleSubmit}>
                         <label>
                             <span style={{ marginRight: '5px' }}>Transaction hash:</span>
-                            <input type="text" value={this.state.txHash} onChange={this.handleChange} />
+                            <input type="text" className="custom_input_css" value={this.state.txHash} onChange={this.handleChange} />
                         </label>
-                        <input type="submit" value="Debug" />
+                        <input type="submit" className="custom_button_css" style={{ marginLeft: '10px' }} value="Debug" />
                     </form>
                 </div>
                 {

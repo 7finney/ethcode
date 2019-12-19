@@ -6,18 +6,21 @@ import {
   addFinalResultCallback,
   clearFinalResult,
   setDeployedResult,
-  clearDeployedResult
+  clearDeployedResult,
+  setCallResult
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
 import Dropdown from "./Dropdown";
 import CompilerVersionSelector from "./CompilerVersionSelector";
+import ContractSelector from "./ContractSelector";
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import AccountsSelector from "./AccountsSelector";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -25,6 +28,7 @@ interface IProps {
   clearFinalResult: () => void;
   setDeployedResult: (result: any) => void;
   clearDeployedResult: () => void;
+  setCallResult: (result: any) => void;
   test: any;
 }
 
@@ -33,12 +37,17 @@ interface IState {
   compiled: any;
   error: Error | null;
   fileName: any;
+  contractName: any;
   processMessage: string;
   availableVersions: any;
   gasEstimate: number;
   deployedResult: string;
-  txTrace: object,
-  tabIndex: number
+  tabIndex: number,
+  txTrace: object;
+  accounts: string[];
+  currAccount: string;
+  balance: number;
+  transactionResult: string;
 }
 interface IOpt {
   value: string;
@@ -55,13 +64,19 @@ class App extends Component<IProps, IState> {
       compiled: "",
       error: null,
       fileName: "",
+      contractName: "",
       processMessage: "",
       availableVersions: "",
       gasEstimate: 0,
       deployedResult: "",
+      tabIndex: 0,
       txTrace: {},
-      tabIndex: 1
+      accounts: [],
+      currAccount: "",
+      balance: 0,
+      transactionResult: ""
     };
+    this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
   public componentDidMount() {
     window.addEventListener("message", event => {
@@ -141,13 +156,47 @@ class App extends Component<IProps, IState> {
       if (data.txTrace) {
         this.setState({ txTrace: data.txTrace });
       }
-
+      if(data.callResult) {
+        const result = data.callResult;
+        this.props.setCallResult(result);
+      }
+      if (data.fetchAccounts) {
+        this.setState({ accounts: data.fetchAccounts.accounts, currAccount: data.fetchAccounts.accounts[0], balance: data.fetchAccounts.balance });
+      }
+      if(data.transactionResult) {
+        this.setState({ transactionResult: data.transactionResult });
+      }
+      if(data.balance) {
+        this.setState({ balance: +data.balance });
+      }
       // TODO: handle error message
     });
+  }
+  private handleTransactionSubmit(event: any) {
+    event.preventDefault();
+    const { currAccount } = this.state;
+    const data = new FormData(event.target);
+    const transactionInfo = {
+      fromAddress: currAccount,
+      toAddress: data.get("toAddress"),
+      amount: data.get("amount")
+    };
+    try {
+     vscode.postMessage({
+      command: "send-ether",
+      payload: transactionInfo
+     });
+    } catch (err) {
+     this.setState({ error: err });
+    }
   }
   public changeFile = (selectedOpt: IOpt) => {
     this.setState({ fileName: selectedOpt.value });
   };
+
+  public changeContract = (selectedOpt: IOpt) => {
+    this.setState({ contractName: selectedOpt })
+  }
 
   public getSelectedVersion = (version: any) => {
     vscode.postMessage({
@@ -155,6 +204,18 @@ class App extends Component<IProps, IState> {
       version: version.value
     });
   };
+  
+  public getSelectedAccount = (account: any) => {
+    this.setState({ currAccount: account });
+    vscode.postMessage({
+      command: 'get-balance',
+      account: account
+    });
+  }
+
+  public handelChangeFromAddress = (event: any) => {
+    this.setState({ currAccount: event.target.value })
+  }
 
   public render() {
     const {
@@ -166,26 +227,20 @@ class App extends Component<IProps, IState> {
       error,
       gasEstimate,
       deployedResult,
+      tabIndex,
+      contractName,
       txTrace,
-      tabIndex
+      currAccount,
+      transactionResult,
+      accounts,
+      balance
     } = this.state;
-    
+
     return (
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        { !compiled ?
-          <div className="instructions">
-            <p>
-              <pre className="hot-keys"><b>ctrl+alt+c</b> - Compile contracts</pre>
-            </p>
-            <p>
-              <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
-            </p>
-          </div>
-          : null
-        }
         {availableVersions && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}
@@ -198,77 +253,93 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
+        {
+          transactionResult &&
+          <div>
+            <pre>{transactionResult}</pre>
+          </div>
+        }
         <p>
-          <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
-            <TabList className="react-tabs">
-              <Tab>Main</Tab>
-              <Tab>Debug</Tab>
-              <Tab>Test</Tab>
+          <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
+            <TabList className="react-tabs tab-padding">
+              <div className="tab-container">
+                <Tab>Main</Tab>
+                <Tab>Debug</Tab>
+                <Tab>Test</Tab>
+              </div>
             </TabList>
 
             <TabPanel className="react-tab-panel">
               {
-                compiled && fileName && (
-                  <div className="compiledOutput">
-                    {
-                      Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                        const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                        const ContractABI = compiled.contracts[fileName][contractName].abi;
-                        return (
-                          <div
-                            id={contractName}
-                            className="contract-container"
-                            key={i}
-                          >
-                            {
-                              <ContractCompiled
-                                contractName={contractName}
-                                bytecode={bytecode}
-                                abi={ContractABI}
-                                vscode={vscode}
-                                compiled={compiled}
-                                errors={error}
-                              />
-                            }
-                          </div>
-                        )
-                      }
-                      )}
+                !compiled ?
+                <div className="instructions">
+                  <p>
+                    <pre className="hot-keys"><b>ctrl+alt+c</b> - Compile contracts</pre>
+                  </p>
+                  <p>
+                    <pre className="hot-keys"><b>ctrl+alt+t</b> - Run unit tests</pre>
+                  </p>
+                </div> : null
+              }
+              {accounts && (
+                <div>
+                  <AccountsSelector
+                    availableAccounts={accounts}
+                    getSelectedAccount={this.getSelectedAccount}
+                  />
+                  <div className="account_balance">
+                    <label>Account Balance:</label>
+                    <pre>{balance}</pre>
                   </div>
-                )
+                </div>
+              )}
+              {
+                <form onSubmit={this.handleTransactionSubmit} className="account_form">
+                  <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} onChange={this.handelChangeFromAddress} placeholder="fromAddress" />
+                  <input type="text" className="custom_input_css" name="toAddress" placeholder="toAddress" />
+                  <input type="text" className="custom_input_css" name="amount" placeholder="wei_value" />
+                  <input type="submit" className="custom_button_css" value="Send" />
+                </form>
               }
               {
-                compiled && fileName && (
-                  <div className="compiledOutput">
+                (compiled && fileName) &&
+                <div className="container-margin">
+                  <div className="contractSelect_container">
+                    <ContractSelector
+                      contractName={Object.keys(compiled.contracts[fileName]).map((contractName: string) => contractName)}
+                      changeContract={this.changeContract}
+                    />
+                  </div>
+                </div>
+              }
+              { contractName &&
+                <div className="compiledOutput">
+                  <div id={contractName} className="contract-container">
                     {
-                      Object.keys(compiled.contracts[fileName]).map((contractName: string, i: number) => {
-                        const bytecode = compiled.contracts[fileName][contractName].evm.bytecode.object;
-                        const ContractABI = compiled.contracts[fileName][contractName].abi;
-                        return (
-                          <div
-                            id={contractName}
-                            className="contract-container"
-                            key={i}
-                          >
-                            {
-                              <ContractDeploy
-                                contractName={contractName}
-                                bytecode={bytecode}
-                                abi={ContractABI}
-                                vscode={vscode}
-                                compiled={compiled}
-                                error={error}
-                                gasEstimate={gasEstimate}
-                                deployedResult={deployedResult}
-                              />
-                            }
-                          </div>
-                        );
-                      })
+                      <ContractCompiled
+                        contractName={contractName}
+                        bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                        abi={compiled.contracts[fileName][contractName].abi}
+                        vscode={vscode}
+                        compiled={compiled}
+                        errors={error}
+                      />
+                    }
+                    {
+                      <ContractDeploy
+                        contractName={contractName}
+                        bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                        abi={compiled.contracts[fileName][contractName].abi}
+                        vscode={vscode}
+                        compiled={compiled}
+                        error={error}
+                        gasEstimate={gasEstimate}
+                        deployedResult={deployedResult}
+                        deployAccount={currAccount}
+                      />
                     }
                   </div>
-                )
-              }
+                </div>  }
             </TabPanel>
             <TabPanel className="react-tab-panel">
               <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} />
@@ -299,7 +370,10 @@ class App extends Component<IProps, IState> {
             })}{" "}
           </div>
         </p>
-        <pre className="processMessage">{processMessage}</pre>
+        {
+          processMessage &&
+          <pre className="processMessage">{processMessage}</pre>
+        }
       </div>
     );
   }
@@ -313,5 +387,5 @@ function mapStateToProps({ test }: any) {
 
 export default connect(
   mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, clearDeployedResult }
+  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, clearDeployedResult, setCallResult }
 )(App);

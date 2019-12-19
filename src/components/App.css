@@ -14,16 +14,28 @@
 
 .App-title {
   font-size: 1.5em;
+  color: #38ffAf;
+}
+
+.vscode-dark .compiledOutput {
+  border: 1px solid #38ffAf;
+}
+
+.vscode-light .compiledOutput {
+  border: 1px solid #000000;
+}
+
+.vscode-high-contrast .compiledOutput {
+  border: 1px solid #38ffAf;
 }
 
 .compiledOutput {
-  height: 100%;
-  width: 95vw;
+  height: 100vh;
+  width: 85vw;
   overflow-x: scroll;
   font-size: 15px;
-  padding: 7px;
-  border: 1px solid rgba(218, 218, 218, 0.555);
-  margin-top: 20px;
+  padding: 10px 20px;
+  margin: 25px auto;
 }
 
 .contract-container {
@@ -43,10 +55,12 @@
   text-transform: uppercase;
 }
 
+.vscode-light .error-message {
+  border: 1px solid #000000;
+}
+
 .error-message {
   background-color: #000000;
-  /* position: absolute;
-  top: 50%; */
   width: 95vw;
   font-size: 18px;
   padding: 5px;
@@ -54,7 +68,7 @@
   text-transform: uppercase;
   overflow-x: scroll;
   margin-top: 20px;
-  border: 1px solid rgba(218, 218, 218, 0.555);
+  border: 1px solid #38ffAf;
 }
 
 .red-text {
@@ -75,15 +89,80 @@
 }
 
 .instructions {
-  border: 1px solid white;
+  border: 1px solid #38ffAf;
   margin: 10px 30%;
   text-align: center;
   border-radius: 2px;
 }
 
+.container-margin {
+  margin-bottom: 40px;
+  height: 6vh;
+}
+
+.contractSelect_container {
+  position: absolute;
+  left: 30vw;
+  /* TODO: Align middle contarct selector */
+}
+
 .react-tabs {
   text-align: left;
+  overflow-y: hidden;
 }
+
+.react-tabs__tab--selected  {
+  background: #38ffAf !important;
+  border-color: #38ffAf !important;
+  color: black !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid #38ffAf !important;
+}
+
+.react-tabs__tab:focus {
+  background: #38ffAf;
+  border-color: #38ffAf;
+  color: black;
+}
+
+.react-tabs__tab:focus:after {
+  background: #38ffAf;
+  border-color: #38ffAf;
+  color: black;
+}
+
 .react-tab-panel {
   text-align: center !important;
+}
+
+.react-tabs .tab-container {
+  border-bottom: 1px solid #38ffAf;
+}
+
+.tab-padding {
+  padding: 5px 10px;
+}
+
+.select-width {
+  width: 350px;
+  height: 20px;
+  font-size: 17px;
+  margin: 20px auto;
+}
+
+.select-width-account {
+  width: 500px;
+  height: 20px;
+  font-size: 17px;
+  margin: 20px auto;
+}
+
+.account_form {
+  display: flex;
+  flex-direction: column;
+  margin: 0 20vw;
+}
+
+.account_form > input {
+  margin: 5px 0;
 }

@@ -67,6 +67,7 @@ class ReactPanel {
     if (ReactPanel.currentPanel) {
       try {
         ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel.getAccounts();
         ReactPanel.currentPanel.version = "latest";
 
         ReactPanel.currentPanel._panel.reveal(column);
@@ -78,6 +79,7 @@ class ReactPanel {
         ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel.getAccounts();
       } catch (error) {
         console.error(error);
       }
@@ -120,6 +122,10 @@ class ReactPanel {
           this.runGetGasEstimate(message.payload);
         } else if(message.command === 'debugTransaction') {
           this.debug(message.txHash);
+        } else if(message.command === 'get-balance') {
+          this.getBalance(message.account);
+        } else if(message.command === 'send-ether') {
+          this.sendEther(message.payload);
         }
       },
       null,
@@ -179,10 +185,7 @@ class ReactPanel {
 				});
 			}
 			if (m.compiled) {
-				// console.dir(m.compiled);
-				// console.dir(JSON.stringify(sources));
 				context.workspaceState.update("sources", JSON.stringify(sources));
-
         this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true, testPanel: 'main' });
 				solcWorker.kill();
 			}
@@ -191,20 +194,11 @@ class ReactPanel {
 			}
 		});
 		solcWorker.on("error", (error: Error) => {
-			console.log(
-				"%c Compile worker process exited with error" + `${error.message}`,
-				"background: rgba(36, 194, 203, 0.3); color: #EF525B"
-			);
+			console.log("%c Compile worker process exited with error" + `${error.message}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
 		});
 		solcWorker.on("exit", (code: number, signal: string) => {
-			console.log(
-				"%c Compile worker process exited with " +
-				`code ${code} and signal ${signal}`,
-				"background: rgba(36, 194, 203, 0.3); color: #EF525B"
-			);
-			this._panel.webview.postMessage({
-				message: `Error code ${code} : Error signal ${signal}`
-			});
+			console.log("%c Compile worker process exited with " + `code ${code} and signal ${signal}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
+			this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` });
 		});
 	}
 	private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
@@ -251,11 +245,27 @@ class ReactPanel {
     });
     deployWorker.send({ command: "deploy-contract", payload });
   }
+  // get accounts
+  public getAccounts() {
+    const accountsWorker = this.createWorker();
+    accountsWorker.on("message", (m: any) => {
+      this._panel.webview.postMessage({ fetchAccounts: m });
+    })
+    accountsWorker.send({ command: "get-accounts" });
+  }
+  // get balance of a particular account
+  private getBalance(account: string) {
+    const balanceWorker = this.createWorker();
+    balanceWorker.on("message", (m: any) => {
+      this._panel.webview.postMessage({ balance: m.balance });
+    })
+    balanceWorker.send({ command: "get-balance", account: account });
+  }
   // Call contract method
   private runContractCall(payload: any) {
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
-      console.dir(m);
+      this._panel.webview.postMessage({ callResult: m });
     })
     callWorker.send({ command: "contract-method-call", payload })
   }
@@ -272,6 +282,13 @@ class ReactPanel {
       }
     });
     deployWorker.send({ command: "get-gas-estimate", payload });
+  }
+  private sendEther(payload: any) {
+    const sendEtherWorker = this.createWorker();
+    sendEtherWorker.on("message", (m: any) => {
+      this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+    });
+    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload });
   }
   public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
 		// send JSON serializable compiled data

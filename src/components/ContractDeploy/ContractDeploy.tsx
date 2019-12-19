@@ -4,15 +4,17 @@ import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
 
 interface IProps {
-    contractName: string;
-    bytecode: any;
-    abi: any;
-    vscode: any;
-    compiled: any;
-    error: Error | null;
-    gasEstimate: number;
-    deployedResult: string;
-    compiledResult: object;
+  contractName: string;
+  bytecode: any;
+  abi: any;
+  vscode: any;
+  compiled: any;
+  error: Error | null;
+  gasEstimate: number;
+  deployedResult: string;
+  compiledResult: object;
+  callResult: object;
+  deployAccount: string;
 }
 interface IState {
   constructorInput: object[];
@@ -47,13 +49,13 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    this.setState({ deployed: this.props.compiledResult })
+    this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
     for (var i in abi ) {
       if(abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-        for(var i in constructorInput) {
-          constructorInput[i]['value'] = "";
+        for(var j in constructorInput) {
+          constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
         break;
@@ -61,7 +63,7 @@ class ContractDeploy extends Component<IProps, IState> {
     }
   }
   componentDidUpdate(prevProps: any) {
-    const { gasEstimate, deployedResult, error } = this.props;
+    const { gasEstimate, deployedResult, error, abi } = this.props;
     if(error !== prevProps.error) {
       this.setState({ error: error });
     }
@@ -73,11 +75,23 @@ class ContractDeploy extends Component<IProps, IState> {
       this.setState({ gasSupply: gasEstimate });
     }
 
+    const length = Object.keys(abi).length
+    if(prevProps.abi !== abi) {
+      if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
+        const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
+        for (let j in constructorInput) {
+          constructorInput[j]['value'] = "";
+        }
+        this.setState({ constructorInput: constructorInput }); 
+      } else {
+        this.setState({ constructorInput: [] });
+      }
+    }
   }
   private handleDeploy() {
     const { vscode, bytecode, abi } = this.props;
     const { gasSupply, constructorInput } = this.state;
-    this.setState({ error: null });
+    this.setState({ error: null, deployed: {} });
     vscode.postMessage({
      command: "run-deploy",
      payload: {
@@ -89,7 +103,7 @@ class ContractDeploy extends Component<IProps, IState> {
     });
   }
   private handleCall() {
-    const { vscode, abi } = this.props;
+    const { vscode, abi, deployAccount } = this.props;
     const { gasSupply, methodName, deployedAddress, methodInputs } = this.state;
     this.setState({ error: null });
     vscode.postMessage({
@@ -99,7 +113,8 @@ class ContractDeploy extends Component<IProps, IState> {
         address: deployedAddress,
         methodName: methodName,
         params: JSON.parse(methodInputs),
-        gasSupply
+        gasSupply,
+        deployAccount
       }
     });
   }
@@ -141,7 +156,7 @@ class ContractDeploy extends Component<IProps, IState> {
     const { abi } = this.props;
     for(var obj in abi) {
       // @ts-ignore
-      if(abi[obj]['name'] == event.target.value) {
+      if(abi[obj]['name'] === event.target.value) {
         var funcObj: object = abi[obj];
         this.setState({ methodName: event.target.value });
         // @ts-ignore
@@ -154,102 +169,133 @@ class ContractDeploy extends Component<IProps, IState> {
         break;
       }
     }
-    
   }
   private handleMethodInputs(event: any) {
     this.setState({ methodInputs: event.target.value });
-
   }
   public render() {
     const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
+    const { callResult } = this.props;
     return(
       <div>
         <div>
           <form onSubmit={this.handleDeploy}>
             <div className="form-container">
               {
-                (constructorInput && constructorInput.length > 0) && (constructorInput.length <= 3) ?
+                (constructorInput && constructorInput.length > 0) &&
                 <div>
                   {
-                    constructorInput.map((x: object, index) => {
-                      return(
-                        <div className="constructorInput">
-                          {/* 
-                            // @ts-ignore */}
-                          <label className="label_name">{x.name}:</label>
-                          {/* 
-                            // @ts-ignore */}
-                          <input className="input" type={x.type} placeholder={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)}/>
-                        </div>
-                      )
-                    })
+                    (constructorInput.length <= 3) ?
+                      <div>
+                        {
+                          constructorInput.map((x: object, index) => {
+                            return (
+                              <div className="constructorInput input-flex" style={{ marginTop: '10px', marginBottom: '10px' }}>
+                                {/* 
+                                // @ts-ignore */}
+                                <label className="label_name">{x.name}:</label>
+                                {/* 
+                                // @ts-ignore */}
+                                <input className="custom_input_css" type={x.type} placeholder={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
+                              </div>
+                            )
+                          })
+                        }
+                      </div> :
+                      <div className="json_input_container" style={{ marginLeft: '-10px' }}>
+                        <textarea className="json_input custom_input_css" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
+                        </textarea>
+                      </div>
                   }
-                </div> :
-                <div className="constructorInput">
-                  <textarea className="textarea" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
-                  </textarea>
                 </div>
               }
             </div>
             <div className="gas_supply">
-              <label className="label_name">Gas Supply:</label>
+              <label className="label_name" style={{ marginRight: '10px' }}>Gas Supply:</label>
               {
                 (gasSupply > 0) ?
-                <input type="number" className="input" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
-                <input type="number" className="input" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
+                <input type="number" className="input custom_input_css" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
+                <input type="number" className="input custom_input_css" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
               }
             </div>
-            <div className="button_group">
-              <input type="submit" value="Deploy" />
+            <div style={{ marginBottom: '5px' }}>
+              <input type="submit" className="custom_button_css" value="Deploy" />
             </div>
           </form>
-          <div className="button_group">
+          <div>
             <form onSubmit={this.handleGetGasEstimate}>
-              <input type="submit" value="Get gas estimate" />
+              <input type="submit" className="custom_button_css" value="Get gas estimate" />
             </form>
           </div>
-          <div className="button_group">
-            <form onSubmit={this.handleCall}>
-              <input type="text" name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput}/>
-              <input type="text" name="methodName" onChange={this.handleMethodnameInput}/>
+          <div>
+            <form onSubmit={this.handleCall} className="form_align" >
+              <input type="text" className="custom_input_css" style={{ marginRight: '5px' }} name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput}/>
+              <input type="text" className="custom_input_css" name="methodName" onChange={this.handleMethodnameInput}/>
               {
-                methodName !=='' && methodInputs !== '' &&
-                <div className="constructorInput">
-                  <textarea className="textarea" value={methodInputs} onChange={this.handleMethodInputs}></textarea> 
+                methodName !=='' && methodInputs !== '[]' &&
+                <div className="json_input_container" style={{ marginTop: '10px' }}>
+                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea> 
                 </div>
               }
-              <input type="submit" value="Call function" />
+              <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
             </form>
           </div>
         </div>
         <div className="error_message">
           {
-            Object.entries(deployed).length !== 0 &&
+            error &&
             <div>
               <span className="contract-name inline-block highlight-success">
-                Transaction Receipt:
-              </span>
+                Error Message:
+            </span>
               <div>
-                <pre className="large-code">
-                  <JSONPretty id="json-pretty" data={deployed}></JSONPretty>
-                </pre>
+                <pre className="large-code-error">{JSON.stringify(error)}</pre>
               </div>
             </div>
           }
         </div>
-        <div className="error_message">
         {
-          error &&
-          <div>
-            <span className="contract-name inline-block highlight-success">
-              Error Message:
+          // @ts-ignore
+          Object.entries(callResult).length > 0 &&
+          <div className="call-result">
+            <span>
+              {/* 
+              // @ts-ignore */}
+              {callResult && callResult.callResult ? 'Call result:' : 'Call error:' }
             </span>
             <div>
-              <pre className="large-code-error">{JSON.stringify(error)}</pre>
+              {/* 
+              // @ts-ignore */}
+              { callResult && callResult.callResult ? 
+                <pre className="large-code">
+                  {
+                    // @ts-ignore
+                    callResult.callResult
+                  }
+                </pre> :
+                <pre className="large-code" style={{ color: 'red' }}>
+                  {
+                    // @ts-ignore
+                    JSON.stringify(callResult.error)
+                  }
+                </pre>
+              }
             </div>
           </div>
         }
-        </div>
+        {
+          Object.entries(deployed).length > 0 &&
+          <div className="transaction_receipt">
+            <span className="contract-name inline-block highlight-success">
+              Transaction Receipt:
+            </span>
+            <div>
+              <pre className="large-code">
+                <JSONPretty id="json-pretty" data={deployed}></JSONPretty>
+              </pre>
+            </div>
+          </div>
+        }
       </div>
     );
   }
@@ -257,7 +303,8 @@ class ContractDeploy extends Component<IProps, IState> {
 
 function mapStateToProps(state: any) {
     return {
-      compiledResult: state.compiledStore.compiledresult
+      compiledResult: state.compiledStore.compiledresult,
+      callResult: state.compiledStore.callResult
     };
 }
 

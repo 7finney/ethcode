@@ -1,10 +1,12 @@
 import {
   SET_DEPLOYED_RESULT,
-  CLEAR_DEPLOYED_RESULT
+  CLEAR_DEPLOYED_RESULT,
+  SET_CALL_RESULT
 } from "../actions/types";
 
 const initialState = {
-  compiledresult: {}
+  compiledresult: {},
+  callResult: {}
 };
 
 export default (state: any = initialState, action: any) => {
@@ -17,7 +19,13 @@ export default (state: any = initialState, action: any) => {
     case CLEAR_DEPLOYED_RESULT:
       return {
         ...state,
-        compiledresult: {}
+        compiledresult: {},
+        callResult: {}
+      }
+    case SET_CALL_RESULT:
+      return {
+        ...state,
+        callResult: action.payload
       }
     default:
       return state;
