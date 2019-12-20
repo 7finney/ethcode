@@ -2,8 +2,7 @@
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/Ethereum-Devtools-Developers-Studio/ethcode)
 
 ## System support
-* Linux, Mac - latest
-* Windows - unknown
+* Linux, Mac, Windows
 
 ## Usage instructions
 `ctrl+alt+e` - activate the plugin.
