@@ -7,7 +7,9 @@ import {
   clearFinalResult,
   setDeployedResult,
   clearDeployedResult,
-  setCallResult
+  setCallResult,
+  setAccountBalance,
+  setCurrAccChange
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
@@ -29,7 +31,12 @@ interface IProps {
   setDeployedResult: (result: any) => void;
   clearDeployedResult: () => void;
   setCallResult: (result: any) => void;
+  setAccountBalance: (accData: any) => void;
+  setCurrAccChange: (accData: any) => void;
   test: any;
+  accountBalance: number,
+  accounts: string[],
+  currAccount: string
 }
 
 interface IState {
@@ -79,7 +86,7 @@ class App extends Component<IProps, IState> {
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
   public componentDidMount() {
-    window.addEventListener("message", event => {
+    window.addEventListener("message", async event => {
       const { data } = event;
 
       if (data.compiled) {
@@ -161,17 +168,40 @@ class App extends Component<IProps, IState> {
         this.props.setCallResult(result);
       }
       if (data.fetchAccounts) {
-        this.setState({ accounts: data.fetchAccounts.accounts, currAccount: data.fetchAccounts.accounts[0], balance: data.fetchAccounts.balance });
+        const balance = data.fetchAccounts.balance
+        const currAccount = data.fetchAccounts.accounts[0]
+        const accounts = data.fetchAccounts.accounts
+        const accData = {
+          balance,
+          currAccount,
+          accounts
+        }
+        await this.props.setAccountBalance(accData)
+        this.setState({ accounts: this.props.accounts, currAccount: this.props.currAccount, balance: this.props.accountBalance });
       }
       if(data.transactionResult) {
         this.setState({ transactionResult: data.transactionResult });
       }
       if(data.balance) {
-        this.setState({ balance: +data.balance });
+        const accData = {
+          balance: data.balance,
+          currAccount: this.state.currAccount
+        }
+        this.props.setCurrAccChange(accData)
+        this.setState({ balance: this.props.accountBalance });
       }
       // TODO: handle error message
     });
   }
+
+  componentDidUpdate() {
+    if(this.props.accounts !== this.state.accounts) {
+      this.setState({
+        accounts: this.props.accounts
+      })
+    }
+  }
+
   private handleTransactionSubmit(event: any) {
     event.preventDefault();
     const { currAccount } = this.state;
@@ -288,8 +318,7 @@ class App extends Component<IProps, IState> {
                     getSelectedAccount={this.getSelectedAccount}
                   />
                   <div className="account_balance">
-                    <label>Account Balance:</label>
-                    <pre>{balance}</pre>
+                    <b>Account Balance: </b> {balance}
                   </div>
                 </div>
               )}
@@ -379,13 +408,17 @@ class App extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps({ test }: any) {
+function mapStateToProps({ test, accountStore }: any) {
+  const { accountBalance, accounts, currAccount } = accountStore
   return {
+    accountBalance,
+    accounts,
+    currAccount,
     test,
   };
 }
 
 export default connect(
   mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, clearDeployedResult, setCallResult }
+  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, setAccountBalance, setCurrAccChange, clearDeployedResult, setCallResult }
 )(App);
