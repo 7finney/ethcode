@@ -95,7 +95,7 @@ class App extends Component<IProps, IState> {
         if (compiled.errors && compiled.errors.length > 0) {
           this.setState({ message: compiled.errors });
         }
-        this.setState({ compiled, fileName, processMessage: "" });
+        this.setState({ compiled, fileName, processMessage: "", contractName: Object.keys(compiled.contracts[fileName])[0] });
       }
 
       if (data.processMessage) {
@@ -312,7 +312,7 @@ class App extends Component<IProps, IState> {
                   </div>
                 </div>
               }
-              { contractName &&
+              { (compiled && contractName) &&
                 <div className="compiledOutput">
                   <div id={contractName} className="contract-container">
                     {
