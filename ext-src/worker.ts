@@ -55,7 +55,8 @@ function handleLocal(pathString: string, filePath: any) {
   if (
     pathString &&
     pathString.indexOf(".") !== 0 &&
-    pathString.indexOf("/") !== 0
+    pathString.indexOf("/") !== 0 &&
+    pathString.indexOf(":") !== 1
   ) {
     // return handleNodeModulesImport(pathString, filePath, pathString)
     return;
@@ -77,11 +78,22 @@ function findImports(path: any) {
     {
       type: "local",
       match: (url: string) => {
-        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?(\w+\.sol)/g.exec(
+        const urlArray = /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(?:(?:(^\/*[\w+-_/]*\/)*?(\w+\.sol))|(?:(^[a-zA-Z]:\\[\w+-_/]*\\)*?(\w+\.sol)))/g.exec(
           url
         );
+        // @ts-ignore
+        process.send({ helpDebug: "urlArray: "+urlArray });
+        // @ts-ignore
+        const filtered = urlArray.filter(function (el) {
+          return el != null;
+        });
+        // @ts-ignore
+        process.send({ helpDebug: "filtered array: "+filtered });
+        return filtered;
       },
       handle: (match: Array<string>) => {
+        // @ts-ignore
+        process.send({ helpDebug: "match Array: "+match });
         return handleLocal(match[2], match[3]);
       }
     }

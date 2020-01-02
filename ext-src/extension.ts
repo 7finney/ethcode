@@ -191,7 +191,11 @@ class ReactPanel {
 			}
 			if (m.processMessage) {
 				this._panel.webview.postMessage({ processMessage: m.processMessage });
-			}
+      }
+      if(m.helpDebug) {
+        console.log("help debug message: ")
+        console.log(m.helpDebug);
+      }
 		});
 		solcWorker.on("error", (error: Error) => {
 			console.log("%c Compile worker process exited with error" + `${error.message}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
