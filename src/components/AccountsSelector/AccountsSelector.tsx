@@ -58,6 +58,20 @@ class AccountsSelector extends Component<IProps, IState> {
     this._handleAccountSelector = this._handleAccountSelector.bind(this);
   }
 
+  componentDidMount() {
+    const options: any = [];
+    const { availableAccounts } = this.props
+
+      availableAccounts.map((name: string) => {
+        const optItm: IOpt = {
+          value: name,
+          label: name
+        };
+        return options.push(optItm);
+      });
+      this.setState({ options })
+  }
+
   componentDidUpdate(prevProps: any) {
     const options: any = [];
     const { availableAccounts } = this.props

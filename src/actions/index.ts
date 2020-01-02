@@ -4,7 +4,9 @@ import {
   CLEAR_FINAL_RESULT,
   SET_DEPLOYED_RESULT,
   CLEAR_DEPLOYED_RESULT,
-  SET_CALL_RESULT
+  SET_CALL_RESULT,
+  SET_ACC_BALANCE,
+  SET_UPDATE_BALANCE
 } from "./types";
 
 export const addTestResults = (data: any) => {
@@ -40,5 +42,17 @@ export const clearDeployedResult = () => {
 export const setCallResult = (data: any) => {
   return (dispatch: Function) => {
     dispatch({ type: SET_CALL_RESULT, payload: data })
+  }
+}
+
+export const setAccountBalance = (data: any) => {
+  return (dispatch: Function) => {
+    dispatch({ type: SET_ACC_BALANCE, payload: data })
+  }
+}
+
+export const setCurrAccChange = (data: any) => {
+  return (dispatch: Function) => {
+    dispatch({ type: SET_UPDATE_BALANCE, payload: data })
   }
 }
