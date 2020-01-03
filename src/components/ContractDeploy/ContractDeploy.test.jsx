@@ -1,6 +1,13 @@
 import React from 'react';
-import ContractCompiled from './ContractCompiled';
 import renderer from 'react-test-renderer';
+import { Provider } from "react-redux";
+import { createStore, applyMiddleware } from "redux";
+import ReduxThunk from 'redux-thunk'
+import reducer from "../../reducers";
+
+import ContractDeploy from './ContractDeploy';
+
+const store = createStore(reducer, {}, applyMiddleware(ReduxThunk));
 
 const compiled = {
   "contracts": {
@@ -1118,10 +1125,15 @@ const abi = compiled.contracts[fileName][contractName].abi
 
 it('renders correctly', () => {
   const tree = renderer
-    .create(<ContractCompiled
-      contractName={contractName}
-      abi={JSON.stringify(abi)}
-      bytecode={bytecode} />)
+    .create(
+      <Provider store={store}>
+        <ContractDeploy
+          contractName={contractName}
+          abi={JSON.stringify(abi)}
+          bytecode={JSON.stringify(bytecode)}
+          gasEstimate={'126817'} />
+      </Provider>
+      )
     .toJSON();
   expect(tree).toMatchSnapshot();
 });

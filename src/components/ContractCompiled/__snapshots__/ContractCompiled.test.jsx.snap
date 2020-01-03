@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly 1`] = `
+<div>
+  <span
+    className="contract-name inline-block highlight-success"
+  >
+    Contract Name: 
+    Strings
+  </span>
+  <div
+    className="byte-code"
+  >
+    <pre
+      className="large-code"
+    >
+      "608060405234801561001057600080fd5b50610114806100206000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c80636d4ce63c14602d575b600080fd5b603360ab565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101560715780820151818401526020810190506058565b50505050905090810190601f168015609d5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b60606040518060400160405280600581526020017f48656c6c6f00000000000000000000000000000000000000000000000000000081525090509056fea165627a7a723058203deec5fc3a51dd1823d00a86a0f0ec59a48a8c4a780718c1a6114c501953106d0029"
+    </pre>
+  </div>
+  <div
+    className="abi-definition"
+  >
+    <pre
+      className="large-code"
+    >
+      "[{\\"constant\\":true,\\"inputs\\":[],\\"name\\":\\"get\\",\\"outputs\\":[{\\"name\\":\\"res\\",\\"type\\":\\"string\\"}],\\"payable\\":false,\\"stateMutability\\":\\"view\\",\\"type\\":\\"function\\"}]"
+    </pre>
+  </div>
+  <div />
+</div>
+`;
