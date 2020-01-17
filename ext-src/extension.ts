@@ -3,11 +3,26 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
+import * as uuid from "uuid/v1"
+import axios from "axios"
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.activate", () => {
+    vscode.commands.registerCommand("ethcode.activate", async () => {
       ReactPanel.createOrShow(context.extensionPath);
+
+      const machineID = uuid();
+
+      try {
+        const url = `http://auth.localhost/getToken/${machineID}`
+        const { data } = await axios.get(url);
+
+        if(!context.globalState.get("token"))
+          context.globalState.update("token", data.token)
+
+      } catch (error) {
+        console.error(error);
+      }
     })
   );
   context.subscriptions.push(
