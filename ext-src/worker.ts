@@ -212,6 +212,10 @@ process.on("message", async m => {
   }
   // Deploy
   if(m.command === "deploy-contract") {
+    if (m.jwtToken) {
+      // @ts-ignore
+      process.send({ jwtToken: m.jwtToken })
+    }
     const { abi, bytecode, params, gasSupply } = m.payload;
     const inp = {
       abi,

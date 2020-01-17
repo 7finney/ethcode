@@ -5,6 +5,8 @@ import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
 import * as uuid from "uuid/v1"
 import axios from "axios"
+// @ts-ignore
+var jwtToken: any;
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -17,8 +19,11 @@ export function activate(context: vscode.ExtensionContext) {
         const url = `http://auth.localhost/getToken/${machineID}`
         const { data } = await axios.get(url);
 
-        if(!context.globalState.get("token"))
+        if(!context.globalState.get("token")) {
           context.globalState.update("token", data.token)
+        } else {
+          jwtToken = context.globalState.get("token")
+        }
 
       } catch (error) {
         console.error(error);
@@ -257,8 +262,12 @@ class ReactPanel {
       else {
         this._panel.webview.postMessage({ deployedResult: m });
       }
+      if(m.jwtToken) {
+        console.log("bsakjxcbsjkbckasbcasjkc");
+        console.log(m.jwtToken);
+      }
     });
-    deployWorker.send({ command: "deploy-contract", payload });
+    deployWorker.send({ command: "deploy-contract", payload, jwtToken: jwtToken });
   }
   // get accounts
   public getAccounts() {
