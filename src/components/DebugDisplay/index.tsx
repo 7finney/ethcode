@@ -5,7 +5,7 @@ import "./DebugDisplay.css";
 interface IProps {
     vscode: any;
     txTrace: any;
-    deployedResult: object;
+    deployedResult: string;
 }
 interface IState {
     txHash: string | null;
@@ -13,7 +13,7 @@ interface IState {
     olddebugObj: object;
     newdebugObj: object;
     indx: any;
-    deployedResult: object
+    deployedResult: string
 }
 
 class DebugDisplay extends Component<IProps, IState> {
@@ -23,7 +23,7 @@ class DebugDisplay extends Component<IProps, IState> {
         olddebugObj: {},
         newdebugObj: {},
         indx: -1,
-        deployedResult: {}
+        deployedResult: ""
     };
     constructor(props: IProps) {
         super(props);
@@ -99,9 +99,9 @@ class DebugDisplay extends Component<IProps, IState> {
                     <form onSubmit={this.handleSubmit}>
                         <label>
                             <span style={{ marginRight: '5px' }}>Transaction hash:</span>
-                            <input type="text" value={this.state.txHash} onChange={this.handleChange} />
+                            <input type="text" className="custom_input_css" value={this.state.txHash} onChange={this.handleChange} />
                         </label>
-                        <input type="submit" value="Debug" />
+                        <input type="submit" className="custom_button_css" style={{ marginLeft: '10px' }} value="Debug" />
                     </form>
                 </div>
                 {

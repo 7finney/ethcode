@@ -166,6 +166,50 @@ process.on("message", async m => {
       process.exit(0);
     });
   }
+ // Fetch accounts and balance
+  if(m.command === "get-accounts") {
+    const c = {
+      callInterface: {
+        command: 'get-accounts',
+      }
+    }
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) =>{
+      // @ts-ignore
+      const result = JSON.parse(data.result);
+      // @ts-ignore
+      process.send({ accounts: result.accounts, balance: result.balance });
+    })
+  }
+  // send wei_value to a address
+  if(m.command === "send-ether") {
+    const transactionInfo = m.transactionInfo;
+    const c = {
+      callInterface: {
+        command: 'send-ether',
+        payload: JSON.stringify(transactionInfo)
+      }
+    };
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ transactionResult: data.result });
+    })
+  }
+  // fetch balance of a account
+  if(m.command === "get-balance") {
+    const c = {
+      callInterface: {
+        command: 'get-balance',
+        payload: m.account
+      }
+    }
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ balance: data.result });
+    })
+  }
   // Deploy
   if(m.command === "deploy-contract") {
     const { abi, bytecode, params, gasSupply } = m.payload;
@@ -185,6 +229,36 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ deployedResult: data.result });
+    });
+    call.on('end', function() {
+      process.exit(0);
+    });
+    call.on('error', function(err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    })
+  }
+  // Method call
+  if(m.command === "contract-method-call") {
+    const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
+    const inp = {
+      abi,
+      address,
+      methodName,
+      params,
+      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
+      deployAccount
+    };
+    const c = {
+      callInterface: {
+        command: 'contract-method-call',
+        payload: JSON.stringify(inp)
+      }
+    };
+    const call = client_call_client.RunDeploy(c);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ callResult: data.result });
     });
     call.on('end', function() {
       process.exit(0);

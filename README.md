@@ -2,15 +2,14 @@
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/Ethereum-Devtools-Developers-Studio/ethcode)
 
 ## System support
-* Linux, Mac - latest
-* Windows - unknown
+* Linux, Mac, Windows
 
 ## Usage instructions
 `ctrl+alt+e` - activate the plugin.
 ![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/65820327-15ed3a00-e245-11e9-9836-606bb1a71de6.png)
 
 `ctrl+alt+c` - compile contracts.
-![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/65820336-33ba9f00-e245-11e9-9918-3d210c52297e.png)
+![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/71320562-e57b0c00-24d2-11ea-9b17-2629da608c6d.png)
 
 `ctrl+alt+t` - run unit testing.
 ![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/67867273-26e4e000-fb50-11e9-9956-5f06e27c5a29.png)
