@@ -68,8 +68,7 @@ class DebugDisplay extends Component<IProps, IState> {
         txTrace.length-1;
         if(txTrace.length > 0) {
             this.setState({ 
-                indx: index, 
-                // debugObj: txTrace[index],
+                indx: index,
                 newdebugObj: txTrace[index],
                 olddebugObj: newdebugObj
             });
@@ -81,8 +80,7 @@ class DebugDisplay extends Component<IProps, IState> {
         const index = this.state.indx > 0 ? this.state.indx-1 : 0;
         if(txTrace.length > 0) {
             this.setState({ 
-                indx: index, 
-                // debugObj: txTrace[index],
+                indx: index,
                 newdebugObj: txTrace[index],
                 olddebugObj: txTrace[index-1]
             });
@@ -108,12 +106,12 @@ class DebugDisplay extends Component<IProps, IState> {
                     indx >= 0 &&
                     <div>
                         <p>
-                            <button className="input text-subtle" onClick={this.stopDebug}>Stop</button>
+                            <button className="input text-subtle custom_button_css" onClick={this.stopDebug}>Stop</button>
                         </p>
                         <div>
                             <p>OPCodes:</p>
                             <div>
-                                <ul className="opDiv">
+                                <ul className="opDiv" style={{ paddingLeft: 0 }}>
                                     { txTrace.map((obj: any, index: any) => {
                                         return <li className={index === indx ? "selected" : ""} key={index} id={index}>{obj.op}</li>;
                                     }) }
@@ -121,18 +119,20 @@ class DebugDisplay extends Component<IProps, IState> {
                             </div>
                             <div>
                                 <p>
-                                    <button onClick={this.debugBack}>Step Back</button>
-                                    <button onClick={this.debugInto}>Step Into</button>
+                                    <button className="custom_button_css" style={{ marginRight: "20px" }} onClick={this.debugBack}>Step Back</button>
+                                    <button className="custom_button_css" onClick={this.debugInto}>Step Into</button>
                                 </p>
                             </div>
                         </div>
                         {/* TODO */}
-                        <ReactDiffViewer
-                            oldValue={JSON.stringify(olddebugObj, null, "\t")}
-                            newValue={JSON.stringify(newdebugObj, null, "\t")}
-                            splitView={false}
-                            disableWordDiff={true}
-                        />
+                        <div style={{ width: "100%", overflowX: "scroll", overflowY: "hidden" }}>
+                            <ReactDiffViewer
+                                oldValue={JSON.stringify(olddebugObj, null, "\t")}
+                                newValue={JSON.stringify(newdebugObj, null, "\t")}
+                                disableWordDiff={true}
+                                hideLineNumbers={true}
+                            />
+                        </div>
                     </div>
                 }
             </div>
