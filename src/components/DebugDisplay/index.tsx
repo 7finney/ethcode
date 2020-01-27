@@ -130,7 +130,8 @@ class DebugDisplay extends Component<IProps, IState> {
                         <ReactDiffViewer
                             oldValue={JSON.stringify(olddebugObj, null, "\t")}
                             newValue={JSON.stringify(newdebugObj, null, "\t")}
-                            splitView={true}
+                            splitView={false}
+                            disableWordDiff={true}
                         />
                     </div>
                 }
