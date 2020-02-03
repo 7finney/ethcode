@@ -44,7 +44,7 @@ class DebugDisplay extends Component<IProps, IState> {
         });
     }
     componentDidUpdate(prevProps: IProps) {
-        const { newdebugObj } = this.state
+        const { newdebugObj } = this.state;
         if(this.props.txTrace !== prevProps.txTrace) {
             this.setState({
                 indx: 0,
@@ -61,7 +61,7 @@ class DebugDisplay extends Component<IProps, IState> {
         this.setState({ indx: -1, debugObj: {} });
     }
     debugInto() {
-        const { newdebugObj } = this.state
+        const { newdebugObj } = this.state;
         const { txTrace } = this.props;
         const index = (this.state.indx < txTrace.length-1) ?
         this.state.indx+1 : 
@@ -75,7 +75,6 @@ class DebugDisplay extends Component<IProps, IState> {
         }
     }
     debugBack() {
-        const { newdebugObj } = this.state
         const { txTrace } = this.props;
         const index = this.state.indx > 0 ? this.state.indx-1 : 0;
         if(txTrace.length > 0) {
