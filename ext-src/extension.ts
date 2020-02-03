@@ -212,13 +212,8 @@ class ReactPanel {
       version: this.version
     });
     vyperWorker.on('message', (m) => {
-      console.log("mmmmmm ", m);
-
       if (m.compiled) {
-        console.log("hello world");
-
         context.workspaceState.update("sources", JSON.stringify(sources));
-
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
       }
       if (m.processMessage) {
