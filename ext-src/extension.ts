@@ -15,15 +15,14 @@ export function activate(context: vscode.ExtensionContext) {
       const machineID = uuid();
       
       try {
-        const url = `https://auth.ethco.de/getToken/${machineID}`
+        const url = `https://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
         
         if(!context.globalState.get("token")) {
-          context.globalState.update("token", data.token)
-          jwtToken = data.token
-          
+          context.globalState.update("token", data.token);
+          jwtToken = data.token;
         } else {
-          jwtToken = context.globalState.get("token")
+          jwtToken = context.globalState.get("token");
         }
         ReactPanel.createOrShow(context.extensionPath);
       } catch (error) {

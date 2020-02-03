@@ -183,7 +183,7 @@ process.on("message", async m => {
         console.log("err", err);
       } else {
         // @ts-ignore
-        process.send({ response })
+        process.send({ response });
       }
     });
 
@@ -209,7 +209,7 @@ process.on("message", async m => {
         console.log("err", err);
       } else {
         // @ts-ignore
-        process.send({ response })
+        process.send({ response });
       }
     });
     call.on('data', (data: any) => {
@@ -230,7 +230,7 @@ process.on("message", async m => {
         console.log("err", err);
       } else {
         // @ts-ignore
-        process.send({ response })
+        process.send({ response });
       }
     });
     call.on('data', (data: any) => {
@@ -264,7 +264,7 @@ process.on("message", async m => {
         console.log("err", err);
       } else {
         // @ts-ignore
-        process.send({ response })
+        process.send({ response });
       }
     });
     call.on('data', (data: any) => {
@@ -301,7 +301,7 @@ process.on("message", async m => {
         console.log("err", err);
       } else {
         // @ts-ignore
-        process.send({ response })
+        process.send({ response });
       }
     });
     call.on('data', (data: any) => {
@@ -335,7 +335,7 @@ process.on("message", async m => {
         console.log("err", err);
       } else {
         // @ts-ignore
-        process.send({ response })
+        process.send({ response });
       }
     });
     call.on('data', (data: any) => {
