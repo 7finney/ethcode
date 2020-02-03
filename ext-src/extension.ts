@@ -3,11 +3,31 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
+import * as uuid from "uuid/v1";
+import axios from "axios";
+// @ts-ignore
+var jwtToken: any;
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.activate", () => {
-      ReactPanel.createOrShow(context.extensionPath);
+    vscode.commands.registerCommand("ethcode.activate", async () => {
+      
+      const machineID = uuid();
+      
+      try {
+        const url = `https://auth.ethco.de/getToken/${machineID}`;
+        const { data } = await axios.get(url);
+        
+        if(!context.globalState.get("token")) {
+          context.globalState.update("token", data.token);
+          jwtToken = data.token;
+        } else {
+          jwtToken = context.globalState.get("token");
+        }
+        ReactPanel.createOrShow(context.extensionPath);
+      } catch (error) {
+        console.error(error);
+      }
     })
   );
   context.subscriptions.push(
@@ -243,7 +263,7 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    deployWorker.send({ command: "deploy-contract", payload });
+    deployWorker.send({ command: "deploy-contract", payload, jwtToken});
   }
   // get accounts
   public getAccounts() {
@@ -251,7 +271,7 @@ class ReactPanel {
     accountsWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ fetchAccounts: m });
     })
-    accountsWorker.send({ command: "get-accounts" });
+    accountsWorker.send({ command: "get-accounts", jwtToken });
   }
   // get balance of a particular account
   private getBalance(account: string) {
@@ -259,7 +279,7 @@ class ReactPanel {
     balanceWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ balance: m.balance });
     })
-    balanceWorker.send({ command: "get-balance", account: account });
+    balanceWorker.send({ command: "get-balance", account: account, jwtToken });
   }
   // Call contract method
   private runContractCall(payload: any) {
@@ -267,7 +287,7 @@ class ReactPanel {
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
     })
-    callWorker.send({ command: "contract-method-call", payload })
+    callWorker.send({ command: "contract-method-call", payload, jwtToken });
   }
   // Get gas estimates
   private runGetGasEstimate(payload: any) {
@@ -281,14 +301,14 @@ class ReactPanel {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       }
     });
-    deployWorker.send({ command: "get-gas-estimate", payload });
+    deployWorker.send({ command: "get-gas-estimate", payload, jwtToken });
   }
   private sendEther(payload: any) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ transactionResult: m.transactionResult });
     });
-    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload });
+    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken });
   }
   public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
 		// send JSON serializable compiled data

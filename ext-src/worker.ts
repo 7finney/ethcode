@@ -26,7 +26,7 @@ const remix_debug_pb = protoDescriptor.remix_debug;
 let remix_tests_client: any;
 let remix_debug_client: any;
 try {
-  remix_tests_client = new remix_tests_pb.RemixTestsService('rtapi.ethcode.dev:50051', grpc.credentials.createInsecure());
+  remix_tests_client = new remix_tests_pb.RemixTestsService('rt.ethco.de:50051', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -34,7 +34,7 @@ try {
 
 // remix-debug grpc
 try {
-  remix_debug_client = new remix_debug_pb.RemixDebugService('remixdebug.ethcode.dev:50052', grpc.credentials.createInsecure());
+  remix_debug_client = new remix_debug_pb.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -44,7 +44,9 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -100,6 +102,9 @@ function findImports(path: any) {
 }
 
 process.on("message", async m => {
+
+  var meta = new grpc.Metadata();
+  meta.add('authorization', m.jwtToken);
   if (m.command === "compile") {
     const input = m.payload;
     if(m.version === 'latest') {
@@ -173,7 +178,16 @@ process.on("message", async m => {
         command: 'get-accounts',
       }
     }
-    const call = client_call_client.RunDeploy(c);
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
+
+
     call.on('data', (data: any) =>{
       // @ts-ignore
       const result = JSON.parse(data.result);
@@ -190,7 +204,14 @@ process.on("message", async m => {
         payload: JSON.stringify(transactionInfo)
       }
     };
-    const call = client_call_client.RunDeploy(c);
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ transactionResult: data.result });
@@ -204,7 +225,14 @@ process.on("message", async m => {
         payload: m.account
       }
     }
-    const call = client_call_client.RunDeploy(c);
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ balance: data.result });
@@ -212,6 +240,10 @@ process.on("message", async m => {
   }
   // Deploy
   if(m.command === "deploy-contract") {
+    if (m.jwtToken) {
+      // @ts-ignore
+      process.send({ jwtToken: m.jwtToken });
+    }
     const { abi, bytecode, params, gasSupply } = m.payload;
     const inp = {
       abi,
@@ -225,7 +257,16 @@ process.on("message", async m => {
         payload: JSON.stringify(inp)
       }
     };
-    const call = client_call_client.RunDeploy(c);
+    // @ts-ignore
+    process.send({ help: m.jwtToken });
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ deployedResult: data.result });
@@ -255,7 +296,14 @@ process.on("message", async m => {
         payload: JSON.stringify(inp)
       }
     };
-    const call = client_call_client.RunDeploy(c);
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ callResult: data.result });
@@ -282,7 +330,14 @@ process.on("message", async m => {
         payload: JSON.stringify(inp)
       }
     };
-    const call = client_call_client.RunDeploy(c);
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ gasEstimate: data.result });
