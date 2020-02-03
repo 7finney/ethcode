@@ -15,12 +15,13 @@ export function activate(context: vscode.ExtensionContext) {
       const machineID = uuid();
       
       try {
-        const url = `http://auth.localhost/getToken/${machineID}`
+        const url = `https://auth.ethco.de/getToken/${machineID}`
         const { data } = await axios.get(url);
         
         if(!context.globalState.get("token")) {
           context.globalState.update("token", data.token)
           jwtToken = data.token
+          
         } else {
           jwtToken = context.globalState.get("token")
         }
