@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ReactDiffViewer from 'react-diff-viewer'
+import ReactDiffViewer from 'react-diff-viewer';
 import "./DebugDisplay.css";
 
 interface IProps {
