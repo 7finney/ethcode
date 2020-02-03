@@ -3,8 +3,8 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
-import * as uuid from "uuid/v1"
-import axios from "axios"
+import * as uuid from "uuid/v1";
+import axios from "axios";
 // @ts-ignore
 var jwtToken: any;
 
@@ -257,7 +257,6 @@ class ReactPanel {
   private runDeploy(payload: any) {
     const deployWorker = this.createWorker();
     deployWorker.on("message", (m: any) => {
-      console.log("this is M", m);
       if(m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
