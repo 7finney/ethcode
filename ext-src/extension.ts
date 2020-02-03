@@ -287,7 +287,7 @@ class ReactPanel {
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
     })
-    callWorker.send({ command: "contract-method-call", payload, jwtToken })
+    callWorker.send({ command: "contract-method-call", payload, jwtToken });
   }
   // Get gas estimates
   private runGetGasEstimate(payload: any) {

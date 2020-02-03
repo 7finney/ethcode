@@ -242,7 +242,7 @@ process.on("message", async m => {
   if(m.command === "deploy-contract") {
     if (m.jwtToken) {
       // @ts-ignore
-      process.send({ jwtToken: m.jwtToken })
+      process.send({ jwtToken: m.jwtToken });
     }
     const { abi, bytecode, params, gasSupply } = m.payload;
     const inp = {
@@ -258,7 +258,7 @@ process.on("message", async m => {
       }
     };
     // @ts-ignore
-    process.send({ help: m.jwtToken })
+    process.send({ help: m.jwtToken });
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
