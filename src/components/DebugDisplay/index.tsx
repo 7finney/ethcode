@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ReactDiffViewer from 'react-diff-viewer';
 import "./DebugDisplay.css";
 
 interface IProps {
@@ -9,6 +10,8 @@ interface IProps {
 interface IState {
     txHash: string | null;
     debugObj: object;
+    olddebugObj: object;
+    newdebugObj: object;
     indx: any;
     deployedResult: string
 }
@@ -17,6 +20,8 @@ class DebugDisplay extends Component<IProps, IState> {
     public state = {
         txHash: '',
         debugObj: {},
+        olddebugObj: {},
+        newdebugObj: {},
         indx: -1,
         deployedResult: ""
     };
@@ -39,10 +44,13 @@ class DebugDisplay extends Component<IProps, IState> {
         });
     }
     componentDidUpdate(prevProps: IProps) {
+        const { newdebugObj } = this.state;
         if(this.props.txTrace !== prevProps.txTrace) {
             this.setState({
                 indx: 0,
-                debugObj: this.props.txTrace[0]
+                // debugObj: this.props.txTrace[0],
+                olddebugObj: newdebugObj,
+                newdebugObj: this.props.txTrace[0],
             })
         }
     }
@@ -53,14 +61,16 @@ class DebugDisplay extends Component<IProps, IState> {
         this.setState({ indx: -1, debugObj: {} });
     }
     debugInto() {
+        const { newdebugObj } = this.state;
         const { txTrace } = this.props;
         const index = (this.state.indx < txTrace.length-1) ?
         this.state.indx+1 : 
         txTrace.length-1;
         if(txTrace.length > 0) {
             this.setState({ 
-                indx: index, 
-                debugObj: txTrace[index] 
+                indx: index,
+                newdebugObj: txTrace[index],
+                olddebugObj: newdebugObj
             });
         }
     }
@@ -69,15 +79,17 @@ class DebugDisplay extends Component<IProps, IState> {
         const index = this.state.indx > 0 ? this.state.indx-1 : 0;
         if(txTrace.length > 0) {
             this.setState({ 
-                indx: index, 
-                debugObj: txTrace[index] 
+                indx: index,
+                newdebugObj: txTrace[index],
+                olddebugObj: txTrace[index-1]
             });
         }
 
     }
     public render() {
-        const { indx, debugObj } = this.state;
+        const { indx, debugObj, olddebugObj, newdebugObj } = this.state;
         const { txTrace } = this.props;
+
         return (
             <div className="container">
                 <div>
@@ -93,78 +105,32 @@ class DebugDisplay extends Component<IProps, IState> {
                     indx >= 0 &&
                     <div>
                         <p>
-                            <button className="input text-subtle" onClick={this.stopDebug}>Stop</button>
+                            <button className="input text-subtle custom_button_css" onClick={this.stopDebug}>Stop</button>
                         </p>
                         <div>
                             <p>OPCodes:</p>
                             <div>
-                                <ul className="opDiv">
+                                <ul className="opDiv" style={{ paddingLeft: 0 }}>
                                     { txTrace.map((obj: any, index: any) => {
-                                        if (index === indx)
-                                            return <li className="selected" key={index} id={index}>{obj.op}</li>;
-                                        else 
-                                            return <li key={index} id={index}>{obj.op}</li>;
+                                        return <li className={index === indx ? "selected" : ""} key={index} id={index}>{obj.op}</li>;
                                     }) }
                                 </ul>
                             </div>
                             <div>
                                 <p>
-                                    <button onClick={this.debugBack}>Step Back</button>
-                                    <button onClick={this.debugInto}>Step Into</button>
+                                    <button className="custom_button_css" style={{ marginRight: "20px" }} onClick={this.debugBack}>Step Back</button>
+                                    <button className="custom_button_css" onClick={this.debugInto}>Step Into</button>
                                 </p>
                             </div>
                         </div>
-                        <div>
-                            <div className="opDiv">
-                                <p>
-                                    <ul>
-                                        {/* 
-                                            // @ts-ignore */}
-                                        {indx > 0 ? <li>gas cost:{debugObj.gasCost}</li>:<li>gas cost:</li>}
-                                        {/* 
-                                            // @ts-ignore */}
-                                        <li>gas remaining:{debugObj.gas}</li>
-                                    </ul>
-                                </p>
-                            </div>
-                            <div>
-                                <div className="row">
-                                    <div className="title">
-                                        Memory:
-                                    </div>
-                                    <div>
-                                        <div className="value">
-                                            {/* 
-                                                    // @ts-ignore */}
-                                            {JSON.stringify(debugObj.memory)}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="title">
-                                        Stack:
-                                    </div>
-                                    <div>
-                                        <div className="value">
-                                            {/* 
-                                                    // @ts-ignore */}
-                                            {JSON.stringify(debugObj.stack)}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="title">
-                                        Storage:
-                                    </div>
-                                    <div>
-                                        <div className="value">
-                                            {/* 
-                                                    // @ts-ignore */}
-                                            {JSON.stringify(debugObj.storage)}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        {/* TODO */}
+                        <div style={{ width: "100%", overflowX: "scroll", overflowY: "hidden" }}>
+                            <ReactDiffViewer
+                                oldValue={JSON.stringify(olddebugObj, null, "\t")}
+                                newValue={JSON.stringify(newdebugObj, null, "\t")}
+                                disableWordDiff={true}
+                                hideLineNumbers={true}
+                            />
                         </div>
                     </div>
                 }
