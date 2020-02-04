@@ -141,7 +141,7 @@ class ReactPanel {
         } else if(message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload);
         } else if(message.command === 'debugTransaction') {
-          this.debug(message.txHash);
+          this.debug(message.txHash, message.testNetId);
         } else if(message.command === 'get-balance') {
           this.getBalance(message.account);
         } else if(message.command === 'send-ether') {
@@ -243,14 +243,14 @@ class ReactPanel {
 			}
 		});
 	}
-  private debug(txHash: string): void {
+  private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
     console.dir("WorkerID: ", debugWorker.pid);
     console.dir("Debugging transaction with remix-debug...");
     debugWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ txTrace: m.debugResp });
     });
-    debugWorker.send({ command: "debug-transaction", payload: txHash });
+    debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
   }
   // Deploy contracts
   private runDeploy(payload: any) {

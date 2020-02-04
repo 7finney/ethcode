@@ -34,7 +34,8 @@ try {
 
 // remix-debug grpc
 try {
-  remix_debug_client = new remix_debug_pb.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
+  // remix_debug_client = new remix_debug_pb.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
+  remix_debug_client = new remix_debug_pb.RemixDebugService('192.168.0.16:50052', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -352,7 +353,8 @@ process.on("message", async m => {
     const dt = {
       debugInterface: {
         command: 'debug',
-        payload: m.payload
+        payload: m.payload,
+        testnetId: m.testnetId
       }
     };
     const call = remix_debug_client.RunDebug(dt);

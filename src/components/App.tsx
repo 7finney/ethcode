@@ -9,12 +9,14 @@ import {
   clearDeployedResult,
   setCallResult,
   setAccountBalance,
-  setCurrAccChange
+  setCurrAccChange,
+  setTestNetId
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
 import Dropdown from "./Dropdown";
+import TestNetSelector from "./TestNetSelector";
 import CompilerVersionSelector from "./CompilerVersionSelector";
 import ContractSelector from "./ContractSelector";
 import TestDisplay from "./TestDisplay";
@@ -33,10 +35,12 @@ interface IProps {
   setCallResult: (result: any) => void;
   setAccountBalance: (accData: any) => void;
   setCurrAccChange: (accData: any) => void;
+  setTestNetId: (testNetId: any) => void;
   test: any;
   accountBalance: number,
   accounts: string[],
-  currAccount: string
+  currAccount: string,
+  testNetId: string
 }
 
 interface IState {
@@ -55,6 +59,7 @@ interface IState {
   currAccount: string;
   balance: number;
   transactionResult: string;
+  testNetId: string
 }
 interface IOpt {
   value: string;
@@ -81,7 +86,8 @@ class App extends Component<IProps, IState> {
       accounts: [],
       currAccount: "",
       balance: 0,
-      transactionResult: ""
+      transactionResult: "",
+      testNetId: ""
     };
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
@@ -200,6 +206,13 @@ class App extends Component<IProps, IState> {
         accounts: this.props.accounts
       })
     }
+
+    if (this.props.testNetId !== this.state.testNetId) {
+      this.setState({
+        testNetId: this.props.testNetId
+      })
+    }
+
   }
 
   private handleTransactionSubmit(event: any) {
@@ -234,6 +247,11 @@ class App extends Component<IProps, IState> {
       version: version.value
     });
   };
+
+  public getSelectedNetwork = (testNetId: any) => {
+    this.setState({ testNetId });
+    this.props.setTestNetId(testNetId);
+  }
   
   public getSelectedAccount = (account: any) => {
     this.setState({ currAccount: account });
@@ -263,7 +281,8 @@ class App extends Component<IProps, IState> {
       currAccount,
       transactionResult,
       accounts,
-      balance
+      balance,
+      testNetId
     } = this.state;
 
     return (
@@ -283,6 +302,11 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
+        {
+          <TestNetSelector
+            getSelectedNetwork={this.getSelectedNetwork}
+          />
+        }
         {
           transactionResult &&
           <div>
@@ -371,7 +395,7 @@ class App extends Component<IProps, IState> {
                 </div>  }
             </TabPanel>
             <TabPanel className="react-tab-panel">
-              <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} />
+              <DebugDisplay deployedResult={deployedResult} vscode={vscode} testNetId={testNetId} txTrace={txTrace} />
             </TabPanel>
             <TabPanel className="react-tab-panel">
               {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
@@ -408,17 +432,19 @@ class App extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps({ test, accountStore }: any) {
+function mapStateToProps({ test, accountStore, debugStore }: any) {
   const { accountBalance, accounts, currAccount } = accountStore
+  const { testNetId } = debugStore
   return {
     accountBalance,
     accounts,
     currAccount,
     test,
+    testNetId
   };
 }
 
 export default connect(
   mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, setAccountBalance, setCurrAccChange, clearDeployedResult, setCallResult }
+  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, setAccountBalance, setTestNetId, setCurrAccChange, clearDeployedResult, setCallResult }
 )(App);
