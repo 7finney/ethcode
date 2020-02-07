@@ -9,16 +9,20 @@ import axios from "axios";
 var jwtToken: any;
 
 async function getToken(context: any, interval: any) {
-  const machineID = uuid();
-
+  
   try {
-    if (!context.globalState.get("token")) {
+    // @ts-ignore
+    const config = vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
+    if (!config.get("config")) {
+      const machineID = uuid();
       const url = `https://auth.ethco.de/getToken/${machineID}`;
       const { data } = await axios.get(url);
-      context.globalState.update("token", data.token);
+      const value = { "machineID": machineID, "token": data.token }
+      config.update("config", value);
       jwtToken = data.token;
     } else {
-      jwtToken = context.globalState.get("token");
+      // @ts-ignore
+      jwtToken = config.get("config").token;
     }
     clearInterval(interval)
   } catch (error) {
@@ -30,7 +34,6 @@ async function getToken(context: any, interval: any) {
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", () => {
-      jwtToken = context.globalState.update("token", "");
       let interval: any = setInterval(() => getToken(context, interval), 5000)
       ReactPanel.createOrShow(context.extensionPath);
     })
