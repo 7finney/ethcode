@@ -20,10 +20,10 @@ function compileVyper(sources: ISources) {
     const { stdout, stderr, code } = shell.exec(args);
     var m: object;
     if(stdout) {
-        m = { "compiled": stdout }
+        m = { "compiled": stdout };
     }
     if(stderr) {
-        m = { "error": stderr +" "+ code }
+        m = { "error": stderr +" "+ code };
     }
     fs.unlink(__dirname + "/" + ".temp-vy.json", () => {});
     // @ts-ignore
