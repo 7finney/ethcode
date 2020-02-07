@@ -8,25 +8,30 @@ import axios from "axios";
 // @ts-ignore
 var jwtToken: any;
 
+async function getToken(context: any, interval: any) {
+  const machineID = uuid();
+
+  try {
+    if (!context.globalState.get("token")) {
+      const url = `https://auth.ethco.de/getToken/${machineID}`;
+      const { data } = await axios.get(url);
+      context.globalState.update("token", data.token);
+      jwtToken = data.token;
+    } else {
+      jwtToken = context.globalState.get("token");
+    }
+    clearInterval(interval)
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.activate", async () => {
-      
-      const machineID = uuid();
-      
-      try {
-        
-        if(!context.globalState.get("token")) {
-          const url = `https://auth.ethco.de/getToken/${machineID}`;
-          const { data } = await axios.get(url);
-          context.globalState.update("token", data.token);
-          jwtToken = data.token;
-        } else {
-          jwtToken = context.globalState.get("token");
-        }
-      } catch (error) {
-        console.error(error);
-      }
+    vscode.commands.registerCommand("ethcode.activate", () => {
+      jwtToken = context.globalState.update("token", "");
+      let interval: any = setInterval(() => getToken(context, interval), 5000)
       ReactPanel.createOrShow(context.extensionPath);
     })
   );
