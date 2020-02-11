@@ -136,8 +136,7 @@ class ReactPanel {
             } else {
               try {
                 ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
-                ReactPanel.currentPanel.version = "latest";
-                ReactPanel.currentPanel.getCompilerVersion();
+                ReactPanel.currentPanel.getAccounts();
               } catch (error) {
                 console.error(error);
               }
