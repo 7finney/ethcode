@@ -8,33 +8,35 @@ import axios from "axios";
 // @ts-ignore
 var jwtToken: any;
 
-async function getToken(context: any, interval: any) {
-  
-  try {
-    // @ts-ignore
-    const config = vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
-    if (!config.get("config")) {
-      const machineID = uuid();
-      const url = `https://auth.ethco.de/getToken/${machineID}`;
-      const { data } = await axios.get(url);
-      const value = { "machineID": machineID, "token": data.token }
-      config.update("config", value);
-      jwtToken = data.token;
-    } else {
+function getToken() {
+  return new Promise(async (resolve, reject) => {
+    try {
       // @ts-ignore
-      jwtToken = config.get("config").token;
+      const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
+      
+      if (!config.get("config")) {
+        const machineID = uuid();
+        const url = `https://auth.ethco.de/getToken/${machineID}`;
+        const { data } = await axios.get(url);
+        const value = { "machineID": machineID, "token": data.token }
+        config.update("config", value);
+        jwtToken = data.token;
+        resolve(data.token);
+      } else {
+        // @ts-ignore
+        jwtToken = await config.get("config").token;
+        resolve(jwtToken);
+      }
+    } catch (error) {
+      reject();
     }
-    clearInterval(interval)
-  } catch (error) {
-    console.error(error);
-  }
+  });
 }
 
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", () => {
-      let interval: any = setInterval(() => getToken(context, interval), 5000)
       ReactPanel.createOrShow(context.extensionPath);
     })
   );
@@ -87,33 +89,6 @@ class ReactPanel {
   // @ts-ignore
   private version: string;
 
-  public static createOrShow(extensionPath: string) {
-    const column = vscode.window.activeTextEditor ? -2 : undefined;
-
-    // If we already have a panel, show it.
-    // Otherwise, create a new panel.
-    if (ReactPanel.currentPanel) {
-      try {
-        ReactPanel.currentPanel.getCompilerVersion();
-        ReactPanel.currentPanel.getAccounts();
-        ReactPanel.currentPanel.version = "latest";
-
-        ReactPanel.currentPanel._panel.reveal(column);
-      } catch (error) {
-        console.error(error);
-      }
-    } else {
-      try {
-        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
-        ReactPanel.currentPanel.version = "latest";
-        ReactPanel.currentPanel.getCompilerVersion();
-        ReactPanel.currentPanel.getAccounts();
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  }
-
   private constructor(extensionPath: string, column: vscode.ViewColumn) {
     this._extensionPath = extensionPath;
 
@@ -154,11 +129,42 @@ class ReactPanel {
           this.getBalance(message.account);
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload);
+        } else if (message.command === 'run-genToken') {
+          getToken().then(() => {
+            if (ReactPanel.currentPanel) {
+              ReactPanel.currentPanel.getAccounts();
+            }
+          }).catch(console.error);
         }
       },
       null,
       this._disposables
     );
+  }
+
+  public static createOrShow(extensionPath: string) {
+    const column = vscode.window.activeTextEditor ? -2 : undefined;
+
+    // If we already have a panel, show it.
+    // Otherwise, create a new panel.
+    if (ReactPanel.currentPanel) {
+      try {
+        ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel.version = "latest";
+
+        ReactPanel.currentPanel._panel.reveal(column);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      try {
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+        ReactPanel.currentPanel.version = "latest";
+        ReactPanel.currentPanel.getCompilerVersion();
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }
 
   private createWorker(): ChildProcess {
