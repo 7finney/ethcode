@@ -135,17 +135,17 @@ class ReactPanel {
         if(message.command === 'version') {
           this.version = message.version;
         } else if(message.command === 'run-deploy') {
-          this.runDeploy(message.payload);
+          this.runDeploy(message.payload, message.testNetId);
         } else if(message.command === 'contract-method-call') {
-          this.runContractCall(message.payload);
+          this.runContractCall(message.payload, message.testNetId);
         } else if(message.command === 'run-get-gas-estimate') {
-          this.runGetGasEstimate(message.payload);
+          this.runGetGasEstimate(message.payload, message.testNetId);
         } else if(message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if(message.command === 'get-balance') {
           this.getBalance(message.account);
         } else if(message.command === 'send-ether') {
-          this.sendEther(message.payload);
+          this.sendEther(message.payload, message.testNetId);
         }
       },
       null,
@@ -253,7 +253,7 @@ class ReactPanel {
     debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
   }
   // Deploy contracts
-  private runDeploy(payload: any) {
+  private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
     deployWorker.on("message", (m: any) => {
       if(m.error) {
@@ -263,7 +263,7 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    deployWorker.send({ command: "deploy-contract", payload, jwtToken});
+    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId});
   }
   // get accounts
   public getAccounts() {
@@ -282,15 +282,15 @@ class ReactPanel {
     balanceWorker.send({ command: "get-balance", account: account, jwtToken });
   }
   // Call contract method
-  private runContractCall(payload: any) {
+  private runContractCall(payload: any, testNetId: string) {
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
     })
-    callWorker.send({ command: "contract-method-call", payload, jwtToken });
+    callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
   }
   // Get gas estimates
-  private runGetGasEstimate(payload: any) {
+  private runGetGasEstimate(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
 
     deployWorker.on("message", (m: any) => {
@@ -301,14 +301,14 @@ class ReactPanel {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       }
     });
-    deployWorker.send({ command: "get-gas-estimate", payload, jwtToken });
+    deployWorker.send({ command: "get-gas-estimate", payload, jwtToken, testnetId: testNetId });
   }
-  private sendEther(payload: any) {
+  private sendEther(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ transactionResult: m.transactionResult });
     });
-    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken });
+    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
   }
   public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
 		// send JSON serializable compiled data
