@@ -133,6 +133,14 @@ class ReactPanel {
           getToken().then(() => {
             if (ReactPanel.currentPanel) {
               ReactPanel.currentPanel.getAccounts();
+            } else {
+              try {
+                ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+                ReactPanel.currentPanel.version = "latest";
+                ReactPanel.currentPanel.getCompilerVersion();
+              } catch (error) {
+                console.error(error);
+              }
             }
           }).catch(console.error);
         }
@@ -151,7 +159,6 @@ class ReactPanel {
       try {
         ReactPanel.currentPanel.getCompilerVersion();
         ReactPanel.currentPanel.version = "latest";
-
         ReactPanel.currentPanel._panel.reveal(column);
       } catch (error) {
         console.error(error);
