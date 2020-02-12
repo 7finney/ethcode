@@ -9,10 +9,10 @@ function compileVyper(sources: ISources) {
         "sources": sources,
         "settings": {
             "evmVersion": "byzantium",
-            "outputSelection": {
-                "*": ["evm.bytecode", "abi", "ast"],
-            }
         },
+        "outputSelection": {
+            "*": ["evm.bytecode", "abi", "ast"],
+        }
     };
     shell.config.execPath = shell.which('node').toString();
     fs.writeFileSync(__dirname + "/" + ".temp-vy.json", JSON.stringify(input_json, null, 4), 'UTF-8');
