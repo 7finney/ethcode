@@ -254,13 +254,17 @@ class ReactPanel {
     vyperWorker.on('message', (m) => {
       if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
-
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
-        vyperWorker.kill();
       }
       if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
+      if (m.error) {
+        if (m.error.includes("/bin/sh: vyper-json: command not found")) {
+          this._panel.webview.postMessage({ processMessage: "vyper compiler not found" });
+        }
+      }
+      vyperWorker.kill();
     });
   }
   private debug(txHash: string): void {
