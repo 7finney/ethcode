@@ -50,10 +50,11 @@ class TestNetSelector extends Component<IProps, IState> {
     this.state = {
       selectedNetwork: "",
       options: [
+        { value: 'ganache', label: 'Ganache'},
         { value: '3', label: 'Ropsten' },
         { value: '4', label: 'Rinkeby' },
         { value: '5', label: "Goerli" },
-        { value: '6', label: 'Prysm-Sapphire' }
+        { value: '6', label: 'Prysm-Sapphire' },
       ]
     };
 

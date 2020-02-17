@@ -26,6 +26,7 @@ interface IState {
   deployedAddress: string;
   methodInputs: string;
   testNetId: string;
+  disable: boolean;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -37,7 +38,8 @@ class ContractDeploy extends Component<IProps, IState> {
     methodName: '',
     deployedAddress: '',
     methodInputs: '',
-    testNetId: ''
+    testNetId: '',
+    disable: true
   };
   constructor(props: IProps, state: IState) {
     super(props);
@@ -68,6 +70,15 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   componentDidUpdate(prevProps: any) {
     const { gasEstimate, deployedResult, error, abi } = this.props;
+    if (this.props.testNetId !== this.state.testNetId && this.props.testNetId !== 'ganache') {
+      this.setState({
+        disable: true
+      })
+    } else if (this.props.testNetId !== this.state.testNetId) {
+      this.setState({
+        disable: false
+      })
+    }
     if (error !== prevProps.error) {
       this.setState({ error: error });
     }
@@ -186,7 +197,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodInputs: event.target.value });
   }
   public render() {
-    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
+    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, disable } = this.state;
     const { callResult } = this.props;
     return (
       <div>
@@ -231,8 +242,9 @@ class ContractDeploy extends Component<IProps, IState> {
               }
             </div>
             <div style={{ marginBottom: '5px' }}>
-              <input type="submit" className="custom_button_css" value="Deploy" />
+              <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} value="Deploy" />
             </div>
+            {disable ? <p style={{ color: '#FFCC00' }}>Deploy currently avalable in Ganache Testnet only</p> : '' }
           </form>
           <div>
             <form onSubmit={this.handleGetGasEstimate}>

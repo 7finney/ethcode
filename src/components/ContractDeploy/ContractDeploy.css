@@ -34,3 +34,10 @@
   margin: 20px 0px;
   margin-left: -10px;
 }
+
+.button_disable {
+  background: #081b13 !important;
+  border: 1px solid #081b13 !important;
+  color: white !important;
+  cursor: default !important;
+}
