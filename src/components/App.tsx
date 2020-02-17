@@ -198,6 +198,10 @@ class App extends Component<IProps, IState> {
       }
       // TODO: handle error message
     });
+    // Component mounted start getting gRPC things
+    vscode.postMessage({
+      command: "run-genToken"
+    });
   }
 
   componentDidUpdate() {

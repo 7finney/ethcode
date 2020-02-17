@@ -4,11 +4,11 @@ import * as fs from "fs";
 import { ISources } from "./types";
 
 function compileVyper(sources: ISources) {
-    var input_json = {
+    const input_json = {
         "language": "Vyper",
         "sources": sources,
         "settings": {
-            "evmVersion": "byzantium"
+            "evmVersion": "byzantium",
         },
         "outputSelection": {
             "*": ["evm.bytecode", "abi", "ast"],
@@ -16,9 +16,15 @@ function compileVyper(sources: ISources) {
     };
     shell.config.execPath = shell.which('node').toString();
     fs.writeFileSync(__dirname + "/" + ".temp-vy.json", JSON.stringify(input_json, null, 4), 'UTF-8');
-    var args: string = "vyper-json " + __dirname + "/" + ".temp-vy.json";
-    var escaped = shell.exec(args);
-    var m: object = { "compiled": escaped }
+    const args: string = "vyper-json " + __dirname + "/" + ".temp-vy.json";
+    const { stdout, stderr, code } = shell.exec(args);
+    var m: object;
+    if(stdout) {
+        m = { "compiled": stdout };
+    }
+    if(stderr) {
+        m = { "error": stderr +" "+ code };
+    }
     fs.unlink(__dirname + "/" + ".temp-vy.json", () => {});
     // @ts-ignore
     process.send(m);

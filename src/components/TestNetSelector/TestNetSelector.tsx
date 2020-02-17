@@ -48,7 +48,7 @@ class TestNetSelector extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      selectedNetwork: "",
+      selectedNetwork: "ganache",
       options: [
         { value: 'ganache', label: 'Ganache'},
         { value: '3', label: 'Ropsten' },
