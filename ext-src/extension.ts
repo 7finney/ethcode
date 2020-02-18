@@ -14,9 +14,11 @@ function getToken() {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
       
+      config.update("config", undefined);
+
       if (!config.get("config")) {
         const machineID = uuid();
-        const url = `https://auth.ethco.de/getToken/${machineID}`;
+        const url = `https://auth.staging.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token }
         config.update("config", value);
@@ -266,6 +268,7 @@ class ReactPanel {
     console.dir("WorkerID: ", debugWorker.pid);
     console.dir("Debugging transaction with remix-debug...");
     debugWorker.on("message", (m: any) => {
+      console.log("mmmmmmmmm", JSON.stringify(m.message));
       this._panel.webview.postMessage({ txTrace: m.debugResp });
     });
     debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });

@@ -289,6 +289,8 @@ class App extends Component<IProps, IState> {
       testNetId
     } = this.state;
 
+    console.log(testNetId);
+
     return (
       <div className="App">
         <header className="App-header">

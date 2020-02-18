@@ -39,7 +39,7 @@ class ContractDeploy extends Component<IProps, IState> {
     deployedAddress: '',
     methodInputs: '',
     testNetId: '',
-    disable: true
+    disable: false
   };
   constructor(props: IProps, state: IState) {
     super(props);
