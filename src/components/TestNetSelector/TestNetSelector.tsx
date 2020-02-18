@@ -61,9 +61,10 @@ class TestNetSelector extends Component<IProps, IState> {
     this._handleNetworkSelector = this._handleNetworkSelector.bind(this);
   }
 
-  // componentDidMount() {
-  //   this._handleNetworkSelector(this.state.selectedNetwork)
-  // }
+  componentDidMount() {
+    const { options } = this.state;
+    this._handleNetworkSelector(options[0])
+  }
 
   public async _handleNetworkSelector(selectedNetwork: any) {
     await this.setState({ selectedNetwork });
@@ -83,7 +84,6 @@ class TestNetSelector extends Component<IProps, IState> {
             options={options}
             className="select-width-account"
             styles={customStyles}
-            defaultValue={options[0]}
           />
         </div>
       </div>
