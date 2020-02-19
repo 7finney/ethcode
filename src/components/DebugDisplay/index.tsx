@@ -15,7 +15,8 @@ interface IState {
     newdebugObj: object;
     indx: any;
     deployedResult: string;
-    testNetId: string
+    testNetId: string;
+    disable: boolean;
 }
 
 class DebugDisplay extends Component<IProps, IState> {
@@ -26,7 +27,8 @@ class DebugDisplay extends Component<IProps, IState> {
         newdebugObj: {},
         indx: -1,
         deployedResult: "",
-        testNetId: ""
+        testNetId: "",
+        disable: false
     };
     constructor(props: IProps) {
         super(props);
@@ -47,6 +49,10 @@ class DebugDisplay extends Component<IProps, IState> {
             txHash,
             testNetId
         });
+
+        this.setState({
+            disable: true
+        })
     }
 
     componentDidMount() {
@@ -60,6 +66,9 @@ class DebugDisplay extends Component<IProps, IState> {
                 indx: 0,
                 olddebugObj: newdebugObj,
                 newdebugObj: this.props.txTrace[0],
+            })
+            this.setState({
+                disable: false
             })
         }
         if (this.props.testNetId !== this.state.testNetId) {
@@ -101,7 +110,7 @@ class DebugDisplay extends Component<IProps, IState> {
 
     }
     public render() {
-        const { indx, debugObj, olddebugObj, newdebugObj } = this.state;
+        const { indx, debugObj, olddebugObj, newdebugObj, disable } = this.state;
         const { txTrace } = this.props;
 
         return (
@@ -112,7 +121,7 @@ class DebugDisplay extends Component<IProps, IState> {
                             <span style={{ marginRight: '5px' }}>Transaction hash:</span>
                             <input type="text" className="custom_input_css" value={this.state.txHash} onChange={this.handleChange} />
                         </label>
-                        <input type="submit" className="custom_button_css" style={{ marginLeft: '10px' }} value="Debug" />
+                        <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} style={{ marginLeft: '10px' }} value="Debug" />
                     </form>
                 </div>
                 {

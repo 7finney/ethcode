@@ -59,7 +59,8 @@ interface IState {
   currAccount: string;
   balance: number;
   transactionResult: string;
-  testNetId: string
+  testNetId: string;
+  fileType: string;
 }
 interface IOpt {
   value: string;
@@ -87,13 +88,20 @@ class App extends Component<IProps, IState> {
       currAccount: "",
       balance: 0,
       transactionResult: "",
-      testNetId: ""
+      testNetId: "",
+      fileType: ''
     };
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
   public componentDidMount() {
     window.addEventListener("message", async event => {
       const { data } = event;
+
+      if (data.fileType) {
+        this.setState({
+          fileType: data.fileType
+        })
+      }
 
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
@@ -204,7 +212,19 @@ class App extends Component<IProps, IState> {
     });
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(_: any, prevState: IState) {
+    console.log("inside compomentDidUpdate");
+
+    console.log(JSON.stringify(prevState.fileType));
+    console.log(JSON.stringify(this.state.fileType));
+
+    // if (prevState.fileType !== this.state.fileType) {
+    //   console.log("compomentDidUpdate");
+    //   this.setState({
+    //     fileType: this.state.fileType
+    //   })
+    // }
+
     if(this.props.accounts !== this.state.accounts) {
       this.setState({
         accounts: this.props.accounts
@@ -286,17 +306,16 @@ class App extends Component<IProps, IState> {
       transactionResult,
       accounts,
       balance,
-      testNetId
+      testNetId,
+      fileType
     } = this.state;
-
-    console.log(testNetId);
 
     return (
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        {availableVersions && (
+        {availableVersions && (fileType === 'solidity') && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}
             availableVersions={availableVersions}
