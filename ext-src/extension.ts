@@ -13,10 +13,9 @@ function getToken() {
     try {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
-      
       if (!config.get("config")) {
         const machineID = uuid();
-        const url = `https://auth.ethco.de/getToken/${machineID}`;
+        const url = `http://localhost:4040/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token }
         config.update("config", value);
@@ -56,6 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
         editorContent,
         fileName
       );
+      ReactPanel.currentPanel.createAccount();
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
       if (!ReactPanel.currentPanel) {
@@ -186,6 +186,32 @@ class ReactPanel {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
     return fork(path.join(__dirname, "vyp-worker.js"));
+  }
+  public createAccount(): void {
+    const accWorker = this.createWorker();
+    accWorker.on("message", (m: any) => {
+      if(m.response){
+        console.log("Response: ")
+        console.log(m.response);
+      }
+      if(m.signedTransaction) {
+        console.log("signedTransaction: ")
+        console.log(m.signedTransaction);
+      }
+      if(m.raw) {
+        console.log("raw transaction: ")
+        console.log(JSON.stringify(m.raw));
+      }
+      if(m.responses){
+        console.log("Responses: ")
+        console.log(m.responses);
+      }
+    });
+    accWorker.send({
+      command: "create-Account",
+      payload: "",
+      jwtToken
+    });
   }
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
     // solidity compiler code goes bellow
