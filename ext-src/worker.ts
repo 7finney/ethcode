@@ -6,6 +6,11 @@ import axios from "axios";
 import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
+const Web3 = require("web3")
+const w3: any = new Web3("http://172.26.84.11:7545")
+
+console.log("ETHhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ")
+console.log(w3.eth);
 
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
@@ -374,6 +379,63 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ debugResp: data.result });
+    });
+    call.on('end', function() {
+      process.exit(0);
+    });
+    call.on('error', function(err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    });
+  }
+  if(m.command == "create-Account") {
+    const payload = JSON.parse(m.payload)
+    const c = {
+      to: payload.to,
+      data: payload.data,
+      value: payload.value,
+      gas: payload.gas
+    };
+    const call = client_call_client.CreateRawTransaction(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
+    call.on('data', (data: any) => {
+      const tx = JSON.parse(data.rawTX);
+      if(payload.pvtKey) {
+        const signedTX = w3.eth.account.signTransaction(tx, payload.pvtKey)
+        const strSignedTX = w3.toJSON(signedTX)
+        const callData = {
+          signedTX: strSignedTX
+        }
+        const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, response: any) => {
+          if (err) {
+            console.log("err", err);
+          } else {
+            // @ts-ignore
+            process.send({ response });
+          }
+        });
+        resp.on('data', (data: any) => {
+          const result = JSON.parse(data.result);
+          // @ts-ignore
+          process.send({ signedTransaction: result });
+        });
+        resp.on('end', function() {
+          process.exit(0);
+        });
+        resp.on('error', function(err: Error) {
+          // @ts-ignore
+          process.send({ "error": err });
+        });
+      } else {
+        // @ts-ignore
+        process.send({ rawTransaction: tx });
+      }
     });
     call.on('end', function() {
       process.exit(0);
