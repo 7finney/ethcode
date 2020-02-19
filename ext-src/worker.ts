@@ -7,10 +7,10 @@ import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 const Web3 = require("web3")
-const w3: any = new Web3("http://172.26.84.11:7545")
+const w3: any = new Web3("http://localhost:8545");
 
-console.log("ETHhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ")
-console.log(w3.eth);
+// console.log("ETHhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ")
+// console.log(w3.eth.accounts);
 
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
@@ -389,26 +389,72 @@ process.on("message", async m => {
     });
   }
   if(m.command == "create-Account") {
-    const payload = JSON.parse(m.payload)
+    // const payload = JSON.parse(m.payload)
+    // const c = {
+    //   to: payload.to,
+    //   data: payload.data,
+    //   value: payload.value,
+    //   gas: payload.gas
+    // };
     const c = {
-      to: payload.to,
-      data: payload.data,
-      value: payload.value,
-      gas: payload.gas
+      to: "0x4266E7ab5ECBdcfA7EF96000Bd05C1EeF8da6dD1",
+      data: w3.utils.utf8ToHex("Hello"),
+      value: 27,
+      gas: 900000
     };
-    const call = client_call_client.CreateRawTransaction(c, meta, (err: any, response: any) => {
+    const call = client_call_client.CreateRawTransaction(c, meta, (err: any, responses: any) => {
       if (err) {
         console.log("err", err);
       } else {
+        const tx = JSON.parse(responses.rawTX);
         // @ts-ignore
-        process.send({ response });
+        process.send({ responses: tx });
+        w3.eth.accounts.signTransaction(tx, "0x5a0c431391c6130b1980ffe11a557313d8fb430ab1f322a529f2e9b69fda2d0a").then((signedTX: any) => {
+          // @ts-ignore
+          process.send({ raw: JSON.stringify(signedTX) });
+          const strSignedTX = JSON.stringify(signedTX)
+          const callData = {
+            signedTX: strSignedTX
+          }
+          const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, response: any) => {
+            if (err) {
+              console.log("err", err);
+            } else {
+              // @ts-ignore
+              process.send({ response });
+            }
+          });
+          resp.on('data', (data: any) => {
+            const result = JSON.parse(data.result);
+            // @ts-ignore
+            process.send({ signedTransaction: result });
+          });
+          resp.on('end', function() {
+            process.exit(0);
+          });
+          resp.on('error', function(err: Error) {
+            // @ts-ignore
+            process.send({ "error": err });
+          });
+        }).catch((e: any) => {
+          // @ts-ignore
+          process.send({ raw: e });
+        });
       }
     });
     call.on('data', (data: any) => {
       const tx = JSON.parse(data.rawTX);
-      if(payload.pvtKey) {
-        const signedTX = w3.eth.account.signTransaction(tx, payload.pvtKey)
-        const strSignedTX = w3.toJSON(signedTX)
+      var signedTX: any;
+      if(true) {
+        try {
+           signedTX = w3.eth.accounts.signTransaction(tx, "0xe826d62a0fa5e334f5846a58315f669c9c75530c6c8fcba10049bce87d856c79")
+        } catch(e) {
+          // @ts-ignore
+          process.send({ raw: e });
+        }
+        // @ts-ignore
+        process.send({ raw: signedTX });
+        const strSignedTX = JSON.stringify(signedTX)
         const callData = {
           signedTX: strSignedTX
         }
