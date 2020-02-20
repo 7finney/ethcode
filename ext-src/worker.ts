@@ -407,7 +407,7 @@ process.on("message", async m => {
               console.log("err", err);
             } else {
               // @ts-ignore
-              process.send({ response });
+              process.send({ signedTransaction: response });
             }
           });
           resp.on('data', (data: any) => {
@@ -426,47 +426,6 @@ process.on("message", async m => {
           // @ts-ignore
           process.send({ raw: e });
         });
-      }
-    });
-    call.on('data', (data: any) => {
-      const tx = JSON.parse(data.rawTX);
-      var signedTX: any;
-      if(true) {
-        try {
-           signedTX = w3.eth.accounts.signTransaction(tx, "0xe826d62a0fa5e334f5846a58315f669c9c75530c6c8fcba10049bce87d856c79")
-        } catch(e) {
-          // @ts-ignore
-          process.send({ raw: e });
-        }
-        // @ts-ignore
-        process.send({ raw: signedTX });
-        const strSignedTX = JSON.stringify(signedTX)
-        const callData = {
-          signedTX: strSignedTX
-        }
-        const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, response: any) => {
-          if (err) {
-            console.log("err", err);
-          } else {
-            // @ts-ignore
-            process.send({ response });
-          }
-        });
-        resp.on('data', (data: any) => {
-          const result = JSON.parse(data.result);
-          // @ts-ignore
-          process.send({ signedTransaction: result });
-        });
-        resp.on('end', function() {
-          process.exit(0);
-        });
-        resp.on('error', function(err: Error) {
-          // @ts-ignore
-          process.send({ "error": err });
-        });
-      } else {
-        // @ts-ignore
-        process.send({ rawTransaction: tx });
       }
     });
     call.on('end', function() {
