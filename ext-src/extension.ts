@@ -5,6 +5,7 @@ import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
 import * as uuid from "uuid/v1";
 import axios from "axios";
+import { serialize } from "v8";
 // @ts-ignore
 var jwtToken: any;
 
@@ -242,6 +243,10 @@ class ReactPanel {
       if(m.responses){
         console.log("Responses: ")
         console.log(m.responses);
+      }
+      if(m.serializedTx){
+        console.log("serialized: ")
+        console.log(m.serializedTx);
       }
     });
     accWorker.send({

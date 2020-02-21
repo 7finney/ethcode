@@ -6,8 +6,8 @@ import axios from "axios";
 import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-const Web3 = require("web3")
-const w3: any = new Web3("http://localhost:8545");
+const EthereumTx = require('ethereumjs-tx')
+const sha3 = require('./hash/sha3')
 
 // console.log("ETHhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ")
 // console.log(w3.eth.accounts);
@@ -114,7 +114,7 @@ process.on("message", async m => {
   meta.add('authorization', m.jwtToken);
   if (m.command === "compile") {
     const input = m.payload;
-    if(m.version === 'latest') {
+    if (m.version === 'latest') {
       try {
         const output = await solc.compile(JSON.stringify(input), findImports);
         // @ts-ignore
@@ -125,7 +125,7 @@ process.on("message", async m => {
       }
     }
     solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-      if(err) {
+      if (err) {
         // @ts-ignore
         process.send({ error: e });
       } else {
@@ -143,7 +143,7 @@ process.on("message", async m => {
       }
     });
   }
-  if(m.command === "fetch_compiler_verison") {
+  if (m.command === "fetch_compiler_verison") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")
       .then((res: any) => {
@@ -155,7 +155,7 @@ process.on("message", async m => {
         process.send({ error: e });
       });
   }
-  if(m.command === "run-test") {
+  if (m.command === "run-test") {
     // TODO: move parsing to extension.ts
     // const sources = JSON.parse(m.payload);
     const rt = {
@@ -167,19 +167,19 @@ process.on("message", async m => {
     const call = remix_tests_client.RunTests(rt);
     call.on('data', (data: any) => {
       const result = JSON.parse(data.result);
-      if(result.filePath) {
+      if (result.filePath) {
         findImports(result.filePath);
       } else {
         // @ts-ignore
         process.send({ utResp: data });
       }
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
   }
- // Fetch accounts and balance
-  if(m.command === "get-accounts") {
+  // Fetch accounts and balance
+  if (m.command === "get-accounts") {
     const c = {
       callInterface: {
         command: 'get-accounts'
@@ -199,7 +199,7 @@ process.on("message", async m => {
       process.send({ error: data });
     })
 
-    call.on('data', (data: any) =>{
+    call.on('data', (data: any) => {
       // @ts-ignore
       const result = JSON.parse(data.result);
       // @ts-ignore
@@ -207,7 +207,7 @@ process.on("message", async m => {
     })
   }
   // send wei_value to a address
-  if(m.command === "send-ether") {
+  if (m.command === "send-ether") {
     const transactionInfo = m.transactionInfo;
     const c = {
       callInterface: {
@@ -230,7 +230,7 @@ process.on("message", async m => {
     })
   }
   // fetch balance of a account
-  if(m.command === "get-balance") {
+  if (m.command === "get-balance") {
     const c = {
       callInterface: {
         command: 'get-balance',
@@ -251,7 +251,7 @@ process.on("message", async m => {
     })
   }
   // Deploy
-  if(m.command === "deploy-contract") {
+  if (m.command === "deploy-contract") {
     if (m.jwtToken) {
       // @ts-ignore
       process.send({ jwtToken: m.jwtToken });
@@ -284,16 +284,16 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ deployedResult: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     })
   }
   // Method call
-  if(m.command === "contract-method-call") {
+  if (m.command === "contract-method-call") {
     const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
       abi,
@@ -322,16 +322,16 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ callResult: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     })
   }
   // Gas Estimate
-  if(m.command === "get-gas-estimate") {
+  if (m.command === "get-gas-estimate") {
     const { abi, bytecode, params } = m.payload;
     const inp = {
       abi,
@@ -357,13 +357,13 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ gasEstimate: data.result });
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     });
   }
   // Debug transaction
-  if(m.command === "debug-transaction") {
+  if (m.command === "debug-transaction") {
     const dt = {
       debugInterface: {
         command: 'debug',
@@ -380,15 +380,15 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ debugResp: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     });
   }
-  if(m.command == "create-Account") {
+  if (m.command == "create-Account") {
     // const payload = JSON.parse(m.payload)
     // const c = {
     //   to: payload.to,
@@ -396,11 +396,17 @@ process.on("message", async m => {
     //   value: payload.value,
     //   gas: payload.gas
     // };
+    const pvtKey = "952f3c7a35793d3f414a8ad7881b05775a33d280173e8000b19e06b721173b05";
+    const privateKey = Buffer.from(
+      pvtKey,
+      'hex',
+    )
     const c = {
-      to: "0x4266E7ab5ECBdcfA7EF96000Bd05C1EeF8da6dD1",
-      data: w3.utils.utf8ToHex("Hello"),
+      to: "0x05e26fcE6c34f17D59897Bcb7e82eBa1372A7f83",
+      // data: Web3.utils.utf8ToHex("Hello"),
+      data: "",
       value: 27,
-      gas: 900000
+      gas: 97000
     };
     const call = client_call_client.CreateRawTransaction(c, meta, (err: any, responses: any) => {
       if (err) {
@@ -409,43 +415,88 @@ process.on("message", async m => {
         const tx = JSON.parse(responses.rawTX);
         // @ts-ignore
         process.send({ responses: tx });
-        w3.eth.accounts.signTransaction(tx, "0x5a0c431391c6130b1980ffe11a557313d8fb430ab1f322a529f2e9b69fda2d0a").then((signedTX: any) => {
-          // @ts-ignore
-          process.send({ raw: JSON.stringify(signedTX) });
-          const strSignedTX = JSON.stringify(signedTX)
-          const callData = {
-            signedTX: strSignedTX
+        // tx['chainId'] = 5;
+        const tx1 = new EthereumTx(tx)
+        tx1.sign(privateKey)
+        const serializedTx = tx1.serialize()
+        const rlpEncoded = tx1.serialize().toString('hex');
+        const rawTransaction = '0x' + rlpEncoded;
+        var transactionHash = sha3.keccak256(rawTransaction);
+        var result = {
+          messageHash: '0x' + Buffer.from(tx1.hash(false)).toString('hex'),
+          v: '0x' + Buffer.from(tx1.v).toString('hex'),
+          r: '0x' + Buffer.from(tx1.r).toString('hex'),
+          s: '0x' + Buffer.from(tx1.s).toString('hex'),
+          rawTransaction: rawTransaction,
+          transactionHash: transactionHash
+        };
+        // @ts-ignore
+        process.send({ signedTransaction: tx1, serializedTx });
+        // @ts-ignore
+        process.send({ raw: result });
+
+        const callData = {
+          signedTX: JSON.stringify(result)
+        }
+
+        const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, response: any) => {
+          if (err) {
+            console.log("err", err);
+          } else {
+            // @ts-ignore
+            process.send({ signedTransaction: response });
           }
-          const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, response: any) => {
-            if (err) {
-              console.log("err", err);
-            } else {
-              // @ts-ignore
-              process.send({ signedTransaction: response });
-            }
-          });
-          resp.on('data', (data: any) => {
-            const result = JSON.parse(data.result);
-            // @ts-ignore
-            process.send({ signedTransaction: result });
-          });
-          resp.on('end', function() {
-            process.exit(0);
-          });
-          resp.on('error', function(err: Error) {
-            // @ts-ignore
-            process.send({ "error": err });
-          });
-        }).catch((e: any) => {
-          // @ts-ignore
-          process.send({ raw: e });
         });
+        resp.on('data', (data: any) => {
+          const result = JSON.parse(data.result);
+          // @ts-ignore
+          process.send({ signedTransaction: result });
+        });
+        resp.on('end', function () {
+          process.exit(0);
+        });
+        resp.on('error', function (err: Error) {
+          // @ts-ignore
+          process.send({ "error": err });
+        });
+
+        // w3.eth.accounts.signTransaction(tx, "0x73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5").then((signedTX: any) => {
+        //   // @ts-ignore
+        //   process.send({ raw: JSON.stringify(signedTX) });
+        //   const strSignedTX = JSON.stringify(signedTX)
+        //   const callData = {
+        //     signedTX: strSignedTX
+        //   }
+        //   const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, response: any) => {
+        //     if (err) {
+        //       console.log("err", err);
+        //     } else {
+        //       // @ts-ignore
+        //       process.send({ signedTransaction: response });
+        //     }
+        //   });
+        //   resp.on('data', (data: any) => {
+        //     const result = JSON.parse(data.result);
+        //     // @ts-ignore
+        //     process.send({ signedTransaction: result });
+        //   });
+        //   resp.on('end', function () {
+        //     process.exit(0);
+        //   });
+        //   resp.on('error', function (err: Error) {
+        //     // @ts-ignore
+        //     process.send({ "error": err });
+        //   });
+        // }).catch((e: any) => {
+        //   // @ts-ignore
+        //   process.send({ raw: e });
+        // });
       }
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     });
