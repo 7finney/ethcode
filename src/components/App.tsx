@@ -25,6 +25,7 @@ import DebugDisplay from "./DebugDisplay";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import AccountsSelector from "./AccountsSelector";
+import Notifications from "./Notification";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -213,17 +214,6 @@ class App extends Component<IProps, IState> {
   }
 
   componentDidUpdate(_: any, prevState: IState) {
-    console.log("inside compomentDidUpdate");
-
-    console.log(JSON.stringify(prevState.fileType));
-    console.log(JSON.stringify(this.state.fileType));
-
-    // if (prevState.fileType !== this.state.fileType) {
-    //   console.log("compomentDidUpdate");
-    //   this.setState({
-    //     fileType: this.state.fileType
-    //   })
-    // }
 
     if(this.props.accounts !== this.state.accounts) {
       this.setState({
@@ -312,6 +302,7 @@ class App extends Component<IProps, IState> {
 
     return (
       <div className="App">
+        <Notifications />
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>

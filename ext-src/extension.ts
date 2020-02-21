@@ -13,7 +13,7 @@ function getToken() {
     try {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
-      
+
       config.update("config", undefined);
 
       if (!config.get("config")) {
@@ -35,11 +35,22 @@ function getToken() {
   });
 }
 
+function success(msg: string) {
+  vscode.window.showInformationMessage(msg, 'Success')
+}
+
+function warning(msg: string) {
+  vscode.window.showWarningMessage(msg, 'Warning')
+}
+function error(msg: string) {
+  vscode.window.showErrorMessage(msg, 'Error')
+}
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", () => {
       ReactPanel.createOrShow(context.extensionPath);
+      success('welcome to Ethcode')
     })
   );
   context.subscriptions.push(
@@ -119,15 +130,15 @@ class ReactPanel {
       (message: any) => {
         if (message.command === 'version') {
           this.version = message.version;
-        } else if(message.command === 'run-deploy') {
+        } else if (message.command === 'run-deploy') {
           this.runDeploy(message.payload, message.testNetId);
-        } else if(message.command === 'contract-method-call') {
+        } else if (message.command === 'contract-method-call') {
           this.runContractCall(message.payload, message.testNetId);
-        } else if(message.command === 'run-get-gas-estimate') {
+        } else if (message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload, message.testNetId);
-        } else if(message.command === 'debugTransaction') {
+        } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
-        } else if(message.command === 'get-balance') {
+        } else if (message.command === 'get-balance') {
           this.getBalance(message.account);
         } else if (message.command === 'run-genToken') {
           getToken().then(() => {
@@ -141,7 +152,9 @@ class ReactPanel {
                 console.error(error);
               }
             }
-          }).catch(console.error);
+          }).catch(error => {
+            console.error(error);
+          });
         }
       },
       null,
@@ -251,42 +264,45 @@ class ReactPanel {
       if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
         this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true, testPanel: 'main' });
-				solcWorker.kill();
-			}
-			if (m.processMessage) {
-				this._panel.webview.postMessage({ processMessage: m.processMessage });
-			}
-		});
-		solcWorker.on("error", (error: Error) => {
-			console.log("%c Compile worker process exited with error" + `${error.message}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
-		});
-		solcWorker.on("exit", (code: number, signal: string) => {
-			console.log("%c Compile worker process exited with " + `code ${code} and signal ${signal}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
-			this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` });
-		});
-	}
-	private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
-		const vyperWorker = this.createVyperWorker();
-		console.dir("WorkerID: ", vyperWorker.pid);
-		console.dir("Compiling with vyper compiler version ", this.version);
-		this._panel.webview.postMessage({ processMessage: "Compiling..." });
-		vyperWorker.send({
-			command: "compile",
-			source: sources,
-			version: this.version
-		});
-		vyperWorker.on('message', (m) => {
-			if (m.compiled) {
-				context.workspaceState.update("sources", JSON.stringify(sources));
+        solcWorker.kill();
+      }
+      if (m.processMessage) {
+        this._panel.webview.postMessage({ processMessage: m.processMessage });
+      }
+    });
+    solcWorker.on("error", (error: Error) => {
+      console.log("%c Compile worker process exited with error" + `${error.message}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
+    });
+    solcWorker.on("exit", (code: number, signal: string) => {
+      console.log("%c Compile worker process exited with " + `code ${code} and signal ${signal}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
+      this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` });
+    });
+  }
+  private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
+    const vyperWorker = this.createVyperWorker();
+    console.dir("WorkerID: ", vyperWorker.pid);
+    console.dir("Compiling with vyper compiler version ", this.version);
+    this._panel.webview.postMessage({ processMessage: "Compiling..." });
+    vyperWorker.send({
+      command: "compile",
+      source: sources,
+      version: this.version
+    });
+    vyperWorker.on('message', (m) => {
+      if (m.error) {
+        error(m.error)
+      }
+      if (m.compiled) {
+        context.workspaceState.update("sources", JSON.stringify(sources));
 
-				this._panel.webview.postMessage({ compiled: m.compiled, sources });
-				vyperWorker.kill();
-			}
-			if (m.processMessage) {
-				this._panel.webview.postMessage({ processMessage: m.processMessage });
-			}
-		});
-	}
+        this._panel.webview.postMessage({ compiled: m.compiled, sources });
+        vyperWorker.kill();
+      }
+      if (m.processMessage) {
+        this._panel.webview.postMessage({ processMessage: m.processMessage });
+      }
+    });
+  }
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
     console.dir("WorkerID: ", debugWorker.pid);
@@ -307,12 +323,15 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId});
+    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
   }
   // get accounts
   public getAccounts() {
     const accountsWorker = this.createWorker();
     accountsWorker.on("message", (m: any) => {
+      if (m.error) {
+        error(m.error.details)
+      }
       this._panel.webview.postMessage({ fetchAccounts: m });
     })
     accountsWorker.send({ command: "get-accounts", jwtToken });
