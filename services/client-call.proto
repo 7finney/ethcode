@@ -18,10 +18,7 @@ message ClientCallResponse {
 
 
 message CreateRawTransactionReq {
-    string to = 1;
-    string data = 2;
-    uint32 gas = 3;
-    uint32 value = 4;   
+    string req = 1;   
 }
 
 message CreateRawTransactionResp {
