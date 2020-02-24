@@ -191,25 +191,13 @@ class ReactPanel {
   public createAccount(): void {
     const accWorker = this.createWorker();
     accWorker.on("message", (m: any) => {
-      if(m.response){
-        console.log("Response: ")
-        console.log(m.response);
-      }
-      if(m.signedTransaction) {
-        console.log("signedTransaction: ")
-        console.log(m.signedTransaction);
-      }
-      if(m.raw) {
-        console.log("raw transaction: ")
-        console.log(JSON.stringify(m.raw));
-      }
       if(m.responses){
         console.log("Responses: ")
         console.log(m.responses);
       }
-      if(m.serializedTx){
-        console.log("serialized: ")
-        console.log(m.serializedTx);
+      if(m.transactionReceipt) {
+        console.log("transactionReceipt: ")
+        console.log(m.transactionReceipt);
       }
     });
     accWorker.send({

@@ -375,25 +375,26 @@ process.on("message", async m => {
     });
   }
   if (m.command == "create-Account") {
-    // const payload = JSON.parse(m.payload)
-    // const c = {
-    //   to: payload.to,
-    //   data: payload.data,
-    //   value: payload.value,
-    //   gas: payload.gas
-    // };
-    const pvtKey = "952f3c7a35793d3f414a8ad7881b05775a33d280173e8000b19e06b721173b05";
+    const payload = JSON.parse(m.payload)
+    const c = {
+      to: payload.to,
+      from: payload.from,
+      data: payload.data,
+      value: payload.value,
+      gas: payload.gas
+    };
+    // const pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
     const privateKey = Buffer.from(
-      pvtKey,
+      payload.pvtKey,
       'hex',
     )
-    const c = {
-      to: "0x05e26fcE6c34f17D59897Bcb7e82eBa1372A7f83",
-      // data: Web3.utils.utf8ToHex("Hello"),
-      data: "",
-      value: 27,
-      gas: 97000
-    };
+    // const c = {
+    //   to: "0x05e26fcE6c34f17D59897Bcb7e82eBa1372A7f83",
+    //   // data: Web3.utils.utf8ToHex("Hello"),
+    //   data: "",
+    //   value: 27,
+    //   gas: 97000
+    // };
     const call = client_call_client.CreateRawTransaction(c, meta, (err: any, responses: any) => {
       if (err) {
         console.log("err", err);
@@ -401,42 +402,36 @@ process.on("message", async m => {
         const tx = JSON.parse(responses.rawTX);
         // @ts-ignore
         process.send({ responses: tx });
-        // tx['chainId'] = 5;
-        const tx1 = new EthereumTx(tx)
-        tx1.sign(privateKey)
-        const serializedTx = tx1.serialize()
-        const rlpEncoded = tx1.serialize().toString('hex');
+        const unsignedTransaction = new EthereumTx(tx)
+        unsignedTransaction.sign(privateKey)
+        const rlpEncoded = unsignedTransaction.serialize().toString('hex');
         const rawTransaction = '0x' + rlpEncoded;
         var transactionHash = sha3.keccak256(rawTransaction);
-        var result = {
-          messageHash: '0x' + Buffer.from(tx1.hash(false)).toString('hex'),
-          v: '0x' + Buffer.from(tx1.v).toString('hex'),
-          r: '0x' + Buffer.from(tx1.r).toString('hex'),
-          s: '0x' + Buffer.from(tx1.s).toString('hex'),
+        var finalTransaction = {
+          messageHash: '0x' + Buffer.from(unsignedTransaction.hash(false)).toString('hex'),
+          v: '0x' + Buffer.from(unsignedTransaction.v).toString('hex'),
+          r: '0x' + Buffer.from(unsignedTransaction.r).toString('hex'),
+          s: '0x' + Buffer.from(unsignedTransaction.s).toString('hex'),
           rawTransaction: rawTransaction,
           transactionHash: transactionHash
         };
-        // @ts-ignore
-        process.send({ signedTransaction: tx1, serializedTx });
-        // @ts-ignore
-        process.send({ raw: result });
 
         const callData = {
-          signedTX: JSON.stringify(result)
+          signedTX: JSON.stringify(finalTransaction)
         }
 
-        const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, response: any) => {
+        const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, transactionReceipt: any) => {
           if (err) {
             console.log("err", err);
           } else {
             // @ts-ignore
-            process.send({ signedTransaction: response });
+            process.send({ transactionReceipt });
           }
         });
         resp.on('data', (data: any) => {
-          const result = JSON.parse(data.result);
+          const transactionReceipt = JSON.parse(data.result);
           // @ts-ignore
-          process.send({ signedTransaction: result });
+          process.send({ transactionReceipt });
         });
         resp.on('end', function () {
           process.exit(0);
@@ -445,38 +440,6 @@ process.on("message", async m => {
           // @ts-ignore
           process.send({ "error": err });
         });
-
-        // w3.eth.accounts.signTransaction(tx, "0x73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5").then((signedTX: any) => {
-        //   // @ts-ignore
-        //   process.send({ raw: JSON.stringify(signedTX) });
-        //   const strSignedTX = JSON.stringify(signedTX)
-        //   const callData = {
-        //     signedTX: strSignedTX
-        //   }
-        //   const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, response: any) => {
-        //     if (err) {
-        //       console.log("err", err);
-        //     } else {
-        //       // @ts-ignore
-        //       process.send({ signedTransaction: response });
-        //     }
-        //   });
-        //   resp.on('data', (data: any) => {
-        //     const result = JSON.parse(data.result);
-        //     // @ts-ignore
-        //     process.send({ signedTransaction: result });
-        //   });
-        //   resp.on('end', function () {
-        //     process.exit(0);
-        //   });
-        //   resp.on('error', function (err: Error) {
-        //     // @ts-ignore
-        //     process.send({ "error": err });
-        //   });
-        // }).catch((e: any) => {
-        //   // @ts-ignore
-        //   process.send({ raw: e });
-        // });
       }
     });
     call.on('end', function () {
