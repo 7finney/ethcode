@@ -409,7 +409,7 @@ process.on("message", async m => {
     //   value: 27,
     //   gas: 97000
     // };
-    const call = client_call_client.CreateRawTransaction(c, meta, (err: any, responses: any) => {
+    const call = client_call_client.CreateRawTransaction(JSON.stringify(c), meta, (err: any, responses: any) => {
       if (err) {
         console.log("err", err);
       } else {
