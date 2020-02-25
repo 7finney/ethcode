@@ -5,7 +5,6 @@ import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
 import * as uuid from "uuid/v1";
 import axios from "axios";
-import { serialize } from "v8";
 // @ts-ignore
 var jwtToken: any;
 
@@ -14,9 +13,9 @@ function getToken() {
     try {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
-      if (config.get("config")) {
+      if (!config.get("config")) {
         const machineID = uuid();
-        const url = `http://localhost:4040/getToken/${machineID}`;
+        const url = `http://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token }
         config.update("config", value);
@@ -56,7 +55,6 @@ export function activate(context: vscode.ExtensionContext) {
         editorContent,
         fileName
       );
-      ReactPanel.currentPanel.createAccount();
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
       if (!ReactPanel.currentPanel) {
