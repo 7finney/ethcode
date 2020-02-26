@@ -18,6 +18,7 @@ interface IState {
     deployedResult: string;
     testNetId: string;
     disable: boolean;
+    traceError: string;
 }
 
 class DebugDisplay extends Component<IProps, IState> {
@@ -29,7 +30,8 @@ class DebugDisplay extends Component<IProps, IState> {
         indx: -1,
         deployedResult: "",
         testNetId: "",
-        disable: false
+        disable: false,
+        traceError: ''
     };
     constructor(props: IProps) {
         super(props);
@@ -57,14 +59,15 @@ class DebugDisplay extends Component<IProps, IState> {
     }
 
     componentDidMount() {
-        this.setState({ testNetId: this.props.testNetId })
+        this.setState({ testNetId: this.props.testNetId });
     }
 
     componentDidUpdate(prevProps: IProps) {
         const { newdebugObj } = this.state;
         if (this.props.traceError !== prevProps.traceError) {
             this.setState({
-                disable: false
+                disable: false,
+                traceError: this.props.traceError
             })
         }
         if (this.props.txTrace !== prevProps.txTrace) {
@@ -74,13 +77,14 @@ class DebugDisplay extends Component<IProps, IState> {
                 newdebugObj: this.props.txTrace[0],
             })
             this.setState({
-                disable: false
+                disable: false,
+                traceError: ''
             })
         }
         if (this.props.testNetId !== this.state.testNetId) {
             this.setState({
                 testNetId: this.props.testNetId
-            })
+            });
         }
     }
     handleChange(event: any) {
@@ -116,8 +120,8 @@ class DebugDisplay extends Component<IProps, IState> {
 
     }
     public render() {
-        const { indx, debugObj, olddebugObj, newdebugObj, disable } = this.state;
-        const { txTrace, traceError } = this.props;
+        const { indx, debugObj, olddebugObj, newdebugObj, disable, traceError } = this.state;
+        const { txTrace } = this.props;
 
         return (
             <div className="container">
@@ -163,19 +167,21 @@ class DebugDisplay extends Component<IProps, IState> {
                         </div>
                     </div>
                 }
-                {<div className="error_message">
-                    {
-                        traceError &&
-                        <div>
-                            <span className="contract-name inline-block highlight-success">
-                                Error Message:
-                            </span>
+                {
+                    <div className="error_message">
+                        {
+                            traceError &&
                             <div>
-                                <pre className="large-code-error">{JSON.stringify(traceError)}</pre>
+                                <span className="contract-name inline-block highlight-success">
+                                    Error Message:
+                            </span>
+                                <div>
+                                    <pre className="large-code-error">{JSON.stringify(traceError)}</pre>
+                                </div>
                             </div>
-                        </div>
-                    }
-                </div>}
+                        }
+                    </div>
+                }
             </div>
         );
     }

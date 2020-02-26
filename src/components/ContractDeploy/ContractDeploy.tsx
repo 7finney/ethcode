@@ -57,10 +57,10 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ testNetId: this.props.testNetId })
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
-    for (var i in abi) {
+    for (let i in abi) {
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-        for (var j in constructorInput) {
+        for (let j in constructorInput) {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
@@ -177,13 +177,13 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleMethodnameInput(event: any) {
     const { abi } = this.props;
-    for (var obj in abi) {
+    for (let obj in abi) {
       // @ts-ignore
       if (abi[obj]['name'] === event.target.value) {
         var funcObj: object = abi[obj];
         this.setState({ methodName: event.target.value });
         // @ts-ignore
-        for (var i in funcObj['inputs']) {
+        for (let i in funcObj['inputs']) {
           // @ts-ignore
           funcObj['inputs'][i]['value'] = "";
         }

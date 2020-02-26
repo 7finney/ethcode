@@ -63,7 +63,7 @@ class TestNetSelector extends Component<IProps, IState> {
 
   componentDidMount() {
     const { options } = this.state;
-    this._handleNetworkSelector(options[0])
+    this._handleNetworkSelector(options[0]);
   }
 
   public async _handleNetworkSelector(selectedNetwork: any) {

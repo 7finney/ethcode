@@ -178,7 +178,7 @@ class ReactPanel {
   public checkFileName() {
     vscode.window.onDidChangeActiveTextEditor(changeEvent => {
       // @ts-ignore
-      const panelName = changeEvent._documentData._uri.fsPath
+      const panelName = changeEvent._documentData._uri.fsPath;
 
       const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
@@ -293,11 +293,9 @@ class ReactPanel {
     console.dir("Debugging transaction with remix-debug...");
     debugWorker.on("message", (m: any) => {
       try {
-        const res = JSON.parse(m.debugResp);
-        this._panel.webview.postMessage({ txTrace: res });
+        this._panel.webview.postMessage({ txTrace: JSON.parse(m.debugResp) });
       } catch (error) {
-        const res = m.debugResp;
-        this._panel.webview.postMessage({ traceError: res });
+        this._panel.webview.postMessage({ traceError: m.debugResp });
       }
     });
     debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });

@@ -217,18 +217,7 @@ class App extends Component<IProps, IState> {
     });
   }
 
-  componentDidUpdate(_: any, prevState: IState) {
-    console.log("inside compomentDidUpdate");
-
-    console.log(JSON.stringify(prevState.fileType));
-    console.log(JSON.stringify(this.state.fileType));
-
-    // if (prevState.fileType !== this.state.fileType) {
-    //   console.log("compomentDidUpdate");
-    //   this.setState({
-    //     fileType: this.state.fileType
-    //   })
-    // }
+  componentDidUpdate(_: any) {
 
     if(this.props.accounts !== this.state.accounts) {
       this.setState({
