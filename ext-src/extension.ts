@@ -18,7 +18,7 @@ function getToken() {
 
       if (config.get("config")) {
         const machineID = uuid();
-        const url = `https://auth.staging.ethco.de/getToken/${machineID}`;
+        const url = `https://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token }
         config.update("config", value);
