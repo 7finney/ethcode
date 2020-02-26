@@ -55,6 +55,7 @@ interface IState {
   deployedResult: string;
   tabIndex: number,
   txTrace: object;
+  traceError: string;
   accounts: string[];
   currAccount: string;
   balance: number;
@@ -89,7 +90,8 @@ class App extends Component<IProps, IState> {
       balance: 0,
       transactionResult: "",
       testNetId: "",
-      fileType: ''
+      fileType: '',
+      traceError: ''
     };
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
@@ -176,6 +178,9 @@ class App extends Component<IProps, IState> {
       }
       if (data.txTrace) {
         this.setState({ txTrace: data.txTrace });
+      }
+      if (data.traceError) {
+        this.setState({ traceError: data.traceError });
       }
       if(data.callResult) {
         const result = data.callResult;
@@ -302,6 +307,7 @@ class App extends Component<IProps, IState> {
       tabIndex,
       contractName,
       txTrace,
+      traceError,
       currAccount,
       transactionResult,
       accounts,
@@ -421,7 +427,7 @@ class App extends Component<IProps, IState> {
                 </div>  }
             </TabPanel>
             <TabPanel className="react-tab-panel">
-              <DebugDisplay deployedResult={deployedResult} vscode={vscode} testNetId={testNetId} txTrace={txTrace} />
+              <DebugDisplay deployedResult={deployedResult} vscode={vscode} testNetId={testNetId} txTrace={txTrace} traceError={traceError} />
             </TabPanel>
             <TabPanel className="react-tab-panel">
               {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}

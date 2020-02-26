@@ -16,9 +16,9 @@ function getToken() {
       
       config.update("config", undefined);
 
-      if (!config.get("config")) {
+      if (config.get("config")) {
         const machineID = uuid();
-        const url = `https://auth.ethco.de/getToken/${machineID}`;
+        const url = `https://auth.staging.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token }
         config.update("config", value);
@@ -292,7 +292,13 @@ class ReactPanel {
     console.dir("WorkerID: ", debugWorker.pid);
     console.dir("Debugging transaction with remix-debug...");
     debugWorker.on("message", (m: any) => {
-      this._panel.webview.postMessage({ txTrace: m.debugResp });
+      try {
+        const res = JSON.parse(m.debugResp);
+        this._panel.webview.postMessage({ txTrace: res });
+      } catch (error) {
+        const res = m.debugResp;
+        this._panel.webview.postMessage({ traceError: res });
+      }
     });
     debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
   }

@@ -7,6 +7,7 @@ interface IProps {
     txTrace: any;
     deployedResult: string;
     testNetId: string;
+    traceError: string;
 }
 interface IState {
     txHash: string | null;
@@ -61,7 +62,12 @@ class DebugDisplay extends Component<IProps, IState> {
 
     componentDidUpdate(prevProps: IProps) {
         const { newdebugObj } = this.state;
-        if(this.props.txTrace !== prevProps.txTrace) {
+        if (this.props.traceError !== prevProps.traceError) {
+            this.setState({
+                disable: false
+            })
+        }
+        if (this.props.txTrace !== prevProps.txTrace) {
             this.setState({
                 indx: 0,
                 olddebugObj: newdebugObj,
@@ -86,11 +92,11 @@ class DebugDisplay extends Component<IProps, IState> {
     debugInto() {
         const { newdebugObj } = this.state;
         const { txTrace } = this.props;
-        const index = (this.state.indx < txTrace.length-1) ?
-        this.state.indx+1 : 
-        txTrace.length-1;
-        if(txTrace.length > 0) {
-            this.setState({ 
+        const index = (this.state.indx < txTrace.length - 1) ?
+            this.state.indx + 1 :
+            txTrace.length - 1;
+        if (txTrace.length > 0) {
+            this.setState({
                 indx: index,
                 newdebugObj: txTrace[index],
                 olddebugObj: newdebugObj
@@ -99,19 +105,19 @@ class DebugDisplay extends Component<IProps, IState> {
     }
     debugBack() {
         const { txTrace } = this.props;
-        const index = this.state.indx > 0 ? this.state.indx-1 : 0;
-        if(txTrace.length > 0) {
-            this.setState({ 
+        const index = this.state.indx > 0 ? this.state.indx - 1 : 0;
+        if (txTrace.length > 0) {
+            this.setState({
                 indx: index,
                 newdebugObj: txTrace[index],
-                olddebugObj: txTrace[index-1]
+                olddebugObj: txTrace[index - 1]
             });
         }
 
     }
     public render() {
         const { indx, debugObj, olddebugObj, newdebugObj, disable } = this.state;
-        const { txTrace } = this.props;
+        const { txTrace, traceError } = this.props;
 
         return (
             <div className="container">
@@ -134,9 +140,9 @@ class DebugDisplay extends Component<IProps, IState> {
                             <p>OPCodes:</p>
                             <div>
                                 <ul className="opDiv" style={{ paddingLeft: 0 }}>
-                                    { txTrace.map((obj: any, index: any) => {
+                                    {txTrace.map((obj: any, index: any) => {
                                         return <li className={index === indx ? "selected" : ""} key={index} id={index}>{obj.op}</li>;
-                                    }) }
+                                    })}
                                 </ul>
                             </div>
                             <div>
@@ -157,6 +163,19 @@ class DebugDisplay extends Component<IProps, IState> {
                         </div>
                     </div>
                 }
+                {<div className="error_message">
+                    {
+                        traceError &&
+                        <div>
+                            <span className="contract-name inline-block highlight-success">
+                                Error Message:
+                            </span>
+                            <div>
+                                <pre className="large-code-error">{JSON.stringify(traceError)}</pre>
+                            </div>
+                        </div>
+                    }
+                </div>}
             </div>
         );
     }
