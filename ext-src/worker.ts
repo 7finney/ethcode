@@ -26,7 +26,7 @@ const remix_debug_pb = protoDescriptor.remix_debug;
 let remix_tests_client: any;
 let remix_debug_client: any;
 try {
-  remix_tests_client = new remix_tests_pb.RemixTestsService('rt.ethco.de:50051', grpc.credentials.createInsecure());
+  remix_tests_client = new remix_tests_pb.RemixTestsService('rt.staging.ethco.de:50051', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -34,7 +34,8 @@ try {
 
 // remix-debug grpc
 try {
-  remix_debug_client = new remix_debug_pb.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
+  remix_debug_client = new remix_debug_pb.RemixDebugService('rd.staging.ethco.de:50052', grpc.credentials.createInsecure());
+  // remix_debug_client = new remix_debug_pb.RemixDebugService('192.168.0.18:50052', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -44,8 +45,8 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  // client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
-  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('192.168.0.16:50053', grpc.credentials.createInsecure());
 
 } catch (e) {
   // @ts-ignore
@@ -175,7 +176,7 @@ process.on("message", async m => {
   if(m.command === "get-accounts") {
     const c = {
       callInterface: {
-        command: 'get-accounts',
+        command: 'get-accounts'
       }
     }
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -201,7 +202,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'send-ether',
-        payload: JSON.stringify(transactionInfo)
+        payload: JSON.stringify(transactionInfo),
+        testnetId: m.testnetId
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -254,7 +256,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'deploy-contract',
-        payload: JSON.stringify(inp)
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
       }
     };
     // @ts-ignore
@@ -293,7 +296,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'contract-method-call',
-        payload: JSON.stringify(inp)
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -327,7 +331,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'get-gas-estimate',
-        payload: JSON.stringify(inp)
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -352,10 +357,15 @@ process.on("message", async m => {
     const dt = {
       debugInterface: {
         command: 'debug',
-        payload: m.payload
+        payload: m.payload,
+        testnetId: m.testnetId
       }
     };
+    // @ts-ignore
+    process.send({ message: "BEFORE" });
     const call = remix_debug_client.RunDebug(dt);
+    // @ts-ignore
+    process.send({ message: "AFTER" });
     call.on('data', (data: any) => {
       const result = JSON.parse(data.result);
       // @ts-ignore

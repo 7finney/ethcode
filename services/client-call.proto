@@ -6,6 +6,7 @@ option go_package = "eth_client_call";
 message ClientCallInterface {
     string command = 1;
     string payload = 2;
+    string testnetId = 3;
 }
 
 message ClientCallRequest {

@@ -6,6 +6,7 @@ interface IProps {
     vscode: any;
     txTrace: any;
     deployedResult: string;
+    testNetId: string;
 }
 interface IState {
     txHash: string | null;
@@ -13,7 +14,8 @@ interface IState {
     olddebugObj: object;
     newdebugObj: object;
     indx: any;
-    deployedResult: string
+    deployedResult: string;
+    testNetId: string
 }
 
 class DebugDisplay extends Component<IProps, IState> {
@@ -23,7 +25,8 @@ class DebugDisplay extends Component<IProps, IState> {
         olddebugObj: {},
         newdebugObj: {},
         indx: -1,
-        deployedResult: ""
+        deployedResult: "",
+        testNetId: ""
     };
     constructor(props: IProps) {
         super(props);
@@ -35,22 +38,33 @@ class DebugDisplay extends Component<IProps, IState> {
     }
 
     handleSubmit(event: any) {
-        const { txHash } = this.state;
+        const { txHash, testNetId } = this.state;
+
         event.preventDefault();
         // get tx from txHash & debug transaction
         this.props.vscode.postMessage({
             command: "debugTransaction",
-            txHash
+            txHash,
+            testNetId
         });
     }
+
+    componentDidMount() {
+        this.setState({ testNetId: this.props.testNetId })
+    }
+
     componentDidUpdate(prevProps: IProps) {
         const { newdebugObj } = this.state;
         if(this.props.txTrace !== prevProps.txTrace) {
             this.setState({
                 indx: 0,
-                // debugObj: this.props.txTrace[0],
                 olddebugObj: newdebugObj,
                 newdebugObj: this.props.txTrace[0],
+            })
+        }
+        if (this.props.testNetId !== this.state.testNetId) {
+            this.setState({
+                testNetId: this.props.testNetId
             })
         }
     }

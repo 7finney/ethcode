@@ -8,26 +8,38 @@ import axios from "axios";
 // @ts-ignore
 var jwtToken: any;
 
+function getToken() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // @ts-ignore
+      const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
+      
+      config.update("config", undefined);
+
+      if (!config.get("config")) {
+        const machineID = uuid();
+        const url = `https://auth.staging.ethco.de/getToken/${machineID}`;
+        const { data } = await axios.get(url);
+        const value = { "machineID": machineID, "token": data.token }
+        config.update("config", value);
+        jwtToken = data.token;
+        resolve(data.token);
+      } else {
+        // @ts-ignore
+        jwtToken = await config.get("config").token;
+        resolve(jwtToken);
+      }
+    } catch (error) {
+      reject();
+    }
+  });
+}
+
+
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.activate", async () => {
-      
-      const machineID = uuid();
-      
-      try {
-        const url = `https://auth.ethco.de/getToken/${machineID}`;
-        const { data } = await axios.get(url);
-        
-        if(!context.globalState.get("token")) {
-          context.globalState.update("token", data.token);
-          jwtToken = data.token;
-        } else {
-          jwtToken = context.globalState.get("token");
-        }
-        ReactPanel.createOrShow(context.extensionPath);
-      } catch (error) {
-        console.error(error);
-      }
+    vscode.commands.registerCommand("ethcode.activate", () => {
+      ReactPanel.createOrShow(context.extensionPath);
     })
   );
   context.subscriptions.push(
@@ -79,33 +91,6 @@ class ReactPanel {
   // @ts-ignore
   private version: string;
 
-  public static createOrShow(extensionPath: string) {
-    const column = vscode.window.activeTextEditor ? -2 : undefined;
-
-    // If we already have a panel, show it.
-    // Otherwise, create a new panel.
-    if (ReactPanel.currentPanel) {
-      try {
-        ReactPanel.currentPanel.getCompilerVersion();
-        ReactPanel.currentPanel.getAccounts();
-        ReactPanel.currentPanel.version = "latest";
-
-        ReactPanel.currentPanel._panel.reveal(column);
-      } catch (error) {
-        console.error(error);
-      }
-    } else {
-      try {
-        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
-        ReactPanel.currentPanel.version = "latest";
-        ReactPanel.currentPanel.getCompilerVersion();
-        ReactPanel.currentPanel.getAccounts();
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  }
-
   private constructor(extensionPath: string, column: vscode.ViewColumn) {
     this._extensionPath = extensionPath;
 
@@ -132,25 +117,60 @@ class ReactPanel {
     // Handle messages from the webview
     this._panel.webview.onDidReceiveMessage(
       (message: any) => {
-        if(message.command === 'version') {
+        if (message.command === 'version') {
           this.version = message.version;
         } else if(message.command === 'run-deploy') {
-          this.runDeploy(message.payload);
+          this.runDeploy(message.payload, message.testNetId);
         } else if(message.command === 'contract-method-call') {
-          this.runContractCall(message.payload);
+          this.runContractCall(message.payload, message.testNetId);
         } else if(message.command === 'run-get-gas-estimate') {
-          this.runGetGasEstimate(message.payload);
+          this.runGetGasEstimate(message.payload, message.testNetId);
         } else if(message.command === 'debugTransaction') {
-          this.debug(message.txHash);
+          this.debug(message.txHash, message.testNetId);
         } else if(message.command === 'get-balance') {
           this.getBalance(message.account);
-        } else if(message.command === 'send-ether') {
-          this.sendEther(message.payload);
+        } else if (message.command === 'run-genToken') {
+          getToken().then(() => {
+            if (ReactPanel.currentPanel) {
+              ReactPanel.currentPanel.getAccounts();
+            } else {
+              try {
+                ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+                ReactPanel.currentPanel.getAccounts();
+              } catch (error) {
+                console.error(error);
+              }
+            }
+          }).catch(console.error);
         }
       },
       null,
       this._disposables
     );
+  }
+
+  public static createOrShow(extensionPath: string) {
+    const column = vscode.window.activeTextEditor ? -2 : undefined;
+
+    // If we already have a panel, show it.
+    // Otherwise, create a new panel.
+    if (ReactPanel.currentPanel) {
+      try {
+        ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel.version = "latest";
+        ReactPanel.currentPanel._panel.reveal(column);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      try {
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+        ReactPanel.currentPanel.version = "latest";
+        ReactPanel.currentPanel.getCompilerVersion();
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }
 
   private createWorker(): ChildProcess {
@@ -168,44 +188,44 @@ class ReactPanel {
     return fork(path.join(__dirname, "vyp-worker.js"));
   }
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
-		// solidity compiler code goes bellow
-		var input = {
-			language: "Solidity",
-			sources,
-			settings: {
-				outputSelection: {
-					"*": {
-						"*": ["*"]
-					}
-				}
-			}
-		};
-		// child_process won't work because of debugging issue if launched with F5
-		// child_process will work when launched with ctrl+F5
-		// more on this - https://github.com/Microsoft/vscode/issues/40875
-		const solcWorker = this.createWorker();
-		console.dir("WorkerID: ", solcWorker.pid);
-		console.dir("Compiling with solidity version ", this.version);
-		// Reset Components State before compilation
-		this._panel.webview.postMessage({ processMessage: "Compiling..." });
-		solcWorker.send({
-			command: "compile",
-			payload: input,
-			version: this.version
-		});
-		solcWorker.on("message", (m: any) => {
-			if (m.data && m.path) {
-				sources[m.path] = {
-					content: m.data.content
-				};
-				solcWorker.send({
-					command: "compile",
-					payload: input,
-					version: this.version
-				});
-			}
-			if (m.compiled) {
-				context.workspaceState.update("sources", JSON.stringify(sources));
+    // solidity compiler code goes bellow
+    var input = {
+      language: "Solidity",
+      sources,
+      settings: {
+        outputSelection: {
+          "*": {
+            "*": ["*"]
+          }
+        }
+      }
+    };
+    // child_process won't work because of debugging issue if launched with F5
+    // child_process will work when launched with ctrl+F5
+    // more on this - https://github.com/Microsoft/vscode/issues/40875
+    const solcWorker = this.createWorker();
+    console.dir("WorkerID: ", solcWorker.pid);
+    console.dir("Compiling with solidity version ", this.version);
+    // Reset Components State before compilation
+    this._panel.webview.postMessage({ processMessage: "Compiling..." });
+    solcWorker.send({
+      command: "compile",
+      payload: input,
+      version: this.version
+    });
+    solcWorker.on("message", (m: any) => {
+      if (m.data && m.path) {
+        sources[m.path] = {
+          content: m.data.content
+        };
+        solcWorker.send({
+          command: "compile",
+          payload: input,
+          version: this.version
+        });
+      }
+      if (m.compiled) {
+        context.workspaceState.update("sources", JSON.stringify(sources));
         this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true, testPanel: 'main' });
 				solcWorker.kill();
 			}
@@ -243,27 +263,28 @@ class ReactPanel {
 			}
 		});
 	}
-  private debug(txHash: string): void {
+  private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
     console.dir("WorkerID: ", debugWorker.pid);
     console.dir("Debugging transaction with remix-debug...");
     debugWorker.on("message", (m: any) => {
+      console.log("mmmmmmmmm", JSON.stringify(m.message));
       this._panel.webview.postMessage({ txTrace: m.debugResp });
     });
-    debugWorker.send({ command: "debug-transaction", payload: txHash });
+    debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
   }
   // Deploy contracts
-  private runDeploy(payload: any) {
+  private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
     deployWorker.on("message", (m: any) => {
-      if(m.error) {
+      if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
       else {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    deployWorker.send({ command: "deploy-contract", payload, jwtToken});
+    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId});
   }
   // get accounts
   public getAccounts() {
@@ -282,58 +303,58 @@ class ReactPanel {
     balanceWorker.send({ command: "get-balance", account: account, jwtToken });
   }
   // Call contract method
-  private runContractCall(payload: any) {
+  private runContractCall(payload: any, testNetId: string) {
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
     })
-    callWorker.send({ command: "contract-method-call", payload, jwtToken });
+    callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
   }
   // Get gas estimates
-  private runGetGasEstimate(payload: any) {
+  private runGetGasEstimate(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
 
     deployWorker.on("message", (m: any) => {
-        if(m.error) {
+      if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
       else {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       }
     });
-    deployWorker.send({ command: "get-gas-estimate", payload, jwtToken });
+    deployWorker.send({ command: "get-gas-estimate", payload, jwtToken, testnetId: testNetId });
   }
-  private sendEther(payload: any) {
+  private sendEther(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ transactionResult: m.transactionResult });
     });
-    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken });
+    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
   }
   public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
-		// send JSON serializable compiled data
-		const sources: ISources = {};
-		if (fn) {
-			sources[fn] = {
-				content: editorContent
-			};
-			context.workspaceState.update("sources", JSON.stringify(sources));
-			var re = /(?:\.([^.]+))?$/;
-			const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
+    // send JSON serializable compiled data
+    const sources: ISources = {};
+    if (fn) {
+      sources[fn] = {
+        content: editorContent
+      };
+      context.workspaceState.update("sources", JSON.stringify(sources));
+      var re = /(?:\.([^.]+))?$/;
+      const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
       // @ts-ignore
-			if (fn.match(regexVyp) && fn.match(regexVyp).length > 0) {
-				// invoke vyper compiler
-				this.invokeVyperCompiler(context, sources);
-				// @ts-ignore
-			} else if (fn.match(regexSol) && fn.match(regexSol).length > 0) {
-				// invoke solidity compiler
-				this.invokeSolidityCompiler(context, sources);
-			} else {
-				throw new Error("No matching file found!");
-			}
-		}
-	}
+      if (fn.match(regexVyp) && fn.match(regexVyp).length > 0) {
+        // invoke vyper compiler
+        this.invokeVyperCompiler(context, sources);
+        // @ts-ignore
+      } else if (fn.match(regexSol) && fn.match(regexSol).length > 0) {
+        // invoke solidity compiler
+        this.invokeSolidityCompiler(context, sources);
+      } else {
+        throw new Error("No matching file found!");
+      }
+    }
+  }
 
   public sendTestContract(editorContent: string | undefined, fn: string | undefined) {
     const sources: ISources = {};
@@ -372,7 +393,7 @@ class ReactPanel {
       console.dir("Tests worker exited");
     });
   }
-  
+
 
   public dispose() {
     ReactPanel.currentPanel = undefined;

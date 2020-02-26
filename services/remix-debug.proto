@@ -6,6 +6,7 @@ option go_package = "remix_debug";
 message DebugInterface {
     string command = 1;
     string payload = 2;
+    string testnetId = 3;
 }
 
 message DebugRequest {
