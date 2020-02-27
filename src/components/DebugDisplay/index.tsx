@@ -51,41 +51,30 @@ class DebugDisplay extends Component<IProps, IState> {
             disable: true,
             newdebugObj: {},
             olddebugObj: {},
-            // traceError: ''
+            traceError: ''
         }, () => {
-
-            console.log("qqqqqq ", JSON.stringify(this.state))
+            // get tx from txHash & debug transaction
             this.props.vscode.postMessage({
                 command: "debugTransaction",
                 txHash,
                 testNetId
             });
-        })
-        // get tx from txHash & debug transaction
+        });
     }
 
     componentDidMount() {
         this.setState({ testNetId: this.props.testNetId });
     }
 
-    componentDidUpdate(prevProps: IProps) {
-        console.log(JSON.stringify(this.props.traceError));
-        console.log(JSON.stringify(this.props.traceError));
+    componentDidUpdate(prevProps: IProps, prevState: IState) {
         const { newdebugObj } = this.state;
 
-        if (this.props.traceError !== this.state.traceError) {
-            debugger
-            console.log("inside");
+        if (this.props.traceError !== this.state.traceError && prevState.traceError !== this.props.traceError) {
             this.setState({
                 disable: false,
                 traceError: this.props.traceError
-            })
-        } 
-        // else if (this.state.disable) {
-        //     this.setState({
-        //         disable: false
-        //     });
-        // }
+            });
+        }
         if (this.props.txTrace !== prevProps.txTrace) {
             this.setState({
                 indx: 0,
@@ -93,7 +82,7 @@ class DebugDisplay extends Component<IProps, IState> {
                 newdebugObj: this.props.txTrace[0],
                 disable: false,
                 traceError: ''
-            })
+            });
         }
         if (this.props.testNetId !== this.state.testNetId) {
             this.setState({
@@ -110,7 +99,7 @@ class DebugDisplay extends Component<IProps, IState> {
             indx: -1,
             debugObj: {},
             traceError: ''
-        })
+        });
     }
     debugInto() {
         const { newdebugObj } = this.state;

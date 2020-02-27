@@ -181,9 +181,6 @@ class App extends Component<IProps, IState> {
       }
       if (data.traceError) {
         this.setState({ traceError: data.traceError });
-        // console.log("in APP.js");
-        // console.log(JSON.stringify(this.state.traceError));
-        // console.log(JSON.stringify(data.traceError));
       }
       if(data.callResult) {
         const result = data.callResult;
