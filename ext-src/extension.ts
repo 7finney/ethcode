@@ -16,9 +16,9 @@ function getToken() {
       
       config.update("config", undefined);
 
-      if (!config.get("config")) {
+      if (config.get("config")) {
         const machineID = uuid();
-        const url = `https://auth.staging.ethco.de/getToken/${machineID}`;
+        const url = `https://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token }
         config.update("config", value);
@@ -159,6 +159,7 @@ class ReactPanel {
         ReactPanel.currentPanel.getCompilerVersion();
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel._panel.reveal(column);
+        ReactPanel.currentPanel.checkFileName();
       } catch (error) {
         console.error(error);
       }
@@ -167,10 +168,33 @@ class ReactPanel {
         ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel.checkFileName();
       } catch (error) {
         console.error(error);
       }
     }
+  }
+
+  public checkFileName() {
+    vscode.window.onDidChangeActiveTextEditor(changeEvent => {
+      // @ts-ignore
+      const panelName = changeEvent._documentData._uri.fsPath;
+
+      const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
+      const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
+
+      // @ts-ignore
+      if (panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
+        // @ts-ignore
+        this._panel.webview.postMessage({ fileType: 'vyper' });
+        // @ts-ignore
+      } else if (panelName.match(regexSol) && panelName.match(regexSol).length > 0) {
+        // @ts-ignore
+        this._panel.webview.postMessage({ fileType: 'solidity' });
+      } else {
+        this._panel.webview.postMessage({ fileType: 'none' });
+      }
+    });
   }
 
   private createWorker(): ChildProcess {
@@ -268,8 +292,11 @@ class ReactPanel {
     console.dir("WorkerID: ", debugWorker.pid);
     console.dir("Debugging transaction with remix-debug...");
     debugWorker.on("message", (m: any) => {
-      console.log("mmmmmmmmm", JSON.stringify(m.message));
-      this._panel.webview.postMessage({ txTrace: m.debugResp });
+      try {
+        this._panel.webview.postMessage({ txTrace: JSON.parse(m.debugResp) });
+      } catch (error) {
+        this._panel.webview.postMessage({ traceError: m.debugResp });
+      }
     });
     debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
   }

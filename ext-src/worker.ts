@@ -26,7 +26,7 @@ const remix_debug_pb = protoDescriptor.remix_debug;
 let remix_tests_client: any;
 let remix_debug_client: any;
 try {
-  remix_tests_client = new remix_tests_pb.RemixTestsService('rt.staging.ethco.de:50051', grpc.credentials.createInsecure());
+  remix_tests_client = new remix_tests_pb.RemixTestsService('rt.ethco.de:50051', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -34,8 +34,7 @@ try {
 
 // remix-debug grpc
 try {
-  remix_debug_client = new remix_debug_pb.RemixDebugService('rd.staging.ethco.de:50052', grpc.credentials.createInsecure());
-  // remix_debug_client = new remix_debug_pb.RemixDebugService('192.168.0.18:50052', grpc.credentials.createInsecure());
+  remix_debug_client = new remix_debug_pb.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -45,8 +44,7 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('192.168.0.16:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
 
 } catch (e) {
   // @ts-ignore
@@ -367,9 +365,8 @@ process.on("message", async m => {
     // @ts-ignore
     process.send({ message: "AFTER" });
     call.on('data', (data: any) => {
-      const result = JSON.parse(data.result);
       // @ts-ignore
-      process.send({ debugResp: result });
+      process.send({ debugResp: data.result });
     });
     call.on('end', function() {
       process.exit(0);

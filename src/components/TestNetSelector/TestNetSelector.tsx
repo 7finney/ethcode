@@ -53,8 +53,7 @@ class TestNetSelector extends Component<IProps, IState> {
         { value: 'ganache', label: 'Ganache'},
         { value: '3', label: 'Ropsten' },
         { value: '4', label: 'Rinkeby' },
-        { value: '5', label: "Goerli" },
-        { value: '6', label: 'Prysm-Sapphire' },
+        { value: '5', label: "Goerli" }
       ]
     };
 
@@ -63,7 +62,7 @@ class TestNetSelector extends Component<IProps, IState> {
 
   componentDidMount() {
     const { options } = this.state;
-    this._handleNetworkSelector(options[0])
+    this._handleNetworkSelector(options[0]);
   }
 
   public async _handleNetworkSelector(selectedNetwork: any) {
