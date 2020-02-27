@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "quantanetwork",
   "categories": [
     "Debuggers",
