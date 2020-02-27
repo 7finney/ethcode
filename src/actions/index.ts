@@ -6,7 +6,8 @@ import {
   CLEAR_DEPLOYED_RESULT,
   SET_CALL_RESULT,
   SET_ACC_BALANCE,
-  SET_UPDATE_BALANCE
+  SET_UPDATE_BALANCE,
+  SET_TESTNET_ID
 } from "./types";
 
 export const addTestResults = (data: any) => {
@@ -54,5 +55,11 @@ export const setAccountBalance = (data: any) => {
 export const setCurrAccChange = (data: any) => {
   return (dispatch: Function) => {
     dispatch({ type: SET_UPDATE_BALANCE, payload: data })
+  }
+}
+
+export const setTestNetId = (testNetId: any) => {
+  return (dispatch: Function) => {
+    dispatch({ type: SET_TESTNET_ID , payload: testNetId })
   }
 }

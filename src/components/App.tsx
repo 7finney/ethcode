@@ -9,12 +9,14 @@ import {
   clearDeployedResult,
   setCallResult,
   setAccountBalance,
-  setCurrAccChange
+  setCurrAccChange,
+  setTestNetId
 } from "../actions";
 import "./App.css";
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
 import Dropdown from "./Dropdown";
+import TestNetSelector from "./TestNetSelector";
 import CompilerVersionSelector from "./CompilerVersionSelector";
 import ContractSelector from "./ContractSelector";
 import TestDisplay from "./TestDisplay";
@@ -33,10 +35,12 @@ interface IProps {
   setCallResult: (result: any) => void;
   setAccountBalance: (accData: any) => void;
   setCurrAccChange: (accData: any) => void;
+  setTestNetId: (testNetId: any) => void;
   test: any;
   accountBalance: number,
   accounts: string[],
-  currAccount: string
+  currAccount: string,
+  testNetId: string
 }
 
 interface IState {
@@ -51,10 +55,13 @@ interface IState {
   deployedResult: string;
   tabIndex: number,
   txTrace: object;
+  traceError: string;
   accounts: string[];
   currAccount: string;
   balance: number;
   transactionResult: string;
+  testNetId: string;
+  fileType: string;
 }
 interface IOpt {
   value: string;
@@ -68,26 +75,35 @@ class App extends Component<IProps, IState> {
     super(props);
     this.state = {
       message: [],
-      compiled: "",
+      compiled: '',
       error: null,
-      fileName: "",
-      contractName: "",
-      processMessage: "",
-      availableVersions: "",
+      fileName: '',
+      contractName: '',
+      processMessage: '',
+      availableVersions: '',
       gasEstimate: 0,
-      deployedResult: "",
+      deployedResult: '',
       tabIndex: 0,
       txTrace: {},
       accounts: [],
-      currAccount: "",
+      currAccount: '',
       balance: 0,
-      transactionResult: ""
+      transactionResult: '',
+      testNetId: '',
+      fileType: '',
+      traceError: ''
     };
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
   public componentDidMount() {
     window.addEventListener("message", async event => {
       const { data } = event;
+
+      if (data.fileType) {
+        this.setState({
+          fileType: data.fileType
+        });
+      }
 
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
@@ -163,6 +179,9 @@ class App extends Component<IProps, IState> {
       if (data.txTrace) {
         this.setState({ txTrace: data.txTrace });
       }
+      if (data.traceError) {
+        this.setState({ traceError: data.traceError });
+      }
       if(data.callResult) {
         const result = data.callResult;
         this.props.setCallResult(result);
@@ -198,11 +217,18 @@ class App extends Component<IProps, IState> {
     });
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(_: any) {
+
     if(this.props.accounts !== this.state.accounts) {
       this.setState({
         accounts: this.props.accounts
       })
+    }
+
+    if (this.props.testNetId !== this.state.testNetId) {
+      this.setState({
+        testNetId: this.props.testNetId
+      });
     }
   }
 
@@ -238,6 +264,11 @@ class App extends Component<IProps, IState> {
       version: version.value
     });
   };
+
+  public getSelectedNetwork = (testNetId: any) => {
+    this.setState({ testNetId });
+    this.props.setTestNetId(testNetId);
+  }
   
   public getSelectedAccount = (account: any) => {
     this.setState({ currAccount: account });
@@ -264,10 +295,13 @@ class App extends Component<IProps, IState> {
       tabIndex,
       contractName,
       txTrace,
+      traceError,
       currAccount,
       transactionResult,
       accounts,
-      balance
+      balance,
+      testNetId,
+      fileType
     } = this.state;
 
     return (
@@ -275,7 +309,7 @@ class App extends Component<IProps, IState> {
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        {availableVersions && (
+        {availableVersions && (fileType === 'solidity') && (
           <CompilerVersionSelector
             getSelectedVersion={this.getSelectedVersion}
             availableVersions={availableVersions}
@@ -287,6 +321,11 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
+        {
+          <TestNetSelector
+            getSelectedNetwork={this.getSelectedNetwork}
+          />
+        }
         {
           transactionResult &&
           <div>
@@ -369,13 +408,14 @@ class App extends Component<IProps, IState> {
                         gasEstimate={gasEstimate}
                         deployedResult={deployedResult}
                         deployAccount={currAccount}
+                        testNetId={testNetId}
                       />
                     }
                   </div>
                 </div>  }
             </TabPanel>
             <TabPanel className="react-tab-panel">
-              <DebugDisplay deployedResult={deployedResult} vscode={vscode} txTrace={txTrace} />
+              <DebugDisplay deployedResult={deployedResult} vscode={vscode} testNetId={testNetId} txTrace={txTrace} traceError={traceError} />
             </TabPanel>
             <TabPanel className="react-tab-panel">
               {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
@@ -412,17 +452,19 @@ class App extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps({ test, accountStore }: any) {
+function mapStateToProps({ test, accountStore, debugStore }: any) {
   const { accountBalance, accounts, currAccount } = accountStore
+  const { testNetId } = debugStore
   return {
     accountBalance,
     accounts,
     currAccount,
     test,
+    testNetId
   };
 }
 
 export default connect(
   mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, setAccountBalance, setCurrAccChange, clearDeployedResult, setCallResult }
+  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, setAccountBalance, setTestNetId, setCurrAccChange, clearDeployedResult, setCallResult }
 )(App);

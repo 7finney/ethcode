@@ -15,6 +15,7 @@ interface IProps {
   compiledResult: object;
   callResult: object;
   deployAccount: string;
+  testNetId: string;
 }
 interface IState {
   constructorInput: object[];
@@ -24,6 +25,8 @@ interface IState {
   methodName: string;
   deployedAddress: string;
   methodInputs: string;
+  testNetId: string;
+  disable: boolean;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -34,7 +37,9 @@ class ContractDeploy extends Component<IProps, IState> {
     deployed: {},
     methodName: '',
     deployedAddress: '',
-    methodInputs: ''
+    methodInputs: '',
+    testNetId: '',
+    disable: false
   };
   constructor(props: IProps, state: IState) {
     super(props);
@@ -49,12 +54,13 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 
   componentDidMount() {
+    this.setState({ testNetId: this.props.testNetId })
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
-    for (var i in abi ) {
-      if(abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
+    for (let i in abi) {
+      if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-        for(var j in constructorInput) {
+        for (let j in constructorInput) {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
@@ -64,25 +70,39 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   componentDidUpdate(prevProps: any) {
     const { gasEstimate, deployedResult, error, abi } = this.props;
-    if(error !== prevProps.error) {
+    if (this.props.testNetId !== this.state.testNetId && this.props.testNetId !== 'ganache') {
+      this.setState({
+        disable: true
+      })
+    } else if (this.props.testNetId !== this.state.testNetId) {
+      this.setState({
+        disable: false
+      })
+    }
+    if (error !== prevProps.error) {
       this.setState({ error: error });
     }
-    else if(deployedResult !== prevProps.deployedResult) {
+    if (this.props.testNetId !== this.state.testNetId) {
+      this.setState({
+        testNetId: this.props.testNetId
+      })
+    }
+    else if (deployedResult !== prevProps.deployedResult) {
       const deployedObj = JSON.parse(deployedResult);
       this.setState({ deployed: deployedObj, deployedAddress: deployedObj.contractAddress });
     }
-    else if((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
+    else if ((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
       this.setState({ gasSupply: gasEstimate });
     }
 
     const length = Object.keys(abi).length
-    if(prevProps.abi !== abi) {
+    if (prevProps.abi !== abi) {
       if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
         for (let j in constructorInput) {
           constructorInput[j]['value'] = "";
         }
-        this.setState({ constructorInput: constructorInput }); 
+        this.setState({ constructorInput: constructorInput });
       } else {
         this.setState({ constructorInput: [] });
       }
@@ -90,48 +110,51 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleDeploy() {
     const { vscode, bytecode, abi } = this.props;
-    const { gasSupply, constructorInput } = this.state;
+    const { gasSupply, constructorInput, testNetId } = this.state;
     this.setState({ error: null, deployed: {} });
     vscode.postMessage({
-     command: "run-deploy",
-     payload: {
+      command: "run-deploy",
+      payload: {
         abi,
         bytecode,
         params: constructorInput,
         gasSupply
-      }
+      },
+      testNetId
     });
   }
   private handleCall() {
     const { vscode, abi, deployAccount } = this.props;
-    const { gasSupply, methodName, deployedAddress, methodInputs } = this.state;
+    const { gasSupply, methodName, deployedAddress, methodInputs, testNetId } = this.state;
     this.setState({ error: null });
     vscode.postMessage({
-     command: "contract-method-call",
-     payload: {
+      command: "contract-method-call",
+      payload: {
         abi,
         address: deployedAddress,
         methodName: methodName,
         params: JSON.parse(methodInputs),
         gasSupply,
         deployAccount
-      }
+      },
+      testNetId
     });
   }
   private handleGetGasEstimate() {
     const { vscode, bytecode, abi } = this.props;
-    const { constructorInput } = this.state;
+    const { constructorInput, testNetId } = this.state;
     try {
-     vscode.postMessage({
-      command: "run-get-gas-estimate",
-      payload: {
-       abi,
-       bytecode,
-       params: constructorInput
-      }
-     });
+      vscode.postMessage({
+        command: "run-get-gas-estimate",
+        payload: {
+          abi,
+          bytecode,
+          params: constructorInput
+        },
+        testNetId
+      });
     } catch (err) {
-     this.setState({ error: err });
+      this.setState({ error: err });
     }
   }
   private handleChange(event: any) {
@@ -139,7 +162,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleConstructorInputChange(event: any) {
     const { constructorInput } = this.state;
-    if(constructorInput.length > 3) {
+    if (constructorInput.length > 3) {
       this.setState({ constructorInput: JSON.parse(event.target.value) });
     } else {
       const item = constructorInput[event.target.id];
@@ -154,13 +177,13 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleMethodnameInput(event: any) {
     const { abi } = this.props;
-    for(var obj in abi) {
+    for (let obj in abi) {
       // @ts-ignore
-      if(abi[obj]['name'] === event.target.value) {
+      if (abi[obj]['name'] === event.target.value) {
         var funcObj: object = abi[obj];
         this.setState({ methodName: event.target.value });
         // @ts-ignore
-        for(var i in funcObj['inputs']) {
+        for (let i in funcObj['inputs']) {
           // @ts-ignore
           funcObj['inputs'][i]['value'] = "";
         }
@@ -174,9 +197,9 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodInputs: event.target.value });
   }
   public render() {
-    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
+    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, disable } = this.state;
     const { callResult } = this.props;
-    return(
+    return (
       <div>
         <div>
           <form onSubmit={this.handleDeploy}>
@@ -214,13 +237,14 @@ class ContractDeploy extends Component<IProps, IState> {
               <label className="label_name" style={{ marginRight: '10px' }}>Gas Supply:</label>
               {
                 (gasSupply > 0) ?
-                <input type="number" className="input custom_input_css" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)}/> :
-                <input type="number" className="input custom_input_css" value="" id="deployGas" onChange={(e) => this.handleChange(e)}/>
+                  <input type="number" className="input custom_input_css" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)} /> :
+                  <input type="number" className="input custom_input_css" value="" id="deployGas" onChange={(e) => this.handleChange(e)} />
               }
             </div>
             <div style={{ marginBottom: '5px' }}>
-              <input type="submit" className="custom_button_css" value="Deploy" />
+              <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} value="Deploy" />
             </div>
+            {disable ? <p style={{ color: '#FFCC00' }}>Deploy currently avalable in Ganache Testnet only</p> : '' }
           </form>
           <div>
             <form onSubmit={this.handleGetGasEstimate}>
@@ -229,12 +253,12 @@ class ContractDeploy extends Component<IProps, IState> {
           </div>
           <div>
             <form onSubmit={this.handleCall} className="form_align" >
-              <input type="text" className="custom_input_css" style={{ marginRight: '5px' }} name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput}/>
-              <input type="text" className="custom_input_css" name="methodName" onChange={this.handleMethodnameInput}/>
+              <input type="text" className="custom_input_css" style={{ marginRight: '5px' }} name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput} />
+              <input type="text" className="custom_input_css" name="methodName" onChange={this.handleMethodnameInput} />
               {
-                methodName !=='' && methodInputs !== '[]' &&
+                methodName !== '' && methodInputs !== '[]' &&
                 <div className="json_input_container" style={{ marginTop: '10px' }}>
-                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea> 
+                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>
               }
               <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
@@ -261,12 +285,12 @@ class ContractDeploy extends Component<IProps, IState> {
             <span>
               {/* 
               // @ts-ignore */}
-              {callResult && callResult.callResult ? 'Call result:' : 'Call error:' }
+              {callResult && callResult.callResult ? 'Call result:' : 'Call error:'}
             </span>
             <div>
               {/* 
               // @ts-ignore */}
-              { callResult && callResult.callResult ? 
+              {callResult && callResult.callResult ?
                 <pre className="large-code">
                   {
                     // @ts-ignore
@@ -302,10 +326,10 @@ class ContractDeploy extends Component<IProps, IState> {
 }
 
 function mapStateToProps(state: any) {
-    return {
-      compiledResult: state.compiledStore.compiledresult,
-      callResult: state.compiledStore.callResult
-    };
+  return {
+    compiledResult: state.compiledStore.compiledresult,
+    callResult: state.compiledStore.callResult
+  };
 }
 
-export default connect(mapStateToProps, { } )(ContractDeploy);
+export default connect(mapStateToProps, {})(ContractDeploy);

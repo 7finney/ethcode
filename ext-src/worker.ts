@@ -44,7 +44,6 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  // client_call_client = new client_call_pb.ClientCallService('clientcallapi.ethcode.dev:50053', grpc.credentials.createInsecure());
   client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
 
 } catch (e) {
@@ -175,7 +174,7 @@ process.on("message", async m => {
   if(m.command === "get-accounts") {
     const c = {
       callInterface: {
-        command: 'get-accounts',
+        command: 'get-accounts'
       }
     }
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -201,7 +200,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'send-ether',
-        payload: JSON.stringify(transactionInfo)
+        payload: JSON.stringify(transactionInfo),
+        testnetId: m.testnetId
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -254,7 +254,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'deploy-contract',
-        payload: JSON.stringify(inp)
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
       }
     };
     // @ts-ignore
@@ -293,7 +294,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'contract-method-call',
-        payload: JSON.stringify(inp)
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -327,7 +329,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'get-gas-estimate',
-        payload: JSON.stringify(inp)
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -352,14 +355,18 @@ process.on("message", async m => {
     const dt = {
       debugInterface: {
         command: 'debug',
-        payload: m.payload
+        payload: m.payload,
+        testnetId: m.testnetId
       }
     };
+    // @ts-ignore
+    process.send({ message: "BEFORE" });
     const call = remix_debug_client.RunDebug(dt);
+    // @ts-ignore
+    process.send({ message: "AFTER" });
     call.on('data', (data: any) => {
-      const result = JSON.parse(data.result);
       // @ts-ignore
-      process.send({ debugResp: result });
+      process.send({ debugResp: data.result });
     });
     call.on('end', function() {
       process.exit(0);
