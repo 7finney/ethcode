@@ -75,21 +75,21 @@ class App extends Component<IProps, IState> {
     super(props);
     this.state = {
       message: [],
-      compiled: "",
+      compiled: '',
       error: null,
-      fileName: "",
-      contractName: "",
-      processMessage: "",
-      availableVersions: "",
+      fileName: '',
+      contractName: '',
+      processMessage: '',
+      availableVersions: '',
       gasEstimate: 0,
-      deployedResult: "",
+      deployedResult: '',
       tabIndex: 0,
       txTrace: {},
       accounts: [],
-      currAccount: "",
+      currAccount: '',
       balance: 0,
-      transactionResult: "",
-      testNetId: "",
+      transactionResult: '',
+      testNetId: '',
       fileType: '',
       traceError: ''
     };
@@ -102,7 +102,7 @@ class App extends Component<IProps, IState> {
       if (data.fileType) {
         this.setState({
           fileType: data.fileType
-        })
+        });
       }
 
       if (data.compiled) {
@@ -181,6 +181,9 @@ class App extends Component<IProps, IState> {
       }
       if (data.traceError) {
         this.setState({ traceError: data.traceError });
+        // console.log("in APP.js");
+        // console.log(JSON.stringify(this.state.traceError));
+        // console.log(JSON.stringify(data.traceError));
       }
       if(data.callResult) {
         const result = data.callResult;
@@ -228,9 +231,8 @@ class App extends Component<IProps, IState> {
     if (this.props.testNetId !== this.state.testNetId) {
       this.setState({
         testNetId: this.props.testNetId
-      })
+      });
     }
-
   }
 
   private handleTransactionSubmit(event: any) {

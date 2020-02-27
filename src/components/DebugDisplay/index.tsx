@@ -43,19 +43,25 @@ class DebugDisplay extends Component<IProps, IState> {
     }
 
     handleSubmit(event: any) {
+        event.preventDefault();
         const { txHash, testNetId } = this.state;
 
-        event.preventDefault();
-        // get tx from txHash & debug transaction
-        this.props.vscode.postMessage({
-            command: "debugTransaction",
-            txHash,
-            testNetId
-        });
-
         this.setState({
-            disable: true
+            indx: -1,
+            disable: true,
+            newdebugObj: {},
+            olddebugObj: {},
+            // traceError: ''
+        }, () => {
+
+            console.log("qqqqqq ", JSON.stringify(this.state))
+            this.props.vscode.postMessage({
+                command: "debugTransaction",
+                txHash,
+                testNetId
+            });
         })
+        // get tx from txHash & debug transaction
     }
 
     componentDidMount() {
@@ -63,20 +69,28 @@ class DebugDisplay extends Component<IProps, IState> {
     }
 
     componentDidUpdate(prevProps: IProps) {
+        console.log(JSON.stringify(this.props.traceError));
+        console.log(JSON.stringify(this.props.traceError));
         const { newdebugObj } = this.state;
-        if (this.props.traceError !== prevProps.traceError) {
+
+        if (this.props.traceError !== this.state.traceError) {
+            debugger
+            console.log("inside");
             this.setState({
                 disable: false,
                 traceError: this.props.traceError
             })
-        }
+        } 
+        // else if (this.state.disable) {
+        //     this.setState({
+        //         disable: false
+        //     });
+        // }
         if (this.props.txTrace !== prevProps.txTrace) {
             this.setState({
                 indx: 0,
                 olddebugObj: newdebugObj,
                 newdebugObj: this.props.txTrace[0],
-            })
-            this.setState({
                 disable: false,
                 traceError: ''
             })
@@ -91,7 +105,12 @@ class DebugDisplay extends Component<IProps, IState> {
         this.setState({ txHash: event.target.value });
     }
     stopDebug() {
-        this.setState({ indx: -1, debugObj: {} });
+        this.setState({
+            disable: false,
+            indx: -1,
+            debugObj: {},
+            traceError: ''
+        })
     }
     debugInto() {
         const { newdebugObj } = this.state;
@@ -120,7 +139,7 @@ class DebugDisplay extends Component<IProps, IState> {
 
     }
     public render() {
-        const { indx, debugObj, olddebugObj, newdebugObj, disable, traceError } = this.state;
+        const { indx, olddebugObj, newdebugObj, disable, traceError } = this.state;
         const { txTrace } = this.props;
 
         return (
@@ -133,13 +152,13 @@ class DebugDisplay extends Component<IProps, IState> {
                         </label>
                         <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} style={{ marginLeft: '10px' }} value="Debug" />
                     </form>
+                    <p>
+                        <button className="input text-subtle custom_button_css" onClick={this.stopDebug}>Stop</button>
+                    </p>
                 </div>
                 {
                     indx >= 0 &&
                     <div>
-                        <p>
-                            <button className="input text-subtle custom_button_css" onClick={this.stopDebug}>Stop</button>
-                        </p>
                         <div>
                             <p>OPCodes:</p>
                             <div>

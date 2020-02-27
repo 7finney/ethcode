@@ -365,7 +365,6 @@ process.on("message", async m => {
     // @ts-ignore
     process.send({ message: "AFTER" });
     call.on('data', (data: any) => {
-      // const result = JSON.parse(data.result);
       // @ts-ignore
       process.send({ debugResp: data.result });
     });

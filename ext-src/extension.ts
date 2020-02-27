@@ -292,6 +292,7 @@ class ReactPanel {
     console.dir("WorkerID: ", debugWorker.pid);
     console.dir("Debugging transaction with remix-debug...");
     debugWorker.on("message", (m: any) => {
+      // console.log(JSON.stringify(m));
       try {
         this._panel.webview.postMessage({ txTrace: JSON.parse(m.debugResp) });
       } catch (error) {
