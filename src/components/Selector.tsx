@@ -65,11 +65,10 @@ class Selector extends Component<IProps, IState> {
   }
 
   public componentDidUpdate(prevProps: any) {
-    const { options, defaultValue } = this.props;
+    const { options } = this.props;
     if (options !== prevProps.options) {
       this.setState({
-        options,
-        selectedOption: defaultValue
+        options
       })
     }
   }

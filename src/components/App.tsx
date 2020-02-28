@@ -338,10 +338,6 @@ class App extends Component<IProps, IState> {
           />
         )}
         {compiled && Object.keys(compiled.sources).length > 0 && (
-          // <Dropdown
-          //   files={Object.keys(compiled.sources)}
-          //   changeFile={this.changeFile}
-          // />
           <Selector
             options={files}
             getSelectedOption={this.changeFile}
@@ -356,7 +352,7 @@ class App extends Component<IProps, IState> {
               { value: 'ganache', label: 'Ganache' },
               { value: '3', label: 'Ropsten' },
               { value: '4', label: 'Rinkeby' },
-              { value: '5', label: "Goerli" }
+              { value: '5', label: "Görli" }
             ]}
             placeholder='Select Network'
             defaultValue={{ value: 'ganache', label: 'Ganache' }}
@@ -389,7 +385,7 @@ class App extends Component<IProps, IState> {
                   </p>
                 </div> : null
               }
-              {accounts && (
+              {accounts.length > 0 && (
                 <div>
                   <Selector
                     options={selctorAccounts}
