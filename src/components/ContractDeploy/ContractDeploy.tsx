@@ -219,7 +219,7 @@ class ContractDeploy extends Component<IProps, IState> {
                                 <label className="label_name">{x.name}:</label>
                                 {/* 
                                 // @ts-ignore */}
-                                <input className="custom_input_css" type={x.type} placeholder={x.name + ' arguments ' + `(${x.type})`} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
+                                <input className="custom_input_css" type={x.type} placeholder={`${x.name} arguments (${x.type})`} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
                               </div>
                             )
                           })
