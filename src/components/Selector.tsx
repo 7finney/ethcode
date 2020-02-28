@@ -5,6 +5,7 @@ interface IProps {
   options: any;
   getSelectedOption: any;
   placeholder: string;
+  defaultValue?: any | undefined;
 }
 interface IOpt {
   value: string;
@@ -27,10 +28,16 @@ class Selector extends Component<IProps, IState> {
   }
 
   componentDidMount() {
+    const { defaultValue } = this.props;
+    if (defaultValue) {
+      this.setState({ selectedOption: defaultValue })
+    }
     this.setState({ options: this.props.options })
+    console.log(JSON.stringify(this.state.options));
   }
 
   handleChange = (selectedOption: any) => {
+    console.log(JSON.stringify(selectedOption));
     this.setState({ selectedOption },() => {
       console.log(`Option selected:`, selectedOption);
       this.props.getSelectedOption(this.state.selectedOption);

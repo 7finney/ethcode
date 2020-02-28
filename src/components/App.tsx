@@ -19,7 +19,7 @@ import { solidityVersion } from '../helper';
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
 import Dropdown from "./Dropdown";
-import TestNetSelector from "./TestNetSelector";
+// import TestNetSelector from "./TestNetSelector";
 // import CompilerVersionSelector from "./CompilerVersionSelector";
 import Selector from './Selector';
 import ContractSelector from "./ContractSelector";
@@ -271,9 +271,11 @@ class App extends Component<IProps, IState> {
     });
   };
 
-  public getSelectedNetwork = (testNetId: any) => {
-    this.setState({ testNetId });
-    this.props.setTestNetId(testNetId);
+  public getSelectedNetwork = (testNet: any) => {
+    console.log(JSON.stringify(testNet.value));
+    this.setState({ testNetId: testNet.value }, () => {
+      this.props.setTestNetId(this.state.testNetId);
+    });
   }
   
   public getSelectedAccount = (account: any) => {
@@ -328,11 +330,24 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
-        {
+        {/* {
           <TestNetSelector
             getSelectedNetwork={this.getSelectedNetwork}
           />
-        }
+        } */}
+        {
+          <Selector
+            getSelectedOption={this.getSelectedNetwork}
+            options={[
+              { value: 'ganache', label: 'Ganache' },
+              { value: '3', label: 'Ropsten' },
+              { value: '4', label: 'Rinkeby' },
+              { value: '5', label: "Goerli" }
+            ]}
+            placeholder='Select Network'
+            defaultValue={{ value: 'ganache', label: 'Ganache' }}
+      />
+    }
         {
           transactionResult &&
           <div>
