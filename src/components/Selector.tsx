@@ -17,7 +17,36 @@ interface IState {
   options: IOpt[];
 }
 
- 
+const customStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: "#000",
+    color: "#fff",
+    menu: "20px",
+    borderColor: '#38ffAf'
+  }),
+
+  menu: (base: any) => ({
+    ...base,
+    color: "#fff",
+    background: "#000"
+  }),
+  menuList: (base: any) => ({
+    ...base,
+    color: "#fff",
+    background: "#000"
+  }),
+  singleValue: (base: any) => ({
+    ...base,
+    color: "#fff"
+  }),
+  option: (base: any, { isFocused }: any) => ({
+    ...base,
+    color: "#fff",
+    backgroundColor: isFocused ? "#aaa" : null
+  })
+};
+
 class Selector extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
@@ -27,28 +56,30 @@ class Selector extends Component<IProps, IState> {
     };
   }
 
-  componentDidMount() {
-    const { defaultValue } = this.props;
-    if (defaultValue) {
-      this.setState({ selectedOption: defaultValue })
-    }
-    this.setState({ options: this.props.options })
-    console.log(JSON.stringify(this.state.options));
+  public componentDidMount() {
+    const { defaultValue, options } = this.props;
+    this.setState({ 
+      options,
+      selectedOption: defaultValue
+    })
   }
 
-  componentDidUpdate(prevProps: any) {
-    const { options } = this.props
-    if (this.props.options !== prevProps.options) {
+  public componentDidUpdate(prevProps: any) {
+    const { options, defaultValue } = this.props;
+    if (options !== prevProps.options) {
       this.setState({
-        options
+        options,
+        selectedOption: defaultValue
       })
     }
   }
 
+  public componentWillUnmount() {
+    this.setState({ selectedOption: null, options: [] });
+  }
+
   handleChange = (selectedOption: any) => {
-    console.log(JSON.stringify(selectedOption));
-    this.setState({ selectedOption },() => {
-      console.log(`Option selected:`, selectedOption);
+    this.setState({ selectedOption }, () => {
       this.props.getSelectedOption(this.state.selectedOption);
     });
   };
@@ -58,14 +89,18 @@ class Selector extends Component<IProps, IState> {
     const { placeholder } = this.props;
  
     return (
-      <Select
-        placeholder={placeholder}
-        value={selectedOption}
-        onChange={this.handleChange}
-        options={options}
-      />
+      <div style={{ marginBottom: '30px' }}>
+        <Select
+          placeholder={placeholder}
+          value={selectedOption}
+          onChange={this.handleChange}
+          options={options}
+          className="select-width"
+          styles={customStyles}
+        />
+      </div>
     );
   }
 }
 
-export default Selector;  
+export default Selector;
