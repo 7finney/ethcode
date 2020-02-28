@@ -13,11 +13,15 @@ import {
   setTestNetId
 } from "../actions";
 import "./App.css";
+
+import { solidityVersion } from '../helper';
+
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
 import Dropdown from "./Dropdown";
 import TestNetSelector from "./TestNetSelector";
-import CompilerVersionSelector from "./CompilerVersionSelector";
+// import CompilerVersionSelector from "./CompilerVersionSelector";
+import Selector from './Selector';
 import ContractSelector from "./ContractSelector";
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
@@ -132,8 +136,9 @@ class App extends Component<IProps, IState> {
       }
 
       if (data.versions) {
+        var options = solidityVersion(data.versions.releases)
         this.setState({
-          availableVersions: data.versions.releases,
+          availableVersions: options,
           processMessage: ""
         });
       }
@@ -259,6 +264,7 @@ class App extends Component<IProps, IState> {
   }
 
   public getSelectedVersion = (version: any) => {
+    console.log(JSON.stringify(version));
     vscode.postMessage({
       command: "version",
       version: version.value
@@ -310,9 +316,10 @@ class App extends Component<IProps, IState> {
           <h1 className="App-title">ETHcode</h1>
         </header>
         {availableVersions && (fileType === 'solidity') && (
-          <CompilerVersionSelector
-            getSelectedVersion={this.getSelectedVersion}
-            availableVersions={availableVersions}
+          <Selector
+            getSelectedOption={this.getSelectedVersion}
+            options={availableVersions}
+            placeholder='Select Compiler Version'
           />
         )}
         {compiled && Object.keys(compiled.sources).length > 0 && (

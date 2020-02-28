@@ -63,18 +63,18 @@ class CompilerVersionSelector extends Component<IProps, IState> {
   }
 
   public componentDidMount() {
-    const options: any = [];
-    Object.keys(this.props.availableVersions).reverse().map((v: any, i: any) => {
-      const optItm: IOpt = {
-        value: this.props.availableVersions[v]
-          .split("soljson-")[1]
-          .split(".js")[0],
-        label: v
-      };
-      return options.push(optItm);
+    // const options: any = [];
+    // Object.keys(this.props.availableVersions).reverse().map((v: any, i: any) => {
+    //   const optItm: IOpt = {
+    //     value: this.props.availableVersions[v]
+    //       .split("soljson-")[1]
+    //       .split(".js")[0],
+    //     label: v
+    //   };
+    //   return options.push(optItm);
       
-    });
-    this.setState({ options });
+    // });
+    this.setState({ options: this.props.availableVersions });
   }
   public render() {
     const { selectedVersion } = this.state;

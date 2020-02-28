@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import Select from 'react-select';
 
 interface IProps {
-  availableVersions: any;
-  getSelectedVersion: any;
+  options: any;
+  getSelectedOption: any;
+  placeholder: string;
 }
 interface IOpt {
   value: string;
@@ -25,16 +26,24 @@ class Selector extends Component<IProps, IState> {
     };
   }
 
+  componentDidMount() {
+    this.setState({ options: this.props.options })
+  }
+
   handleChange = (selectedOption: any) => {
-    this.setState({ selectedOption });
-    console.log(`Option selected:`, selectedOption);
+    this.setState({ selectedOption },() => {
+      console.log(`Option selected:`, selectedOption);
+      this.props.getSelectedOption(this.state.selectedOption);
+    });
   };
 
   render() {
     const { selectedOption, options } = this.state;
+    const { placeholder } = this.props;
  
     return (
       <Select
+        placeholder={placeholder}
         value={selectedOption}
         onChange={this.handleChange}
         options={options}
