@@ -131,8 +131,10 @@
     "semver": "6.0.0",
     "shelljs": "^0.8.3",
     "solc": "0.5.7",
+    "source-map-loader": "^0.2.4",
     "style-loader": "0.23.1",
     "terser-webpack-plugin": "1.2.3",
+    "ts-loader": "^6.2.1",
     "ts-pnp": "1.1.2",
     "typescript": "3.4.5",
     "url-loader": "1.1.2",
@@ -153,12 +155,13 @@
     "@typescript-eslint/parser": "1.6.0",
     "copy-webpack-plugin": "^5.0.4",
     "redux-logger": "^3.0.6",
-    "vscode": "^1.1.34"
+    "vscode": "^1.1.34",
+    "webpack-cli": "^3.3.11"
   },
   "scripts": {
-    "vscode:prepublish": "node scripts/build.js && tsc -p tsconfig.extension.json",
+    "vscode:prepublish": "node scripts/build.js",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "build": "node scripts/build.js && tsc -p tsconfig.extension.json",
+    "build": "node scripts/build.js",
     "build:stats": "node scripts/build.js --json > stats.json",
     "test": "node scripts/test.js",
     "watch": "tsc -watch -p ./"

@@ -1,6 +1,5 @@
 import * as path from "path";
-// @ts-ignore
-import * as vscode from "vscode";
+// import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
 import * as uuid from "uuid/v1";
@@ -17,6 +16,7 @@ function getToken() {
       config.update("config", undefined);
 
       if (config.get("config")) {
+        // @ts-ignore
         const machineID = uuid();
         const url = `https://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
