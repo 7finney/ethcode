@@ -14,7 +14,7 @@ import {
 } from "../actions";
 import "./App.css";
 
-import { solidityVersion } from '../helper';
+import { solidityVersion, setSelectorOption } from '../helper';
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
@@ -66,6 +66,7 @@ interface IState {
   transactionResult: string;
   testNetId: string;
   fileType: string;
+  selctorAccounts: any;
 }
 interface IOpt {
   value: string;
@@ -90,6 +91,7 @@ class App extends Component<IProps, IState> {
       tabIndex: 0,
       txTrace: {},
       accounts: [],
+      selctorAccounts: [],
       currAccount: '',
       balance: 0,
       transactionResult: '',
@@ -195,6 +197,10 @@ class App extends Component<IProps, IState> {
         const balance = data.fetchAccounts.balance
         const currAccount = data.fetchAccounts.accounts[0]
         const accounts = data.fetchAccounts.accounts
+        // TODO: create a array of accounts
+        // var array = setSelectorOption(accounts)
+        // console.log(JSON.stringify(array));
+        this.setState({ selctorAccounts: setSelectorOption(accounts) })
         const accData = {
           balance,
           currAccount,
@@ -279,10 +285,10 @@ class App extends Component<IProps, IState> {
   }
   
   public getSelectedAccount = (account: any) => {
-    this.setState({ currAccount: account });
+    this.setState({ currAccount: account.value });
     vscode.postMessage({
       command: 'get-balance',
-      account: account
+      account: account.value
     });
   }
 
@@ -309,8 +315,11 @@ class App extends Component<IProps, IState> {
       accounts,
       balance,
       testNetId,
-      fileType
+      fileType,
+      selctorAccounts
     } = this.state;
+
+    console.log(JSON.stringify(selctorAccounts));
 
     return (
       <div className="App">
@@ -330,11 +339,6 @@ class App extends Component<IProps, IState> {
             changeFile={this.changeFile}
           />
         )}
-        {/* {
-          <TestNetSelector
-            getSelectedNetwork={this.getSelectedNetwork}
-          />
-        } */}
         {
           <Selector
             getSelectedOption={this.getSelectedNetwork}
@@ -378,9 +382,14 @@ class App extends Component<IProps, IState> {
               }
               {accounts && (
                 <div>
-                  <AccountsSelector
+                  {/* <AccountsSelector
                     availableAccounts={accounts}
                     getSelectedAccount={this.getSelectedAccount}
+                  /> */}
+                  <Selector
+                    options={selctorAccounts}
+                    getSelectedOption={this.getSelectedAccount}
+                    placeholder='Select Accounts'
                   />
                   <div className="account_balance">
                     <b>Account Balance: </b> {balance}

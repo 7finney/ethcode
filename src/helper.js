@@ -10,3 +10,16 @@ export function solidityVersion(versions) {
   });
   return options;
 }
+
+export function setSelectorOption(optionsArray) {
+  console.log("setSelectorOption");
+  var options = [];
+  optionsArray.map(obj => {
+    const optItm = {
+      value: obj,
+      label: obj
+    };
+    options.push(optItm);
+  });
+  return options;
+}

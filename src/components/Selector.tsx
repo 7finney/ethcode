@@ -36,6 +36,15 @@ class Selector extends Component<IProps, IState> {
     console.log(JSON.stringify(this.state.options));
   }
 
+  componentDidUpdate(prevProps: any) {
+    const { options } = this.props
+    if (this.props.options !== prevProps.options) {
+      this.setState({
+        options
+      })
+    }
+  }
+
   handleChange = (selectedOption: any) => {
     console.log(JSON.stringify(selectedOption));
     this.setState({ selectedOption },() => {
