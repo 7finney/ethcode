@@ -219,7 +219,7 @@ class ContractDeploy extends Component<IProps, IState> {
                                 <label className="label_name">{x.name}:</label>
                                 {/* 
                                 // @ts-ignore */}
-                                <input className="custom_input_css" type={x.type} placeholder={x.type} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
+                                <input className="custom_input_css" type={x.type} placeholder={`${x.name} arguments (${x.type})`} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
                               </div>
                             )
                           })
@@ -237,8 +237,8 @@ class ContractDeploy extends Component<IProps, IState> {
               <label className="label_name" style={{ marginRight: '10px' }}>Gas Supply:</label>
               {
                 (gasSupply > 0) ?
-                  <input type="number" className="input custom_input_css" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)} /> :
-                  <input type="number" className="input custom_input_css" value="" id="deployGas" onChange={(e) => this.handleChange(e)} />
+                  <input type="number" placeholder='click on "get gas estimate" ' className="input custom_input_css" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)} /> :
+                  <input type="number" placeholder='click on "get gas estimate" ' className="input custom_input_css" value="" id="deployGas" onChange={(e) => this.handleChange(e)} />
               }
             </div>
             <div style={{ marginBottom: '5px' }}>
@@ -253,8 +253,8 @@ class ContractDeploy extends Component<IProps, IState> {
           </div>
           <div>
             <form onSubmit={this.handleCall} className="form_align" >
-              <input type="text" className="custom_input_css" style={{ marginRight: '5px' }} name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput} />
-              <input type="text" className="custom_input_css" name="methodName" onChange={this.handleMethodnameInput} />
+              <input type="text" className="custom_input_css" placeholder='Enter contract address' style={{ marginRight: '5px' }} name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput} />
+              <input type="text" className="custom_input_css" placeholder='Enter contract function name' name="methodName" onChange={this.handleMethodnameInput} />
               {
                 methodName !== '' && methodInputs !== '[]' &&
                 <div className="json_input_container" style={{ marginTop: '10px' }}>
