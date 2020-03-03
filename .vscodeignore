@@ -12,3 +12,4 @@ ext-src/**
 *.ts
 *.sol
 .gitignore
+node_modules/

@@ -4,31 +4,32 @@
     "outDir": "build",
     "target": "es5",
     "rootDir": ".",
-    "lib": [
-      "dom",
-      "es6"
-    ],
+    "lib": ["dom", "es6"],
     "sourceMap": true,
     "allowJs": true,
     "jsx": "react",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
+    "module": "es6",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "typeRoots": [
-      "./@types",
-      "./node_modules/@types"
+    "typeRoots": ["./node_modules/@types"],
+    "types": [
+      "vscode",
+      "uuid",
+      "react-tabs",
+      "node",
+      "jest",
+      "react",
+      "react-dom",
+      "react-redux",
+      "redux-logger"
     ]
   },
-  "include": [
-    "src",
-    "ext-src"
-  ],
+  "include": ["src", "ext-src"],
   "exclude": [
     "node_modules",
     ".vscode-test",
@@ -37,7 +38,6 @@
     "acceptance-tests",
     "webpack",
     "jest",
-    "src/setupTests.ts",
-    ".vscode-test"
+    "src/setupTests.ts"
   ]
 }

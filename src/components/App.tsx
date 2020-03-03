@@ -67,8 +67,19 @@ interface IOpt {
   value: string;
   label: string;
 }
+
+const vsCodeFunction = Function(`
+  // forgive me for my sins
+  if (typeof acquireVsCodeApi == 'function') {
+    return acquireVsCodeApi();
+  } else {
+    return undefined;
+  }
+  `);
+const vscode = vsCodeFunction();
 // @ts-ignore
-const vscode = acquireVsCodeApi(); // eslint-disable-line
+// declare var acquireVsCodeApi: any;
+// const vscode = acquireVsCodeApi(); // eslint-disable-line
 class App extends Component<IProps, IState> {
   public state: IState;
   constructor(props: IProps) {
