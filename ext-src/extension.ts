@@ -16,7 +16,7 @@ function getToken() {
 
       if (!config.get("ethcodeToken")) {
         const machineID = uuid();
-        const url = `http://auth.ethco.de/getToken/${machineID}`;
+        const url = `http://localhost/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token };
         config.update("ethcodeToken", value);
@@ -67,6 +67,9 @@ export function activate(context: vscode.ExtensionContext) {
         editorContent,
         fileName
       );
+      ReactPanel.currentPanel.createAccount();
+      console.log("hello");
+      
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
       if (!ReactPanel.currentPanel) {
@@ -139,6 +142,7 @@ class ReactPanel {
         } else if (message.command === 'get-balance') {
           this.getBalance(message.account);
         } else if (message.command === 'run-genToken') {
+<<<<<<< HEAD
           getToken()
           .then(() => success('token is generated successfully'))
           .catch(error => console.error(error))
@@ -154,6 +158,26 @@ class ReactPanel {
               }
             }
           })
+=======
+          try {
+            ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+            ReactPanel.currentPanel.getAccounts();
+          } catch (error) {
+            console.error(error);
+          }
+          // getToken().then(() => {
+          //   if (ReactPanel.currentPanel) {
+          //     ReactPanel.currentPanel.getAccounts();
+          //   } else {
+          //     try {
+          //       ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
+          //       ReactPanel.currentPanel.getAccounts();
+          //     } catch (error) {
+          //       console.error(error);
+          //     }
+          //   }
+          // }).catch(console.error);
+>>>>>>> checking for deploy without httpProvider in web3
         }
       },
       null,

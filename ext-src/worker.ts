@@ -389,25 +389,25 @@ process.on("message", async m => {
   }
   if (m.command == "create-Account") {
     const payload = JSON.parse(m.payload)
-    const c = {
-      to: payload.to,
-      from: payload.from,
-      data: payload.data,
-      value: payload.value,
-      gas: payload.gas
-    };
-    // const pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
+    // const c = {
+    //   to: payload.to,
+    //   from: payload.from,
+    //   data: payload.data,
+    //   value: payload.value,
+    //   gas: payload.gas
+    // };
+    const pvtKey = "c3b4f0f8a48349503107fe3499a84d1a24cde3ec49d2d9a11bda6cacd23d8ea2";
     const privateKey = Buffer.from(
-      payload.pvtKey,
+      pvtKey,
       'hex',
     )
-    // const c = {
-    //   to: "0x05e26fcE6c34f17D59897Bcb7e82eBa1372A7f83",
-    //   // data: Web3.utils.utf8ToHex("Hello"),
-    //   data: "",
-    //   value: 27,
-    //   gas: 97000
-    // };
+    const c = {
+      to: "0x05e26fcE6c34f17D59897Bcb7e82eBa1372A7f83",
+      // data: Web3.utils.utf8ToHex("Hello"),
+      data: "",
+      value: 27,
+      gas: 97000
+    };
     const call = client_call_client.CreateRawTransaction(JSON.stringify(c), meta, (err: any, responses: any) => {
       if (err) {
         console.log("err", err);
