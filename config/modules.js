@@ -33,17 +33,17 @@ function getAdditionalModulePaths(options = {}) {
   }
 
   // Allow the user set the `baseUrl` to `appSrc`.
-  if (path.relative(paths.appSrc, baseUrlResolved) === '') {
-    return [paths.appSrc];
-  }
+  // if (path.relative(paths.appSrc, baseUrlResolved) === '') {
+  //   return [paths.appSrc];
+  // }
 
-  // Otherwise, throw an error.
-  throw new Error(
-    chalk.red.bold(
-      "Your project's `baseUrl` can only be set to `src` or `node_modules`." +
-        ' Create React App does not support other values at this time.'
-    )
-  );
+  // // Otherwise, throw an error.
+  // throw new Error(
+  //   chalk.red.bold(
+  //     "Your project's `baseUrl` can only be set to `src` or `node_modules`." +
+  //       ' Create React App does not support other values at this time.'
+  //   )
+  // );
 }
 
 function getModules() {
