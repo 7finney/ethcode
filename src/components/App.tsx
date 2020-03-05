@@ -77,9 +77,6 @@ const vsCodeFunction = Function(`
   }
   `);
 const vscode = vsCodeFunction();
-// @ts-ignore
-// declare var acquireVsCodeApi: any;
-// const vscode = acquireVsCodeApi(); // eslint-disable-line
 class App extends Component<IProps, IState> {
   public state: IState;
   constructor(props: IProps) {

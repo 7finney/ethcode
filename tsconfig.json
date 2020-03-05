@@ -31,7 +31,7 @@
       "vscode": ["node_modules/@types/vscode"]
     }
   },
-  "include": ["src", "ext-src"],
+  "include": ["src"],
   "exclude": [
     "node_modules",
     ".vscode-test",

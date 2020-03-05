@@ -1,8 +1,9 @@
 // @ts-nocheck
 import React, { Component } from "react";
 import "./ContractDeploy.css";
-import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
+const JSONPretty = require('react-json-pretty');
+
 
 interface IProps {
   contractName: string;
@@ -22,7 +23,7 @@ interface IState {
   constructorInput: object[];
   gasSupply: number;
   error: Error | null;
-  deployed: object;
+  deployed: Object;
   methodName: string;
   deployedAddress: string;
   methodInputs: string;
