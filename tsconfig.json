@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "src",
     "outDir": "build",
     "target": "es5",
-    "rootDir": ".",
     "lib": ["dom", "es6"],
     "sourceMap": true,
     "allowJs": true,

@@ -26,7 +26,6 @@ const getClientEnvironment = require("./env");
 const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
 const ForkTsCheckerWebpackPlugin = require("react-dev-utils/ForkTsCheckerWebpackPlugin");
 const typescriptFormatter = require("react-dev-utils/typescriptFormatter");
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const postcssNormalize = require("postcss-normalize");
 const CopyPlugin = require("copy-webpack-plugin");
@@ -271,8 +270,7 @@ module.exports = function(webpackEnv) {
         // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
         // please link the files into your node_modules/ and let module-resolution kick in.
         // Make sure your source files are compiled, as they will not be processed in any way.
-        new ModuleScopePlugin(paths.appSrc, [paths.appPackageJson]),
-        new TsconfigPathsPlugin({ configFile: paths.appTsConfig })
+        new ModuleScopePlugin(paths.appSrc, [paths.appPackageJson])
       ]
     },
     resolveLoader: {
