@@ -388,7 +388,7 @@ process.on("message", async m => {
     });
   }
   if (m.command == "create-Account") {
-    const payload = JSON.parse(m.payload)
+    // const payload = JSON.parse(m.payload)
     // const c = {
     //   to: payload.to,
     //   from: payload.from,
@@ -396,14 +396,14 @@ process.on("message", async m => {
     //   value: payload.value,
     //   gas: payload.gas
     // };
-    const pvtKey = "c3b4f0f8a48349503107fe3499a84d1a24cde3ec49d2d9a11bda6cacd23d8ea2";
+    const pvtKey = "19338e41c2f765ccca363cce98ae85b47c94909a4291906e4c0d0004df94f5b7";
     const privateKey = Buffer.from(
       pvtKey,
       'hex',
     )
     const c = {
-      to: "0x05e26fcE6c34f17D59897Bcb7e82eBa1372A7f83",
-      // data: Web3.utils.utf8ToHex("Hello"),
+      to: "0x90fabea94cddbddfe36544b59bf0a1794c060d91",
+      from: "0xc7ed1d0adc27ad133b376dee5cb5e3158dcffd7d",
       data: "",
       value: 27,
       gas: 97000
@@ -432,6 +432,8 @@ process.on("message", async m => {
         const callData = {
           signedTX: JSON.stringify(finalTransaction)
         }
+        // @ts-ignore
+        process.send({ responses: JSON.stringify(finalTransaction) });
 
         const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, transactionReceipt: any) => {
           if (err) {
