@@ -120,6 +120,7 @@ module.exports = function(webpackEnv) {
   };
 
   return {
+    target: 'node',
     mode: isEnvProduction ? "production" : isEnvDevelopment && "development",
     // Stop compilation early in production
     bail: isEnvProduction,
@@ -141,10 +142,9 @@ module.exports = function(webpackEnv) {
       // the line below with these two lines if you prefer the stock client:
       // require.resolve('webpack-dev-server/client') + '?/',
       // require.resolve('webpack/hot/dev-server'),
-      isEnvDevelopment &&
-        require.resolve("react-dev-utils/webpackHotDevClient"),
+      isEnvDevelopment && require.resolve("react-dev-utils/webpackHotDevClient"),
       // Finally, this is your app's code:
-      // paths.extensionIndexJS,
+      paths.extensionIndexJS,
       paths.appIndexJs,
       // We include the app code last so that if there is a runtime error during
       // initialization, it doesn't blow up the WebpackDevServer client, and
@@ -244,6 +244,9 @@ module.exports = function(webpackEnv) {
         })
       ]
     },
+    externals: {
+      vscode: 'commonjs vscode'
+    },
     resolve: {
       // This allows you to set a fallback for where Webpack should look for modules.
       // We placed these paths second because we want `node_modules` to "win"
@@ -289,7 +292,10 @@ module.exports = function(webpackEnv) {
           test: /\.(ts|tsx)$/,
           use: [
             {
-              loader: "awesome-typescript-loader"
+              loader: "awesome-typescript-loader",
+              options: {
+                // configFileName: paths.extTsConfig
+              }
             }
           ],
           exclude: /node_modules/

@@ -26,10 +26,7 @@
       "react-dom",
       "react-redux",
       "redux-logger"
-    ],
-    "paths": {
-      "vscode": ["node_modules/@types/vscode"]
-    }
+    ]
   },
   "include": ["src"],
   "exclude": [

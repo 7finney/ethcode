@@ -30,7 +30,7 @@
     "onCommand:ethcode.refactor",
     "onCommand:ethcode.runTest"
   ],
-  "main": "./build/ext-src/extension.js",
+  "main": "ext-src/extension.ts",
   "contributes": {
     "commands": [
       {
