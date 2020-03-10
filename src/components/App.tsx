@@ -368,12 +368,16 @@ class App extends Component<IProps, IState> {
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
             <TabList className="react-tabs tab-padding">
               <div className="tab-container">
+                <Tab>Account</Tab>
                 <Tab>Main</Tab>
                 <Tab>Debug</Tab>
                 <Tab>Test</Tab>
               </div>
             </TabList>
 
+            <TabPanel className="react-tab-panel">
+              Account Panel
+            </TabPanel>
             <TabPanel className="react-tab-panel">
               {!compiled ?
                 <div className="instructions">
