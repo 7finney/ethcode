@@ -14,9 +14,7 @@ function getToken() {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
 
-      const token = !config.get("ethcodeToken");
-
-      if (token) {
+      if (!config.get("ethcodeToken")) {
         const machineID = uuid();
         const url = `https://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
@@ -141,9 +139,10 @@ class ReactPanel {
         } else if (message.command === 'get-balance') {
           this.getBalance(message.account);
         } else if (message.command === 'run-genToken') {
-          getToken().catch(error => {
-            console.error(error);
-          }).finally(() => {
+          getToken()
+          .then(() => success('token is generated successfully'))
+          .catch(error => console.error(error))
+          .finally(() => {
             if (ReactPanel.currentPanel) {
               ReactPanel.currentPanel.getAccounts();
             } else {
