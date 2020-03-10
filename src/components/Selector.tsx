@@ -1,16 +1,17 @@
-// @ts-ignore
-import React, { Component } from "react";
-// @ts-ignore
-import Select from "react-select";
+import React, { Component } from 'react';
+import Select from 'react-select';
 
 interface IProps {
-  files: any;
-  changeFile: (val: any) => void;
+  options: any;
+  getSelectedOption: any;
+  placeholder: string;
+  defaultValue?: any | undefined;
 }
 interface IOpt {
   value: string;
   label: string;
 }
+
 interface IState {
   selectedOption: any;
   options: IOpt[];
@@ -46,35 +47,50 @@ const customStyles = {
   })
 };
 
-class Dropdown extends Component<IProps, IState> {
-  public state = {
-    selectedOption: null,
-    options: new Array<IOpt>()
-  };
+class Selector extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
-    const { options } = this.state;
-    props.files.map((file: string) => {
-      const optItm: IOpt = {
-        value: file,
-        label: file.substring(file.lastIndexOf('/') + 1)
-      };
-      return options.push(optItm);
-    });
+    this.state = {
+      selectedOption: null,
+      options: [] 
+    };
   }
+
+  public componentDidMount() {
+    const { defaultValue, options } = this.props;
+    this.setState({ 
+      options,
+      selectedOption: defaultValue
+    })
+  }
+
+  public componentDidUpdate(prevProps: any) {
+    const { options } = this.props;
+    if (options !== prevProps.options) {
+      this.setState({
+        options
+      })
+    }
+  }
+
   public componentWillUnmount() {
     this.setState({ selectedOption: null, options: [] });
   }
-  public handleChange = (selectedOption: any) => {
-    this.setState({ selectedOption });
-    this.props.changeFile(selectedOption);
+
+  handleChange = (selectedOption: any) => {
+    this.setState({ selectedOption }, () => {
+      this.props.getSelectedOption(this.state.selectedOption);
+    });
   };
-  public render() {
+
+  render() {
     const { selectedOption, options } = this.state;
+    const { placeholder } = this.props;
+ 
     return (
       <div style={{ marginBottom: '30px' }}>
         <Select
-          placeholder="Select Files"
+          placeholder={placeholder}
           value={selectedOption}
           onChange={this.handleChange}
           options={options}
@@ -85,4 +101,5 @@ class Dropdown extends Component<IProps, IState> {
     );
   }
 }
-export default Dropdown;
+
+export default Selector;

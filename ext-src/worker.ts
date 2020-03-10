@@ -48,7 +48,6 @@ const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
   client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('192.168.0.16:50053', grpc.credentials.createInsecure());
 
 } catch (e) {
   // @ts-ignore
@@ -373,9 +372,8 @@ process.on("message", async m => {
     // @ts-ignore
     process.send({ message: "AFTER" });
     call.on('data', (data: any) => {
-      const result = JSON.parse(data.result);
       // @ts-ignore
-      process.send({ debugResp: result });
+      process.send({ debugResp: data.result });
     });
     call.on('end', function() {
       process.exit(0);

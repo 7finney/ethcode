@@ -75,6 +75,7 @@
     "@grpc/proto-loader": "^0.5.2",
     "@primer/octicons-react": "^9.1.1",
     "@svgr/webpack": "4.1.0",
+    "@types/react-select": "^3.0.10",
     "@types/react-tabs": "^2.3.1",
     "@types/uuid": "^3.4.6",
     "axios": "^0.19.1",
@@ -145,7 +146,6 @@
   "devDependencies": {
     "@types/jest": "24.0.13",
     "@types/node": "^12.0.2",
-    "@types/react": "^16.9.3",
     "@types/react-dom": "16.8.4",
     "@types/react-redux": "^7.1.0",
     "@types/redux-logger": "^3.0.7",

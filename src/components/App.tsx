@@ -13,19 +13,17 @@ import {
   setTestNetId
 } from "../actions";
 import "./App.css";
+
+import { solidityVersion, setSelectorOption, setFileSelectorOptions } from '../helper';
+
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
-import Dropdown from "./Dropdown";
-import TestNetSelector from "./TestNetSelector";
-import CompilerVersionSelector from "./CompilerVersionSelector";
-import ContractSelector from "./ContractSelector";
+import Selector from './Selector';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
-import AccountsSelector from "./AccountsSelector";
-import Notifications from "./Notification";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -56,12 +54,16 @@ interface IState {
   deployedResult: string;
   tabIndex: number,
   txTrace: object;
+  traceError: string;
   accounts: string[];
   currAccount: string;
   balance: number;
   transactionResult: string;
   testNetId: string;
   fileType: string;
+  selctorAccounts: any;
+  contracts: any;
+  files: any;
 }
 interface IOpt {
   value: string;
@@ -75,22 +77,26 @@ class App extends Component<IProps, IState> {
     super(props);
     this.state = {
       message: [],
-      compiled: "",
+      compiled: '',
       error: null,
-      fileName: "",
-      contractName: "",
-      processMessage: "",
-      availableVersions: "",
+      fileName: '',
+      contractName: '',
+      processMessage: '',
+      availableVersions: '',
       gasEstimate: 0,
-      deployedResult: "",
+      deployedResult: '',
       tabIndex: 0,
       txTrace: {},
       accounts: [],
-      currAccount: "",
+      selctorAccounts: [],
+      contracts: [],
+      files: [],
+      currAccount: '',
       balance: 0,
-      transactionResult: "",
-      testNetId: "",
-      fileType: ''
+      transactionResult: '',
+      testNetId: '',
+      fileType: '',
+      traceError: ''
     };
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
@@ -101,7 +107,7 @@ class App extends Component<IProps, IState> {
       if (data.fileType) {
         this.setState({
           fileType: data.fileType
-        })
+        });
       }
 
       if (data.compiled) {
@@ -117,7 +123,17 @@ class App extends Component<IProps, IState> {
         if (compiled.errors && compiled.errors.length > 0) {
           this.setState({ message: compiled.errors });
         }
-        this.setState({ compiled, fileName, processMessage: "", contractName: Object.keys(compiled.contracts[fileName])[0] });
+        var contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
+        var files = setFileSelectorOptions(Object.keys(compiled.sources))
+        this.setState({
+          
+          compiled,
+          fileName,
+          processMessage: "",
+          contractName: Object.keys(compiled.contracts[fileName])[0],
+          contracts: contractsArray,
+          files
+        });
       }
 
       if (data.processMessage) {
@@ -131,8 +147,9 @@ class App extends Component<IProps, IState> {
       }
 
       if (data.versions) {
+        var options = solidityVersion(data.versions.releases)
         this.setState({
-          availableVersions: data.versions.releases,
+          availableVersions: options,
           processMessage: ""
         });
       }
@@ -163,14 +180,14 @@ class App extends Component<IProps, IState> {
       if (data._importFileCb) {
         return;
       }
-      if(data.errors) {
+      if (data.errors) {
         this.setState({ error: data.errors });
       }
-      if(data.gasEstimate) {
+      if (data.gasEstimate) {
         // @ts-ignore
         this.setState({ gasEstimate: data.gasEstimate });
       }
-      if(data.deployedResult) {
+      if (data.deployedResult) {
         const result = data.deployedResult.deployedResult
         this.props.setDeployedResult(result);
         this.setState({ deployedResult: data.deployedResult.deployedResult });
@@ -178,7 +195,10 @@ class App extends Component<IProps, IState> {
       if (data.txTrace) {
         this.setState({ txTrace: data.txTrace });
       }
-      if(data.callResult) {
+      if (data.traceError) {
+        this.setState({ traceError: data.traceError });
+      }
+      if (data.callResult) {
         const result = data.callResult;
         this.props.setCallResult(result);
       }
@@ -186,6 +206,7 @@ class App extends Component<IProps, IState> {
         const balance = data.fetchAccounts.balance
         const currAccount = data.fetchAccounts.accounts[0]
         const accounts = data.fetchAccounts.accounts
+        this.setState({ selctorAccounts: setSelectorOption(accounts) })
         const accData = {
           balance,
           currAccount,
@@ -194,10 +215,10 @@ class App extends Component<IProps, IState> {
         await this.props.setAccountBalance(accData)
         this.setState({ accounts: this.props.accounts, currAccount: this.props.currAccount, balance: this.props.accountBalance });
       }
-      if(data.transactionResult) {
+      if (data.transactionResult) {
         this.setState({ transactionResult: data.transactionResult });
       }
-      if(data.balance) {
+      if (data.balance) {
         const accData = {
           balance: data.balance,
           currAccount: this.state.currAccount
@@ -213,9 +234,9 @@ class App extends Component<IProps, IState> {
     });
   }
 
-  componentDidUpdate(_: any, prevState: IState) {
+  componentDidUpdate(_: any) {
 
-    if(this.props.accounts !== this.state.accounts) {
+    if (this.props.accounts !== this.state.accounts) {
       this.setState({
         accounts: this.props.accounts
       })
@@ -224,9 +245,8 @@ class App extends Component<IProps, IState> {
     if (this.props.testNetId !== this.state.testNetId) {
       this.setState({
         testNetId: this.props.testNetId
-      })
+      });
     }
-
   }
 
   private handleTransactionSubmit(event: any) {
@@ -239,12 +259,12 @@ class App extends Component<IProps, IState> {
       amount: data.get("amount")
     };
     try {
-     vscode.postMessage({
-      command: "send-ether",
-      payload: transactionInfo
-     });
+      vscode.postMessage({
+        command: "send-ether",
+        payload: transactionInfo
+      });
     } catch (err) {
-     this.setState({ error: err });
+      this.setState({ error: err });
     }
   }
   public changeFile = (selectedOpt: IOpt) => {
@@ -252,7 +272,7 @@ class App extends Component<IProps, IState> {
   };
 
   public changeContract = (selectedOpt: IOpt) => {
-    this.setState({ contractName: selectedOpt })
+    this.setState({ contractName: selectedOpt.value })
   }
 
   public getSelectedVersion = (version: any) => {
@@ -262,16 +282,17 @@ class App extends Component<IProps, IState> {
     });
   };
 
-  public getSelectedNetwork = (testNetId: any) => {
-    this.setState({ testNetId });
-    this.props.setTestNetId(testNetId);
+  public getSelectedNetwork = (testNet: any) => {
+    this.setState({ testNetId: testNet.value }, () => {
+      this.props.setTestNetId(this.state.testNetId);
+    });
   }
-  
+
   public getSelectedAccount = (account: any) => {
-    this.setState({ currAccount: account });
+    this.setState({ currAccount: account.value });
     vscode.postMessage({
       command: 'get-balance',
-      account: account
+      account: account.value
     });
   }
 
@@ -292,35 +313,50 @@ class App extends Component<IProps, IState> {
       tabIndex,
       contractName,
       txTrace,
+      traceError,
       currAccount,
       transactionResult,
       accounts,
       balance,
       testNetId,
-      fileType
+      fileType,
+      selctorAccounts,
+      contracts,
+      files
     } = this.state;
 
     return (
       <div className="App">
-        <Notifications />
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
         {availableVersions && (fileType === 'solidity') && (
-          <CompilerVersionSelector
-            getSelectedVersion={this.getSelectedVersion}
-            availableVersions={availableVersions}
+          <Selector
+            getSelectedOption={this.getSelectedVersion}
+            options={availableVersions}
+            placeholder='Select Compiler Version'
+            defaultValue={availableVersions[0]}
           />
         )}
         {compiled && Object.keys(compiled.sources).length > 0 && (
-          <Dropdown
-            files={Object.keys(compiled.sources)}
-            changeFile={this.changeFile}
+          <Selector
+            options={files}
+            getSelectedOption={this.changeFile}
+            placeholder='Select Files'
+            defaultValue={files[0]}
           />
         )}
         {
-          <TestNetSelector
-            getSelectedNetwork={this.getSelectedNetwork}
+          <Selector
+            getSelectedOption={this.getSelectedNetwork}
+            options={[
+              { value: 'ganache', label: 'Ganache' },
+              { value: '3', label: 'Ropsten' },
+              { value: '4', label: 'Rinkeby' },
+              { value: '5', label: "Görli" }
+            ]}
+            placeholder='Select Network'
+            defaultValue={{ value: 'ganache', label: 'Ganache' }}
           />
         }
         {
@@ -340,8 +376,7 @@ class App extends Component<IProps, IState> {
             </TabList>
 
             <TabPanel className="react-tab-panel">
-              {
-                !compiled ?
+              {!compiled ?
                 <div className="instructions">
                   <p>
                     <pre className="hot-keys"><b>ctrl+alt+c</b> - Compile contracts</pre>
@@ -351,11 +386,13 @@ class App extends Component<IProps, IState> {
                   </p>
                 </div> : null
               }
-              {accounts && (
+              {accounts.length > 0 && (
                 <div>
-                  <AccountsSelector
-                    availableAccounts={accounts}
-                    getSelectedAccount={this.getSelectedAccount}
+                  <Selector
+                    options={selctorAccounts}
+                    getSelectedOption={this.getSelectedAccount}
+                    defaultValue={selctorAccounts[0]}
+                    placeholder='Select Accounts'
                   />
                   <div className="account_balance">
                     <b>Account Balance: </b> {balance}
@@ -374,14 +411,15 @@ class App extends Component<IProps, IState> {
                 (compiled && fileName) &&
                 <div className="container-margin">
                   <div className="contractSelect_container">
-                    <ContractSelector
-                      contractName={Object.keys(compiled.contracts[fileName]).map((contractName: string) => contractName)}
-                      changeContract={this.changeContract}
+                    <Selector
+                      options={contracts}
+                      getSelectedOption={this.changeContract}
+                      placeholder='Select Contract'
                     />
                   </div>
                 </div>
               }
-              { (compiled && contractName) &&
+              {(compiled && contractName) &&
                 <div className="compiledOutput">
                   <div id={contractName} className="contract-container">
                     {
@@ -409,10 +447,10 @@ class App extends Component<IProps, IState> {
                       />
                     }
                   </div>
-                </div>  }
+                </div>}
             </TabPanel>
             <TabPanel className="react-tab-panel">
-              <DebugDisplay deployedResult={deployedResult} vscode={vscode} testNetId={testNetId} txTrace={txTrace} />
+              <DebugDisplay deployedResult={deployedResult} vscode={vscode} testNetId={testNetId} txTrace={txTrace} traceError={traceError} />
             </TabPanel>
             <TabPanel className="react-tab-panel">
               {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
