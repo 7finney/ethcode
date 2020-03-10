@@ -17,6 +17,25 @@ message ClientCallResponse {
     string result = 1;
 }
 
+
+message CreateRawTransactionReq {
+    string req = 1;   
+}
+
+message CreateRawTransactionResp {
+    string rawTX = 1;
+}
+
+message DeploySignedTransactionReq{
+    string signedTX = 1;
+}
+
+message DeploySignedTransactionResp {
+    string txReciept = 1;
+}
+
 service ClientCallService {
     rpc RunDeploy(ClientCallRequest) returns (stream ClientCallResponse) {};
+    rpc CreateRawTransaction(CreateRawTransactionReq) returns (CreateRawTransactionResp) {};
+    rpc DeploySignedTransaction(DeploySignedTransactionReq) returns (DeploySignedTransactionResp) {};
 }

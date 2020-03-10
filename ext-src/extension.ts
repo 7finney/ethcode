@@ -18,7 +18,7 @@ function getToken() {
 
       if (config.get("config")) {
         const machineID = uuid();
-        const url = `https://auth.ethco.de/getToken/${machineID}`;
+        const url = `http://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token }
         config.update("config", value);
@@ -210,6 +210,24 @@ class ReactPanel {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
     return fork(path.join(__dirname, "vyp-worker.js"));
+  }
+  public createAccount(): void {
+    const accWorker = this.createWorker();
+    accWorker.on("message", (m: any) => {
+      if(m.responses){
+        console.log("Responses: ")
+        console.log(m.responses);
+      }
+      if(m.transactionReceipt) {
+        console.log("transactionReceipt: ")
+        console.log(m.transactionReceipt);
+      }
+    });
+    accWorker.send({
+      command: "create-Account",
+      payload: "",
+      jwtToken
+    });
   }
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
     // solidity compiler code goes bellow

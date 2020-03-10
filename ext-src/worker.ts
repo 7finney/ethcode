@@ -6,6 +6,11 @@ import axios from "axios";
 import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
+const EthereumTx = require('ethereumjs-tx')
+const sha3 = require('./hash/sha3')
+
+// console.log("ETHhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ")
+// console.log(w3.eth.accounts);
 
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
@@ -106,7 +111,7 @@ process.on("message", async m => {
   meta.add('authorization', m.jwtToken);
   if (m.command === "compile") {
     const input = m.payload;
-    if(m.version === 'latest') {
+    if (m.version === 'latest') {
       try {
         const output = await solc.compile(JSON.stringify(input), findImports);
         // @ts-ignore
@@ -117,7 +122,7 @@ process.on("message", async m => {
       }
     }
     solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-      if(err) {
+      if (err) {
         // @ts-ignore
         process.send({ error: e });
       } else {
@@ -135,7 +140,7 @@ process.on("message", async m => {
       }
     });
   }
-  if(m.command === "fetch_compiler_verison") {
+  if (m.command === "fetch_compiler_verison") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")
       .then((res: any) => {
@@ -147,7 +152,7 @@ process.on("message", async m => {
         process.send({ error: e });
       });
   }
-  if(m.command === "run-test") {
+  if (m.command === "run-test") {
     // TODO: move parsing to extension.ts
     // const sources = JSON.parse(m.payload);
     const rt = {
@@ -159,19 +164,19 @@ process.on("message", async m => {
     const call = remix_tests_client.RunTests(rt);
     call.on('data', (data: any) => {
       const result = JSON.parse(data.result);
-      if(result.filePath) {
+      if (result.filePath) {
         findImports(result.filePath);
       } else {
         // @ts-ignore
         process.send({ utResp: data });
       }
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
   }
- // Fetch accounts and balance
-  if(m.command === "get-accounts") {
+  // Fetch accounts and balance
+  if (m.command === "get-accounts") {
     const c = {
       callInterface: {
         command: 'get-accounts'
@@ -187,7 +192,7 @@ process.on("message", async m => {
     });
 
 
-    call.on('data', (data: any) =>{
+    call.on('data', (data: any) => {
       // @ts-ignore
       const result = JSON.parse(data.result);
       // @ts-ignore
@@ -195,7 +200,7 @@ process.on("message", async m => {
     })
   }
   // send wei_value to a address
-  if(m.command === "send-ether") {
+  if (m.command === "send-ether") {
     const transactionInfo = m.transactionInfo;
     const c = {
       callInterface: {
@@ -218,7 +223,7 @@ process.on("message", async m => {
     })
   }
   // fetch balance of a account
-  if(m.command === "get-balance") {
+  if (m.command === "get-balance") {
     const c = {
       callInterface: {
         command: 'get-balance',
@@ -239,7 +244,7 @@ process.on("message", async m => {
     })
   }
   // Deploy
-  if(m.command === "deploy-contract") {
+  if (m.command === "deploy-contract") {
     if (m.jwtToken) {
       // @ts-ignore
       process.send({ jwtToken: m.jwtToken });
@@ -272,16 +277,16 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ deployedResult: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     })
   }
   // Method call
-  if(m.command === "contract-method-call") {
+  if (m.command === "contract-method-call") {
     const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
       abi,
@@ -310,16 +315,16 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ callResult: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     })
   }
   // Gas Estimate
-  if(m.command === "get-gas-estimate") {
+  if (m.command === "get-gas-estimate") {
     const { abi, bytecode, params } = m.payload;
     const inp = {
       abi,
@@ -345,13 +350,13 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ gasEstimate: data.result });
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     });
   }
   // Debug transaction
-  if(m.command === "debug-transaction") {
+  if (m.command === "debug-transaction") {
     const dt = {
       debugInterface: {
         command: 'debug',
@@ -368,10 +373,86 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ debugResp: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    });
+  }
+  if (m.command == "create-Account") {
+    const payload = JSON.parse(m.payload)
+    const c = {
+      to: payload.to,
+      from: payload.from,
+      data: payload.data,
+      value: payload.value,
+      gas: payload.gas
+    };
+    // const pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
+    const privateKey = Buffer.from(
+      payload.pvtKey,
+      'hex',
+    )
+    // const c = {
+    //   to: "0x05e26fcE6c34f17D59897Bcb7e82eBa1372A7f83",
+    //   // data: Web3.utils.utf8ToHex("Hello"),
+    //   data: "",
+    //   value: 27,
+    //   gas: 97000
+    // };
+    const call = client_call_client.CreateRawTransaction(JSON.stringify(c), meta, (err: any, responses: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        const tx = JSON.parse(responses.rawTX);
+        // @ts-ignore
+        process.send({ responses: tx });
+        const unsignedTransaction = new EthereumTx(tx)
+        unsignedTransaction.sign(privateKey)
+        const rlpEncoded = unsignedTransaction.serialize().toString('hex');
+        const rawTransaction = '0x' + rlpEncoded;
+        var transactionHash = sha3.keccak256(rawTransaction);
+        var finalTransaction = {
+          messageHash: '0x' + Buffer.from(unsignedTransaction.hash(false)).toString('hex'),
+          v: '0x' + Buffer.from(unsignedTransaction.v).toString('hex'),
+          r: '0x' + Buffer.from(unsignedTransaction.r).toString('hex'),
+          s: '0x' + Buffer.from(unsignedTransaction.s).toString('hex'),
+          rawTransaction: rawTransaction,
+          transactionHash: transactionHash
+        };
+
+        const callData = {
+          signedTX: JSON.stringify(finalTransaction)
+        }
+
+        const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, transactionReceipt: any) => {
+          if (err) {
+            console.log("err", err);
+          } else {
+            // @ts-ignore
+            process.send({ transactionReceipt });
+          }
+        });
+        resp.on('data', (data: any) => {
+          const transactionReceipt = JSON.parse(data.result);
+          // @ts-ignore
+          process.send({ transactionReceipt });
+        });
+        resp.on('end', function () {
+          process.exit(0);
+        });
+        resp.on('error', function (err: Error) {
+          // @ts-ignore
+          process.send({ "error": err });
+        });
+      }
+    });
+    call.on('end', function () {
+      process.exit(0);
+    });
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     });
