@@ -30,7 +30,7 @@
     "onCommand:ethcode.refactor",
     "onCommand:ethcode.runTest"
   ],
-  "main": "ext-src/extension.ts",
+  "main": "build/static/js/extension.bundle",
   "contributes": {
     "commands": [
       {
@@ -75,6 +75,7 @@
     "@grpc/proto-loader": "^0.5.2",
     "@primer/octicons-react": "^9.1.1",
     "@svgr/webpack": "4.1.0",
+    "@types/vscode": "1.26.0",
     "awesome-typescript-loader": "^5.2.1",
     "axios": "^0.19.1",
     "babel-eslint": "10.0.1",
@@ -151,7 +152,6 @@
     "@types/react-tabs": "^2.3.1",
     "@types/redux-logger": "^3.0.7",
     "@types/uuid": "^3.4.6",
-    "@types/vscode": "^1.42.0",
     "@typescript-eslint/eslint-plugin": "1.6.0",
     "@typescript-eslint/parser": "1.6.0",
     "copy-webpack-plugin": "^5.0.4",
@@ -160,7 +160,7 @@
   },
   "scripts": {
     "vscode:prepublish": "node scripts/build.js",
-    "build": "node scripts/build.js",
+    "build": "tsc -p . && node scripts/build.js",
     "build:stats": "node scripts/build.js --json > stats.json",
     "test": "node scripts/test.js",
     "watch": "tsc -watch -p ./"
