@@ -6,11 +6,8 @@ import axios from "axios";
 import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-const EthereumTx = require('ethereumjs-tx')
-const sha3 = require('./hash/sha3')
-
-// console.log("ETHhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ")
-// console.log(w3.eth.accounts);
+const EthereumTx = require('ethereumjs-tx');
+const sha3 = require('./hash/sha3');
 
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
@@ -52,7 +49,7 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });

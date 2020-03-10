@@ -5,27 +5,50 @@ import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
 import * as uuid from "uuid/v1";
 import axios from "axios";
+import { exists } from "fs";
 // @ts-ignore
 var jwtToken: any;
 
+async function genToken() {
+  const machineID = uuid();
+  const url = `http://127.0.0.1:4040/getToken/${machineID}`;
+  const { data } = await axios.get(url);
+  return { "machineID": machineID, "token": data.token };
+}
+async function verifyToken(token: string) {
+  const url = `http://localhost:4040/verifyToken/${token}`;
+  const { data } = await axios.get(url);
+  if(data) {
+    return true;
+  } else {
+    return false;
+  }
+}
 function getToken() {
   return new Promise(async (resolve, reject) => {
     try {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
-
-      if (!config.get("ethcodeToken")) {
-        const machineID = uuid();
-        const url = `http://localhost:4040/getToken/${machineID}`;
-        const { data } = await axios.get(url);
-        const value = { "machineID": machineID, "token": data.token };
-        config.update("ethcodeToken", value);
-        jwtToken = data.token;
-        resolve(data.token);
+      // @ts-ignore
+      let { token } = config.get("ethcodeToken");
+      
+      if(token) {
+        // verify token
+        console.log("Verify: ", token);
+        const auth: boolean = await verifyToken(token);
+        if(auth) {
+          resolve(token);
+        } else {
+          // create new token
+          const tokenData = await genToken();
+          config.update("ethcodeToken", tokenData);
+          resolve(tokenData.token);
+        }
       } else {
-        // @ts-ignore
-        jwtToken = await config.get("ethcodeToken").token;
-        resolve(jwtToken);
+        // create new token
+        const tokenData = await genToken();
+        config.update("ethcodeToken", tokenData);
+        resolve(tokenData.token);
       }
     } catch (error) {
       reject();
@@ -68,8 +91,6 @@ export function activate(context: vscode.ExtensionContext) {
         fileName
       );
       ReactPanel.currentPanel.createAccount();
-      console.log("hello");
-      
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
       if (!ReactPanel.currentPanel) {
@@ -356,7 +377,7 @@ class ReactPanel {
       if (m.error) {
         error(m.error.details);
         if (m.error.code === 15 || m.error.code === 16) {
-          getToken();
+          // getToken();
           this.getAccounts();
         }
       }
