@@ -20,7 +20,7 @@ function getToken() {
         const machineID = uuid();
         const url = `https://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
-        const value = { "machineID": machineID, "token": data.token }
+        const value = { "machineID": machineID, "token": data.token };
         config.update("ethcodeToken", value);
         jwtToken = data.token;
         resolve(data.token);
@@ -50,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", () => {
       ReactPanel.createOrShow(context.extensionPath);
-      success('welcome to Ethcode')
+      success('welcome to Ethcode');
     })
   );
   context.subscriptions.push(
@@ -290,7 +290,7 @@ class ReactPanel {
     });
     vyperWorker.on('message', (m) => {
       if (m.error) {
-        error(m.error)
+        error(m.error);
       }
       if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
@@ -336,8 +336,8 @@ class ReactPanel {
       if (m.error) {
         error(m.error.details);
         if (m.error.code === 15 || m.error.code === 16) {
-          getToken()
-          this.getAccounts()
+          getToken();
+          this.getAccounts();
         }
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
