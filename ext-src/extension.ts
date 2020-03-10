@@ -14,19 +14,19 @@ function getToken() {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
 
-      config.update("config", undefined);
+      const token = !config.get("ethcodeToken");
 
-      if (!config.get("config")) {
+      if (token) {
         const machineID = uuid();
         const url = `https://auth.ethco.de/getToken/${machineID}`;
         const { data } = await axios.get(url);
         const value = { "machineID": machineID, "token": data.token }
-        config.update("config", value);
+        config.update("ethcodeToken", value);
         jwtToken = data.token;
         resolve(data.token);
       } else {
         // @ts-ignore
-        jwtToken = await config.get("config").token;
+        jwtToken = await config.get("ethcodeToken").token;
         resolve(jwtToken);
       }
     } catch (error) {
@@ -141,7 +141,9 @@ class ReactPanel {
         } else if (message.command === 'get-balance') {
           this.getBalance(message.account);
         } else if (message.command === 'run-genToken') {
-          getToken().then(() => {
+          getToken().catch(error => {
+            console.error(error);
+          }).finally(() => {
             if (ReactPanel.currentPanel) {
               ReactPanel.currentPanel.getAccounts();
             } else {
@@ -152,9 +154,7 @@ class ReactPanel {
                 console.error(error);
               }
             }
-          }).catch(error => {
-            console.error(error);
-          });
+          })
         }
       },
       null,
@@ -330,7 +330,11 @@ class ReactPanel {
     const accountsWorker = this.createWorker();
     accountsWorker.on("message", (m: any) => {
       if (m.error) {
-        error(m.error.details)
+        error(m.error.details);
+        if (m.error.code === 15 || m.error.code === 16) {
+          getToken()
+          this.getAccounts()
+        }
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
     })
