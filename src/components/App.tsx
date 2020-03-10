@@ -21,6 +21,7 @@ import ContractDeploy from "./ContractDeploy";
 import Selector from './Selector';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
+import Account from './Account/Account';
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
@@ -376,7 +377,7 @@ class App extends Component<IProps, IState> {
             </TabList>
 
             <TabPanel className="react-tab-panel">
-              Account Panel
+              <Account />
             </TabPanel>
             <TabPanel className="react-tab-panel">
               {!compiled ?
