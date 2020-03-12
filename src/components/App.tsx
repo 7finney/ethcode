@@ -126,6 +126,7 @@ class App extends Component<IProps, IState> {
         var contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
         var files = setFileSelectorOptions(Object.keys(compiled.sources))
         this.setState({
+
           compiled,
           fileName,
           processMessage: "",
@@ -229,7 +230,7 @@ class App extends Component<IProps, IState> {
     });
     // Component mounted start getting gRPC things
     vscode.postMessage({
-      command: "run-genToken"
+      command: "run-getAccounts"
     });
   }
 
@@ -267,7 +268,15 @@ class App extends Component<IProps, IState> {
     }
   }
   public changeFile = (selectedOpt: IOpt) => {
-    this.setState({ fileName: selectedOpt.value });
+    this.setState({ fileName: selectedOpt.value }, () => {
+      this.changeContract({
+        value: `${Object.keys(this.state.compiled.contracts[this.state.fileName])[0]}`,
+        label: `${Object.keys(this.state.compiled.contracts[this.state.fileName])[0]}`
+      })
+      this.setState((preState: IState) => ({
+        contracts: setSelectorOption(Object.keys(preState.compiled.contracts[preState.fileName]))
+      }))
+    });
   };
 
   public changeContract = (selectedOpt: IOpt) => {
@@ -418,7 +427,7 @@ class App extends Component<IProps, IState> {
                   </div>
                 </div>
               }
-              {(compiled && contractName) &&
+              {(compiled && contractName && compiled.contracts[fileName][contractName]) &&
                 <div className="compiledOutput">
                   <div id={contractName} className="contract-container">
                     {
