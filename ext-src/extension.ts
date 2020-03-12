@@ -7,11 +7,12 @@ import * as uuid from "uuid/v1";
 import axios from "axios";
 // @ts-ignore
 var jwtToken: any;
-var machineID = uuid();
+const machineID = uuid();
 
 async function genToken() {
+  // const url = `https://auth.ethco.de/getToken/${machineID}`;
+  const url = `http://192.168.0.31:4040/getToken/${machineID}`;
   try {
-    const url = `https://auth.ethco.de/getToken/${machineID}`;
     const { data } = await axios.get(url);
     return { "machineID": machineID, "token": data.token };
   } catch (error) {
@@ -20,7 +21,8 @@ async function genToken() {
   }
 }
 async function verifyToken(token: string | unknown) {
-  const url = `https://auth.ethco.de/verifyToken/${token}`;
+  // const url = `https://auth.ethco.de/verifyToken/${token}`;
+  const url = `http://192.168.0.31:4040/verifyToken/${token}`;
   try {
     const { status } = await axios.get(url);
     if (status === 200) {
