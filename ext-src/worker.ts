@@ -49,7 +49,7 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 
 } catch (e) {
   // @ts-ignore
@@ -103,6 +103,48 @@ function findImports(path: any) {
     .catch((e: Error) => {
       throw e;
     });
+}
+
+function deployUnsignedTx(meta: any, tx: any, privateKey: any) {
+  const unsignedTransaction = new EthereumTx(tx)
+  unsignedTransaction.sign(privateKey)
+  const rlpEncoded = unsignedTransaction.serialize().toString('hex');
+  const rawTransaction = '0x' + rlpEncoded;
+  var transactionHash = sha3.keccak256(rawTransaction);
+  var finalTransaction = {
+    messageHash: '0x' + Buffer.from(unsignedTransaction.hash(false)).toString('hex'),
+    v: '0x' + Buffer.from(unsignedTransaction.v).toString('hex'),
+    r: '0x' + Buffer.from(unsignedTransaction.r).toString('hex'),
+    s: '0x' + Buffer.from(unsignedTransaction.s).toString('hex'),
+    rawTransaction: rawTransaction,
+    transactionHash: transactionHash
+  };
+  // @ts-ignore
+  process.send({ responses: finalTransaction });
+
+  const callData = {
+    signedTX: JSON.stringify(finalTransaction)
+  }
+  const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, transactionReceipt: any) => {
+    if (err) {
+      console.log("err", err);
+    } else {
+      // @ts-ignore
+      process.send({ deployedResult: transactionReceipt });
+    }
+  });
+  resp.on('data', (data: any) => {
+    const transactionReceipt = JSON.parse(data.txReciept);
+    // @ts-ignore
+    process.send({ deployedResult: transactionReceipt });
+  });
+  resp.on('end', function () {
+    process.exit(0);
+  });
+  resp.on('error', function (err: Error) {
+    // @ts-ignore
+    process.send({ "error": err });
+  });
 }
 
 process.on("message", async m => {
@@ -244,12 +286,58 @@ process.on("message", async m => {
     })
   }
   // Deploy
+  // if (m.command === "deploy-contract") {
+  //   if (m.jwtToken) {
+  //     // @ts-ignore
+  //     process.send({ jwtToken: m.jwtToken });
+  //   }
+  //   const { abi, bytecode, params, gasSupply } = m.payload;
+  //   const inp = {
+  //     abi,
+  //     bytecode,
+  //     params,
+  //     gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
+  //   };
+  //   const c = {
+  //     callInterface: {
+  //       command: 'deploy-contract',
+  //       payload: JSON.stringify(inp),
+  //       testnetId: m.testnetId
+  //     }
+  //   };
+  //   // @ts-ignore
+  //   process.send({ help: m.jwtToken });
+  //   const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+  //     if (err) {
+  //       console.log("err", err);
+  //     } else {
+  //       // @ts-ignore
+  //       process.send({ response });
+  //     }
+  //   });
+  //   call.on('data', (data: any) => {
+  //     // @ts-ignore
+  //     process.send({ deployedResult: data.result });
+  //   });
+  //   call.on('end', function () {
+  //     process.exit(0);
+  //   });
+  //   call.on('error', function (err: Error) {
+  //     // @ts-ignore
+  //     process.send({ "error": err });
+  //   })
+  // }
   if (m.command === "deploy-contract") {
     if (m.jwtToken) {
       // @ts-ignore
       process.send({ jwtToken: m.jwtToken });
     }
-    const { abi, bytecode, params, gasSupply } = m.payload;
+    const { abi, bytecode, params, gasSupply, /* pvtKey, */ from, to } = m.payload;
+    var pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
+    const privateKey = Buffer.from(
+      pvtKey,
+      'hex',
+    )
     const inp = {
       abi,
       bytecode,
@@ -274,8 +362,12 @@ process.on("message", async m => {
       }
     });
     call.on('data', (data: any) => {
+      var rawTX = JSON.parse(data.result);
+      rawTX['from'] = "0xc43c2b247a44873be24aa084cb6ca0266db36be7";
+      rawTX['to'] = to;
+      deployUnsignedTx(meta, rawTX, privateKey);
       // @ts-ignore
-      process.send({ deployedResult: data.result });
+      // process.send({ deployedResult: data.result });
     });
     call.on('end', function () {
       process.exit(0);
@@ -406,47 +498,7 @@ process.on("message", async m => {
       if (err) {
         console.log("err", err);
       } else {
-        const tx = JSON.parse(responses.rawTX);
-        // @ts-ignore
-        process.send({ responses: tx });
-        const unsignedTransaction = new EthereumTx(tx)
-        unsignedTransaction.sign(privateKey)
-        const rlpEncoded = unsignedTransaction.serialize().toString('hex');
-        const rawTransaction = '0x' + rlpEncoded;
-        var transactionHash = sha3.keccak256(rawTransaction);
-        var finalTransaction = {
-          messageHash: '0x' + Buffer.from(unsignedTransaction.hash(false)).toString('hex'),
-          v: '0x' + Buffer.from(unsignedTransaction.v).toString('hex'),
-          r: '0x' + Buffer.from(unsignedTransaction.r).toString('hex'),
-          s: '0x' + Buffer.from(unsignedTransaction.s).toString('hex'),
-          rawTransaction: rawTransaction,
-          transactionHash: transactionHash
-        };
-
-        const callData = {
-          signedTX: JSON.stringify(finalTransaction)
-        }
-
-        const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, transactionReceipt: any) => {
-          if (err) {
-            console.log("err", err);
-          } else {
-            // @ts-ignore
-            process.send({ transactionReceipt });
-          }
-        });
-        resp.on('data', (data: any) => {
-          const transactionReceipt = JSON.parse(data.result);
-          // @ts-ignore
-          process.send({ transactionReceipt });
-        });
-        resp.on('end', function () {
-          process.exit(0);
-        });
-        resp.on('error', function (err: Error) {
-          // @ts-ignore
-          process.send({ "error": err });
-        });
+        deployUnsignedTx(meta, responses.rawTX, privateKey);
       }
     });
     call.on('end', function () {

@@ -326,7 +326,9 @@ class ReactPanel {
         this._panel.webview.postMessage({ errors: m.error });
       }
       else {
-        this._panel.webview.postMessage({ deployedResult: m });
+        console.log("deployedResult: ")
+        console.log(m);
+        this._panel.webview.postMessage({ deployedResult: { deployedResult: JSON.stringify(m.responses) } });
       }
     });
     deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId});
