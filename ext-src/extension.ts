@@ -8,15 +8,20 @@ import axios from "axios";
 import { exists } from "fs";
 // @ts-ignore
 var jwtToken: any;
+const machineID = uuid();
 
 async function genToken() {
-  const machineID = uuid();
-  const url = `http://192.168.0.31:4040/getToken/${machineID}`;
-  const { data } = await axios.get(url);
-  return { "machineID": machineID, "token": data.token };
+  try {
+    const url = `https://auth.ethco.de/getToken/${machineID}`;
+    const { data } = await axios.get(url);
+    return { "machineID": machineID, "token": data.token };
+  } catch (error) {
+    errorToast("Something went worng");
+    return { "machineID": machineID, "token": null };
+  }
 }
-async function verifyToken(token: string) {
-  const url = `http://192.168.0.31:4040/verifyToken/${token}`;
+async function verifyToken(token: string | unknown) {
+  const url = `https://auth.ethco.de/verifyToken/${token}`;
   try {
     const { status } = await axios.get(url);
     if (status === 200) {
@@ -34,7 +39,7 @@ function getToken() {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
       // @ts-ignore
-      let { token } = config.get("ethcodeToken");
+      let token = config.get("ethcodeToken");
 
       if (token) {
         // verify token
@@ -77,9 +82,14 @@ function errorToast(msg: string) {
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", async () => {
-      ReactPanel.createOrShow(context.extensionPath);
-      await getToken();
-      success('Welcome to Ethcode');
+      try {
+        await getToken();
+      } catch (error) {
+        errorToast("Something went worng");
+      } finally {
+        ReactPanel.createOrShow(context.extensionPath);
+        success('Welcome to Ethcode');
+      }
     })
   );
   context.subscriptions.push(
