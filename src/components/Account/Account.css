@@ -1,5 +1,12 @@
 .account-container {
-  margin: 5px 0;
+  margin: 10px 0;
+  padding: 20px 0;
   height: 100%;
   border: 1px solid #38ffAf;
+  width: 100vw;
+}
+
+.row {
+  width: 100vw;
+  display: flex;
 }
