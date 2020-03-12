@@ -15,7 +15,7 @@
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
-            "outFiles": ["${workspaceRoot}/build/static/**/*.js"],
+            "outFiles": ["${workspaceRoot}/build/ext-src/extension.bundle.js"],
             "preLaunchTask": "npm: watch"
         },
         {

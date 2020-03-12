@@ -144,9 +144,9 @@ module.exports = function (webpackEnv) {
       // TODO UNCOMMENT LATER=============
       // isEnvDevelopment && require.resolve("react-dev-utils/webpackHotDevClient"),
       // Finally, this is your app's code:
-      extension: paths.extensionIndexJS,
+      "../../ext-src/extension": paths.extensionIndexJS,
       main: paths.appIndexJs,
-      libraryTarget: 'commonjs2',
+
       // We include the app code last so that if there is a runtime error during
       // initialization, it doesn't blow up the WebpackDevServer client, and
       // changing JS code would still trigger a refresh.
@@ -161,6 +161,7 @@ module.exports = function (webpackEnv) {
       filename: "static/js/[name].bundle.js",
       // TODO: remove this when upgrading to webpack 5
       futureEmitAssets: true,
+      libraryTarget: "commonjs2",
       // There are also additional JS chunk files if you use code splitting.
       chunkFilename: "static/js/[name].chunk.js",
       // We inferred the "public path" (such as / or /my-project) from homepage.
@@ -176,7 +177,7 @@ module.exports = function (webpackEnv) {
         (info => path.resolve(info.absoluteResourcePath).replace(/\\/g, "/"))
     },
     optimization: {
-      minimize: isEnvProduction,
+      minimize: false,
       minimizer: [
         // This is only used in production mode
         new TerserPlugin({
