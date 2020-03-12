@@ -7,48 +7,89 @@ import * as uuid from "uuid/v1";
 import axios from "axios";
 // @ts-ignore
 var jwtToken: any;
+var machineID = uuid();
+
+async function genToken() {
+  try {
+    const url = `https://auth.ethco.de/getToken/${machineID}`;
+    const { data } = await axios.get(url);
+    return { "machineID": machineID, "token": data.token };
+  } catch (error) {
+    errorToast("Something went worng");
+    return { "machineID": machineID, "token": null };
+  }
+}
+async function verifyToken(token: string | unknown) {
+  const url = `https://auth.ethco.de/verifyToken/${token}`;
+  try {
+    const { status } = await axios.get(url);
+    if (status === 200) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return false;
+  }
+}
 
 function getToken() {
   return new Promise(async (resolve, reject) => {
     try {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
+      // @ts-ignore
+      let token = config.get("ethcodeToken");
 
-      if (!config.get("ethcodeToken")) {
-        const machineID = uuid();
-        const url = `https://auth.ethco.de/getToken/${machineID}`;
-        const { data } = await axios.get(url);
-        const value = { "machineID": machineID, "token": data.token };
-        config.update("ethcodeToken", value);
-        jwtToken = data.token;
-        resolve(data.token);
+      if (token) {
+        // verify token
+        const auth: boolean = await verifyToken(token);
+        if (auth) {
+          jwtToken = token;
+          resolve(token);
+        } else {
+          // create new token
+          const tokenData = await genToken();
+          config.update("ethcodeToken", tokenData);
+          jwtToken = tokenData.token;
+          resolve(tokenData.token);
+        }
       } else {
-        // @ts-ignore
-        jwtToken = await config.get("ethcodeToken").token;
-        resolve(jwtToken);
+        // create new token
+        const tokenData = await genToken();
+        config.update("ethcodeToken", tokenData);
+        jwtToken = tokenData.token;
+        resolve(tokenData.token);
       }
     } catch (error) {
-      reject();
+      error(error);
+      reject(error);
     }
   });
 }
 
 function success(msg: string) {
-  vscode.window.showInformationMessage(msg, 'Success')
+  vscode.window.showInformationMessage(msg, 'Dismiss')
 }
 
 function warning(msg: string) {
-  vscode.window.showWarningMessage(msg, 'Warning')
+  vscode.window.showWarningMessage(msg, 'Dismiss')
 }
-function error(msg: string) {
-  vscode.window.showErrorMessage(msg, 'Error')
+function errorToast(msg: string) {
+  vscode.window.showErrorMessage(msg, 'Dismiss')
 }
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.activate", () => {
-      ReactPanel.createOrShow(context.extensionPath);
-      success('welcome to Ethcode');
+    vscode.commands.registerCommand("ethcode.activate", async () => {
+      try {
+        await getToken();
+      } catch (error) {
+        errorToast("Something went worng");
+      } finally {
+        ReactPanel.createOrShow(context.extensionPath);
+        success('welcome to Ethcode');
+      }
     })
   );
   context.subscriptions.push(
@@ -138,22 +179,17 @@ class ReactPanel {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
           this.getBalance(message.account);
-        } else if (message.command === 'run-genToken') {
-          getToken()
-          .then(() => success('token is generated successfully'))
-          .catch(error => console.error(error))
-          .finally(() => {
-            if (ReactPanel.currentPanel) {
+        } else if (message.command === 'run-getAccounts') {
+          if (ReactPanel.currentPanel) {
+            ReactPanel.currentPanel.getAccounts();
+          } else {
+            try {
+              ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
               ReactPanel.currentPanel.getAccounts();
-            } else {
-              try {
-                ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
-                ReactPanel.currentPanel.getAccounts();
-              } catch (error) {
-                console.error(error);
-              }
+            } catch (error) {
+              errorToast(error);
             }
-          })
+          }
         }
       },
       null,
@@ -289,7 +325,7 @@ class ReactPanel {
     });
     vyperWorker.on('message', (m) => {
       if (m.error) {
-        error(m.error);
+        errorToast(m.error);
       }
       if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
@@ -333,11 +369,7 @@ class ReactPanel {
     const accountsWorker = this.createWorker();
     accountsWorker.on("message", (m: any) => {
       if (m.error) {
-        error(m.error.details);
-        if (m.error.code === 15 || m.error.code === 16) {
-          getToken();
-          this.getAccounts();
-        }
+        errorToast(m.error.details);
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
     })

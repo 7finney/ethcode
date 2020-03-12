@@ -230,7 +230,7 @@ class App extends Component<IProps, IState> {
     });
     // Component mounted start getting gRPC things
     vscode.postMessage({
-      command: "run-genToken"
+      command: "run-getAccounts"
     });
   }
 
