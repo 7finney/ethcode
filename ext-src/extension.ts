@@ -10,8 +10,7 @@ var jwtToken: any;
 const machineID = uuid();
 
 async function genToken() {
-  // const url = `https://auth.ethco.de/getToken/${machineID}`;
-  const url = `http://192.168.0.31:4040/getToken/${machineID}`;
+  const url = `https://auth.ethco.de/getToken/${machineID}`;
   try {
     const { data } = await axios.get(url);
     return { "machineID": machineID, "token": data.token };
@@ -21,8 +20,7 @@ async function genToken() {
   }
 }
 async function verifyToken(token: string | unknown) {
-  // const url = `https://auth.ethco.de/verifyToken/${token}`;
-  const url = `http://192.168.0.31:4040/verifyToken/${token}`;
+  const url = `https://auth.ethco.de/verifyToken/${token}`;
   try {
     const { status } = await axios.get(url);
     if (status === 200) {
