@@ -12,10 +12,7 @@ function createKeyPair(path: string, pswd: string) {
   var keyObject = keythereum.dump(pswd, bareKey.privateKey, bareKey.salt, bareKey.iv, options);
   // @ts-ignore
   process.send({ pubAddress: keyObject.address });
-  fs.writeFile(`${path}/keystore/${keyObject.address}.json`, JSON.stringify(keyObject), function (err) {
-    if (err) throw err;
-    console.log('Saved!');
-  });
+  fs.writeFileSync(`${path}/keystore/${keyObject.address}.json`, JSON.stringify(keyObject));
 }
 
 // delete privateKey against address
