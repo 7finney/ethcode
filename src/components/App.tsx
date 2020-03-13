@@ -24,6 +24,7 @@ import DebugDisplay from "./DebugDisplay";
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import Account from "./Account/Account";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -64,6 +65,7 @@ interface IState {
   selctorAccounts: any;
   contracts: any;
   files: any;
+  accountName: string;
 }
 interface IOpt {
   value: string;
@@ -96,7 +98,8 @@ class App extends Component<IProps, IState> {
       transactionResult: '',
       testNetId: '',
       fileType: '',
-      traceError: ''
+      traceError: '',
+      accountName: ''
     };
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
@@ -297,7 +300,7 @@ class App extends Component<IProps, IState> {
   }
 
   public getSelectedAccount = (account: any) => {
-    this.setState({ currAccount: account.value });
+    this.setState({ currAccount: account.value, accountName: account.label });
     vscode.postMessage({
       command: 'get-balance',
       account: account.value
@@ -330,7 +333,8 @@ class App extends Component<IProps, IState> {
       fileType,
       selctorAccounts,
       contracts,
-      files
+      files,
+      accountName
     } = this.state;
 
     return (
@@ -377,11 +381,18 @@ class App extends Component<IProps, IState> {
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
             <TabList className="react-tabs tab-padding">
               <div className="tab-container">
+                <Tab>Account</Tab>
                 <Tab>Main</Tab>
                 <Tab>Debug</Tab>
                 <Tab>Test</Tab>
               </div>
             </TabList>
+
+            {/* Account Panel */}
+
+            <TabPanel>
+              <Account accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
+            </TabPanel>
 
             <TabPanel className="react-tab-panel">
               {!compiled ?
@@ -396,12 +407,7 @@ class App extends Component<IProps, IState> {
               }
               {accounts.length > 0 && (
                 <div>
-                  <Selector
-                    options={selctorAccounts}
-                    getSelectedOption={this.getSelectedAccount}
-                    defaultValue={selctorAccounts[0]}
-                    placeholder='Select Accounts'
-                  />
+                  <b>Account: </b> { accountName }
                   <div className="account_balance">
                     <b>Account Balance: </b> {balance}
                   </div>
