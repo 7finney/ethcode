@@ -343,7 +343,9 @@ class ReactPanel {
   }
   private invokeAccWorker(context: vscode.ExtensionContext /* TODO: arguments accordingly */): void {
     const accWorker = this.createAccWorker();
+    console.dir("Account worker invoked with WorkerID : ", accWorker.pid);
     // TODO: implementation according to the acc_system frontend
+    accWorker.send({ command: "create-account", payload: passwd })
   }
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();

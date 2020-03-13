@@ -13,6 +13,8 @@ interface IState {
   currAccount: string,
   balance: number
 }
+// @ts-ignore
+const vscode = acquireVsCodeApi(); // eslint-disable-line
 
 class Account extends Component<IProps, IState> {
   constructor(props: IProps) {
@@ -22,6 +24,7 @@ class Account extends Component<IProps, IState> {
       currAccount: '',
       balance: 0
     }
+    this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
   }
 
   componentDidMount() {
@@ -42,6 +45,18 @@ class Account extends Component<IProps, IState> {
 
   getSelectedAccount = (account: any) => {
     this.props.getSelectedAccount(account)
+  }
+  // generate keypair
+  handleGenKeyPair = () => {
+    let password = "";
+    try {
+      vscode.postMessage({
+        command: "gen-keypair",
+        payload: password
+      });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   render() {
@@ -117,7 +132,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">Create New Account </label>
           </div>
           <div className="input-container">
-            <button className="acc-button custom_button_css">Genarate key pair</button>
+            <button className="acc-button custom_button_css" onClick={this.handleGenKeyPair}>Genarate key pair</button>
           </div>
         </div>
 

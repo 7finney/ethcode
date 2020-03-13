@@ -381,19 +381,13 @@ class App extends Component<IProps, IState> {
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
             <TabList className="react-tabs tab-padding">
               <div className="tab-container">
-                <Tab>Account</Tab>
                 <Tab>Main</Tab>
+                <Tab>Account</Tab>
                 <Tab>Debug</Tab>
                 <Tab>Test</Tab>
               </div>
             </TabList>
-
-            {/* Account Panel */}
-
-            <TabPanel>
-              <Account accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
-            </TabPanel>
-
+            {/* Main panel */}
             <TabPanel className="react-tab-panel">
               {!compiled ?
                 <div className="instructions">
@@ -463,9 +457,15 @@ class App extends Component<IProps, IState> {
                   </div>
                 </div>}
             </TabPanel>
+            {/* Account Panel */}
+            <TabPanel>
+              <Account accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
+            </TabPanel>
+            {/* Debug panel */}
             <TabPanel className="react-tab-panel">
               <DebugDisplay deployedResult={deployedResult} vscode={vscode} testNetId={testNetId} txTrace={txTrace} traceError={traceError} />
             </TabPanel>
+            {/* Test panel */}
             <TabPanel className="react-tab-panel">
               {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
             </TabPanel>
