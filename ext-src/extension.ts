@@ -259,6 +259,9 @@ class ReactPanel {
     // });
     return fork(path.join(__dirname, "vyp-worker.js"));
   }
+  private createAccWorker(): ChildProcess {
+    return fork(path.join(__dirname, "accWorker.js"));
+  }
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
     // solidity compiler code goes bellow
     var input = {
@@ -337,6 +340,10 @@ class ReactPanel {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
     });
+  }
+  private invokeAccWorker(context: vscode.ExtensionContext /* TODO: arguments accordingly */): void {
+    const accWorker = this.createAccWorker();
+    // TODO: implementation according to the acc_system frontend
   }
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
