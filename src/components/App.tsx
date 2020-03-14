@@ -459,7 +459,7 @@ class App extends Component<IProps, IState> {
             </TabPanel>
             {/* Account Panel */}
             <TabPanel>
-              <Account accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
+              <Account vscode={vscode} accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
             </TabPanel>
             {/* Debug panel */}
             <TabPanel className="react-tab-panel">

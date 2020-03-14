@@ -12,6 +12,9 @@ function createKeyPair(path: string, pswd: string) {
   var keyObject = keythereum.dump(pswd, bareKey.privateKey, bareKey.salt, bareKey.iv, options);
   // @ts-ignore
   process.send({ pubAddress: keyObject.address });
+  if (!fs.existsSync(`${path}/keystore`)) {
+    fs.mkdirSync(`${path}/keystore`);
+  }
   fs.writeFileSync(`${path}/keystore/${keyObject.address}.json`, JSON.stringify(keyObject));
 }
 
@@ -32,7 +35,7 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 // @ts-ignore
 process.on('message', (m) => {
   if (m.command == 'create-account') {
-    createKeyPair(m.path, m.pswd);
+    createKeyPair(m.ksPath, m.pswd);
   }
   if (m.command == 'extract-privateKey') {
     extractPvtKey(m.keyStorePath, m.address, m.pswd);

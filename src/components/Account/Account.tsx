@@ -6,6 +6,7 @@ interface IProps {
   accounts: string[],
   getSelectedAccount: any,
   accBalance: number,
+  vscode: any
 }
 
 interface IState {
@@ -13,12 +14,10 @@ interface IState {
   currAccount: string,
   balance: number
 }
-// @ts-ignore
-const vscode = acquireVsCodeApi(); // eslint-disable-line
 
 class Account extends Component<IProps, IState> {
   constructor(props: IProps) {
-    super(props)
+    super(props);
     this.state = {
       accounts: [],
       currAccount: '',
@@ -47,7 +46,8 @@ class Account extends Component<IProps, IState> {
     this.props.getSelectedAccount(account)
   }
   // generate keypair
-  handleGenKeyPair = () => {
+  private handleGenKeyPair() {
+    const { vscode } = this.props;
     let password = "";
     try {
       vscode.postMessage({

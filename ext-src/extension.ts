@@ -190,6 +190,8 @@ class ReactPanel {
               errorToast(error);
             }
           }
+        } else if (message.command === 'gen-keypair') {
+          this.genKeyPair(message.payload, this._extensionPath);
         }
       },
       null,
@@ -341,11 +343,15 @@ class ReactPanel {
       }
     });
   }
-  private invokeAccWorker(context: vscode.ExtensionContext /* TODO: arguments accordingly */): void {
+  private genKeyPair(password: string, ksPath: string): void {
+    console.log("ksPath would be: ", ksPath);
+    console.log("Password is: ", password);
+    
+    
     const accWorker = this.createAccWorker();
     console.dir("Account worker invoked with WorkerID : ", accWorker.pid);
     // TODO: implementation according to the acc_system frontend
-    accWorker.send({ command: "create-account", payload: passwd })
+    accWorker.send({ command: "create-account", pswd: password, ksPath });
   }
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
@@ -579,8 +585,7 @@ class ReactPanel {
 
 function getNonce() {
   let text = "";
-  const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   for (let i = 0; i < 32; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
