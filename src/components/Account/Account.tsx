@@ -123,7 +123,16 @@ class Account extends Component<IProps, IState> {
         <div className="row">
           <div className="label-container"></div>
           <div className="input-container">
-            <button className="acc-button custom_button_css" onClick={this.deleteAccount}>Delete Account</button>
+            <button
+              className="acc-button custom_button_css"
+              style={{
+                background: '#fa4138',
+                color: 'white',
+                border: '1px solid #fa4138'
+              }}
+              onClick={this.deleteAccount}>
+                Delete Account
+            </button>
           </div>
         </div>
 
