@@ -286,54 +286,55 @@ process.on("message", async m => {
     })
   }
   // Deploy
-  // if (m.command === "deploy-contract") {
-  //   if (m.jwtToken) {
-  //     // @ts-ignore
-  //     process.send({ jwtToken: m.jwtToken });
-  //   }
-  //   const { abi, bytecode, params, gasSupply } = m.payload;
-  //   const inp = {
-  //     abi,
-  //     bytecode,
-  //     params,
-  //     gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
-  //   };
-  //   const c = {
-  //     callInterface: {
-  //       command: 'deploy-contract',
-  //       payload: JSON.stringify(inp),
-  //       testnetId: m.testnetId
-  //     }
-  //   };
-  //   // @ts-ignore
-  //   process.send({ help: m.jwtToken });
-  //   const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
-  //     if (err) {
-  //       console.log("err", err);
-  //     } else {
-  //       // @ts-ignore
-  //       process.send({ response });
-  //     }
-  //   });
-  //   call.on('data', (data: any) => {
-  //     // @ts-ignore
-  //     process.send({ deployedResult: data.result });
-  //   });
-  //   call.on('end', function () {
-  //     process.exit(0);
-  //   });
-  //   call.on('error', function (err: Error) {
-  //     // @ts-ignore
-  //     process.send({ "error": err });
-  //   })
-  // }
   if (m.command === "deploy-contract") {
     if (m.jwtToken) {
       // @ts-ignore
       process.send({ jwtToken: m.jwtToken });
     }
-    const { abi, bytecode, params, gasSupply, /* pvtKey, */ from, to } = m.payload;
-    var pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
+    const { abi, bytecode, params, gasSupply } = m.payload;
+    const inp = {
+      abi,
+      bytecode,
+      params,
+      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
+    };
+    const c = {
+      callInterface: {
+        command: 'deploy-contract',
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
+      }
+    };
+    // @ts-ignore
+    process.send({ help: m.jwtToken });
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ deployedResult: data.result });
+    });
+    call.on('end', function () {
+      process.exit(0);
+    });
+    call.on('error', function (err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    })
+  }
+  // custom Deploy
+  if (m.command === "custom-deploy-contract") {
+    if (m.jwtToken) {
+      // @ts-ignore
+      process.send({ jwtToken: m.jwtToken });
+    }
+    const { abi, bytecode, params, gasSupply, pvtKey, from, to } = m.payload;
+    // var pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
     const privateKey = Buffer.from(
       pvtKey,
       'hex',
@@ -363,7 +364,7 @@ process.on("message", async m => {
     });
     call.on('data', (data: any) => {
       var rawTX = JSON.parse(data.result);
-      rawTX['from'] = "0xc43c2b247a44873be24aa084cb6ca0266db36be7";
+      rawTX['from'] = from;
       rawTX['to'] = to;
       deployUnsignedTx(meta, rawTX, privateKey);
       // @ts-ignore
@@ -406,6 +407,56 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ callResult: data.result });
+    });
+    call.on('end', function () {
+      process.exit(0);
+    });
+    call.on('error', function (err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    })
+  }
+
+  // custom Method call
+  if (m.command === "custom-method-call") {
+    const { abi, address, methodName, params, gasSupply, deployAccount, pvtKey, from } = m.payload;
+    // var pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
+    const privateKey = Buffer.from(
+      pvtKey,
+      'hex',
+    )
+    const inp = {
+      abi,
+      address,
+      methodName,
+      params,
+      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
+      deployAccount
+    };
+    const c = {
+      callInterface: {
+        command: 'custom-method-call',
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
+      }
+    };
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ callResult: data.result });
+      var rawTX = JSON.parse(data.result);
+      rawTX['from'] = from;
+      rawTX['to'] = address;
+      deployUnsignedTx(meta, rawTX, privateKey);
+      // @ts-ignore
+      // process.send({ deployedResult: data.result });
     });
     call.on('end', function () {
       process.exit(0);
