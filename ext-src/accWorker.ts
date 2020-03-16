@@ -31,6 +31,23 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
   process.send({ privateKey: privateKey.toString('hex') });
 }
 
+// list all local addresses
+function listAddresses(keyStorePath: string) {
+  var localAddresses;
+  fs.readdir(keyStorePath, (err, files) => {
+    if(err) {
+      // @ts-ignore
+      process.send({ error:'Unable to scan directory: ' + err });
+    }
+    files.forEach((file) => {
+      var address = file.replace('.json', '');
+      localAddresses.push(address);
+    })
+  });
+  // @ts-ignore
+  process.send({ localAddresses: localAddresses });
+}
+
 // worker communication
 // @ts-ignore
 process.on('message', (m) => {
@@ -42,5 +59,8 @@ process.on('message', (m) => {
   }
   if (m.command == 'delete-keyPair') {
     deleteKeyPair(m.keyStorePath, m.address);
+  }
+  if(m.command == 'get-localAccounts') {
+    listAddresses(m.keyStorePath);
   }
 });
