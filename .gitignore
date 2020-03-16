@@ -28,3 +28,5 @@ yarn-error.log*
 
 # configs
 *config.yml
+# vscode
+.vscode/settings.json
