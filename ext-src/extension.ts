@@ -192,6 +192,9 @@ class ReactPanel {
           }
         } else if (message.command === 'gen-keypair') {
           this.genKeyPair(message.payload, this._extensionPath);
+        } else if (message.command === 'delete-keyPair') {
+          console.log("into delete");
+          this.deleteKeyPair(message.payload, this._extensionPath);
         }
       },
       null,
@@ -344,15 +347,32 @@ class ReactPanel {
     });
   }
   private genKeyPair(password: string, ksPath: string): void {
-    console.log("ksPath would be: ", ksPath);
-    console.log("Password is: ", password);
-    
-    
     const accWorker = this.createAccWorker();
     console.dir("Account worker invoked with WorkerID : ", accWorker.pid);
     // TODO: implementation according to the acc_system frontend
+    accWorker.on("message", (m: any) => {
+      console.log(JSON.stringify(m));
+      try {
+        this._panel.webview.postMessage({ publicAdd: m.pubAddress })
+      } catch (error) {
+        this._panel.webview.postMessage({ error: error })
+      }
+    })
     accWorker.send({ command: "create-account", pswd: password, ksPath });
   }
+
+  private deleteKeyPair(publicKey: string, keyStorePath: string) {
+    const accWorker = this.createAccWorker();
+    console.log("ksPath would be: ", keyStorePath);
+    console.log("publicKey is: ", publicKey);
+
+    accWorker.on("message", (m: any) => {
+      m.resp ? success(m.resp) : errorToast(m.error)
+    })
+    accWorker.send({ command: "delete-keyPair", address: publicKey, keyStorePath });
+
+  }
+
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
     console.dir("WorkerID: ", debugWorker.pid);

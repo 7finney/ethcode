@@ -139,7 +139,6 @@ class App extends Component<IProps, IState> {
         var contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
         var files = setFileSelectorOptions(Object.keys(compiled.sources))
         this.setState({
-
           compiled,
           fileName,
           processMessage: "",

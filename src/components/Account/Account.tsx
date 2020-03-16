@@ -13,7 +13,8 @@ interface IProps {
 interface IState {
   accounts: string[],
   currAccount: string,
-  balance: number
+  balance: number,
+  publicAddress: string
 }
 
 class Account extends Component<IProps, IState> {
@@ -22,7 +23,8 @@ class Account extends Component<IProps, IState> {
     this.state = {
       accounts: [],
       currAccount: '',
-      balance: 0
+      balance: 0,
+      publicAddress: ''
     }
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
   }
@@ -32,7 +34,20 @@ class Account extends Component<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: IProps, preState: IState) {
-    const { accounts, balance, currAccount } = this.state;
+    const { accounts, balance, publicAddress } = this.state;
+
+    window.addEventListener("message", async event => {
+      const { data } = event;
+
+      console.log("data from account");
+
+
+      if (data.publicAdd) {
+        console.log("data", JSON.stringify(data.publicAdd));
+        this.setState({ publicAddress: data.publicAdd })
+      }
+
+    })
 
     if (this.props.accounts !== accounts) {
       this.setState({ accounts: this.props.accounts })
@@ -49,7 +64,7 @@ class Account extends Component<IProps, IState> {
   // generate keypair
   private handleGenKeyPair() {
     const { vscode } = this.props;
-    let password = "";
+    let password = "qwerty";
     try {
       vscode.postMessage({
         command: "gen-keypair",
@@ -60,8 +75,23 @@ class Account extends Component<IProps, IState> {
     }
   }
 
+  private deleteAccount = () => {
+    const { vscode } = this.props;
+    console.log("deleteAccount");
+    const { publicAddress } = this.state;
+
+    try {
+      vscode.postMessage({
+        command: "delete-keyPair",
+        payload: publicAddress
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   render() {
-    const { accounts, balance } = this.state;
+    const { accounts, balance, publicAddress } = this.state;
 
     return (
       <div className="account_container">
@@ -86,6 +116,14 @@ class Account extends Component<IProps, IState> {
           </div>
           <div className="input-container">
             <input className="custom_input_css" value={balance} type="text" placeholder="account balance" />
+          </div>
+        </div>
+
+        {/* Account Delete */}
+        <div className="row">
+          <div className="label-container"></div>
+          <div className="input-container">
+            <button className="acc-button custom_button_css" onClick={this.deleteAccount}>Delete Account</button>
           </div>
         </div>
 
@@ -142,7 +180,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">Public key </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" type="text" placeholder="public key" />
+            <input className="custom_input_css" value={publicAddress} type="text" placeholder="public key" />
           </div>
         </div>
 

@@ -20,7 +20,14 @@ function createKeyPair(path: string, pswd: string) {
 
 // delete privateKey against address
 function deleteKeyPair(keyStorePath: string, address: string) {
-  fs.unlinkSync(`${keyStorePath}/keystore/${address}.json`);
+  try {
+    fs.unlinkSync(`${keyStorePath}/keystore/0x${address}.json`);
+    // @ts-ignore
+    process.send({ resp: "Account deleted successfully" })
+  } catch (error) {
+    // @ts-ignore
+    process.send({ error: error })
+  }
 }
 
 // extract privateKey against address
@@ -35,9 +42,9 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 function listAddresses(keyStorePath: string) {
   var localAddresses;
   fs.readdir(keyStorePath, (err, files) => {
-    if(err) {
+    if (err) {
       // @ts-ignore
-      process.send({ error:'Unable to scan directory: ' + err });
+      process.send({ error: 'Unable to scan directory: ' + err });
     }
     files.forEach((file) => {
       var address = file.replace('.json', '');
@@ -60,7 +67,7 @@ process.on('message', (m) => {
   if (m.command == 'delete-keyPair') {
     deleteKeyPair(m.keyStorePath, m.address);
   }
-  if(m.command == 'get-localAccounts') {
+  if (m.command == 'get-localAccounts') {
     listAddresses(m.keyStorePath);
   }
 });
