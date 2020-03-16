@@ -58,6 +58,9 @@ class Selector extends Component<IProps, IState> {
 
   public componentDidMount() {
     const { defaultValue, options } = this.props;
+    // console.log("componentDidMount");
+    // console.log(JSON.stringify(defaultValue));
+    
     this.setState({ 
       options,
       selectedOption: defaultValue
@@ -65,7 +68,18 @@ class Selector extends Component<IProps, IState> {
   }
 
   public componentDidUpdate(prevProps: any) {
-    const { options } = this.props;
+    const { options, defaultValue } = this.props;
+    // console.log("componentDidUpdate");
+    // console.log(JSON.stringify(this.props.defaultValue));
+
+    if (prevProps.defaultValue !== defaultValue) {
+      console.log("prevProps", JSON.stringify(prevProps.defaultValue));
+      console.log("Props", JSON.stringify(defaultValue));
+      this.setState({
+        selectedOption: defaultValue
+      })
+    }
+
     if (options !== prevProps.options) {
       this.setState({
         options

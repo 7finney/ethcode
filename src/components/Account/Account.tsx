@@ -62,6 +62,9 @@ class Account extends Component<IProps, IState> {
   render() {
     const { accounts, balance } = this.state;
 
+    console.log("into render");
+    console.log(JSON.stringify(accounts[0]));
+
     return (
       <div className="account_container">
 
@@ -84,7 +87,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">Account Balance </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" value={balance} type="text" placeholder="dummy 2" />
+            <input className="custom_input_css" value={balance} type="text" placeholder="account balance" />
           </div>
         </div>
 
@@ -100,7 +103,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">From </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" type="text" placeholder="dummy 2" />
+            <input className="custom_input_css" type="text" placeholder="from" />
           </div>
         </div>
 
@@ -109,7 +112,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">To </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" type="text" placeholder="dummy 2" />
+            <input className="custom_input_css" type="text" placeholder="to" />
           </div>
         </div>
 
@@ -141,16 +144,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">Public key </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" type="text" placeholder="dummy 2" />
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="label-container">
-            <label className="label">Private key </label>
-          </div>
-          <div className="input-container">
-            <input className="custom_input_css" type="text" placeholder="dummy 2" />
+            <input className="custom_input_css" type="text" placeholder="public key" />
           </div>
         </div>
 

@@ -66,6 +66,7 @@ interface IState {
   contracts: any;
   files: any;
   accountName: string;
+  testNets: object[];
 }
 interface IOpt {
   value: string;
@@ -99,7 +100,13 @@ class App extends Component<IProps, IState> {
       testNetId: '',
       fileType: '',
       traceError: '',
-      accountName: ''
+      accountName: '',
+      testNets: [
+        { value: 'ganache', label: 'Ganache' },
+        { value: '3', label: 'Ropsten' },
+        { value: '4', label: 'Rinkeby' },
+        { value: '5', label: "Görli" }
+      ]
     };
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
@@ -334,8 +341,12 @@ class App extends Component<IProps, IState> {
       selctorAccounts,
       contracts,
       files,
-      accountName
+      accountName,
+      testNets
     } = this.state;
+
+    console.log(JSON.stringify(accountName));
+    
 
     return (
       <div className="App">
@@ -361,14 +372,9 @@ class App extends Component<IProps, IState> {
         {
           <Selector
             getSelectedOption={this.getSelectedNetwork}
-            options={[
-              { value: 'ganache', label: 'Ganache' },
-              { value: '3', label: 'Ropsten' },
-              { value: '4', label: 'Rinkeby' },
-              { value: '5', label: "Görli" }
-            ]}
+            options={testNets}
             placeholder='Select Network'
-            defaultValue={{ value: 'ganache', label: 'Ganache' }}
+            defaultValue={testNets[0]}
           />
         }
         {
@@ -401,7 +407,7 @@ class App extends Component<IProps, IState> {
               }
               {accounts.length > 0 && (
                 <div>
-                  <b>Account: </b> { accountName }
+                  <b>Account: </b> { accountName ? accountName : accounts[0] }
                   <div className="account_balance">
                     <b>Account Balance: </b> {balance}
                   </div>
