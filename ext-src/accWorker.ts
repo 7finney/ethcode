@@ -15,7 +15,7 @@ function createKeyPair(path: string, pswd: string) {
   if (!fs.existsSync(`${path}/keystore`)) {
     fs.mkdirSync(`${path}/keystore`);
   }
-  fs.writeFileSync(`${path}/keystore/${keyObject.address}.json`, JSON.stringify(keyObject));
+  fs.writeFileSync(`${path}/keystore/0x${keyObject.address}.json`, JSON.stringify(keyObject));
 }
 
 // delete privateKey against address
