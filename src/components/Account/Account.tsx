@@ -6,7 +6,8 @@ interface IProps {
   accounts: string[],
   getSelectedAccount: any,
   accBalance: number,
-  vscode: any
+  vscode: any,
+  defaultValue: any
 }
 
 interface IState {
@@ -30,8 +31,8 @@ class Account extends Component<IProps, IState> {
     this.setState({ accounts: this.props.accounts })
   }
 
-  componentDidUpdate(prevProps: IProps) {
-    const { accounts, balance } = this.state;
+  componentDidUpdate(prevProps: IProps, preState: IState) {
+    const { accounts, balance, currAccount } = this.state;
 
     if (this.props.accounts !== accounts) {
       this.setState({ accounts: this.props.accounts })
@@ -62,9 +63,6 @@ class Account extends Component<IProps, IState> {
   render() {
     const { accounts, balance } = this.state;
 
-    console.log("into render");
-    console.log(JSON.stringify(accounts[0]));
-
     return (
       <div className="account_container">
 
@@ -77,7 +75,7 @@ class Account extends Component<IProps, IState> {
             <Selector
               options={accounts}
               getSelectedOption={this.getSelectedAccount}
-              defaultValue={accounts[0]}
+              defaultValue={this.props.defaultValue}
               placeholder='Select Accounts' />
           </div>
         </div>

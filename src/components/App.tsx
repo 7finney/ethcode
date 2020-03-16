@@ -65,7 +65,7 @@ interface IState {
   selctorAccounts: any;
   contracts: any;
   files: any;
-  accountName: string;
+  accountName: IOpt;
   testNets: object[];
 }
 interface IOpt {
@@ -100,7 +100,10 @@ class App extends Component<IProps, IState> {
       testNetId: '',
       fileType: '',
       traceError: '',
-      accountName: '',
+      accountName: {
+        label: '',
+        value: ''
+      },
       testNets: [
         { value: 'ganache', label: 'Ganache' },
         { value: '3', label: 'Ropsten' },
@@ -307,7 +310,7 @@ class App extends Component<IProps, IState> {
   }
 
   public getSelectedAccount = (account: any) => {
-    this.setState({ currAccount: account.value, accountName: account.label });
+    this.setState({ currAccount: account.value, accountName: account });
     vscode.postMessage({
       command: 'get-balance',
       account: account.value
@@ -344,9 +347,6 @@ class App extends Component<IProps, IState> {
       accountName,
       testNets
     } = this.state;
-
-    console.log(JSON.stringify(accountName));
-    
 
     return (
       <div className="App">
@@ -407,7 +407,7 @@ class App extends Component<IProps, IState> {
               }
               {accounts.length > 0 && (
                 <div>
-                  <b>Account: </b> { accountName ? accountName : accounts[0] }
+                  <b>Account: </b> {accountName && accountName.label ? accountName.label : accounts[0]}
                   <div className="account_balance">
                     <b>Account Balance: </b> {balance}
                   </div>
@@ -465,7 +465,7 @@ class App extends Component<IProps, IState> {
             </TabPanel>
             {/* Account Panel */}
             <TabPanel>
-              <Account vscode={vscode} accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
+              <Account vscode={vscode} defaultValue={(accountName && accountName.label) ? accountName : selctorAccounts[0]} accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
             </TabPanel>
             {/* Debug panel */}
             <TabPanel className="react-tab-panel">
