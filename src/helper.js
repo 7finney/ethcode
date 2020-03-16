@@ -33,3 +33,16 @@ export function solidityVersion(versions) {
   });
   return options;
 }
+
+export function setAccountsOption(localAccounts) {
+  var options = [];
+  localAccounts.map((account, i) => {
+    const optItm = {
+      value: account,
+      label: account
+    };
+    return options.push(optItm);
+  });
+  console.log(JSON.stringify(options));
+  return options;
+}

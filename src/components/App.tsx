@@ -14,7 +14,7 @@ import {
 } from "../actions";
 import "./App.css";
 
-import { solidityVersion, setSelectorOption, setFileSelectorOptions } from '../helper';
+import { solidityVersion, setSelectorOption, setFileSelectorOptions, setAccountsOption } from '../helper';
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
@@ -122,6 +122,12 @@ class App extends Component<IProps, IState> {
           fileType: data.fileType
         });
       }
+      if (data.localAccounts) {
+        var localAcc = setAccountsOption(data.localAccounts)
+        console.log("adklaBHCXLABCLKAB");
+        console.log(JSON.stringify(localAcc));
+        this.setState({ selctorAccounts: localAcc })
+      }
 
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
@@ -218,7 +224,7 @@ class App extends Component<IProps, IState> {
         const balance = data.fetchAccounts.balance
         const currAccount = data.fetchAccounts.accounts[0]
         const accounts = data.fetchAccounts.accounts
-        this.setState({ selctorAccounts: setSelectorOption(accounts) })
+        // this.setState({ selctorAccounts: setSelectorOption(accounts) })
         const accData = {
           balance,
           currAccount,
@@ -243,6 +249,9 @@ class App extends Component<IProps, IState> {
     // Component mounted start getting gRPC things
     vscode.postMessage({
       command: "run-getAccounts"
+    });
+    vscode.postMessage({
+      command: "get-localAccounts"
     });
   }
 

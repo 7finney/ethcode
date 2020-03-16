@@ -30,7 +30,7 @@ class Account extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    this.setState({ accounts: this.props.accounts })
+    // this.setState({ accounts: this.props.accounts })
   }
 
   componentDidUpdate(prevProps: IProps, preState: IState) {
@@ -41,9 +41,7 @@ class Account extends Component<IProps, IState> {
 
       console.log("data from account");
 
-
       if (data.publicAdd) {
-        console.log("data", JSON.stringify(data.publicAdd));
         this.setState({ publicAddress: data.publicAdd })
       }
 
@@ -77,7 +75,6 @@ class Account extends Component<IProps, IState> {
 
   private deleteAccount = () => {
     const { vscode } = this.props;
-    console.log("deleteAccount");
     const { publicAddress } = this.state;
 
     try {

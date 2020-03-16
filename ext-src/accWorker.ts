@@ -40,19 +40,20 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 
 // list all local addresses
 function listAddresses(keyStorePath: string) {
-  var localAddresses;
-  fs.readdir(keyStorePath, (err, files) => {
+  var localAddresses: string[];
+  fs.readdir(keyStorePath+"/keystore", (err, files) => {
     if (err) {
       // @ts-ignore
       process.send({ error: 'Unable to scan directory: ' + err });
     }
-    files.forEach((file) => {
-      var address = file.replace('.json', '');
-      localAddresses.push(address);
-    })
+    // files.forEach((file) => {
+    //   var address = file.replace('.json', '');
+    //   localAddresses.push(address);
+    // })
+    localAddresses = files.map(file => file.replace('.json', ''));
+    // @ts-ignore
+    process.send({ localAddresses: localAddresses });
   });
-  // @ts-ignore
-  process.send({ localAddresses: localAddresses });
 }
 
 // worker communication
