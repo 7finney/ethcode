@@ -35,6 +35,7 @@ function deleteKeyPair(keyStorePath: string, address: string) {
         }
       });
     });
+    listAddresses(keyStorePath);
     // @ts-ignore
     process.send({ resp: "Account deleted successfully" })
   } catch (error) {
