@@ -15,13 +15,27 @@ function createKeyPair(path: string, pswd: string) {
   if (!fs.existsSync(`${path}/keystore`)) {
     fs.mkdirSync(`${path}/keystore`);
   }
-  fs.writeFileSync(`${path}/keystore/0x${keyObject.address}.json`, JSON.stringify(keyObject));
+  listAddresses(path);
+  var file = keythereum.exportToFile(keyObject, `${path}/keystore`);
+  // fs.writeFileSync(`${path}/keystore/0x${keyObject.address}.json`, JSON.stringify(keyObject));
 }
 
 // delete privateKey against address
 function deleteKeyPair(keyStorePath: string, address: string) {
   try {
-    fs.unlinkSync(`${keyStorePath}/keystore/0x${address}.json`);
+    fs.readdir(keyStorePath + "/keystore", (err, files) => {
+      if (err) {
+        // @ts-ignore
+        process.send({ error: 'Unable to scan directory: ' + err });
+      }
+      files.forEach((file) => {
+        if (file.includes(address)) {
+          fs.unlinkSync(`${keyStorePath}/keystore/${file}`);
+          return ;
+        }
+      });
+    });
+    listAddresses(keyStorePath);
     // @ts-ignore
     process.send({ resp: "Account deleted successfully" })
   } catch (error) {
@@ -41,16 +55,15 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 // list all local addresses
 function listAddresses(keyStorePath: string) {
   var localAddresses: string[];
-  fs.readdir(keyStorePath+"/keystore", (err, files) => {
+  fs.readdir(keyStorePath + "/keystore", (err, files) => {
     if (err) {
       // @ts-ignore
       process.send({ error: 'Unable to scan directory: ' + err });
     }
-    // files.forEach((file) => {
-    //   var address = file.replace('.json', '');
-    //   localAddresses.push(address);
-    // })
-    localAddresses = files.map(file => file.replace('.json', ''));
+    localAddresses = files.map(file => {
+      var arr  = file.split('--')
+      return arr[arr.length - 1];
+    });
     // @ts-ignore
     process.send({ localAddresses: localAddresses });
   });
