@@ -124,6 +124,7 @@ class App extends Component<IProps, IState> {
 
       if (data.publicAdd) {
         console.log("get publickey");
+        console.log(data.publicAdd);
       }
 
       if (data.fileType) {
@@ -132,6 +133,7 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data.localAccounts) {
+        console.log("get localAccounts");
         this.setState({
           localAcc: setSelectorOption(data.localAccounts)
         }, () => {

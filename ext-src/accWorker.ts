@@ -15,27 +15,33 @@ function createKeyPair(path: string, pswd: string) {
   if (!fs.existsSync(`${path}/keystore`)) {
     fs.mkdirSync(`${path}/keystore`);
   }
-  listAddresses(path);
   var file = keythereum.exportToFile(keyObject, `${path}/keystore`);
+  listAddresses(path);
   // fs.writeFileSync(`${path}/keystore/0x${keyObject.address}.json`, JSON.stringify(keyObject));
 }
 
 // delete privateKey against address
 function deleteKeyPair(keyStorePath: string, address: string) {
+  var fd: any;
   try {
-    fs.readdir(keyStorePath + "/keystore", (err, files) => {
+    fd = fs.readdir(keyStorePath + "/keystore", (err, files) => {
       if (err) {
         // @ts-ignore
         process.send({ error: 'Unable to scan directory: ' + err });
       }
       files.forEach((file) => {
+        // @ts-ignore
+        process.send({ help: "out of if" + file })
         if (file.includes(address)) {
           fs.unlinkSync(`${keyStorePath}/keystore/${file}`);
+          listAddresses(keyStorePath);
+          // @ts-ignore
+          process.send({ help: "out of if" + file })
           return ;
         }
       });
     });
-    listAddresses(keyStorePath);
+    // fs.closeSync(3)
     // @ts-ignore
     process.send({ resp: "Account deleted successfully" })
   } catch (error) {
@@ -54,16 +60,24 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 
 // list all local addresses
 function listAddresses(keyStorePath: string) {
-  var localAddresses: string[];
+  var localAddresses: string[] = [];
+  // @ts-ignore
+  process.send({ call: "kartik calling kartik" });
   fs.readdir(keyStorePath + "/keystore", (err, files) => {
     if (err) {
       // @ts-ignore
       process.send({ error: 'Unable to scan directory: ' + err });
     }
-    localAddresses = files.map(file => {
-      var arr  = file.split('--')
-      return arr[arr.length - 1];
-    });
+    // @ts-ignore
+    process.send({ help: "out of if" + files })
+    if(files) {
+      localAddresses = files.map(file => {
+        var arr = file.split('--')
+        return arr[arr.length - 1];
+      });
+      // @ts-ignore
+      process.send({ help: "inside of if" + localAddresses })
+    }
     // @ts-ignore
     process.send({ localAddresses: localAddresses });
   });

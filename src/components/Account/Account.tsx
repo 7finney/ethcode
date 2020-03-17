@@ -53,6 +53,10 @@ class Account extends Component<IProps, IState> {
   }
 
   getSelectedAccount = (account: any) => {
+    console.log(JSON.stringify(account));
+    this.setState({
+      currAccount: account.label
+    })
     this.props.getSelectedAccount(account)
   }
   // generate keypair
@@ -71,12 +75,12 @@ class Account extends Component<IProps, IState> {
   // delete keypair
   private deleteAccount = () => {
     const { vscode } = this.props;
-    const { publicAddress } = this.state;
+    const { currAccount } = this.state;
 
     try {
       vscode.postMessage({
         command: "delete-keyPair",
-        payload: publicAddress
+        payload: currAccount
       });
     } catch (err) {
       console.error(err);
