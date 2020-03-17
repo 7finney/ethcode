@@ -30,11 +30,11 @@ class Account extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    // this.setState({ accounts: this.props.accounts })
+    this.setState({ accounts: this.props.accounts })
   }
 
   componentDidUpdate(prevProps: IProps, preState: IState) {
-    const { accounts, balance, publicAddress } = this.state;
+    const { accounts, balance } = this.state;
 
     window.addEventListener("message", async event => {
       const { data } = event;
@@ -72,7 +72,7 @@ class Account extends Component<IProps, IState> {
       console.error(err);
     }
   }
-
+  // delete keypair
   private deleteAccount = () => {
     const { vscode } = this.props;
     const { publicAddress } = this.state;

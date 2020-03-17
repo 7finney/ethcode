@@ -14,7 +14,7 @@ import {
 } from "../actions";
 import "./App.css";
 
-import { solidityVersion, setSelectorOption, setFileSelectorOptions, setAccountsOption } from '../helper';
+import { solidityVersion, setSelectorOption, setFileSelectorOptions } from '../helper';
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
@@ -67,6 +67,8 @@ interface IState {
   files: any;
   accountName: IOpt;
   testNets: object[];
+  localAcc: any[],
+  testNetAcc: any[]
 }
 interface IOpt {
   value: string;
@@ -104,6 +106,8 @@ class App extends Component<IProps, IState> {
         label: '',
         value: ''
       },
+      localAcc: [],
+      testNetAcc: [],
       testNets: [
         { value: 'ganache', label: 'Ganache' },
         { value: '3', label: 'Ropsten' },
@@ -116,6 +120,7 @@ class App extends Component<IProps, IState> {
   public componentDidMount() {
     window.addEventListener("message", async event => {
       const { data } = event;
+      const { localAcc, testNetAcc } = this.state;
 
       if (data.fileType) {
         this.setState({
@@ -123,10 +128,10 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data.localAccounts) {
-        var localAcc = setAccountsOption(data.localAccounts)
-        console.log("adklaBHCXLABCLKAB");
-        console.log(JSON.stringify(localAcc));
-        this.setState({ selctorAccounts: localAcc })
+        this.setState({
+          selctorAccounts: setSelectorOption(data.localAccounts),
+          localAcc: setSelectorOption(data.localAccounts)
+        })
       }
 
       if (data.compiled) {
@@ -224,7 +229,10 @@ class App extends Component<IProps, IState> {
         const balance = data.fetchAccounts.balance
         const currAccount = data.fetchAccounts.accounts[0]
         const accounts = data.fetchAccounts.accounts
-        // this.setState({ selctorAccounts: setSelectorOption(accounts) })
+        this.setState({
+          selctorAccounts: setSelectorOption(accounts),
+          testNetAcc: setSelectorOption(accounts)
+        })
         const accData = {
           balance,
           currAccount,
@@ -244,8 +252,24 @@ class App extends Component<IProps, IState> {
         this.props.setCurrAccChange(accData)
         this.setState({ balance: this.props.accountBalance });
       }
-      // TODO: handle error message
+
+      // merge local accounts and test net accounts
+      if (localAcc && testNetAcc) {
+        this.setState({
+          selctorAccounts: [
+            {
+              label: 'Ganache',
+              options: testNetAcc
+            },
+            {
+              label: 'Local Accounts',
+              options: localAcc
+            }
+          ]
+        })
+      }
     });
+    // TODO: handle error message
     // Component mounted start getting gRPC things
     vscode.postMessage({
       command: "run-getAccounts"
@@ -353,7 +377,8 @@ class App extends Component<IProps, IState> {
       contracts,
       files,
       accountName,
-      testNets
+      testNets,
+      testNetAcc
     } = this.state;
 
     return (
@@ -473,7 +498,13 @@ class App extends Component<IProps, IState> {
             </TabPanel>
             {/* Account Panel */}
             <TabPanel>
-              <Account vscode={vscode} defaultValue={(accountName && accountName.label) ? accountName : selctorAccounts[0]} accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
+              <Account
+                vscode={vscode}
+                defaultValue={(accountName && accountName.label) ? accountName : testNetAcc[0]}
+                accounts={selctorAccounts}
+                getSelectedAccount={this.getSelectedAccount}
+                accBalance={balance}
+              />
             </TabPanel>
             {/* Debug panel */}
             <TabPanel className="react-tab-panel">
