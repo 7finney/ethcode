@@ -38,13 +38,9 @@ class Account extends Component<IProps, IState> {
 
     window.addEventListener("message", async event => {
       const { data } = event;
-
-      console.log("data from account");
-
       if (data.publicAdd) {
         this.setState({ publicAddress: data.publicAdd })
       }
-
     })
 
     if (this.props.accounts !== accounts) {
@@ -89,6 +85,9 @@ class Account extends Component<IProps, IState> {
 
   render() {
     const { accounts, balance, publicAddress } = this.state;
+
+    console.log("accounts");
+    console.log(JSON.stringify(accounts));
 
     return (
       <div className="account_container">

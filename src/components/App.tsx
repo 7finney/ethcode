@@ -122,6 +122,10 @@ class App extends Component<IProps, IState> {
       const { data } = event;
       const { localAcc, testNetAcc } = this.state;
 
+      if (data.publicAdd) {
+        console.log("get publickey");
+      }
+
       if (data.fileType) {
         this.setState({
           fileType: data.fileType
@@ -129,8 +133,9 @@ class App extends Component<IProps, IState> {
       }
       if (data.localAccounts) {
         this.setState({
-          selctorAccounts: setSelectorOption(data.localAccounts),
           localAcc: setSelectorOption(data.localAccounts)
+        }, () => {
+          this.mergeAccount();
         })
       }
 
@@ -230,8 +235,9 @@ class App extends Component<IProps, IState> {
         const currAccount = data.fetchAccounts.accounts[0]
         const accounts = data.fetchAccounts.accounts
         this.setState({
-          selctorAccounts: setSelectorOption(accounts),
           testNetAcc: setSelectorOption(accounts)
+        }, () => {
+          this.mergeAccount();
         })
         const accData = {
           balance,
@@ -252,22 +258,6 @@ class App extends Component<IProps, IState> {
         this.props.setCurrAccChange(accData)
         this.setState({ balance: this.props.accountBalance });
       }
-
-      // merge local accounts and test net accounts
-      if (localAcc && testNetAcc) {
-        this.setState({
-          selctorAccounts: [
-            {
-              label: 'Ganache',
-              options: testNetAcc
-            },
-            {
-              label: 'Local Accounts',
-              options: localAcc
-            }
-          ]
-        })
-      }
     });
     // TODO: handle error message
     // Component mounted start getting gRPC things
@@ -277,6 +267,43 @@ class App extends Component<IProps, IState> {
     vscode.postMessage({
       command: "get-localAccounts"
     });
+  }
+
+  mergeAccount = () => {
+    const { localAcc, testNetAcc } = this.state;
+    console.log("call merge Account");
+    console.log(JSON.stringify(localAcc));
+    
+    // merge local accounts and test net accounts
+    if (localAcc.length > 0 && testNetAcc.length > 0) {
+      this.setState({
+        selctorAccounts: [
+          {
+            label: 'Ganache',
+            options: testNetAcc
+          }, {
+            label: 'Local Accounts',
+            options: localAcc
+          }
+        ]
+      })
+    } else if (localAcc.length > 0) {
+      this.setState({
+        selctorAccounts: [{
+          label: 'Local Accounts',
+          options: localAcc
+        }]
+      })
+    } else if (testNetAcc.length > 0) {
+      this.setState({
+        selctorAccounts: [{
+          label: 'Ganache',
+          options: testNetAcc
+        }]
+      })
+    } else {
+      this.setState({ selctorAccounts: [] })
+    }
   }
 
   componentDidUpdate(_: any) {
@@ -380,6 +407,10 @@ class App extends Component<IProps, IState> {
       testNets,
       testNetAcc
     } = this.state;
+
+
+    // console.log("in app.js");
+    // console.log(JSON.stringify(selctorAccounts));
 
     return (
       <div className="App">
