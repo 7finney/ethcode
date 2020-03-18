@@ -120,12 +120,6 @@ class App extends Component<IProps, IState> {
   public componentDidMount() {
     window.addEventListener("message", async event => {
       const { data } = event;
-      const { localAcc, testNetAcc } = this.state;
-
-      if (data.publicAdd) {
-        console.log("get publickey");
-        console.log(data.publicAdd);
-      }
 
       if (data.fileType) {
         this.setState({
@@ -133,7 +127,6 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data.localAccounts) {
-        console.log("get localAccounts");
         this.setState({
           localAcc: setSelectorOption(data.localAccounts)
         }, () => {
@@ -409,10 +402,6 @@ class App extends Component<IProps, IState> {
       testNets,
       testNetAcc
     } = this.state;
-
-
-    // console.log("in app.js");
-    // console.log(JSON.stringify(selctorAccounts));
 
     return (
       <div className="App">

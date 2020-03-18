@@ -14,7 +14,8 @@ interface IState {
   accounts: string[],
   currAccount: string,
   balance: number,
-  publicAddress: string
+  publicAddress: string,
+  showButton: boolean
 }
 
 class Account extends Component<IProps, IState> {
@@ -24,7 +25,8 @@ class Account extends Component<IProps, IState> {
       accounts: [],
       currAccount: '',
       balance: 0,
-      publicAddress: ''
+      publicAddress: '',
+      showButton: false
     }
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
   }
@@ -39,7 +41,7 @@ class Account extends Component<IProps, IState> {
     window.addEventListener("message", async event => {
       const { data } = event;
       if (data.publicAdd) {
-        this.setState({ publicAddress: data.publicAdd })
+        this.setState({ publicAddress: data.publicAdd, showButton: false })
       }
     })
 
@@ -68,8 +70,10 @@ class Account extends Component<IProps, IState> {
         command: "gen-keypair",
         payload: password
       });
+      this.setState({ showButton: true })
     } catch (err) {
       console.error(err);
+      this.setState({ showButton: false })
     }
   }
   // delete keypair
@@ -88,10 +92,7 @@ class Account extends Component<IProps, IState> {
   }
 
   render() {
-    const { accounts, balance, publicAddress } = this.state;
-
-    console.log("accounts");
-    console.log(JSON.stringify(accounts));
+    const { accounts, balance, publicAddress, showButton } = this.state;
 
     return (
       <div className="account_container">
@@ -131,7 +132,7 @@ class Account extends Component<IProps, IState> {
                 border: '1px solid #fa4138'
               }}
               onClick={this.deleteAccount}>
-                Delete Account
+              Delete Account
             </button>
           </div>
         </div>
@@ -180,7 +181,12 @@ class Account extends Component<IProps, IState> {
             <label className="label">Create New Account </label>
           </div>
           <div className="input-container">
-            <button className="acc-button custom_button_css" onClick={this.handleGenKeyPair}>Genarate key pair</button>
+            <button
+              className={(showButton ? 'custom_button_css button_disable' : 'acc-button custom_button_css')}
+              disabled={showButton}
+              onClick={this.handleGenKeyPair}>
+              Genarate key pair
+            </button>
           </div>
         </div>
 

@@ -30,18 +30,13 @@ function deleteKeyPair(keyStorePath: string, address: string) {
         process.send({ error: 'Unable to scan directory: ' + err });
       }
       files.forEach((file) => {
-        // @ts-ignore
-        process.send({ help: "out of if" + file })
         if (file.includes(address)) {
           fs.unlinkSync(`${keyStorePath}/keystore/${file}`);
           listAddresses(keyStorePath);
-          // @ts-ignore
-          process.send({ help: "out of if" + file })
           return ;
         }
       });
     });
-    // fs.closeSync(3)
     // @ts-ignore
     process.send({ resp: "Account deleted successfully" })
   } catch (error) {
@@ -68,15 +63,11 @@ function listAddresses(keyStorePath: string) {
       // @ts-ignore
       process.send({ error: 'Unable to scan directory: ' + err });
     }
-    // @ts-ignore
-    process.send({ help: "out of if" + files })
     if(files) {
       localAddresses = files.map(file => {
         var arr = file.split('--')
         return arr[arr.length - 1];
       });
-      // @ts-ignore
-      process.send({ help: "inside of if" + localAddresses })
     }
     // @ts-ignore
     process.send({ localAddresses: localAddresses });

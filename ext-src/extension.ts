@@ -365,9 +365,7 @@ class ReactPanel {
 
     accWorker.on("message", (m: any) => {
       m.resp ? success(m.resp) : errorToast(m.error)
-      console.log(JSON.stringify(m));
       if (m.localAddresses) {
-        // console.log(JSON.stringify(m.localAddresses));
         this._panel.webview.postMessage({ localAccounts: m.localAddresses })
       }
     })
