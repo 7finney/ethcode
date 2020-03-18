@@ -69,8 +69,6 @@ class Selector extends Component<IProps, IState> {
     const { options, defaultValue } = this.props;
 
     if (prevProps.defaultValue !== defaultValue && preState.defaultValue !== defaultValue) {
-      console.log("prevProps", JSON.stringify(prevProps.defaultValue));
-      console.log("Props", JSON.stringify(defaultValue));
       this.setState({
         selectedOption: defaultValue
       })

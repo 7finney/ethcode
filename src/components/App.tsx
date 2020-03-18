@@ -266,8 +266,6 @@ class App extends Component<IProps, IState> {
 
   mergeAccount = () => {
     const { localAcc, testNetAcc } = this.state;
-    console.log("call merge Account");
-    console.log(JSON.stringify(localAcc));
     
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {

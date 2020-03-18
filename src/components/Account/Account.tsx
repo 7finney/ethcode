@@ -55,7 +55,6 @@ class Account extends Component<IProps, IState> {
   }
 
   getSelectedAccount = (account: any) => {
-    console.log(JSON.stringify(account));
     this.setState({
       currAccount: account.label
     })
@@ -98,7 +97,7 @@ class Account extends Component<IProps, IState> {
       <div className="account_container">
 
         {/* Account Selection */}
-        <div className="row">
+        <div className="account_row">
           <div className="label-container">
             <label className="label">Select Account </label>
           </div>
@@ -111,17 +110,17 @@ class Account extends Component<IProps, IState> {
           </div>
         </div>
 
-        <div className="row">
+        <div className="account_row">
           <div className="label-container">
             <label className="label">Account Balance </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" value={balance} type="text" placeholder="account balance" />
+            <input className="input custom_input_css" value={balance} type="text" placeholder="account balance" />
           </div>
         </div>
 
         {/* Account Delete */}
-        <div className="row">
+        <div className="account_row">
           <div className="label-container"></div>
           <div className="input-container">
             <button
@@ -138,31 +137,31 @@ class Account extends Component<IProps, IState> {
         </div>
 
         {/* Transfer Section */}
-        <div className="row">
+        <div className="account_row">
           <div className="label-container">
             <label className="header">Transfer Token </label>
           </div>
         </div>
 
-        <div className="row">
+        <div className="account_row">
           <div className="label-container">
             <label className="label">From </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" type="text" placeholder="from" />
+            <input className="input custom_input_css" type="text" placeholder="from" />
           </div>
         </div>
 
-        <div className="row">
+        <div className="account_row">
           <div className="label-container">
             <label className="label">To </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" type="text" placeholder="to" />
+            <input className="input custom_input_css" type="text" placeholder="to" />
           </div>
         </div>
 
-        <div className="row">
+        <div className="account_row">
           <div className="label-container"></div>
           <div className="input-container">
             <button className="acc-button custom_button_css">Send</button>
@@ -170,13 +169,13 @@ class Account extends Component<IProps, IState> {
         </div>
 
         {/* Account Create */}
-        <div className="row">
+        <div className="account_row">
           <div className="label-container">
             <label className="header">Account Creation </label>
           </div>
         </div>
 
-        <div className="row">
+        <div className="account_row">
           <div className="label-container">
             <label className="label">Create New Account </label>
           </div>
@@ -190,12 +189,12 @@ class Account extends Component<IProps, IState> {
           </div>
         </div>
 
-        <div className="row">
+        <div className="account_row">
           <div className="label-container">
             <label className="label">Public key </label>
           </div>
           <div className="input-container">
-            <input className="custom_input_css" value={publicAddress} type="text" placeholder="public key" />
+            <input className="input custom_input_css" value={publicAddress} type="text" placeholder="public key" />
           </div>
         </div>
 

@@ -66,7 +66,7 @@ function listAddresses(keyStorePath: string) {
     if(files) {
       localAddresses = files.map(file => {
         var arr = file.split('--')
-        return arr[arr.length - 1];
+        return ('0x' + arr[arr.length - 1]);
       });
     }
     // @ts-ignore
