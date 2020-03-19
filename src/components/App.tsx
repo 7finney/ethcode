@@ -266,7 +266,7 @@ class App extends Component<IProps, IState> {
 
   mergeAccount = () => {
     const { localAcc, testNetAcc } = this.state;
-    
+
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       this.setState({
@@ -528,7 +528,15 @@ class App extends Component<IProps, IState> {
               />
             </TabPanel>
             <TabPanel>
-              <Deploy />
+              {(compiled && contractName && compiled.contracts[fileName][contractName]) &&
+                <Deploy
+                  contractName={contractName}
+                  bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                  abi={compiled.contracts[fileName][contractName].abi}
+                  // vscode={vscode}
+                  errors={error}
+                />
+              }
             </TabPanel>
             {/* Debug panel */}
             <TabPanel className="react-tab-panel">
