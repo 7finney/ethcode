@@ -162,6 +162,15 @@ class Account extends Component<IProps, IState> {
         </div>
 
         <div className="account_row">
+          <div className="label-container">
+            <label className="label">Amount </label>
+          </div>
+          <div className="input-container">
+            <input className="input custom_input_css" type="text" placeholder="amount" />
+          </div>
+        </div>
+
+        <div className="account_row">
           <div className="label-container"></div>
           <div className="input-container">
             <button className="acc-button custom_button_css">Send</button>

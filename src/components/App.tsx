@@ -414,14 +414,6 @@ class App extends Component<IProps, IState> {
             defaultValue={availableVersions[0]}
           />
         )}
-        {compiled && Object.keys(compiled.sources).length > 0 && (
-          <Selector
-            options={files}
-            getSelectedOption={this.changeFile}
-            placeholder='Select Files'
-            defaultValue={files[0]}
-          />
-        )}
         {
           <Selector
             getSelectedOption={this.getSelectedNetwork}
@@ -430,6 +422,14 @@ class App extends Component<IProps, IState> {
             defaultValue={testNets[0]}
           />
         }
+        {compiled && Object.keys(compiled.sources).length > 0 && (
+          <Selector
+            options={files}
+            getSelectedOption={this.changeFile}
+            placeholder='Select Files'
+            defaultValue={files[0]}
+          />
+        )}
         {
           transactionResult &&
           <div>
