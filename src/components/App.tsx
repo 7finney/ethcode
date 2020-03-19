@@ -21,7 +21,7 @@ import ContractDeploy from "./ContractDeploy";
 import Selector from './Selector';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
-
+import Deploy from "./Deploy/Deploy"
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from "./Account/Account";
@@ -442,6 +442,7 @@ class App extends Component<IProps, IState> {
               <div className="tab-container">
                 <Tab>Main</Tab>
                 <Tab>Account</Tab>
+                <Tab>Deploy</Tab>
                 <Tab>Debug</Tab>
                 <Tab>Test</Tab>
               </div>
@@ -525,6 +526,9 @@ class App extends Component<IProps, IState> {
                 getSelectedAccount={this.getSelectedAccount}
                 accBalance={balance}
               />
+            </TabPanel>
+            <TabPanel>
+              <Deploy />
             </TabPanel>
             {/* Debug panel */}
             <TabPanel className="react-tab-panel">
