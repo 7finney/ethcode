@@ -39,9 +39,13 @@ vsce package --yarn
 ```
 
 ## Publishing
+Step 1: Login to https://dev.azure.com/0mkar/ and generate PAT
+
+Step 2:
 ```
 vsce login quantanetwork
-vsce publish 0.0.1 -p <access token> --yarn
+vsce publish 0.1.4 -p <access token> --yarn
+git push origin v0.1.4
 ```
 Extension marketplace link - https://marketplace.visualstudio.com/items?itemName=quantanetwork.ethcode
 
