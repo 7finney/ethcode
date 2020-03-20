@@ -237,7 +237,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">Public key </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" value={publicAddress ? '0x'+publicAddress: ''} type="text" placeholder="public key" />
+            <input className="input custom_input_css" value={publicAddress ? publicAddress: ''} type="text" placeholder="public key" />
           </div>
         </div>
 
