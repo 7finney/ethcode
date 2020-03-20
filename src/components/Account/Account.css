@@ -1,0 +1,42 @@
+.account_container {
+  margin: 20px 15px;
+  padding: 20px 0;
+  border: 1px solid #38ffAf;
+}
+
+.account_row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-gap: 20px;
+  margin: 30px 0;
+}
+
+.label-container {
+  text-align: center;
+}
+
+.select-container {
+  justify-self: start;
+  margin-left: 10px;
+  margin-bottom: -20px;
+  margin-top: -20px;
+}
+
+.header {
+  color: #d9b85e;
+  font-size: 15px;
+}
+
+
+.label {
+  font-size: 14px;
+  color: #eeededfa;
+}
+
+.acc-button {
+  margin-left: 10px;
+}
+
+.input {
+  width: 41vw;
+}

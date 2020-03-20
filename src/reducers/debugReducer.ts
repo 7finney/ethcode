@@ -1,7 +1,7 @@
 import { SET_TESTNET_ID } from "../actions/types"
 
 const initialState = {
-  testNetId: ''
+  testNetId: 'ganache'
 };
 
 export default (state: any = initialState, action: any) => {

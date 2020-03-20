@@ -142,7 +142,7 @@ class DebugDisplay extends Component<IProps, IState> {
                         <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} style={{ marginLeft: '10px' }} value="Debug" />
                     </form>
                     <p>
-                        <button className="input text-subtle custom_button_css" onClick={this.stopDebug}>Stop</button>
+                        <button className="text-subtle custom_button_css" onClick={this.stopDebug}>Stop</button>
                     </p>
                 </div>
                 {
