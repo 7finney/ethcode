@@ -1,5 +1,7 @@
 var keythereum = require('keythereum');
 import * as fs from "fs";
+// @ts-ignore
+import { toChecksumAddress } from './hash/util';
 
 // create keypair
 function createKeyPair(path: string, pswd: string) {
@@ -11,7 +13,7 @@ function createKeyPair(path: string, pswd: string) {
   };
   var keyObject = keythereum.dump(pswd, bareKey.privateKey, bareKey.salt, bareKey.iv, options);
   // @ts-ignore
-  process.send({ pubAddress: keyObject.address });
+  process.send({ pubAddress: keyObject.address, checksumAddress: toChecksumAddress(keyObject.address) });
   if (!fs.existsSync(`${path}/keystore`)) {
     fs.mkdirSync(`${path}/keystore`);
   }
@@ -55,9 +57,7 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 
 // list all local addresses
 function listAddresses(keyStorePath: string) {
-  var localAddresses: string[] = [];
-  // @ts-ignore
-  process.send({ call: "kartik calling kartik" });
+  var localAddresses: object;
   fs.readdir(keyStorePath + "/keystore", (err, files) => {
     if (err) {
       // @ts-ignore
@@ -66,7 +66,7 @@ function listAddresses(keyStorePath: string) {
     if(files) {
       localAddresses = files.map(file => {
         var arr = file.split('--')
-        return ('0x' + arr[arr.length - 1]);
+        return { pubAddress: ('0x' + arr[arr.length - 1]), checksumAddress: toChecksumAddress(('0x' + arr[arr.length - 1])) };
       });
     }
     // @ts-ignore
