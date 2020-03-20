@@ -115,7 +115,6 @@ class App extends Component<IProps, IState> {
         { value: '5', label: "Görli" }
       ]
     };
-    this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
   public componentDidMount() {
     window.addEventListener("message", async event => {
@@ -309,24 +308,6 @@ class App extends Component<IProps, IState> {
     }
   }
 
-  private handleTransactionSubmit(event: any) {
-    event.preventDefault();
-    const { currAccount } = this.state;
-    const data = new FormData(event.target);
-    const transactionInfo = {
-      fromAddress: currAccount,
-      toAddress: data.get("toAddress"),
-      amount: data.get("amount")
-    };
-    try {
-      vscode.postMessage({
-        command: "send-ether",
-        payload: transactionInfo
-      });
-    } catch (err) {
-      this.setState({ error: err });
-    }
-  }
   public changeFile = (selectedOpt: IOpt) => {
     this.setState({ fileName: selectedOpt.value }, () => {
       this.changeContract({
@@ -427,8 +408,8 @@ class App extends Component<IProps, IState> {
         )}
         {
           transactionResult &&
-          <div>
-            <pre>{transactionResult}</pre>
+          <div className="tx-info">
+            <span>Last transaction:</span><pre>{transactionResult}</pre>
           </div>
         }
         <p>

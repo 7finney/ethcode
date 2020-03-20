@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import Selector from '../Selector';
-import './account.css';
+import './Account.css';
 
 interface IProps {
   accounts: string[],
@@ -35,6 +35,7 @@ class Account extends Component<IProps, IState> {
       error: {}
     }
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
+    this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
 
   componentDidMount() {
@@ -46,7 +47,6 @@ class Account extends Component<IProps, IState> {
 
     window.addEventListener("message", async event => {
       const { data } = event;
-      console.log("data log: ")
       if(data.newAccount) {
         this.setState({
           publicAddress: data.newAccount,
@@ -73,7 +73,7 @@ class Account extends Component<IProps, IState> {
   // generate keypair
   private handleGenKeyPair() {
     const { vscode } = this.props;
-    let password = "qwerty";
+    let password = "";
     try {
       vscode.postMessage({
         command: "gen-keypair",
@@ -100,17 +100,19 @@ class Account extends Component<IProps, IState> {
     }
   }
 
-  private handleTransactionSubmit = (event: any) => {
+  // handle send ether
+  private handleTransactionSubmit(event: any) {
     event.preventDefault();
     const { vscode } = this.props;
     const { currAccount } = this.state;
     const data = new FormData(event.target);
+    
     const transactionInfo = {
-      fromAddress: currAccount,
+      fromAddress: currAccount.value,
       toAddress: data.get("toAddress"),
       amount: data.get("amount")
     };
-    
+
     try {
       vscode.postMessage({
         command: "send-ether",
@@ -176,39 +178,39 @@ class Account extends Component<IProps, IState> {
         </div>
         
         <form onSubmit={this.handleTransactionSubmit}>
-        <div className="account_row">
-          <div className="label-container">
-            <label className="label">From </label>
+          <div className="account_row">
+            <div className="label-container">
+              <label className="label">From </label>
+            </div>
+            <div className="input-container">
+              <input className="input custom_input_css" value={currAccount.label} type="text" placeholder="from" />
+            </div>
           </div>
-          <div className="input-container">
-            <input className="input custom_input_css" value={currAccount.label} type="text" placeholder="from" />
-          </div>
-        </div>
 
-        <div className="account_row">
-          <div className="label-container">
-            <label className="label">To </label>
+          <div className="account_row">
+            <div className="label-container">
+              <label className="label">To </label>
+            </div>
+            <div className="input-container">
+              <input className="input custom_input_css" name="toAddress" type="text" placeholder="to" />
+            </div>
           </div>
-          <div className="input-container">
-            <input className="input custom_input_css" name="toAddress" type="text" placeholder="to" />
-          </div>
-        </div>
 
-        <div className="account_row">
-          <div className="label-container">
-            <label className="label">Amount </label>
+          <div className="account_row">
+            <div className="label-container">
+              <label className="label">Amount </label>
+            </div>
+            <div className="input-container">
+              <input className="input custom_input_css" type="text" name="amount" placeholder="amount" />
+            </div>
           </div>
-          <div className="input-container">
-            <input className="input custom_input_css" type="text" name="amount" placeholder="amount" />
-          </div>
-        </div>
 
-        <div className="account_row">
-          <div className="label-container"></div>
-          <div className="input-container">
-            <input type="submit" className="acc-button custom_button_css" value="Send" />
+          <div className="account_row">
+            <div className="label-container"></div>
+            <div className="input-container">
+              <input type="submit" className="acc-button custom_button_css" value="Send" />
+            </div>
           </div>
-        </div>
         </form>
 
         {/* Account Create */}

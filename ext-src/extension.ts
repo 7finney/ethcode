@@ -356,14 +356,11 @@ class ReactPanel {
     console.dir("Account worker invoked with WorkerID : ", accWorker.pid);
     // TODO: implementation according to the acc_system frontend
     accWorker.on("message", (m: any) => {
-      console.log("checksumaddress: ");
-      console.log("genkeypair");
-      console.log(m.checksumAddress);
       (m.checksumAddress && m.checksumAddress.length > 0) ? this._panel.webview.postMessage({ newAccount: m.checksumAddress }) : this._panel.webview.postMessage({ error: m.error });
       if (m.localAddresses) {
-        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
+        this._panel.webview.postMessage({ localAccounts: m.localAddresses });
       }
-    })
+    });
     accWorker.send({ command: "create-account", pswd: password, ksPath });
   }
 
@@ -371,11 +368,8 @@ class ReactPanel {
     const accWorker = this.createAccWorker();
 
     accWorker.on("message", (m: any) => {
-      m.resp ? success(m.resp) : errorToast(m.error)
-      m.resp ? this._panel.webview.postMessage({ resp: m.resp }) : null
-      console.log("Deletekeypair");
-      
-      console.log(JSON.stringify(m));
+      m.resp ? success(m.resp) : errorToast(m.error);
+      m.resp ? this._panel.webview.postMessage({ resp: m.resp }) : null;
       if (m.localAddresses) {
         this._panel.webview.postMessage({ localAccounts: m.localAddresses })
       }
@@ -463,10 +457,6 @@ class ReactPanel {
     deployWorker.send({ command: "get-gas-estimate", payload, jwtToken, testnetId: testNetId });
   }
   private sendEther(payload: any, testNetId: string) {
-    console.log("vchahvc");
-    console.log(JSON.stringify(payload));
-    
-    
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ transactionResult: m.transactionResult });

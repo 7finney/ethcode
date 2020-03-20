@@ -198,6 +198,7 @@ process.on("message", async m => {
   // send wei_value to a address
   if(m.command === "send-ether") {
     const transactionInfo = m.transactionInfo;
+    console.log(transactionInfo)
     const c = {
       callInterface: {
         command: 'send-ether',
