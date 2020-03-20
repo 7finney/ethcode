@@ -355,12 +355,9 @@ class ReactPanel {
     console.dir("Account worker invoked with WorkerID : ", accWorker.pid);
     // TODO: implementation according to the acc_system frontend
     accWorker.on("message", (m: any) => {
-      m.pubAddress ? this._panel.webview.postMessage({ publicAdd: m.pubAddress }) : this._panel.webview.postMessage({ error: m.error })
-      console.log(JSON.stringify(m));
-      
-      if (m.checksumAddress) {
-        this._panel.webview.postMessage({ localAccounts: m.checksumAddress })
-      }
+      console.log("checksumaddress: ");
+      console.log(m);
+      (m.localAddresses && m.localAddresses.length > 0) ? this._panel.webview.postMessage({ localAccounts: m.localAddresses }) : this._panel.webview.postMessage({ error: m.error });
     })
     accWorker.send({ command: "create-account", pswd: password, ksPath });
   }
@@ -371,8 +368,8 @@ class ReactPanel {
     accWorker.on("message", (m: any) => {
       m.resp ? success(m.resp) : errorToast(m.error)
       console.log(JSON.stringify(m));
-      if (m.checksumAddress) {
-        this._panel.webview.postMessage({ localAccounts: m.checksumAddress })
+      if (m.localAddresses) {
+        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
       }
     })
     accWorker.send({ command: "delete-keyPair", address: publicKey, keyStorePath });
