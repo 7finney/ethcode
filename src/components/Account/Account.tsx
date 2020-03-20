@@ -250,9 +250,7 @@ class Account extends Component<IProps, IState> {
 
 function mapStateToProps({ debugStore }: any) {
   const { testNetId } = debugStore
-  return {
-    testNetId
-  };
+  return { testNetId };
 }
 
 export default connect(mapStateToProps, {})(Account);
