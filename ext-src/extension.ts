@@ -235,17 +235,17 @@ class ReactPanel {
   public checkFileName() {
     vscode.window.onDidChangeActiveTextEditor(changeEvent => {
       // @ts-ignore
-      const panelName = changeEvent._documentData._uri.fsPath;
+      const panelName = (changeEvent && changeEvent._documentData) ? changeEvent._documentData._uri.fsPath : undefined;
 
       const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
 
       // @ts-ignore
-      if (panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
+      if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
         // @ts-ignore
         this._panel.webview.postMessage({ fileType: 'vyper' });
         // @ts-ignore
-      } else if (panelName.match(regexSol) && panelName.match(regexSol).length > 0) {
+      } else if (panelName && panelName.match(regexSol) && panelName.match(regexSol).length > 0) {
         // @ts-ignore
         this._panel.webview.postMessage({ fileType: 'solidity' });
       } else {
