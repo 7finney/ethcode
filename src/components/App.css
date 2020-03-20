@@ -156,8 +156,9 @@
   margin: 20px auto;
 }
 
-.account_balance {
-  margin: 10px 0;
+.account-brief {
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .account_form {

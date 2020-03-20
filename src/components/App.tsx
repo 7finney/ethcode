@@ -127,15 +127,7 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data.localAccounts) {
-        console.log("in App");
-        
-        console.log(data.localAccounts);
-        
-        this.setState({
-          localAcc: setLocalAccountOption(data.localAccounts)
-        }, () => {
-          this.mergeAccount();
-        })
+        this.setState({ localAcc: setLocalAccountOption(data.localAccounts) }, () => { this.mergeAccount() });
       }
 
       if (data.compiled) {
@@ -271,12 +263,6 @@ class App extends Component<IProps, IState> {
   mergeAccount = () => {
     const { localAcc, testNetAcc } = this.state;
 
-    console.log("local");
-    console.log(JSON.stringify(localAcc));
-
-    // console.log("testNet");
-    // console.log(JSON.stringify(testNetAcc));
-    
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       this.setState({
@@ -310,7 +296,6 @@ class App extends Component<IProps, IState> {
   }
 
   componentDidUpdate(_: any) {
-
     if (this.props.accounts !== this.state.accounts) {
       this.setState({
         accounts: this.props.accounts
@@ -469,21 +454,12 @@ class App extends Component<IProps, IState> {
                 </div> : null
               }
               {accounts.length > 0 && (
-                <div>
-                  <b>Account: </b> {accountName && accountName.label ? accountName.label : accounts[0]}
-                  <div className="account_balance">
-                    <b>Account Balance: </b> {balance}
-                  </div>
+                <div className="account-brief">
+                  <b>Account: </b><span>{ accountName && accountName.label ? accountName.label : accounts[0] }</span>
+                  <br/>
+                  <b>Balance: </b><span>{ balance }</span>
                 </div>
               )}
-              {
-                <form onSubmit={this.handleTransactionSubmit} className="account_form">
-                  <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} onChange={this.handelChangeFromAddress} placeholder="fromAddress" />
-                  <input type="text" className="custom_input_css" name="toAddress" placeholder="toAddress" />
-                  <input type="text" className="custom_input_css" name="amount" placeholder="wei_value" />
-                  <input type="submit" className="custom_button_css" value="Send" />
-                </form>
-              }
               {
                 (compiled && fileName) &&
                 <div className="container-margin">
@@ -588,7 +564,14 @@ function mapStateToProps({ test, accountStore, debugStore }: any) {
   };
 }
 
-export default connect(
-  mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, setAccountBalance, setTestNetId, setCurrAccChange, clearDeployedResult, setCallResult }
-)(App);
+export default connect(mapStateToProps, {
+  addTestResults,
+  addFinalResultCallback,
+  clearFinalResult,
+  setDeployedResult,
+  setAccountBalance,
+  setTestNetId,
+  setCurrAccChange,
+  clearDeployedResult,
+  setCallResult
+})(App);

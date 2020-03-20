@@ -17,14 +17,13 @@ function createKeyPair(path: string, pswd: string) {
   if (!fs.existsSync(`${path}/keystore`)) {
     fs.mkdirSync(`${path}/keystore`);
   }
-  var file = keythereum.exportToFile(keyObject, `${path}/keystore`);
+  keythereum.exportToFile(keyObject, `${path}/keystore`);
   listAddresses(path);
-  // fs.writeFileSync(`${path}/keystore/0x${keyObject.address}.json`, JSON.stringify(keyObject));
 }
 
 // delete privateKey against address
 function deleteKeyPair(keyStorePath: string, address: string) {
-  var fd: any;
+  let fd: any;
   try {
     fd = fs.readdir(keyStorePath + "/keystore", (err, files) => {
       if (err) {
@@ -57,9 +56,7 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 
 // list all local addresses
 function listAddresses(keyStorePath: string) {
-  // @ts-ignore
-  process.send({ localAddresses: 'hello' });
-  var localAddresses: object;
+  let localAddresses: object;
   fs.readdir(keyStorePath + "/keystore", (err, files) => {
     if (err) {
       // @ts-ignore
@@ -67,7 +64,7 @@ function listAddresses(keyStorePath: string) {
     }
     if(files) {
       localAddresses = files.map(file => {
-        var arr = file.split('--')
+        let arr = file.split('--')
         return { pubAddress: ('0x' + arr[arr.length - 1]), checksumAddress: toChecksumAddress(('0x' + arr[arr.length - 1])) };
       });
     }
