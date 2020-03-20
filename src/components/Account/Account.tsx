@@ -46,7 +46,11 @@ class Account extends Component<IProps, IState> {
 
     window.addEventListener("message", async event => {
       const { data } = event;
-      if (data.publicAdd) {
+      console.log("data log: ")
+      
+      if (data.localAccounts) {
+        console.log("localAccounts: ")
+        console.log(JSON.stringify(data.localAccounts));
         this.setState({ publicAddress: data.publicAdd, showButton: false })
       }
     })
