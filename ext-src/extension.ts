@@ -5,8 +5,9 @@ import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
 import * as uuid from "uuid/v1";
 import axios from "axios";
+
 // @ts-ignore
-var jwtToken: any;
+let jwtToken: any;
 const machineID = uuid();
 
 async function genToken() {
@@ -19,6 +20,7 @@ async function genToken() {
     return { "machineID": machineID, "token": null };
   }
 }
+
 async function verifyToken(token: string | unknown) {
   const url = `https://auth.ethco.de/verifyToken/${token}`;
   try {
@@ -71,7 +73,6 @@ function getToken() {
 function success(msg: string) {
   vscode.window.showInformationMessage(msg, 'Dismiss')
 }
-
 function warning(msg: string) {
   vscode.window.showWarningMessage(msg, 'Dismiss')
 }
@@ -88,7 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
         errorToast("Something went worng");
       } finally {
         ReactPanel.createOrShow(context.extensionPath);
-        success('welcome to Ethcode');
+        success('Welcome to Ethcode');
       }
     })
   );
@@ -190,6 +191,15 @@ class ReactPanel {
               errorToast(error);
             }
           }
+        } else if (message.command === 'gen-keypair') {
+          this.genKeyPair(message.payload, this._extensionPath);
+        } else if (message.command === 'delete-keyPair') {
+          this.deleteKeyPair(message.payload, this._extensionPath);
+        } else if (message.command === 'get-localAccounts') {
+          this.getLocalAccounts(this._extensionPath);
+        } else if (message.command === 'send-ether') {
+          this.sendEther(message.payload, message.testNetId);
+
         }
       },
       null,
@@ -226,17 +236,17 @@ class ReactPanel {
   public checkFileName() {
     vscode.window.onDidChangeActiveTextEditor(changeEvent => {
       // @ts-ignore
-      const panelName = changeEvent._documentData._uri.fsPath;
+      const panelName = (changeEvent && changeEvent._documentData) ? changeEvent._documentData._uri.fsPath : undefined;
 
       const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
 
       // @ts-ignore
-      if (panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
+      if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
         // @ts-ignore
         this._panel.webview.postMessage({ fileType: 'vyper' });
         // @ts-ignore
-      } else if (panelName.match(regexSol) && panelName.match(regexSol).length > 0) {
+      } else if (panelName && panelName.match(regexSol) && panelName.match(regexSol).length > 0) {
         // @ts-ignore
         this._panel.webview.postMessage({ fileType: 'solidity' });
       } else {
@@ -258,6 +268,9 @@ class ReactPanel {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
     return fork(path.join(__dirname, "vyp-worker.js"));
+  }
+  private createAccWorker(): ChildProcess {
+    return fork(path.join(__dirname, "accWorker.js"));
   }
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
     // solidity compiler code goes bellow
@@ -338,6 +351,44 @@ class ReactPanel {
       }
     });
   }
+  private genKeyPair(password: string, ksPath: string): void {
+    const accWorker = this.createAccWorker();
+    console.dir("Account worker invoked with WorkerID : ", accWorker.pid);
+    // TODO: implementation according to the acc_system frontend
+    accWorker.on("message", (m: any) => {
+      (m.checksumAddress && m.checksumAddress.length > 0) ? this._panel.webview.postMessage({ newAccount: m.checksumAddress }) : this._panel.webview.postMessage({ error: m.error });
+      if (m.localAddresses) {
+        this._panel.webview.postMessage({ localAccounts: m.localAddresses });
+      }
+    });
+    accWorker.send({ command: "create-account", pswd: password, ksPath });
+  }
+
+  private deleteKeyPair(publicKey: string, keyStorePath: string) {
+    const accWorker = this.createAccWorker();
+
+    accWorker.on("message", (m: any) => {
+      m.resp ? success(m.resp) : errorToast(m.error);
+      m.resp ? this._panel.webview.postMessage({ resp: m.resp }) : null;
+      if (m.localAddresses) {
+        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
+      }
+    })
+    accWorker.send({ command: "delete-keyPair", address: publicKey, keyStorePath });
+  }
+
+  private getLocalAccounts(keyStorePath: string) {
+    const accWorker = this.createAccWorker();
+
+    accWorker.on("message", (m: any) => {
+      console.log(JSON.stringify(m));
+      if (m.localAddresses) {
+        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
+      }
+    })
+    accWorker.send({ command: "get-localAccounts", keyStorePath });
+  }
+
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
     console.dir("WorkerID: ", debugWorker.pid);
@@ -409,6 +460,9 @@ class ReactPanel {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+      if (m.transactionResult) {
+        success("Successfully send Ether")
+      }
     });
     sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
   }
@@ -551,17 +605,12 @@ class ReactPanel {
         <title>ETH code</title>
         <link rel="stylesheet" type="text/css" href="${styleUri}">
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-        <base href="${vscode.Uri.file(
-      path.join(this._extensionPath, "build")
-    ).with({
-      scheme: "vscode-resource"
-    })}/">
+        <base href="${vscode.Uri.file(path.join(this._extensionPath, "build")).with({scheme: "vscode-resource"})}/">
       </head>
 
       <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
-        
         <script nonce="${nonce}" src="${scriptUri}"></script>
       </body>
       </html>`;
@@ -570,8 +619,7 @@ class ReactPanel {
 
 function getNonce() {
   let text = "";
-  const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   for (let i = 0; i < 32; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }

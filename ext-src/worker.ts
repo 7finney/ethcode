@@ -61,9 +61,7 @@ function handleLocal(pathString: string, filePath: any) {
     return;
   } else {
     const o = { encoding: "UTF-8" };
-    const p = pathString
-      ? path.resolve(pathString, filePath)
-      : path.resolve(pathString, filePath);
+    const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
     const content = fs.readFileSync(p, o);
     return content;
   }
@@ -200,6 +198,7 @@ process.on("message", async m => {
   // send wei_value to a address
   if(m.command === "send-ether") {
     const transactionInfo = m.transactionInfo;
+    console.log(transactionInfo)
     const c = {
       callInterface: {
         command: 'send-ether',

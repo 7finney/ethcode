@@ -14,7 +14,7 @@ import {
 } from "../actions";
 import "./App.css";
 
-import { solidityVersion, setSelectorOption, setFileSelectorOptions } from '../helper';
+import { solidityVersion, setSelectorOption, setFileSelectorOptions, setLocalAccountOption } from '../helper';
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
@@ -65,7 +65,10 @@ interface IState {
   selctorAccounts: any;
   contracts: any;
   files: any;
-  accountName: string;
+  accountName: IOpt;
+  testNets: object[];
+  localAcc: any[],
+  testNetAcc: any[]
 }
 interface IOpt {
   value: string;
@@ -99,9 +102,19 @@ class App extends Component<IProps, IState> {
       testNetId: '',
       fileType: '',
       traceError: '',
-      accountName: ''
+      accountName: {
+        label: '',
+        value: ''
+      },
+      localAcc: [],
+      testNetAcc: [],
+      testNets: [
+        { value: 'ganache', label: 'Ganache' },
+        { value: '3', label: 'Ropsten' },
+        { value: '4', label: 'Rinkeby' },
+        { value: '5', label: "Görli" }
+      ]
     };
-    this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
   public componentDidMount() {
     window.addEventListener("message", async event => {
@@ -111,6 +124,9 @@ class App extends Component<IProps, IState> {
         this.setState({
           fileType: data.fileType
         });
+      }
+      if (data.localAccounts) {
+        this.setState({ localAcc: setLocalAccountOption(data.localAccounts) }, () => { this.mergeAccount() });
       }
 
       if (data.compiled) {
@@ -129,7 +145,6 @@ class App extends Component<IProps, IState> {
         var contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
         var files = setFileSelectorOptions(Object.keys(compiled.sources))
         this.setState({
-
           compiled,
           fileName,
           processMessage: "",
@@ -209,7 +224,11 @@ class App extends Component<IProps, IState> {
         const balance = data.fetchAccounts.balance
         const currAccount = data.fetchAccounts.accounts[0]
         const accounts = data.fetchAccounts.accounts
-        this.setState({ selctorAccounts: setSelectorOption(accounts) })
+        this.setState({
+          testNetAcc: setSelectorOption(accounts)
+        }, () => {
+          this.mergeAccount();
+        })
         const accData = {
           balance,
           currAccount,
@@ -229,16 +248,53 @@ class App extends Component<IProps, IState> {
         this.props.setCurrAccChange(accData)
         this.setState({ balance: this.props.accountBalance });
       }
-      // TODO: handle error message
     });
+    // TODO: handle error message
     // Component mounted start getting gRPC things
     vscode.postMessage({
       command: "run-getAccounts"
     });
+    vscode.postMessage({
+      command: "get-localAccounts"
+    });
+  }
+
+  mergeAccount = () => {
+    const { localAcc, testNetAcc } = this.state;
+
+    // merge local accounts and test net accounts
+    if (localAcc.length > 0 && testNetAcc.length > 0) {
+      this.setState({
+        selctorAccounts: [
+          {
+            label: 'Ganache',
+            options: testNetAcc
+          }, {
+            label: 'Local Accounts',
+            options: localAcc
+          }
+        ]
+      })
+    } else if (localAcc.length > 0) {
+      this.setState({
+        selctorAccounts: [{
+          label: 'Local Accounts',
+          options: localAcc
+        }]
+      })
+    } else if (testNetAcc.length > 0) {
+      this.setState({
+        selctorAccounts: [{
+          label: 'Ganache',
+          options: testNetAcc
+        }]
+      })
+    } else {
+      this.setState({ selctorAccounts: [] })
+    }
   }
 
   componentDidUpdate(_: any) {
-
     if (this.props.accounts !== this.state.accounts) {
       this.setState({
         accounts: this.props.accounts
@@ -252,24 +308,6 @@ class App extends Component<IProps, IState> {
     }
   }
 
-  private handleTransactionSubmit(event: any) {
-    event.preventDefault();
-    const { currAccount } = this.state;
-    const data = new FormData(event.target);
-    const transactionInfo = {
-      fromAddress: currAccount,
-      toAddress: data.get("toAddress"),
-      amount: data.get("amount")
-    };
-    try {
-      vscode.postMessage({
-        command: "send-ether",
-        payload: transactionInfo
-      });
-    } catch (err) {
-      this.setState({ error: err });
-    }
-  }
   public changeFile = (selectedOpt: IOpt) => {
     this.setState({ fileName: selectedOpt.value }, () => {
       this.changeContract({
@@ -300,10 +338,10 @@ class App extends Component<IProps, IState> {
   }
 
   public getSelectedAccount = (account: any) => {
-    this.setState({ currAccount: account.value, accountName: account.label });
+    this.setState({ currAccount: account.value, accountName: account });
     vscode.postMessage({
       command: 'get-balance',
-      account: account.value
+      account: account.label
     });
   }
 
@@ -334,7 +372,9 @@ class App extends Component<IProps, IState> {
       selctorAccounts,
       contracts,
       files,
-      accountName
+      accountName,
+      testNets,
+      testNetAcc
     } = this.state;
 
     return (
@@ -350,6 +390,14 @@ class App extends Component<IProps, IState> {
             defaultValue={availableVersions[0]}
           />
         )}
+        {
+          <Selector
+            getSelectedOption={this.getSelectedNetwork}
+            options={testNets}
+            placeholder='Select Network'
+            defaultValue={testNets[0]}
+          />
+        }
         {compiled && Object.keys(compiled.sources).length > 0 && (
           <Selector
             options={files}
@@ -359,41 +407,22 @@ class App extends Component<IProps, IState> {
           />
         )}
         {
-          <Selector
-            getSelectedOption={this.getSelectedNetwork}
-            options={[
-              { value: 'ganache', label: 'Ganache' },
-              { value: '3', label: 'Ropsten' },
-              { value: '4', label: 'Rinkeby' },
-              { value: '5', label: "Görli" }
-            ]}
-            placeholder='Select Network'
-            defaultValue={{ value: 'ganache', label: 'Ganache' }}
-          />
-        }
-        {
           transactionResult &&
-          <div>
-            <pre>{transactionResult}</pre>
+          <div className="tx-info">
+            <span>Last transaction:</span><pre>{transactionResult}</pre>
           </div>
         }
         <p>
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
             <TabList className="react-tabs tab-padding">
               <div className="tab-container">
-                <Tab>Account</Tab>
                 <Tab>Main</Tab>
+                <Tab>Account</Tab>
                 <Tab>Debug</Tab>
                 <Tab>Test</Tab>
               </div>
             </TabList>
-
-            {/* Account Panel */}
-
-            <TabPanel>
-              <Account accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
-            </TabPanel>
-
+            {/* Main panel */}
             <TabPanel className="react-tab-panel">
               {!compiled ?
                 <div className="instructions">
@@ -406,21 +435,12 @@ class App extends Component<IProps, IState> {
                 </div> : null
               }
               {accounts.length > 0 && (
-                <div>
-                  <b>Account: </b> { accountName }
-                  <div className="account_balance">
-                    <b>Account Balance: </b> {balance}
-                  </div>
+                <div className="account-brief">
+                  <b>Account: </b><span>{ accountName && accountName.label ? accountName.label : accounts[0] }</span>
+                  <br/>
+                  <b>Balance: </b><span>{ balance }</span>
                 </div>
               )}
-              {
-                <form onSubmit={this.handleTransactionSubmit} className="account_form">
-                  <input type="text" className="custom_input_css" name="fromAddress" value={currAccount} onChange={this.handelChangeFromAddress} placeholder="fromAddress" />
-                  <input type="text" className="custom_input_css" name="toAddress" placeholder="toAddress" />
-                  <input type="text" className="custom_input_css" name="amount" placeholder="wei_value" />
-                  <input type="submit" className="custom_button_css" value="Send" />
-                </form>
-              }
               {
                 (compiled && fileName) &&
                 <div className="container-margin">
@@ -463,9 +483,21 @@ class App extends Component<IProps, IState> {
                   </div>
                 </div>}
             </TabPanel>
+            {/* Account Panel */}
+            <TabPanel>
+              <Account
+                vscode={vscode}
+                defaultValue={(accountName && accountName.label) ? accountName : testNetAcc[0]}
+                accounts={selctorAccounts}
+                getSelectedAccount={this.getSelectedAccount}
+                accBalance={balance}
+              />
+            </TabPanel>
+            {/* Debug panel */}
             <TabPanel className="react-tab-panel">
               <DebugDisplay deployedResult={deployedResult} vscode={vscode} testNetId={testNetId} txTrace={txTrace} traceError={traceError} />
             </TabPanel>
+            {/* Test panel */}
             <TabPanel className="react-tab-panel">
               {this.props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
             </TabPanel>
@@ -513,7 +545,14 @@ function mapStateToProps({ test, accountStore, debugStore }: any) {
   };
 }
 
-export default connect(
-  mapStateToProps,
-  { addTestResults, addFinalResultCallback, clearFinalResult, setDeployedResult, setAccountBalance, setTestNetId, setCurrAccChange, clearDeployedResult, setCallResult }
-)(App);
+export default connect(mapStateToProps, {
+  addTestResults,
+  addFinalResultCallback,
+  clearFinalResult,
+  setDeployedResult,
+  setAccountBalance,
+  setTestNetId,
+  setCurrAccChange,
+  clearDeployedResult,
+  setCallResult
+})(App);

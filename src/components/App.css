@@ -94,6 +94,26 @@
   border-radius: 2px;
 }
 
+.tx-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #38ffAf;
+  height: 50px;
+  margin: 20px 15px;
+  text-align: center;
+  border-radius: 2px;
+}
+
+.tx-info span {
+  display: inline;
+}
+
+.tx-info pre {
+  overflow: auto;
+  display: inline;
+}
+
 .container-margin {
   margin-bottom: 40px;
   height: 6vh;
@@ -156,8 +176,9 @@
   margin: 20px auto;
 }
 
-.account_balance {
-  margin: 10px 0;
+.account-brief {
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .account_form {
