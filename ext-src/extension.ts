@@ -196,6 +196,9 @@ class ReactPanel {
           this.deleteKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'get-localAccounts') {
           this.getLocalAccounts(this._extensionPath);
+        } else if (message.command === 'send-ether') {
+          this.sendEther(message.payload, message.testNetId);
+
         }
       },
       null,
@@ -451,9 +454,16 @@ class ReactPanel {
     deployWorker.send({ command: "get-gas-estimate", payload, jwtToken, testnetId: testNetId });
   }
   private sendEther(payload: any, testNetId: string) {
+    console.log("vchahvc");
+    console.log(JSON.stringify(payload));
+    
+    
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+      if (m.transactionResult) {
+        success("Successfully send Ether")
+      }
     });
     sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
   }
