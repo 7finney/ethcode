@@ -127,6 +127,8 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data.localAccounts) {
+        console.log("in App");
+        
         console.log(data.localAccounts);
         
         this.setState({
@@ -373,7 +375,7 @@ class App extends Component<IProps, IState> {
     this.setState({ currAccount: account.value, accountName: account });
     vscode.postMessage({
       command: 'get-balance',
-      account: account.value
+      account: account.label
     });
   }
 

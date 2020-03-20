@@ -32,15 +32,15 @@ function deleteKeyPair(keyStorePath: string, address: string) {
         process.send({ error: 'Unable to scan directory: ' + err });
       }
       files.forEach((file) => {
-        if (file.includes(address)) {
+        if (file.includes(address.replace('0x', ''))) {
           fs.unlinkSync(`${keyStorePath}/keystore/${file}`);
           listAddresses(keyStorePath);
+          // @ts-ignore
+          process.send({ resp: "Account deleted successfully" })
           return ;
         }
       });
     });
-    // @ts-ignore
-    process.send({ resp: "Account deleted successfully" })
   } catch (error) {
     // @ts-ignore
     process.send({ error: error })
@@ -57,6 +57,8 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 
 // list all local addresses
 function listAddresses(keyStorePath: string) {
+  // @ts-ignore
+  process.send({ localAddresses: 'hello' });
   var localAddresses: object;
   fs.readdir(keyStorePath + "/keystore", (err, files) => {
     if (err) {

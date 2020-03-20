@@ -14,7 +14,7 @@ interface IProps {
 
 interface IState {
   accounts: string[],
-  currAccount: string,
+  currAccount: any,
   balance: number,
   publicAddress: string,
   showButton: boolean,
@@ -27,7 +27,7 @@ class Account extends Component<IProps, IState> {
     super(props);
     this.state = {
       accounts: [],
-      currAccount: this.props.defaultValue.label,
+      currAccount: this.props.defaultValue,
       balance: 0,
       publicAddress: '',
       showButton: false,
@@ -47,11 +47,11 @@ class Account extends Component<IProps, IState> {
     window.addEventListener("message", async event => {
       const { data } = event;
       console.log("data log: ")
-      
-      if (data.localAccounts) {
-        console.log("localAccounts: ")
-        console.log(JSON.stringify(data.localAccounts));
-        this.setState({ publicAddress: data.publicAdd, showButton: false })
+      if(data.newAccount) {
+        this.setState({
+          publicAddress: data.newAccount,
+          showButton: false
+        })
       }
     })
 
@@ -66,7 +66,7 @@ class Account extends Component<IProps, IState> {
 
   getSelectedAccount = (account: any) => {
     this.setState({
-      currAccount: account.label
+      currAccount: account
     })
     this.props.getSelectedAccount(account)
   }
@@ -93,7 +93,7 @@ class Account extends Component<IProps, IState> {
     try {
       vscode.postMessage({
         command: "delete-keyPair",
-        payload: currAccount
+        payload: currAccount.value
       });
     } catch (err) {
       console.error(err);
@@ -181,7 +181,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">From </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" value={currAccount} type="text" placeholder="from" />
+            <input className="input custom_input_css" value={currAccount.label} type="text" placeholder="from" />
           </div>
         </div>
 
