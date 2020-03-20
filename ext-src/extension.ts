@@ -356,8 +356,10 @@ class ReactPanel {
     // TODO: implementation according to the acc_system frontend
     accWorker.on("message", (m: any) => {
       m.pubAddress ? this._panel.webview.postMessage({ publicAdd: m.pubAddress }) : this._panel.webview.postMessage({ error: m.error })
-      if (m.localAddresses) {
-        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
+      console.log(JSON.stringify(m));
+      
+      if (m.checksumAddress) {
+        this._panel.webview.postMessage({ localAccounts: m.checksumAddress })
       }
     })
     accWorker.send({ command: "create-account", pswd: password, ksPath });
@@ -368,8 +370,9 @@ class ReactPanel {
 
     accWorker.on("message", (m: any) => {
       m.resp ? success(m.resp) : errorToast(m.error)
-      if (m.localAddresses) {
-        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
+      console.log(JSON.stringify(m));
+      if (m.checksumAddress) {
+        this._panel.webview.postMessage({ localAccounts: m.checksumAddress })
       }
     })
     accWorker.send({ command: "delete-keyPair", address: publicKey, keyStorePath });
@@ -379,6 +382,9 @@ class ReactPanel {
     const accWorker = this.createAccWorker();
 
     accWorker.on("message", (m: any) => {
+      console.log("hkckcc");
+      console.log(JSON.stringify(m));
+      
       if (m.localAddresses) {
         this._panel.webview.postMessage({ localAccounts: m.localAddresses })
       }

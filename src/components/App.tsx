@@ -14,7 +14,7 @@ import {
 } from "../actions";
 import "./App.css";
 
-import { solidityVersion, setSelectorOption, setFileSelectorOptions } from '../helper';
+import { solidityVersion, setSelectorOption, setFileSelectorOptions, setLocalAccountOption } from '../helper';
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
@@ -127,8 +127,10 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data.localAccounts) {
+        console.log(data.localAccounts);
+        
         this.setState({
-          localAcc: setSelectorOption(data.localAccounts)
+          localAcc: setLocalAccountOption(data.localAccounts)
         }, () => {
           this.mergeAccount();
         })
@@ -266,6 +268,12 @@ class App extends Component<IProps, IState> {
 
   mergeAccount = () => {
     const { localAcc, testNetAcc } = this.state;
+
+    console.log("local");
+    console.log(JSON.stringify(localAcc));
+
+    // console.log("testNet");
+    // console.log(JSON.stringify(testNetAcc));
     
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {

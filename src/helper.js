@@ -10,6 +10,18 @@ export function setSelectorOption(optionsArray) {
   return options;
 }
 
+export function setLocalAccountOption(optionsArray) {
+  var options = [];
+  optionsArray.map(obj => {
+    const optItm = {
+      value: obj.pubAddress,
+      label: obj.checksumAddress
+    };
+    return options.push(optItm);
+  });
+  return options;
+}
+
 export function setFileSelectorOptions(optionsArray) {
   var options = [];
   optionsArray.map(file => {
