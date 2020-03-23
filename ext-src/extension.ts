@@ -268,28 +268,8 @@ class ReactPanel {
     // });
     return fork(path.join(__dirname, "vyp-worker.js"));
   }
-<<<<<<< HEAD
   private createAccWorker(): ChildProcess {
     return fork(path.join(__dirname, "accWorker.js"));
-=======
-  public createAccount(): void {
-    const accWorker = this.createWorker();
-    accWorker.on("message", (m: any) => {
-      if(m.responses){
-        console.log("Responses: ")
-        console.log(m.responses);
-      }
-      if(m.transactionReceipt) {
-        console.log("transactionReceipt: ")
-        console.log(m.transactionReceipt);
-      }
-    });
-    accWorker.send({
-      command: "create-Account",
-      payload: "",
-      jwtToken
-    });
->>>>>>> origin/custom_deploy
   }
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
     // solidity compiler code goes bellow
