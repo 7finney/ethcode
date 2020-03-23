@@ -21,10 +21,10 @@ import ContractDeploy from "./ContractDeploy";
 import Selector from './Selector';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
+import Account from './Account/Account';
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
-import Account from "./Account/Account";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -448,6 +448,7 @@ class App extends Component<IProps, IState> {
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
             <TabList className="react-tabs tab-padding">
               <div className="tab-container">
+                <Tab>Account</Tab>
                 <Tab>Main</Tab>
                 <Tab>Account</Tab>
                 <Tab>Debug</Tab>
@@ -455,6 +456,9 @@ class App extends Component<IProps, IState> {
               </div>
             </TabList>
             {/* Main panel */}
+            <TabPanel className="react-tab-panel">
+            <Account vscode={vscode} defaultValue={(accountName && accountName.label) ? accountName : testNetAcc[0]} accounts={selctorAccounts} getSelectedAccount={this.getSelectedAccount} accBalance={balance} />
+            </TabPanel>
             <TabPanel className="react-tab-panel">
               {!compiled ?
                 <div className="instructions">
