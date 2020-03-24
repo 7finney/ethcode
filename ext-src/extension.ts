@@ -405,6 +405,7 @@ class ReactPanel {
   // Deploy contracts
   private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
+    var f: boolean = false;
     deployWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
@@ -413,7 +414,11 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
+    if(f) {
+      deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
+    } else {
+      deployWorker.send({ command: "custom-deploy-contract", payload, jwtToken, testnetId: testNetId });
+    }
   }
   // get accounts
   public getAccounts() {
@@ -436,11 +441,16 @@ class ReactPanel {
   }
   // Call contract method
   private runContractCall(payload: any, testNetId: string) {
+    var f: boolean;
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
     })
-    callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
+    if(f) {
+      callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
+    } else {
+      callWorker.send({ command: "custom-method-call", payload, jwtToken, testnetId: testNetId });
+    }
   }
   // Get gas estimates
   private runGetGasEstimate(payload: any, testNetId: string) {
