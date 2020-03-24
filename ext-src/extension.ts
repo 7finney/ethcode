@@ -405,7 +405,7 @@ class ReactPanel {
   // Deploy contracts
   private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
-    var f: boolean = false;
+    var f: boolean = true;
     deployWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
@@ -441,7 +441,7 @@ class ReactPanel {
   }
   // Call contract method
   private runContractCall(payload: any, testNetId: string) {
-    var f: boolean;
+    var f: boolean = true;
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
