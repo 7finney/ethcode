@@ -414,7 +414,7 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    if(f) {
+    if (f) {
       deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
     } else {
       deployWorker.send({ command: "custom-deploy-contract", payload, jwtToken, testnetId: testNetId });
@@ -446,7 +446,7 @@ class ReactPanel {
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
     })
-    if(f) {
+    if (f) {
       callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
     } else {
       callWorker.send({ command: "custom-method-call", payload, jwtToken, testnetId: testNetId });
@@ -615,7 +615,7 @@ class ReactPanel {
         <title>ETH code</title>
         <link rel="stylesheet" type="text/css" href="${styleUri}">
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-        <base href="${vscode.Uri.file(path.join(this._extensionPath, "build")).with({scheme: "vscode-resource"})}/">
+        <base href="${vscode.Uri.file(path.join(this._extensionPath, "build")).with({ scheme: "vscode-resource" })}/">
       </head>
 
       <body>

@@ -500,7 +500,7 @@ class App extends Component<IProps, IState> {
                   contractName={contractName}
                   bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
                   abi={compiled.contracts[fileName][contractName].abi}
-                  // vscode={vscode}
+                  vscode={vscode}
                   errors={error}
                 />
               }

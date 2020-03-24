@@ -1,33 +1,87 @@
 import React, { Component } from 'react';
 import "./deploy.css";
+import { connect } from "react-redux";
 
 export interface IProps {
   contractName: string;
   bytecode: any;
   abi: any;
-  // vscode: any;
+  vscode: any;
   errors: any;
+  compiledResult: object;
+  testNetId: string
 }
 
 export interface IState {
   showUnsignedTxn: boolean;
+  constructorInput: object[];
+  error: string;
+  deployed: object;
+  gasEstimate: number;
 }
 
 class Deploy extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props)
     this.state = {
-      showUnsignedTxn: false
+      showUnsignedTxn: false,
+      constructorInput: [],
+      error: '',
+      deployed: {},
+      gasEstimate: 0
     }
+  }
+
+  componentDidMount() {
+
+    window.addEventListener("message", async event => {
+      const { data } = event;
+
+      if(data.gasEstimate) {
+        this.setState({ gasEstimate: data.gasEstimate })
+      }
+    })
+
+    // this.setState({ deployed: this.props.compiledResult });
+    const { abi } = this.props;
+    // for (let i in abi) {
+    //   if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
+    //     const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
+    //     for (let j in constructorInput) {
+    //       constructorInput[j]['value'] = "";
+    //     }
+    //     this.setState({ constructorInput: constructorInput });
+    //     break;
+    //   }
+    // }
   }
 
   handlerToggle = () => {
     this.setState({ showUnsignedTxn: true })
   }
 
+  getGasEstimate = () => {
+    const { vscode, bytecode, abi, testNetId } = this.props;
+    const { constructorInput } = this.state;
+
+    try {
+      vscode.postMessage({
+        command: "run-get-gas-estimate",
+        payload: {
+          abi,
+          bytecode,
+          params: constructorInput
+        },
+        testNetId
+      });
+    } catch (err) {
+      this.setState({ error: err });
+    }
+  }
+
   render() {
     const { contractName, bytecode, abi, errors } = this.props;
-    const { showUnsignedTxn } = this.state;
+    const { showUnsignedTxn, gasEstimate } = this.state;
 
     return (
       <div className="deploy_container">
@@ -73,10 +127,10 @@ class Deploy extends Component<IProps, IState> {
         {/* Get gas estimate */}
         <div className="account_row">
           <div className="input-container">
-            <button className="acc-button custom_button_css">Get gas estimate</button>
+            <button className="acc-button custom_button_css" onClick={this.getGasEstimate}>Get gas estimate</button>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" placeholder="gas supply" />
+            <input className="input custom_input_css" type="text" placeholder="gas supply" value={gasEstimate} />
           </div>
         </div>
 
@@ -116,4 +170,12 @@ class Deploy extends Component<IProps, IState> {
   }
 }
 
-export default Deploy;
+function mapStateToProps(state: any) {
+  return {
+    compiledResult: state.compiledStore.compiledresult,
+    callResult: state.compiledStore.callResult,
+    testNetId: state.debugStore.testNetId
+  };
+}
+
+export default connect(mapStateToProps, {})(Deploy);
