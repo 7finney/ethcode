@@ -59,7 +59,6 @@ node_modules/array-uniq
 node_modules/array-unique
 node_modules/arrify
 node_modules/asap
-node_modules/asn1.js
 node_modules/asn1
 node_modules/assert-plus
 node_modules/assert
@@ -100,28 +99,19 @@ node_modules/batch
 node_modules/bcrypt-pbkdf
 node_modules/big.js
 node_modules/binary-extensions
-node_modules/bindings
 node_modules/bluebird
-node_modules/bn.js
 node_modules/body-parser
 node_modules/bonjour
 node_modules/boolbase
 node_modules/braces
-node_modules/brorand
 node_modules/browser-process-hrtime
 node_modules/browser-resolve
 node_modules/browser-stdout
-node_modules/browserify-aes
-node_modules/browserify-cipher
-node_modules/browserify-des
-node_modules/browserify-rsa
-node_modules/browserify-sign
 node_modules/browserify-zlib
 node_modules/browserslist
 node_modules/bser
 node_modules/buffer-from
 node_modules/buffer-indexof
-node_modules/buffer-xor
 node_modules/buffer
 node_modules/builtin-status-codes
 node_modules/bytes
@@ -144,7 +134,6 @@ node_modules/chokidar
 node_modules/chownr
 node_modules/chrome-trace-event
 node_modules/ci-info
-node_modules/cipher-base
 node_modules/class-utils.1
 node_modules/classnames
 node_modules/clean-css
@@ -186,12 +175,8 @@ node_modules/core-js-pure
 node_modules/core-js
 node_modules/core-util-is
 node_modules/cosmiconfig
-node_modules/create-ecdh
 node_modules/create-emotion4
-node_modules/create-hash
-node_modules/create-hmac
 node_modules/cross-spawn
-node_modules/crypto-browserify
 node_modules/css-blank-pseudo
 node_modules/css-color-names
 node_modules/css-declaration-sorter
@@ -232,7 +217,6 @@ node_modules/del
 node_modules/delayed-stream
 node_modules/delegates
 node_modules/depd
-node_modules/des.js
 node_modules/destroy
 node_modules/detect-libc
 node_modules/detect-newline
@@ -240,7 +224,6 @@ node_modules/detect-node
 node_modules/detect-port-alt
 node_modules/diff-sequences
 node_modules/diff
-node_modules/diffie-hellman
 node_modules/dir-glob
 node_modules/dns-equal
 node_modules/dns-packet
@@ -262,7 +245,6 @@ node_modules/duplexify
 node_modules/ecc-jsbn
 node_modules/ee-first
 node_modules/electron-to-chromium22
-node_modules/elliptic
 node_modules/emoji-regex
 node_modules/emojis-list
 node_modules/emotion3
@@ -302,7 +284,6 @@ node_modules/etag
 node_modules/eventemitter3
 node_modules/events
 node_modules/eventsource
-node_modules/evp_bytestokey
 node_modules/exec-sh
 node_modules/execa
 node_modules/exit
@@ -324,7 +305,6 @@ node_modules/figgy-pudding
 node_modules/figures
 node_modules/file-entry-cache
 node_modules/file-loader
-node_modules/file-uri-to-path
 node_modules/filesize
 node_modules/fill-range
 node_modules/finalhandler
@@ -375,11 +355,8 @@ node_modules/has-unicode
 node_modules/has-value
 node_modules/has-values
 node_modules/has
-node_modules/hash-base
-node_modules/hash.js
 node_modules/he
 node_modules/hex-color-regex
-node_modules/hmac-drbg
 node_modules/hoist-non-react-statics
 node_modules/hosted-git-info
 node_modules/hpack.js
@@ -549,7 +526,6 @@ node_modules/mamacro
 node_modules/map-age-cleaner
 node_modules/map-cache
 node_modules/map-visit
-node_modules/md5.js
 node_modules/mdn-data
 node_modules/media-typer
 node_modules/mem
@@ -562,14 +538,11 @@ node_modules/merge2
 node_modules/methods
 node_modules/microevent.ts
 node_modules/micromatch0
-node_modules/miller-rabin
 node_modules/mime-db
 node_modules/mime-types5
 node_modules/mime
 node_modules/mimic-fn
 node_modules/mini-css-extract-plugin
-node_modules/minimalistic-assert
-node_modules/minimalistic-crypto-utils
 node_modules/minimist
 node_modules/minipass
 node_modules/minizlib
@@ -582,7 +555,6 @@ node_modules/move-concurrently
 node_modules/multicast-dns-service-types
 node_modules/multicast-dns
 node_modules/mute-stream
-node_modules/nan
 node_modules/nanomatch3
 node_modules/natural-compare
 node_modules/needle
@@ -650,7 +622,6 @@ node_modules/pako0
 node_modules/parallel-transform
 node_modules/param-case
 node_modules/parent-module
-node_modules/parse-asn1
 node_modules/parse-json
 node_modules/parse5
 node_modules/parseurl
@@ -662,7 +633,6 @@ node_modules/path-is-inside
 node_modules/path-key
 node_modules/path-to-regexp
 node_modules/path-type
-node_modules/pbkdf27
 node_modules/performance-now
 node_modules/pify
 node_modules/pinkie-promise
@@ -753,14 +723,12 @@ node_modules/private
 node_modules/process-nextick-args
 node_modules/process0
 node_modules/progress
-node_modules/promise-inflight
 node_modules/promise
 node_modules/prompts
 node_modules/prop-types
 node_modules/proxy-addr
 node_modules/prr
 node_modules/psl
-node_modules/public-encrypt
 node_modules/pump
 node_modules/pumpify
 node_modules/q
@@ -768,7 +736,6 @@ node_modules/qs
 node_modules/querystring-es3
 node_modules/querystringify
 node_modules/raf
-node_modules/randombytes
 node_modules/randomfill
 node_modules/range-parser
 node_modules/raw-body
@@ -826,7 +793,6 @@ node_modules/restore-cursor
 node_modules/ret5
 node_modules/rgb-regex
 node_modules/rgba-regex
-node_modules/ripemd160
 node_modules/rsvp
 node_modules/run-async
 node_modules/run-queue
@@ -849,7 +815,6 @@ node_modules/set-blocking
 node_modules/set-value
 node_modules/setimmediate
 node_modules/setprototypeof
-node_modules/sha.js1
 node_modules/shallow-clone
 node_modules/shebang-command
 node_modules/shebang-regex
