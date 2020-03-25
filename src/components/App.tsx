@@ -177,7 +177,7 @@ class App extends Component<IProps, IState> {
       }
 
       if (data.testPanel === 'test') {
-        this.setState({ tabIndex: 2 })
+        this.setState({ tabIndex: 4 })
       }
 
       if (data.testPanel === 'main') {
@@ -349,6 +349,11 @@ class App extends Component<IProps, IState> {
     this.setState({ currAccount: event.target.value })
   }
 
+  public openAdvanceDeploy = () => {
+    console.log("sknajbajbx");
+    this.setState({ tabIndex: 2 })
+  }
+
   public render() {
     const {
       compiled,
@@ -418,7 +423,10 @@ class App extends Component<IProps, IState> {
               <div className="tab-container">
                 <Tab>Main</Tab>
                 <Tab>Account</Tab>
-                <Tab>Deploy</Tab>
+                {(compiled && fileName) ?
+                  <Tab>Deploy</Tab> :
+                  <Tab disabled>Deploy</Tab>
+                }
                 <Tab>Debug</Tab>
                 <Tab>Test</Tab>
               </div>
@@ -437,9 +445,9 @@ class App extends Component<IProps, IState> {
               }
               {accounts.length > 0 && (
                 <div className="account-brief">
-                  <b>Account: </b><span>{ accountName && accountName.label ? accountName.label : accounts[0] }</span>
-                  <br/>
-                  <b>Balance: </b><span>{ balance }</span>
+                  <b>Account: </b><span>{accountName && accountName.label ? accountName.label : accounts[0]}</span>
+                  <br />
+                  <b>Balance: </b><span>{balance}</span>
                 </div>
               )}
               {
@@ -479,6 +487,7 @@ class App extends Component<IProps, IState> {
                         deployedResult={deployedResult}
                         deployAccount={currAccount}
                         testNetId={testNetId}
+                        openAdvanceDeploy={this.openAdvanceDeploy}
                       />
                     }
                   </div>

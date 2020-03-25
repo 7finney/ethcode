@@ -9,7 +9,8 @@ export interface IProps {
   vscode: any;
   errors: any;
   compiledResult: object;
-  testNetId: string
+  testNetId: string;
+  publicKey: string;
 }
 
 export interface IState {
@@ -18,6 +19,8 @@ export interface IState {
   error: string;
   deployed: object;
   gasEstimate: number;
+  bytecode: any;
+  abi: any;
 }
 
 class Deploy extends Component<IProps, IState> {
@@ -28,22 +31,29 @@ class Deploy extends Component<IProps, IState> {
       constructorInput: [],
       error: '',
       deployed: {},
-      gasEstimate: 0
+      gasEstimate: 0,
+      bytecode: {},
+      abi: {}
     }
   }
 
   componentDidMount() {
+    const { abi, bytecode } = this.props;
+
+    this.setState({
+      abi, bytecode
+    })
+
 
     window.addEventListener("message", async event => {
       const { data } = event;
-
+      
       if(data.gasEstimate) {
         this.setState({ gasEstimate: data.gasEstimate })
       }
     })
 
     // this.setState({ deployed: this.props.compiledResult });
-    const { abi } = this.props;
     // for (let i in abi) {
     //   if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
     //     const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
@@ -80,8 +90,9 @@ class Deploy extends Component<IProps, IState> {
   }
 
   render() {
-    const { contractName, bytecode, abi, errors } = this.props;
-    const { showUnsignedTxn, gasEstimate } = this.state;
+    const { contractName, errors } = this.props;
+    const { showUnsignedTxn, gasEstimate, bytecode, abi } = this.state;
+    
 
     return (
       <div className="deploy_container">
@@ -95,7 +106,9 @@ class Deploy extends Component<IProps, IState> {
               className="input custom_input_css"
               style={{ width: '80vw' }}
               type="text"
-              value={JSON.stringify(bytecode)}
+              name="bytecode"
+              onChange={(e) => this.setState({ bytecode: e.target.value })}
+              value={bytecode}
               placeholder="byte code" />
           </div>
           <div className="abi-definition">
@@ -103,6 +116,8 @@ class Deploy extends Component<IProps, IState> {
               className="input custom_input_css"
               style={{ width: '80vw' }}
               type="text"
+              name="abi"
+              onChange={(e) => this.setState({ abi: e.target.value })}
               value={JSON.stringify(abi)}
               placeholder="abi" />
           </div>
@@ -153,7 +168,7 @@ class Deploy extends Component<IProps, IState> {
             <h4>Public key </h4>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" placeholder="public key" />
+            <input className="input custom_input_css" type="text" value={this.props.publicKey} placeholder="public key" />
           </div>
         </div>
 
@@ -174,7 +189,8 @@ function mapStateToProps(state: any) {
   return {
     compiledResult: state.compiledStore.compiledresult,
     callResult: state.compiledStore.callResult,
-    testNetId: state.debugStore.testNetId
+    testNetId: state.debugStore.testNetId,
+    publicKey: state.accountStore.currAccount
   };
 }
 

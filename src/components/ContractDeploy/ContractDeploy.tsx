@@ -16,6 +16,7 @@ interface IProps {
   callResult: object;
   deployAccount: string;
   testNetId: string;
+  openAdvanceDeploy: any;
 }
 interface IState {
   constructorInput: object[];
@@ -243,8 +244,13 @@ class ContractDeploy extends Component<IProps, IState> {
             </div>
             <div style={{ marginBottom: '5px' }}>
               <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} value="Deploy" />
+              <button
+                className={'acc-button custom_button_css'}
+                onClick={this.props.openAdvanceDeploy}>
+                Advance Deploy
+            </button>
             </div>
-            {disable ? <p style={{ color: '#FFCC00' }}>Deploy currently avalable in Ganache Testnet only</p> : '' }
+            {disable ? <p style={{ color: '#FFCC00' }}>Deploy currently avalable in Ganache Testnet only</p> : ''}
           </form>
           <div>
             <form onSubmit={this.handleGetGasEstimate}>
