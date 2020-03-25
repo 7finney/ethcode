@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import "./deploy.css";
 import { connect } from "react-redux";
+import { setUnsgTxn } from "../../actions";
 
 export interface IProps {
+  setUnsgTxn: (unsgTxn: any) => void;
   contractName: string;
   bytecode: any;
   abi: any;
@@ -11,6 +13,7 @@ export interface IProps {
   compiledResult: object;
   testNetId: string;
   publicKey: string;
+  unsignedTx: any;
 }
 
 export interface IState {
@@ -34,22 +37,29 @@ class Deploy extends Component<IProps, IState> {
       gasEstimate: 0,
       bytecode: {},
       abi: {}
-    }
+    };
+    this.handleBuildTxn = this.handleBuildTxn.bind(this);
+    this.getGasEstimate = this.getGasEstimate.bind(this);
   }
 
+  componentDidUpdate() {
+    const { unsignedTx } = this.props;
+    console.log(JSON.stringify(unsignedTx));
+  }
   componentDidMount() {
     const { abi, bytecode } = this.props;
-
-    this.setState({
-      abi, bytecode
-    })
-
+    this.setState({ abi, bytecode });
 
     window.addEventListener("message", async event => {
       const { data } = event;
       
       if(data.gasEstimate) {
-        this.setState({ gasEstimate: data.gasEstimate })
+        this.setState({ gasEstimate: data.gasEstimate });
+      }
+      if(data.buildTxResult) {
+        console.log("setting unsigned transaction");
+        console.log(JSON.stringify(data.buildTxResult));
+        this.props.setUnsgTxn(data.buildTxResult);
       }
     })
 
@@ -66,8 +76,25 @@ class Deploy extends Component<IProps, IState> {
     // }
   }
 
-  handlerToggle = () => {
-    this.setState({ showUnsignedTxn: true })
+  handleBuildTxn = () => {
+    const { vscode, bytecode, abi, publicKey, testNetId } = this.props;
+    const { constructorInput, gasEstimate } = this.state;
+    // create unsigned transaction here
+    try {
+      vscode.postMessage({
+        command: "build-rawtx",
+        payload: {
+          from: publicKey,
+          abi,
+          bytecode,
+          params: constructorInput ? constructorInput : [],
+          gasSupply: gasEstimate ? gasEstimate : 0
+        },
+        testNetId
+      });
+    } catch (error) {
+      this.setState({ error });
+    }
   }
 
   getGasEstimate = () => {
@@ -90,8 +117,8 @@ class Deploy extends Component<IProps, IState> {
   }
 
   render() {
-    const { contractName, errors } = this.props;
-    const { showUnsignedTxn, gasEstimate, bytecode, abi } = this.state;
+    const { contractName, publicKey, unsignedTx, errors } = this.props;
+    const { gasEstimate, bytecode, abi } = this.state;
     
 
     return (
@@ -150,16 +177,16 @@ class Deploy extends Component<IProps, IState> {
         </div>
 
         <div className="input-container">
-          <button className="acc-button custom_button_css" onClick={this.handlerToggle}>Create unsigned txn</button>
+          <button className="acc-button custom_button_css" onClick={this.handleBuildTxn}>Build transaction</button>
         </div>
 
-        {showUnsignedTxn &&
+        {unsignedTx &&
           (<div>
             <h6 className="contract-name inline-block highlight-success">
               Unsigned Transaction:
-          </h6>
+            </h6>
             <div className="json_input_container" style={{ marginTop: '10px' }}>
-              <textarea className="json_input custom_input_css"></textarea>
+            <textarea className="json_input custom_input_css">{JSON.stringify(unsignedTx)}</textarea>
             </div>
           </div>)}
 
@@ -168,7 +195,7 @@ class Deploy extends Component<IProps, IState> {
             <h4>Public key </h4>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" value={this.props.publicKey} placeholder="public key" />
+            <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" />
           </div>
         </div>
 
@@ -185,13 +212,20 @@ class Deploy extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps(state: any) {
+function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: any) {
+  const { compiledResult, callResult } = compiledStore;
+  const { testNetId } = debugStore;
+  const { currAccount } = accountStore;
+  const { unsignedTx } = txStore;
   return {
-    compiledResult: state.compiledStore.compiledresult,
-    callResult: state.compiledStore.callResult,
-    testNetId: state.debugStore.testNetId,
-    publicKey: state.accountStore.currAccount
+    compiledResult,
+    callResult,
+    testNetId,
+    publicKey: currAccount,
+    unsignedTx
   };
 }
 
-export default connect(mapStateToProps, {})(Deploy);
+export default connect(mapStateToProps, {
+  setUnsgTxn
+})(Deploy);

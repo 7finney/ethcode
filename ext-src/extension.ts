@@ -180,6 +180,8 @@ class ReactPanel {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
           this.getBalance(message.account);
+        } else if(message.command === "build-rawtx") {
+          this.buildRawTx(message.payload, message.testNetId);
         } else if (message.command === 'run-getAccounts') {
           if (ReactPanel.currentPanel) {
             ReactPanel.currentPanel.getAccounts();
@@ -405,7 +407,6 @@ class ReactPanel {
   // Deploy contracts
   private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
-    var f: boolean = true;
     deployWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
@@ -414,11 +415,24 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    if (f) {
-      deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
-    } else {
-      deployWorker.send({ command: "custom-deploy-contract", payload, jwtToken, testnetId: testNetId });
-    }
+    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
+  }
+  // create unsigned transactions
+  private buildRawTx(payload: any, testNetId: string) {
+    console.log("buildRawTx extension");
+    const txWorker = this.createWorker();
+    txWorker.on("message", (m: any) => {
+      console.log("buildRawTx message");
+      console.log(m);
+      
+      if (m.error) {
+        this._panel.webview.postMessage({ errors: m.error });
+      }
+      else {
+        this._panel.webview.postMessage({ buildTxResult: m.buildTxResult });
+      }
+    });
+    txWorker.send({ command: "build-rawtx", payload, jwtToken, testnetId: testNetId });
   }
   // get accounts
   public getAccounts() {

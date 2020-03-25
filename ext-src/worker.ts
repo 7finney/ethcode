@@ -9,9 +9,6 @@ import * as protoLoader from '@grpc/proto-loader';
 const EthereumTx = require('ethereumjs-tx')
 import { sha3 } from './hash/sha3';
 
-// console.log("ETHhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh: ")
-// console.log(w3.eth.accounts);
-
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
   {
@@ -49,7 +46,7 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 
 } catch (e) {
   // @ts-ignore
@@ -196,7 +193,6 @@ process.on("message", async m => {
   }
   if (m.command === "run-test") {
     // TODO: move parsing to extension.ts
-    // const sources = JSON.parse(m.payload);
     const rt = {
       testInterface: {
         command: 'run-test-sources',
@@ -327,57 +323,6 @@ process.on("message", async m => {
       process.send({ "error": err });
     })
   }
-  // custom Deploy
-  if (m.command === "custom-deploy-contract") {
-    if (m.jwtToken) {
-      // @ts-ignore
-      process.send({ jwtToken: m.jwtToken });
-    }
-    const { abi, bytecode, params, gasSupply, pvtKey, from, to } = m.payload;
-    // var pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
-    const privateKey = Buffer.from(
-      pvtKey,
-      'hex',
-    )
-    const inp = {
-      abi,
-      bytecode,
-      params,
-      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
-    };
-    const c = {
-      callInterface: {
-        command: 'deploy-contract',
-        payload: JSON.stringify(inp),
-        testnetId: m.testnetId
-      }
-    };
-    // @ts-ignore
-    process.send({ help: m.jwtToken });
-    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
-      if (err) {
-        console.log("err", err);
-      } else {
-        // @ts-ignore
-        process.send({ response });
-      }
-    });
-    call.on('data', (data: any) => {
-      var rawTX = JSON.parse(data.result);
-      rawTX['from'] = from;
-      rawTX['to'] = to;
-      deployUnsignedTx(meta, rawTX, privateKey);
-      // @ts-ignore
-      // process.send({ deployedResult: data.result });
-    });
-    call.on('end', function () {
-      process.exit(0);
-    });
-    call.on('error', function (err: Error) {
-      // @ts-ignore
-      process.send({ "error": err });
-    })
-  }
   // Method call
   if (m.command === "contract-method-call") {
     const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
@@ -469,11 +414,7 @@ process.on("message", async m => {
   // Gas Estimate
   if (m.command === "get-gas-estimate") {
     const { abi, bytecode, params } = m.payload;
-    const inp = {
-      abi,
-      bytecode,
-      params
-    }
+    const inp = { abi, bytecode, params };
     const c = {
       callInterface: {
         command: 'get-gas-estimate',
@@ -482,7 +423,7 @@ process.on("message", async m => {
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
-      if (err) {
+      if(err) {
         console.log("err", err);
       } else {
         // @ts-ignore
@@ -499,7 +440,7 @@ process.on("message", async m => {
     });
   }
   // Debug transaction
-  if (m.command === "debug-transaction") {
+  if(m.command === "debug-transaction") {
     const dt = {
       debugInterface: {
         command: 'debug',
@@ -524,33 +465,35 @@ process.on("message", async m => {
       process.send({ "error": err });
     });
   }
-  if (m.command == "create-Account") {
-    const payload = JSON.parse(m.payload)
-    const c = {
-      to: payload.to,
-      from: payload.from,
-      data: payload.data,
-      value: payload.value,
-      gas: payload.gas
+  // Build raw transaction for contract creation
+  if(m.command == "build-rawtx") {
+    console.log("command === build-rawtx");
+    
+    const { abi, bytecode, params, gasSupply, from } = m.payload;
+    const inp = {
+      from,
+      abi,
+      bytecode,
+      params,
+      gasSupply
     };
-    // const pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
-    const privateKey = Buffer.from(
-      payload.pvtKey,
-      'hex',
-    )
-    // const c = {
-    //   to: "0x05e26fcE6c34f17D59897Bcb7e82eBa1372A7f83",
-    //   // data: Web3.utils.utf8ToHex("Hello"),
-    //   data: "",
-    //   value: 27,
-    //   gas: 97000
-    // };
-    const call = client_call_client.CreateRawTransaction(JSON.stringify(c), meta, (err: any, responses: any) => {
-      if (err) {
-        console.log("err", err);
-      } else {
-        deployUnsignedTx(meta, responses.rawTX, privateKey);
+    const c = {
+      callInterface: {
+        command: 'build-rawtx',
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
       }
+    };
+    const call = client_call_client.RunDeploy(c, meta, (err: any) => {
+      if (err) {
+        console.error("err", err);
+        // @ts-ignore
+        process.send({ "error": err });
+      }
+    });
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ buildTxResult: data.result });
     });
     call.on('end', function () {
       process.exit(0);

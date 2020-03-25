@@ -221,9 +221,9 @@ class App extends Component<IProps, IState> {
         this.props.setCallResult(result);
       }
       if (data.fetchAccounts) {
-        const balance = data.fetchAccounts.balance
-        const currAccount = data.fetchAccounts.accounts[0]
-        const accounts = data.fetchAccounts.accounts
+        const balance = data.fetchAccounts.balance;
+        const currAccount = data.fetchAccounts.accounts[0];
+        const accounts = data.fetchAccounts.accounts;
         this.setState({
           testNetAcc: setSelectorOption(accounts)
         }, () => {
@@ -244,8 +244,8 @@ class App extends Component<IProps, IState> {
         const accData = {
           balance: data.balance,
           currAccount: this.state.currAccount
-        }
-        this.props.setCurrAccChange(accData)
+        };
+        this.props.setCurrAccChange(accData);
         this.setState({ balance: this.props.accountBalance });
       }
     });
@@ -290,7 +290,7 @@ class App extends Component<IProps, IState> {
         }]
       })
     } else {
-      this.setState({ selctorAccounts: [] })
+      this.setState({ selctorAccounts: [] });
     }
   }
 
@@ -346,12 +346,11 @@ class App extends Component<IProps, IState> {
   }
 
   public handelChangeFromAddress = (event: any) => {
-    this.setState({ currAccount: event.target.value })
+    this.setState({ currAccount: event.target.value });
   }
 
   public openAdvanceDeploy = () => {
-    console.log("sknajbajbx");
-    this.setState({ tabIndex: 2 })
+    this.setState({ tabIndex: 2 });
   }
 
   public render() {
@@ -555,8 +554,8 @@ class App extends Component<IProps, IState> {
 }
 
 function mapStateToProps({ test, accountStore, debugStore }: any) {
-  const { accountBalance, accounts, currAccount } = accountStore
-  const { testNetId } = debugStore
+  const { accountBalance, accounts, currAccount } = accountStore;
+  const { testNetId } = debugStore;
   return {
     accountBalance,
     accounts,

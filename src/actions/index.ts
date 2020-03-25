@@ -7,7 +7,8 @@ import {
   SET_CALL_RESULT,
   SET_ACC_BALANCE,
   SET_UPDATE_BALANCE,
-  SET_TESTNET_ID
+  SET_TESTNET_ID,
+  SET_UNSG_TX
 } from "./types";
 
 export const addTestResults = (data: any) => {
@@ -60,6 +61,12 @@ export const setCurrAccChange = (data: any) => {
 
 export const setTestNetId = (testNetId: any) => {
   return (dispatch: Function) => {
-    dispatch({ type: SET_TESTNET_ID , payload: testNetId })
+    dispatch({ type: SET_TESTNET_ID, payload: testNetId })
+  }
+}
+
+export const setUnsgTxn = (unsgTxn: any) => {
+  return (dispatch: Function) => {
+    dispatch({ type: SET_UNSG_TX, payload: unsgTxn });
   }
 }
