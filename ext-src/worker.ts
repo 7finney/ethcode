@@ -102,7 +102,7 @@ function findImports(path: any) {
     });
 }
 
-function deployUnsignedTx(meta: any, tx: any, privateKey: any) {
+function deployUnsignedTx(meta: any, tx: any, privateKey: any, testNetId?: any) {
   const unsignedTransaction = new EthereumTx(tx)
   unsignedTransaction.sign(privateKey)
   const rlpEncoded = unsignedTransaction.serialize().toString('hex');
@@ -120,7 +120,8 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any) {
   process.send({ responses: finalTransaction });
 
   const callInterface = {
-    signedTX: JSON.stringify(finalTransaction)
+    signedTX: JSON.stringify(finalTransaction),
+    testnetId: testNetId
   }
   const resp = client_call_client.RunDeploy(callInterface, meta, (err: any, transactionReceipt: any) => {
     if (err) {
@@ -530,7 +531,7 @@ process.on("message", async m => {
   }
   // sign and deploy unsigned transaction
   if(m.command == "sign-deploy") {
-    let { unsignedTx, privateKey } = m;
-    deployUnsignedTx(meta, unsignedTx, privateKey);
+    const { unsignedTx, privateKey } = m.payload;
+    deployUnsignedTx(meta, unsignedTx, privateKey, m.testNetId);
   }
 });
