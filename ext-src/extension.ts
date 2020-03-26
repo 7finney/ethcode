@@ -381,18 +381,6 @@ class ReactPanel {
     accWorker.send({ command: "delete-keyPair", address: publicKey, keyStorePath });
   }
 
-  private getLocalAccounts(keyStorePath: string) {
-    const accWorker = this.createAccWorker();
-
-    accWorker.on("message", (m: any) => {
-      console.log(JSON.stringify(m));
-      if (m.localAddresses) {
-        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
-      }
-    })
-    accWorker.send({ command: "get-localAccounts", keyStorePath });
-  }
-
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
     console.dir("WorkerID: ", debugWorker.pid);
@@ -462,6 +450,18 @@ class ReactPanel {
       this._panel.webview.postMessage({ fetchAccounts: m });
     })
     accountsWorker.send({ command: "get-accounts", jwtToken });
+  }
+  // get local accounts
+  private getLocalAccounts(keyStorePath: string) {
+    const accWorker = this.createAccWorker();
+
+    accWorker.on("message", (m: any) => {
+      console.log(JSON.stringify(m));
+      if (m.localAddresses) {
+        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
+      }
+    })
+    accWorker.send({ command: "get-localAccounts", keyStorePath });
   }
   // get balance of a particular account
   private getBalance(account: string) {

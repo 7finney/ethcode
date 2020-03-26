@@ -3,6 +3,10 @@ import "./deploy.css";
 import { connect } from "react-redux";
 import { setUnsgTxn } from "../../actions";
 
+interface AccountObj {
+  value: string;
+  label: string;
+}
 export interface IProps {
   setUnsgTxn: (unsgTxn: any) => void;
   contractName: string;
@@ -12,7 +16,7 @@ export interface IProps {
   errors: any;
   compiledResult: object;
   testNetId: string;
-  publicKey: string;
+  currAccount: AccountObj;
   unsignedTx: any;
 }
 
@@ -45,8 +49,10 @@ class Deploy extends Component<IProps, IState> {
   }
 
   componentDidUpdate() {
-    const { unsignedTx } = this.props;
-    console.log(JSON.stringify(unsignedTx));
+    const { unsignedTx, currAccount } = this.props;
+    const publicKey = currAccount.value;
+    // console.log(JSON.stringify(unsignedTx));
+    console.log(JSON.stringify(publicKey));
   }
   componentDidMount() {
     const { abi, bytecode } = this.props;
@@ -79,8 +85,9 @@ class Deploy extends Component<IProps, IState> {
   }
 
   handleBuildTxn = () => {
-    const { vscode, bytecode, abi, publicKey, testNetId } = this.props;
+    const { vscode, bytecode, abi, currAccount, testNetId } = this.props;
     const { constructorInput, gasEstimate } = this.state;
+    const publicKey = currAccount.value;
     // create unsigned transaction here
     try {
       vscode.postMessage({
@@ -135,8 +142,9 @@ class Deploy extends Component<IProps, IState> {
   }
 
   render() {
-    const { contractName, publicKey, unsignedTx, errors } = this.props;
+    const { contractName, currAccount, unsignedTx, errors } = this.props;
     const { gasEstimate, bytecode, abi, txtHash } = this.state;
+    const publicKey = currAccount.value;
 
     return (
       <div className="deploy_container">
@@ -254,7 +262,7 @@ function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: a
     compiledResult,
     callResult,
     testNetId,
-    publicKey: currAccount,
+    currAccount,
     unsignedTx
   };
 }

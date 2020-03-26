@@ -255,17 +255,16 @@ class App extends Component<IProps, IState> {
     });
     // TODO: handle error message
     // Component mounted start getting gRPC things
-    vscode.postMessage({
-      command: "run-getAccounts"
-    });
-    vscode.postMessage({
-      command: "get-localAccounts"
-    });
+    vscode.postMessage({ command: "run-getAccounts" });
+    vscode.postMessage({ command: "get-localAccounts" });
   }
 
   mergeAccount = () => {
+    console.log("merging accounts");
+    
     const { localAcc, testNetAcc } = this.state;
-
+    console.log(JSON.stringify(localAcc));
+    console.log(JSON.stringify(testNetAcc));
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       this.setState({
