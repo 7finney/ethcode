@@ -52,11 +52,11 @@ class Deploy extends Component<IProps, IState> {
 
     window.addEventListener("message", async event => {
       const { data } = event;
-      
-      if(data.gasEstimate) {
+
+      if (data.gasEstimate) {
         this.setState({ gasEstimate: data.gasEstimate });
       }
-      if(data.buildTxResult) {
+      if (data.buildTxResult) {
         console.log("setting unsigned transaction");
         console.log(JSON.stringify(data.buildTxResult));
         this.props.setUnsgTxn(data.buildTxResult);
@@ -116,10 +116,20 @@ class Deploy extends Component<IProps, IState> {
     }
   }
 
+  signAndDeploy = () => {
+    try {
+      
+    } catch (error) {
+      this.setState({ error });
+    }
+  }
+
   render() {
     const { contractName, publicKey, unsignedTx, errors } = this.props;
     const { gasEstimate, bytecode, abi } = this.state;
-    
+
+    console.log(JSON.stringify(bytecode));
+    console.log(JSON.stringify(abi));
 
     return (
       <div className="deploy_container">
@@ -145,7 +155,7 @@ class Deploy extends Component<IProps, IState> {
               type="text"
               name="abi"
               onChange={(e) => this.setState({ abi: e.target.value })}
-              value={JSON.stringify(abi)}
+              value={abi}
               placeholder="abi" />
           </div>
           <div>
@@ -172,7 +182,7 @@ class Deploy extends Component<IProps, IState> {
             <button className="acc-button custom_button_css" onClick={this.getGasEstimate}>Get gas estimate</button>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" placeholder="gas supply" value={gasEstimate} />
+            <input className="input custom_input_css" disabled type="text" placeholder="gas supply" value={gasEstimate} />
           </div>
         </div>
 
@@ -186,7 +196,7 @@ class Deploy extends Component<IProps, IState> {
               Unsigned Transaction:
             </h6>
             <div className="json_input_container" style={{ marginTop: '10px' }}>
-            <textarea className="json_input custom_input_css">{JSON.stringify(unsignedTx)}</textarea>
+              <textarea className="json_input custom_input_css">{JSON.stringify(unsignedTx)}</textarea>
             </div>
           </div>)}
 
@@ -205,6 +215,22 @@ class Deploy extends Component<IProps, IState> {
           </div>
           <div className="input-container">
             <input className="input custom_input_css" type="text" placeholder="private key" />
+          </div>
+        </div>
+
+        <div className="account_row">
+          <div className="tag">
+            <button className="acc-button custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
+          </div>
+        </div>
+
+        {/* Final Transaction Hash */}
+        <div className="account_row">
+          <div className="tag">
+            <h4>Transaction hash </h4>
+          </div>
+          <div className="input-container">
+            <input className="input custom_input_css" type="text" placeholder="transaction hash" />
           </div>
         </div>
       </div>
