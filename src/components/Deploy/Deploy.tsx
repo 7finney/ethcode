@@ -24,6 +24,7 @@ export interface IState {
   gasEstimate: number;
   bytecode: any;
   abi: any;
+  txtHash: string
 }
 
 class Deploy extends Component<IProps, IState> {
@@ -36,7 +37,8 @@ class Deploy extends Component<IProps, IState> {
       deployed: {},
       gasEstimate: 0,
       bytecode: {},
-      abi: {}
+      abi: {},
+      txtHash: ''
     };
     this.handleBuildTxn = this.handleBuildTxn.bind(this);
     this.getGasEstimate = this.getGasEstimate.bind(this);
@@ -117,8 +119,16 @@ class Deploy extends Component<IProps, IState> {
   }
 
   signAndDeploy = () => {
+    const { vscode, unsignedTx, testNetId } = this.props;
     try {
-      
+      vscode.postMessage({
+        command: "run-get-gas-estimate",
+        payload: {
+          unsignedTx,
+          // need to pass private Key
+        },
+        testNetId
+      });
     } catch (error) {
       this.setState({ error });
     }
@@ -126,10 +136,7 @@ class Deploy extends Component<IProps, IState> {
 
   render() {
     const { contractName, publicKey, unsignedTx, errors } = this.props;
-    const { gasEstimate, bytecode, abi } = this.state;
-
-    console.log(JSON.stringify(bytecode));
-    console.log(JSON.stringify(abi));
+    const { gasEstimate, bytecode, abi, txtHash } = this.state;
 
     return (
       <div className="deploy_container">
@@ -230,7 +237,7 @@ class Deploy extends Component<IProps, IState> {
             <h4>Transaction hash </h4>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" placeholder="transaction hash" />
+            <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />
           </div>
         </div>
       </div>

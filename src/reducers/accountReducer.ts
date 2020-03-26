@@ -3,7 +3,7 @@ import { SET_ACC_BALANCE, SET_UPDATE_BALANCE } from "../actions/types"
 const initialState = {
   accountBalance: 0,
   accounts: [],
-  currAccount: ''
+  currAccount: {}
 };
 
 export default (state: any = initialState, action: any) => {

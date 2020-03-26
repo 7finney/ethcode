@@ -126,7 +126,11 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data.localAccounts) {
-        this.setState({ localAcc: setLocalAccountOption(data.localAccounts) }, () => { this.mergeAccount() });
+        this.setState({
+          localAcc: setLocalAccountOption(data.localAccounts)
+        }, () => {
+          this.mergeAccount()
+        });
       }
 
       if (data.compiled) {
@@ -222,7 +226,7 @@ class App extends Component<IProps, IState> {
       }
       if (data.fetchAccounts) {
         const balance = data.fetchAccounts.balance;
-        const currAccount = data.fetchAccounts.accounts[0];
+        // const currAccount = data.fetchAccounts.accounts[0];
         const accounts = data.fetchAccounts.accounts;
         this.setState({
           testNetAcc: setSelectorOption(accounts)
@@ -231,7 +235,7 @@ class App extends Component<IProps, IState> {
         })
         const accData = {
           balance,
-          currAccount,
+          currAccount: this.state.testNetAcc[0],
           accounts
         }
         await this.props.setAccountBalance(accData)
