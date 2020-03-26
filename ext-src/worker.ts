@@ -119,10 +119,10 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any) {
   // @ts-ignore
   process.send({ responses: finalTransaction });
 
-  const callData = {
+  const callInterface = {
     signedTX: JSON.stringify(finalTransaction)
   }
-  const resp = client_call_client.DeploySignedTransaction(callData, meta, (err: any, transactionReceipt: any) => {
+  const resp = client_call_client.RunDeploy(callInterface, meta, (err: any, transactionReceipt: any) => {
     if (err) {
       console.log("err", err);
     } else {
@@ -236,6 +236,35 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ accounts: result.accounts, balance: result.balance });
     })
+  }
+  // send wei value to address in other testnets
+  if (m.command == "custom-send-ether") {
+    const { to, from, data, value, gasEstimate, pvtKey } = JSON.parse(m.payload)
+    const c = {
+      to,
+      from,
+      data,
+      value,
+      gasEstimate
+    };
+    const privateKey = Buffer.from(
+      pvtKey,
+      'hex',
+    )
+    const call = client_call_client.CreateRawTransaction(JSON.stringify(c), meta, (err: any, responses: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        deployUnsignedTx(meta, responses.rawTX, privateKey);
+      }
+    });
+    call.on('end', function () {
+      process.exit(0);
+    });
+    call.on('error', function (err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    });
   }
   // send wei_value to a address
   if (m.command === "send-ether") {
@@ -448,11 +477,7 @@ process.on("message", async m => {
         testnetId: m.testnetId
       }
     };
-    // @ts-ignore
-    process.send({ message: "BEFORE" });
     const call = remix_debug_client.RunDebug(dt);
-    // @ts-ignore
-    process.send({ message: "AFTER" });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ debugResp: data.result });
@@ -502,5 +527,10 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ "error": err });
     });
+  }
+  // sign and deploy unsigned transaction
+  if(m.command == "sign-deploy") {
+    let { unsignedTx, privateKey } = m;
+    deployUnsignedTx(meta, unsignedTx, privateKey);
   }
 });

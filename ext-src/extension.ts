@@ -182,6 +182,8 @@ class ReactPanel {
           this.getBalance(message.account);
         } else if(message.command === "build-rawtx") {
           this.buildRawTx(message.payload, message.testNetId);
+        } else if(message.command === "deploy-signed-tx"){
+          this.deploySignedTx(message.payload, message.testNetId);
         } else if (message.command === 'run-getAccounts') {
           if (ReactPanel.currentPanel) {
             ReactPanel.currentPanel.getAccounts();
@@ -433,6 +435,22 @@ class ReactPanel {
       }
     });
     txWorker.send({ command: "build-rawtx", payload, jwtToken, testnetId: testNetId });
+  }
+  // deploy signed transaction
+  private deploySignedTx(payload: any, testNetId: string) {
+    const signedDeploWorker = this.createWorker();
+    signedDeploWorker.on("message", (m: any) => {
+      console.log("deploy signed transaction message");
+      console.log(m);
+      
+      if (m.error) {
+        this._panel.webview.postMessage({ errors: m.error });
+      }
+      else {
+        this._panel.webview.postMessage({ deployedResult: m.deployedResult });
+      }
+    });
+    signedDeploWorker.send({ command: "sign-deploy", payload, jwtToken, testnetId: testNetId });
   }
   // get accounts
   public getAccounts() {
