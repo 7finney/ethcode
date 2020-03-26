@@ -101,6 +101,7 @@ function findImports(path: any) {
     });
 }
 
+// sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testNetId?: any) {
   const unsignedTransaction = new EthereumTx(tx)
   unsignedTransaction.sign(privateKey)
@@ -291,10 +292,11 @@ process.on("message", async m => {
   }
   // fetch balance of a account
   if (m.command === "get-balance") {
+    const hashAddr = m.account.checksumAddr ? m.account.checksumAddr : m.account.value
     const c = {
       callInterface: {
         command: 'get-balance',
-        payload: m.account
+        payload: hashAddr
       }
     }
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {

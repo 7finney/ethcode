@@ -2,24 +2,27 @@ import React, { Component } from 'react';
 import { connect } from "react-redux";
 import Selector from '../Selector';
 import './Account.css';
+import { addNewAcc } from '../../actions';
+import { IAccount } from '../../types';
 
 interface IProps {
-  accounts: string[],
-  getSelectedAccount: any,
-  accBalance: number,
-  vscode: any,
-  defaultValue: any,
-  testNetId: string
+  accounts: IAccount[];
+  getSelectedAccount: (result: any) => void;
+  accBalance: number;
+  vscode: any;
+  defaultValue: any;
+  testNetId: string;
+  addNewAcc: (result: any) => void;
 }
 
 interface IState {
-  accounts: string[],
-  currAccount: any,
-  balance: number,
-  publicAddress: string,
-  showButton: boolean,
-  transferAmount: number,
-  error: any
+  accounts: IAccount[];
+  currAccount: IAccount;
+  balance: number;
+  publicAddress: string;
+  showButton: boolean;
+  transferAmount: number;
+  error: any;
 }
 
 class Account extends Component<IProps, IState> {
@@ -33,13 +36,13 @@ class Account extends Component<IProps, IState> {
       showButton: false,
       transferAmount: 0,
       error: {}
-    }
+    };
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
 
   componentDidMount() {
-    this.setState({ accounts: this.props.accounts })
+    // this.setState({ accounts: this.props.accounts });
   }
 
   componentDidUpdate(prevProps: IProps, preState: IState) {
@@ -47,29 +50,31 @@ class Account extends Component<IProps, IState> {
 
     window.addEventListener("message", async event => {
       const { data } = event;
-      if(data.newAccount) {
-        this.setState({
-          publicAddress: data.newAccount,
-          showButton: false
-        })
+      const { addNewAcc } = this.props;
+      if (data.newAccount) {
+        // this.setState({
+        //   publicAddress: data.newAccount,
+        //   showButton: false
+        // });
+        // Update account into redux
+        const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr }
+        addNewAcc(account);
       }
-    })
+    });
 
     if (this.props.accounts !== accounts) {
-      this.setState({ accounts: this.props.accounts })
+      this.setState({ accounts: this.props.accounts });
     }
 
     if (this.props.accBalance !== balance) {
-      this.setState({ balance: this.props.accBalance })
+      this.setState({ balance: this.props.accBalance });
     }
   }
 
-  getSelectedAccount = (account: any) => {
-    this.setState({
-      currAccount: account
-    })
-    this.props.getSelectedAccount(account)
-  }
+  getSelectedAccount = (account: IAccount) => {
+    this.setState({ currAccount: account });
+    this.props.getSelectedAccount(account);
+  };
   // generate keypair
   private handleGenKeyPair() {
     const { vscode } = this.props;
@@ -79,10 +84,10 @@ class Account extends Component<IProps, IState> {
         command: "gen-keypair",
         payload: password
       });
-      this.setState({ showButton: true })
+      this.setState({ showButton: true });
     } catch (err) {
       console.error(err);
-      this.setState({ showButton: false })
+      this.setState({ showButton: false });
     }
   }
   // delete keypair
@@ -98,7 +103,7 @@ class Account extends Component<IProps, IState> {
     } catch (err) {
       console.error(err);
     }
-  }
+  };
 
   // handle send ether
   private handleTransactionSubmit(event: any) {
@@ -106,7 +111,7 @@ class Account extends Component<IProps, IState> {
     const { vscode } = this.props;
     const { currAccount } = this.state;
     const data = new FormData(event.target);
-    
+
     const transactionInfo = {
       fromAddress: currAccount.value,
       toAddress: data.get("toAddress"),
@@ -125,7 +130,8 @@ class Account extends Component<IProps, IState> {
   }
 
   render() {
-    const { accounts, balance, publicAddress, showButton, currAccount } = this.state;
+    const { accounts } = this.props;
+    const { balance, publicAddress, showButton, currAccount } = this.state;
 
     return (
       <div className="account_container">
@@ -176,7 +182,7 @@ class Account extends Component<IProps, IState> {
             <label className="header">Transfer Ether </label>
           </div>
         </div>
-        
+
         <form onSubmit={this.handleTransactionSubmit}>
           <div className="account_row">
             <div className="label-container">
@@ -239,18 +245,18 @@ class Account extends Component<IProps, IState> {
             <label className="label">Public key </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" value={publicAddress ? publicAddress: ''} type="text" placeholder="public key" />
+            <input className="input custom_input_css" value={publicAddress ? publicAddress : ''} type="text" placeholder="public key" />
           </div>
         </div>
 
       </div>
-    )
+    );
   }
 }
 
 function mapStateToProps({ debugStore }: any) {
-  const { testNetId } = debugStore
+  const { testNetId } = debugStore;
   return { testNetId };
 }
 
-export default connect(mapStateToProps, {})(Account);
+export default connect(mapStateToProps, { addNewAcc })(Account);

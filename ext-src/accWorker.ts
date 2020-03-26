@@ -3,6 +3,11 @@ import * as fs from "fs";
 // @ts-ignore
 import { toChecksumAddress } from './hash/util';
 
+interface Account {
+  pubAddr: string;
+  checksumAddr: string;
+}
+
 // create keypair
 function createKeyPair(path: string, pswd: string) {
   const params = { keyBytes: 32, ivBytes: 16 };
@@ -12,8 +17,9 @@ function createKeyPair(path: string, pswd: string) {
     cipher: "aes-128-ctr"
   };
   var keyObject = keythereum.dump(pswd, bareKey.privateKey, bareKey.salt, bareKey.iv, options);
+  const account: Account = { pubAddr: keyObject.address, checksumAddr: toChecksumAddress(keyObject.address) };
   // @ts-ignore
-  process.send({ pubAddress: keyObject.address, checksumAddress: toChecksumAddress(keyObject.address) });
+  process.send({ account });
   if (!fs.existsSync(`${path}/keystore`)) {
     fs.mkdirSync(`${path}/keystore`);
   }

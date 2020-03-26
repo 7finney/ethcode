@@ -50,26 +50,37 @@ class Deploy extends Component<IProps, IState> {
 
   componentDidUpdate() {
     const { unsignedTx, currAccount } = this.props;
-    const publicKey = currAccount.value;
+    // const publicKey = currAccount.value;
     // console.log(JSON.stringify(unsignedTx));
-    console.log(JSON.stringify(publicKey));
+    console.log(JSON.stringify(currAccount));
+    
   }
   componentDidMount() {
-    const { abi, bytecode } = this.props;
+    const { abi, bytecode, vscode, currAccount } = this.props;
+    console.log("currAccount");
+    
+    console.log(currAccount);
     this.setState({ abi, bytecode });
 
     window.addEventListener("message", async event => {
       const { data } = event;
 
-      if (data.gasEstimate) {
+      if(data.gasEstimate) {
         this.setState({ gasEstimate: data.gasEstimate });
       }
-      if (data.buildTxResult) {
+      if(data.buildTxResult) {
         console.log("setting unsigned transaction");
         console.log(JSON.stringify(data.buildTxResult));
         this.props.setUnsgTxn(data.buildTxResult);
       }
+      if(data.pvtKey) {
+        console.log("Setting active private key");
+        console.log(data.pvtKey);
+        // this.props.setActivePvtKey(data.pvtKey);
+      }
     })
+    // get private key for corresponding public key
+    vscode.postMessage({ command: "get-pvt-key", payload: currAccount });
 
     // this.setState({ deployed: this.props.compiledResult });
     // for (let i in abi) {
@@ -128,8 +139,9 @@ class Deploy extends Component<IProps, IState> {
   signAndDeploy = () => {
     const { vscode, unsignedTx, testNetId } = this.props;
     try {
+      // get private key for corresponding public key
       vscode.postMessage({
-        command: "run-get-gas-estimate",
+        command: "sign-deploy-tx",
         payload: {
           unsignedTx,
           // need to pass private Key

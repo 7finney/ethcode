@@ -61,6 +61,14 @@ Things we did on top of Create React App TypeScript template
 * Since we only allow local resources, absolute path for styles/images (e.g., `/static/media/logo.svg`) will not work. We add a `.env` file which sets `PUBLIC_URL` to `./` and after bundling, resource urls will be relative.
 * We add baseUrl `<base href="${vscode.Uri.file(path.join(this._extensionPath, 'build')).with({ scheme: 'vscode-resource' })}/">` and then all relative paths work.
 
+## Code formatting
+Add following lines in vscode `settings.json`
+```
+"typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
+"typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+"typescript.format.semicolons": "insert"
+```
+
 ## References
 * https://github.com/Microsoft/vscode-go/wiki/Building,-Debugging-and-Sideloading-the-extension-in-Visual-Studio-Code
 * https://code.visualstudio.com/api/working-with-extensions/bundling-extension

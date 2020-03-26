@@ -14,8 +14,10 @@ export function setLocalAccountOption(optionsArray) {
   var options = [];
   optionsArray.map(obj => {
     const optItm = {
-      value: obj.pubAddress,
-      label: obj.checksumAddress
+      value: obj.checksumAddress,
+      label: obj.pubAddress,
+      pubAddress: obj.pubAddress,
+      checksumAddress: obj.checksumAddress
     };
     return options.push(optItm);
   });

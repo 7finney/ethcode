@@ -25,6 +25,7 @@ import Deploy from "./Deploy/Deploy"
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from "./Account/Account";
+import { IAccount } from "../types";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -39,7 +40,7 @@ interface IProps {
   test: any;
   accountBalance: number,
   accounts: string[],
-  currAccount: string,
+  currAccount: IAccount,
   testNetId: string
 }
 
@@ -57,7 +58,7 @@ interface IState {
   txTrace: object;
   traceError: string;
   accounts: string[];
-  currAccount: string;
+  currAccount: IAccount | undefined;
   balance: number;
   transactionResult: string;
   testNetId: string;
@@ -65,7 +66,7 @@ interface IState {
   selctorAccounts: any;
   contracts: any;
   files: any;
-  accountName: IOpt;
+  accountName: IAccount;
   testNets: object[];
   localAcc: any[],
   testNetAcc: any[]
@@ -96,7 +97,7 @@ class App extends Component<IProps, IState> {
       selctorAccounts: [],
       contracts: [],
       files: [],
-      currAccount: '',
+      currAccount: undefined,
       balance: 0,
       transactionResult: '',
       testNetId: '',
@@ -265,6 +266,12 @@ class App extends Component<IProps, IState> {
     const { localAcc, testNetAcc } = this.state;
     console.log(JSON.stringify(localAcc));
     console.log(JSON.stringify(testNetAcc));
+    // merge and set accounts store
+    const accounts = [...localAcc, ...testNetAcc];
+    console.log("Merged acc obj");
+    console.log(JSON.stringify(accounts));
+    // TODO: update reducer
+    
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       this.setState({
@@ -340,11 +347,16 @@ class App extends Component<IProps, IState> {
     });
   }
 
-  public getSelectedAccount = (account: any) => {
-    this.setState({ currAccount: account.value, accountName: account });
+  public getSelectedAccount = (account: IAccount) => {
+    const { accounts } = this.props;
+    console.log(accounts);
+    
+    // const account = accounts.filter(a => { return a.value == acc.value })
+    
+    this.setState({ currAccount: account, accountName: account });
     vscode.postMessage({
       command: 'get-balance',
-      account: account.label
+      account
     });
   }
 
@@ -477,7 +489,7 @@ class App extends Component<IProps, IState> {
                         errors={error}
                       />
                     }
-                    {
+                    {currAccount && currAccount.checksumAddr &&
                       <ContractDeploy
                         contractName={contractName}
                         bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
@@ -487,7 +499,7 @@ class App extends Component<IProps, IState> {
                         error={error}
                         gasEstimate={gasEstimate}
                         deployedResult={deployedResult}
-                        deployAccount={currAccount}
+                        deployAccount={currAccount.checksumAddr}
                         testNetId={testNetId}
                         openAdvanceDeploy={this.openAdvanceDeploy}
                       />
