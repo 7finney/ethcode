@@ -438,8 +438,8 @@ class ReactPanel {
   }
   // deploy signed transaction
   private deploySignedTx(payload: any, testNetId: string) {
-    const signedDeploWorker = this.createWorker();
-    signedDeploWorker.on("message", (m: any) => {
+    const signedDeployWorker = this.createWorker();
+    signedDeployWorker.on("message", (m: any) => {
       console.log("deploy signed transaction message");
       console.log(m);
       
@@ -450,7 +450,7 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m.deployedResult });
       }
     });
-    signedDeploWorker.send({ command: "sign-deploy", payload, jwtToken, testnetId: testNetId });
+    signedDeployWorker.send({ command: "sign-deploy", payload, jwtToken, testnetId: testNetId });
   }
   // get accounts
   public getAccounts() {
