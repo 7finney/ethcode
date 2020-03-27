@@ -8,6 +8,7 @@ import { IAccount } from '../../types';
 interface IProps {
   accounts: IAccount[];
   getSelectedAccount: (result: any) => void;
+  accountBalance: number;
   accBalance: number;
   vscode: any;
   currAccount: IAccount;
@@ -38,8 +39,13 @@ class Account extends Component<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: IProps, preState: IState) {
-    const { addNewAcc, accBalance } = this.props;
+    const { addNewAcc, accountBalance } = this.props;
     const { balance } = this.state;
+
+    console.log("Prevprops");
+    console.log(prevProps.accountBalance);
+    console.log("this.props");
+    console.log(this.props.accountBalance);
 
     window.addEventListener("message", async event => {
       const { data } = event;
@@ -51,8 +57,8 @@ class Account extends Component<IProps, IState> {
       }
     });
 
-    if (accBalance !== balance) {
-      this.setState({ balance: accBalance });
+    if (accountBalance !== balance) {
+      this.setState({ balance: accountBalance });
     }
   }
 
@@ -240,8 +246,8 @@ class Account extends Component<IProps, IState> {
 
 function mapStateToProps({ debugStore, accountStore }: any) {
   const { testNetId } = debugStore;
-  const { currAccount } = accountStore;
-  return { testNetId, currAccount };
+  const { currAccount, accountBalance } = accountStore;
+  return { testNetId, currAccount, accountBalance };
 }
 
 export default connect(mapStateToProps, { addNewAcc })(Account);

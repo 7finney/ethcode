@@ -247,6 +247,9 @@ class App extends Component<IProps, IState> {
       }
       if (data.balance) {
         const { balance, account } = data;
+        console.log("data.balance in App.tsx");
+        console.log(balance);
+        
         this.props.setCurrAccChange({ balance, currAccount: account });
         this.setState({ balance: this.props.accountBalance });
       }
@@ -339,8 +342,14 @@ class App extends Component<IProps, IState> {
   };
 
   public getSelectedNetwork = (testNet: any) => {
+    const { currAccount } = this.state;
     this.setState({ testNetId: testNet.value }, () => {
       this.props.setTestNetId(this.state.testNetId);
+      // TODO: Fetch Account Balance
+      vscode.postMessage({
+        command: 'get-balance',
+        account: currAccount
+      });
     });
   }
 
@@ -351,10 +360,11 @@ class App extends Component<IProps, IState> {
     
     // const account = accounts.filter(a => { return a.value == acc.value })
     
-    this.setState({ currAccount: account, accountName: account });
-    vscode.postMessage({
-      command: 'get-balance',
-      account
+    this.setState({ currAccount: account, accountName: account }, () => {
+      vscode.postMessage({
+        command: 'get-balance',
+        account
+      });
     });
   }
 

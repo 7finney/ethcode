@@ -27,6 +27,7 @@ export interface IState {
   abi: any;
   txtHash: string;
   pvtKey: string;
+  msg: string;
 }
 
 class Deploy extends Component<IProps, IState> {
@@ -41,7 +42,8 @@ class Deploy extends Component<IProps, IState> {
       bytecode: {},
       abi: {},
       txtHash: '',
-      pvtKey: ''
+      pvtKey: '',
+      msg: 'initial',
     };
     this.handleBuildTxn = this.handleBuildTxn.bind(this);
     this.getGasEstimate = this.getGasEstimate.bind(this);
@@ -55,6 +57,7 @@ class Deploy extends Component<IProps, IState> {
     
   }
   componentDidMount() {
+    this.setState({ msg: 'process yet to start' })
     const { abi, bytecode, vscode, currAccount } = this.props;
     console.log("currAccount");
     
@@ -82,7 +85,9 @@ class Deploy extends Component<IProps, IState> {
       if(data.pvtKey) {
         console.log("Setting active private key");
         console.log(data.pvtKey);
-        this.setState({ pvtKey: data.pvtKey });
+        this.setState({ pvtKey: data.pvtKey }, () => {
+          this.setState({ msg: 'process finshed' })
+        });
       }
     })
     // get private key for corresponding public key
@@ -145,6 +150,7 @@ class Deploy extends Component<IProps, IState> {
   signAndDeploy = () => {
     const { vscode, unsignedTx, testNetId } = this.props;
     const { pvtKey } = this.state;
+    this.setState({ msg: 'Process start' })
     try {
       // get private key for corresponding public key
       vscode.postMessage({
@@ -163,7 +169,7 @@ class Deploy extends Component<IProps, IState> {
 
   render() {
     const { contractName, currAccount, unsignedTx, errors } = this.props;
-    const { gasEstimate, bytecode, abi, txtHash, pvtKey } = this.state;
+    const { gasEstimate, bytecode, abi, txtHash, pvtKey, msg } = this.state;
     const publicKey = currAccount.value;
 
     return (
@@ -249,7 +255,8 @@ class Deploy extends Component<IProps, IState> {
             <h4>Private key </h4>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" placeholder="private key" value={pvtKey} />
+            <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
+            {msg}
           </div>
         </div>
 
