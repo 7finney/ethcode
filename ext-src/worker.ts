@@ -122,7 +122,7 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
 
   const callInterface = {
     command: "deploy-signed-tx",
-    signedTX: JSON.stringify(finalTransaction),
+    payload: JSON.stringify(finalTransaction),
     testnetId
   };
   const resp = client_call_client.RunDeploy(callInterface, meta, (err: any, transactionReceipt: any) => {
@@ -526,6 +526,8 @@ process.on("message", async m => {
   // sign and deploy unsigned transaction
   if (m.command == "sign-deploy") {
     const { unsignedTx, pvtKey } = m.payload;
+    // @ts-ignore
+    process.send({ help: "testnetid: " + m.testnetId + "pvtKey: " + pvtKey });
     deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
   }
 });
