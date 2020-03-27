@@ -120,12 +120,14 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
   // @ts-ignore
   process.send({ responses: finalTransaction });
 
-  const callInterface = {
-    command: "deploy-signed-tx",
-    payload: JSON.stringify(finalTransaction),
-    testnetId
+  const c = {
+    callInterface: {
+      command: "deploy-signed-tx",
+      payload: JSON.stringify(finalTransaction),
+      testnetId
+    }
   };
-  const resp = client_call_client.RunDeploy(callInterface, meta, (err: any, transactionReceipt: any) => {
+  const resp = client_call_client.RunDeploy(c, meta, (err: any, transactionReceipt: any) => {
     if (err) {
       console.log("err", err);
     } else {
