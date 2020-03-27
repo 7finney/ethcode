@@ -46,7 +46,7 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
 
 } catch (e) {
   // @ts-ignore
@@ -249,15 +249,11 @@ process.on("message", async m => {
       value,
       gasEstimate
     };
-    const privateKey = Buffer.from(
-      pvtKey,
-      'hex',
-    );
     const call = client_call_client.CreateRawTransaction(JSON.stringify(c), meta, (err: any, responses: any) => {
       if (err) {
         console.log("err", err);
       } else {
-        deployUnsignedTx(meta, responses.rawTX, privateKey);
+        deployUnsignedTx(meta, responses.rawTX, pvtKey);
       }
     });
     call.on('end', function () {
@@ -397,11 +393,6 @@ process.on("message", async m => {
   // custom Method call
   if (m.command === "custom-method-call") {
     const { abi, address, methodName, params, gasSupply, deployAccount, pvtKey, from } = m.payload;
-    // var pvtKey = "73b38bdffb3b16b16192bc5d21aed4ef561e0e66bec4c8eae1cd4d350fae06b5";
-    const privateKey = Buffer.from(
-      pvtKey,
-      'hex',
-    );
     const inp = {
       abi,
       address,
@@ -431,7 +422,7 @@ process.on("message", async m => {
       var rawTX = JSON.parse(data.result);
       rawTX['from'] = from;
       rawTX['to'] = address;
-      deployUnsignedTx(meta, rawTX, privateKey);
+      deployUnsignedTx(meta, rawTX, pvtKey);
       // @ts-ignore
       // process.send({ deployedResult: data.result });
     });
@@ -533,7 +524,7 @@ process.on("message", async m => {
   }
   // sign and deploy unsigned transaction
   if (m.command == "sign-deploy") {
-    const { unsignedTx, privateKey } = m.payload;
-    deployUnsignedTx(meta, unsignedTx, privateKey, m.testNetId);
+    const { unsignedTx, pvtKey } = m.payload;
+    deployUnsignedTx(meta, unsignedTx, pvtKey, m.testNetId);
   }
 });
