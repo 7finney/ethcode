@@ -6,7 +6,7 @@ import axios from "axios";
 import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-const EthereumTx = require('ethereumjs-tx')
+const EthereumTx = require('ethereumjs-tx').Transaction;
 import { sha3 } from './hash/sha3';
 
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
@@ -103,8 +103,9 @@ function findImports(path: any) {
 
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testNetId?: any) {
-  const unsignedTransaction = new EthereumTx(tx)
-  unsignedTransaction.sign(privateKey)
+  const unsignedTransaction = new EthereumTx(tx);
+  const pvtk = Buffer.from(privateKey);
+  unsignedTransaction.sign(pvtk);
   const rlpEncoded = unsignedTransaction.serialize().toString('hex');
   const rawTransaction = '0x' + rlpEncoded;
   var transactionHash = sha3(rawTransaction);
@@ -122,7 +123,7 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testNetId?: any) 
   const callInterface = {
     signedTX: JSON.stringify(finalTransaction),
     testnetId: testNetId
-  }
+  };
   const resp = client_call_client.RunDeploy(callInterface, meta, (err: any, transactionReceipt: any) => {
     if (err) {
       console.log("err", err);
@@ -199,7 +200,7 @@ process.on("message", async m => {
         command: 'run-test-sources',
         payload: m.payload
       }
-    }
+    };
     const call = remix_tests_client.RunTests(rt);
     call.on('data', (data: any) => {
       const result = JSON.parse(data.result);
@@ -220,7 +221,7 @@ process.on("message", async m => {
       callInterface: {
         command: 'get-accounts'
       }
-    }
+    };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
@@ -236,11 +237,11 @@ process.on("message", async m => {
       const result = JSON.parse(data.result);
       // @ts-ignore
       process.send({ accounts: result.accounts, balance: result.balance });
-    })
+    });
   }
   // send wei value to address in other testnets
   if (m.command == "custom-send-ether") {
-    const { to, from, data, value, gasEstimate, pvtKey } = JSON.parse(m.payload)
+    const { to, from, data, value, gasEstimate, pvtKey } = JSON.parse(m.payload);
     const c = {
       to,
       from,
@@ -251,7 +252,7 @@ process.on("message", async m => {
     const privateKey = Buffer.from(
       pvtKey,
       'hex',
-    )
+    );
     const call = client_call_client.CreateRawTransaction(JSON.stringify(c), meta, (err: any, responses: any) => {
       if (err) {
         console.log("err", err);
@@ -288,17 +289,17 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ transactionResult: data.result });
-    })
+    });
   }
   // fetch balance of a account
   if (m.command === "get-balance") {
-    const hashAddr = m.account.checksumAddr ? m.account.checksumAddr : m.account.value
+    const hashAddr = m.account.checksumAddr ? m.account.checksumAddr : m.account.value;
     const c = {
       callInterface: {
         command: 'get-balance',
         payload: hashAddr
       }
-    }
+    };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
@@ -310,7 +311,7 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ balance: data.result });
-    })
+    });
   }
   // Deploy
   if (m.command === "deploy-contract") {
@@ -352,7 +353,7 @@ process.on("message", async m => {
     call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
-    })
+    });
   }
   // Method call
   if (m.command === "contract-method-call") {
@@ -390,7 +391,7 @@ process.on("message", async m => {
     call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
-    })
+    });
   }
 
   // custom Method call
@@ -400,7 +401,7 @@ process.on("message", async m => {
     const privateKey = Buffer.from(
       pvtKey,
       'hex',
-    )
+    );
     const inp = {
       abi,
       address,
@@ -440,7 +441,7 @@ process.on("message", async m => {
     call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
-    })
+    });
   }
   // Gas Estimate
   if (m.command === "get-gas-estimate") {
@@ -454,7 +455,7 @@ process.on("message", async m => {
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
-      if(err) {
+      if (err) {
         console.log("err", err);
       } else {
         // @ts-ignore
@@ -471,7 +472,7 @@ process.on("message", async m => {
     });
   }
   // Debug transaction
-  if(m.command === "debug-transaction") {
+  if (m.command === "debug-transaction") {
     const dt = {
       debugInterface: {
         command: 'debug',
@@ -493,9 +494,9 @@ process.on("message", async m => {
     });
   }
   // Build raw transaction for contract creation
-  if(m.command == "build-rawtx") {
+  if (m.command == "build-rawtx") {
     console.log("command === build-rawtx");
-    
+
     const { abi, bytecode, params, gasSupply, from } = m.payload;
     const inp = {
       from,
@@ -531,7 +532,7 @@ process.on("message", async m => {
     });
   }
   // sign and deploy unsigned transaction
-  if(m.command == "sign-deploy") {
+  if (m.command == "sign-deploy") {
     const { unsignedTx, privateKey } = m.payload;
     deployUnsignedTx(meta, unsignedTx, privateKey, m.testNetId);
   }

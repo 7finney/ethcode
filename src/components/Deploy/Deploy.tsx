@@ -2,11 +2,8 @@ import React, { Component } from 'react';
 import "./deploy.css";
 import { connect } from "react-redux";
 import { setUnsgTxn } from "../../actions";
+import { IAccount } from 'types';
 
-interface AccountObj {
-  value: string;
-  label: string;
-}
 export interface IProps {
   setUnsgTxn: (unsgTxn: any) => void;
   contractName: string;
@@ -16,7 +13,7 @@ export interface IProps {
   errors: any;
   compiledResult: object;
   testNetId: string;
-  currAccount: AccountObj;
+  currAccount: IAccount;
   unsignedTx: any;
 }
 
@@ -28,7 +25,8 @@ export interface IState {
   gasEstimate: number;
   bytecode: any;
   abi: any;
-  txtHash: string
+  txtHash: string;
+  pvtKey: string;
 }
 
 class Deploy extends Component<IProps, IState> {
@@ -42,7 +40,8 @@ class Deploy extends Component<IProps, IState> {
       gasEstimate: 0,
       bytecode: {},
       abi: {},
-      txtHash: ''
+      txtHash: '',
+      pvtKey: ''
     };
     this.handleBuildTxn = this.handleBuildTxn.bind(this);
     this.getGasEstimate = this.getGasEstimate.bind(this);
@@ -76,11 +75,11 @@ class Deploy extends Component<IProps, IState> {
       if(data.pvtKey) {
         console.log("Setting active private key");
         console.log(data.pvtKey);
-        // this.props.setActivePvtKey(data.pvtKey);
+        this.setState({ pvtKey: data.pvtKey });
       }
     })
     // get private key for corresponding public key
-    vscode.postMessage({ command: "get-pvt-key", payload: currAccount });
+    vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
 
     // this.setState({ deployed: this.props.compiledResult });
     // for (let i in abi) {
@@ -155,7 +154,7 @@ class Deploy extends Component<IProps, IState> {
 
   render() {
     const { contractName, currAccount, unsignedTx, errors } = this.props;
-    const { gasEstimate, bytecode, abi, txtHash } = this.state;
+    const { gasEstimate, bytecode, abi, txtHash, pvtKey } = this.state;
     const publicKey = currAccount.value;
 
     return (
@@ -241,7 +240,7 @@ class Deploy extends Component<IProps, IState> {
             <h4>Private key </h4>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" placeholder="private key" />
+            <input className="input custom_input_css" type="text" placeholder="private key" value={pvtKey} />
           </div>
         </div>
 

@@ -10,14 +10,12 @@ interface IProps {
   getSelectedAccount: (result: any) => void;
   accBalance: number;
   vscode: any;
-  defaultValue: any;
+  currAccount: IAccount;
   testNetId: string;
   addNewAcc: (result: any) => void;
 }
 
 interface IState {
-  accounts: IAccount[];
-  currAccount: IAccount;
   balance: number;
   publicAddress: string;
   showButton: boolean;
@@ -29,8 +27,6 @@ class Account extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      accounts: [],
-      currAccount: this.props.defaultValue,
       balance: 0,
       publicAddress: '',
       showButton: false,
@@ -41,38 +37,25 @@ class Account extends Component<IProps, IState> {
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
 
-  componentDidMount() {
-    // this.setState({ accounts: this.props.accounts });
-  }
-
   componentDidUpdate(prevProps: IProps, preState: IState) {
-    const { accounts, balance } = this.state;
+    const { addNewAcc, accBalance } = this.props;
+    const { balance } = this.state;
 
     window.addEventListener("message", async event => {
       const { data } = event;
-      const { addNewAcc } = this.props;
       if (data.newAccount) {
-        // this.setState({
-        //   publicAddress: data.newAccount,
-        //   showButton: false
-        // });
         // Update account into redux
         const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr }
         addNewAcc(account);
       }
     });
 
-    if (this.props.accounts !== accounts) {
-      this.setState({ accounts: this.props.accounts });
-    }
-
-    if (this.props.accBalance !== balance) {
-      this.setState({ balance: this.props.accBalance });
+    if (accBalance !== balance) {
+      this.setState({ balance: accBalance });
     }
   }
 
   getSelectedAccount = (account: IAccount) => {
-    this.setState({ currAccount: account });
     this.props.getSelectedAccount(account);
   };
   // generate keypair
@@ -92,8 +75,7 @@ class Account extends Component<IProps, IState> {
   }
   // delete keypair
   private deleteAccount = () => {
-    const { vscode } = this.props;
-    const { currAccount } = this.state;
+    const { vscode, currAccount } = this.props;
 
     try {
       vscode.postMessage({
@@ -108,16 +90,17 @@ class Account extends Component<IProps, IState> {
   // handle send ether
   private handleTransactionSubmit(event: any) {
     event.preventDefault();
-    const { vscode } = this.props;
-    const { currAccount } = this.state;
+    const { vscode, currAccount } = this.props;
     const data = new FormData(event.target);
 
     const transactionInfo = {
-      fromAddress: currAccount.value,
+      fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
       toAddress: data.get("toAddress"),
       amount: data.get("amount")
     };
 
+    console.log("Try send :");
+    console.log(transactionInfo);
     try {
       vscode.postMessage({
         command: "send-ether",
@@ -130,8 +113,8 @@ class Account extends Component<IProps, IState> {
   }
 
   render() {
-    const { accounts } = this.props;
-    const { balance, publicAddress, showButton, currAccount } = this.state;
+    const { accounts, currAccount } = this.props;
+    const { balance, publicAddress, showButton } = this.state;
 
     return (
       <div className="account_container">
@@ -145,7 +128,7 @@ class Account extends Component<IProps, IState> {
             <Selector
               options={accounts}
               getSelectedOption={this.getSelectedAccount}
-              defaultValue={this.props.defaultValue}
+              defaultValue={currAccount}
               placeholder='Select Accounts' />
           </div>
         </div>
@@ -254,9 +237,10 @@ class Account extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps({ debugStore }: any) {
+function mapStateToProps({ debugStore, accountStore }: any) {
   const { testNetId } = debugStore;
-  return { testNetId };
+  const { currAccount } = accountStore;
+  return { testNetId, currAccount };
 }
 
 export default connect(mapStateToProps, { addNewAcc })(Account);

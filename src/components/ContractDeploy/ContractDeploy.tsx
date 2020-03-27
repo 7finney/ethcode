@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./ContractDeploy.css";
 import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
+import { IAccount } from "types";
 
 interface IProps {
   contractName: string;
@@ -14,7 +15,7 @@ interface IProps {
   deployedResult: string;
   compiledResult: object;
   callResult: object;
-  deployAccount: string;
+  deployAccount: IAccount;
   testNetId: string;
   openAdvanceDeploy: any;
 }
@@ -136,7 +137,7 @@ class ContractDeploy extends Component<IProps, IState> {
         methodName: methodName,
         params: JSON.parse(methodInputs),
         gasSupply,
-        deployAccount
+        deployAccount: deployAccount.checksumAddr ? deployAccount.checksumAddr : deployAccount.value
       },
       testNetId
     });

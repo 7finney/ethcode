@@ -487,7 +487,7 @@ class ReactPanel {
     
     const balanceWorker = this.createWorker();
     balanceWorker.on("message", (m: any) => {
-      this._panel.webview.postMessage({ balance: m.balance });
+      this._panel.webview.postMessage({ balance: m.balance, account });
     });
     balanceWorker.send({ command: "get-balance", account, jwtToken });
   }

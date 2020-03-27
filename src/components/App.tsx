@@ -246,11 +246,8 @@ class App extends Component<IProps, IState> {
         this.setState({ transactionResult: data.transactionResult });
       }
       if (data.balance) {
-        const accData = {
-          balance: data.balance,
-          currAccount: this.state.currAccount
-        };
-        this.props.setCurrAccChange(accData);
+        const { balance, account } = data;
+        this.props.setCurrAccChange({ balance, currAccount: account });
         this.setState({ balance: this.props.accountBalance });
       }
     });
@@ -349,6 +346,7 @@ class App extends Component<IProps, IState> {
 
   public getSelectedAccount = (account: IAccount) => {
     const { accounts } = this.props;
+    console.log("getSelectedAccount");
     console.log(accounts);
     
     // const account = accounts.filter(a => { return a.value == acc.value })
@@ -489,7 +487,7 @@ class App extends Component<IProps, IState> {
                         errors={error}
                       />
                     }
-                    {currAccount && currAccount.checksumAddr &&
+                    {currAccount &&
                       <ContractDeploy
                         contractName={contractName}
                         bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
@@ -499,7 +497,7 @@ class App extends Component<IProps, IState> {
                         error={error}
                         gasEstimate={gasEstimate}
                         deployedResult={deployedResult}
-                        deployAccount={currAccount.checksumAddr}
+                        deployAccount={currAccount}
                         testNetId={testNetId}
                         openAdvanceDeploy={this.openAdvanceDeploy}
                       />
@@ -511,7 +509,7 @@ class App extends Component<IProps, IState> {
             <TabPanel>
               <Account
                 vscode={vscode}
-                defaultValue={(accountName && accountName.label) ? accountName : testNetAcc[0]}
+                // defaultValue={(accountName && accountName.label) ? accountName : testNetAcc[0]}
                 accounts={selctorAccounts}
                 getSelectedAccount={this.getSelectedAccount}
                 accBalance={balance}
