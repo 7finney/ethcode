@@ -102,7 +102,7 @@ function findImports(path: any) {
 }
 
 // sign an unsigned raw transaction and deploy
-function deployUnsignedTx(meta: any, tx: any, privateKey: any, testNetId?: any) {
+function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
   const unsignedTransaction = new EthereumTx(tx);
   const pvtk = Buffer.from(privateKey, 'hex');
   unsignedTransaction.sign(pvtk);
@@ -123,7 +123,7 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testNetId?: any) 
   const callInterface = {
     command: "deploy-signed-tx",
     signedTX: JSON.stringify(finalTransaction),
-    testnetId: testNetId
+    testnetId
   };
   const resp = client_call_client.RunDeploy(callInterface, meta, (err: any, transactionReceipt: any) => {
     if (err) {
@@ -526,6 +526,6 @@ process.on("message", async m => {
   // sign and deploy unsigned transaction
   if (m.command == "sign-deploy") {
     const { unsignedTx, pvtKey } = m.payload;
-    deployUnsignedTx(meta, unsignedTx, pvtKey, m.testNetId);
+    deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
   }
 });
