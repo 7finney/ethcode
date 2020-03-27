@@ -104,7 +104,7 @@ function findImports(path: any) {
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testNetId?: any) {
   const unsignedTransaction = new EthereumTx(tx);
-  const pvtk = Buffer.from(privateKey);
+  const pvtk = Buffer.from(privateKey, 'hex');
   unsignedTransaction.sign(pvtk);
   const rlpEncoded = unsignedTransaction.serialize().toString('hex');
   const rawTransaction = '0x' + rlpEncoded;
