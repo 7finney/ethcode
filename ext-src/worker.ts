@@ -121,6 +121,7 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testNetId?: any) 
   process.send({ responses: finalTransaction });
 
   const callInterface = {
+    command: "deploy-signed-tx",
     signedTX: JSON.stringify(finalTransaction),
     testnetId: testNetId
   };
