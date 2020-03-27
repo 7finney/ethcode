@@ -64,6 +64,13 @@ class Deploy extends Component<IProps, IState> {
     window.addEventListener("message", async event => {
       const { data } = event;
 
+      if(data.deployedResult) {
+        console.log("deployedResult");
+        console.log(JSON.stringify(data.deployedResult));
+        // this.setState({  })
+        
+      }
+
       if(data.gasEstimate) {
         this.setState({ gasEstimate: data.gasEstimate });
       }
@@ -137,12 +144,14 @@ class Deploy extends Component<IProps, IState> {
 
   signAndDeploy = () => {
     const { vscode, unsignedTx, testNetId } = this.props;
+    const { pvtKey } = this.state;
     try {
       // get private key for corresponding public key
       vscode.postMessage({
         command: "sign-deploy-tx",
         payload: {
           unsignedTx,
+          pvtKey
           // need to pass private Key
         },
         testNetId
@@ -222,7 +231,7 @@ class Deploy extends Component<IProps, IState> {
               Unsigned Transaction:
             </h6>
             <div className="json_input_container" style={{ marginTop: '10px' }}>
-              <textarea className="json_input custom_input_css">{JSON.stringify(unsignedTx)}</textarea>
+              <textarea className="json_input custom_input_css">{unsignedTx}</textarea>
             </div>
           </div>)}
 

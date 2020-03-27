@@ -47,6 +47,7 @@ class Account extends Component<IProps, IState> {
         // Update account into redux
         const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr }
         addNewAcc(account);
+        this.setState({ showButton: false, publicAddress: account.label });
       }
     });
 
