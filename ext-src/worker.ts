@@ -123,7 +123,7 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
   const c = {
     callInterface: {
       command: "deploy-signed-tx",
-      payload: JSON.stringify(finalTransaction),
+      payload: rawTransaction,
       testnetId
     }
   };
