@@ -46,8 +46,8 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
-
+  // client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -64,8 +64,8 @@ function handleLocal(pathString: string, filePath: any) {
     return;
   } else {
     const o = { encoding: "UTF-8" };
-    // const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
-    const p = path.resolve(pathString, filePath);
+    // hack for compiler imports to work (do not change)
+    const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
     const content = fs.readFileSync(p, o);
     return content;
   }
@@ -103,7 +103,8 @@ function findImports(path: any) {
 
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
-  const unsignedTransaction = new EthereumTx(tx);
+  // TODO: this method should not work for ganache and prysm and throw error
+  const unsignedTransaction = new EthereumTx(tx, { chain: Number(testnetId) });
   const pvtk = Buffer.from(privateKey, 'hex');
   unsignedTransaction.sign(pvtk);
   const rlpEncoded = unsignedTransaction.serialize().toString('hex');
