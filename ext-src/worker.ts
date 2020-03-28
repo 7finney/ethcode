@@ -297,7 +297,8 @@ process.on("message", async m => {
     const c = {
       callInterface: {
         command: 'get-balance',
-        payload: hashAddr
+        payload: hashAddr,
+        testnetId: m.testnetId
       }
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
@@ -490,8 +491,6 @@ process.on("message", async m => {
   }
   // Build raw transaction for contract creation
   if (m.command == "build-rawtx") {
-    console.log("command === build-rawtx");
-
     const { abi, bytecode, params, gasSupply, from } = m.payload;
     const inp = {
       from,

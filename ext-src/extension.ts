@@ -180,7 +180,7 @@ class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
-          this.getBalance(message.account);
+          this.getBalance(message.account, message.testNetId);
         } else if (message.command === "build-rawtx") {
           this.buildRawTx(message.payload, message.testNetId);
         } else if (message.command === "sign-deploy-tx") {
@@ -481,7 +481,7 @@ class ReactPanel {
     accWorker.send({ command: "get-localAccounts", keyStorePath });
   }
   // get balance of a particular account
-  private getBalance(account: IAccount) {
+  private getBalance(account: IAccount, testNetId: string) {
     console.log("getBalance");
     console.log(account);
     
@@ -491,7 +491,7 @@ class ReactPanel {
       
       this._panel.webview.postMessage({ balance: m.balance, account });
     });
-    balanceWorker.send({ command: "get-balance", account, jwtToken });
+    balanceWorker.send({ command: "get-balance", account, jwtToken, testnetId: testNetId });
   }
   // Call contract method
   private runContractCall(payload: any, testNetId: string) {

@@ -344,26 +344,24 @@ class App extends Component<IProps, IState> {
   public getSelectedNetwork = (testNet: any) => {
     const { currAccount } = this.state;
     this.setState({ testNetId: testNet.value }, () => {
-      this.props.setTestNetId(this.state.testNetId);
+      const { testNetId } = this.state;
+      this.props.setTestNetId(testNetId);
       // TODO: Fetch Account Balance
       vscode.postMessage({
         command: 'get-balance',
-        account: currAccount
+        account: currAccount,
+        testNetId
       });
     });
   }
 
   public getSelectedAccount = (account: IAccount) => {
-    const { accounts } = this.props;
-    console.log("getSelectedAccount");
-    console.log(accounts);
-    
-    // const account = accounts.filter(a => { return a.value == acc.value })
-    
     this.setState({ currAccount: account, accountName: account }, () => {
+      const { testNetId } = this.state;
       vscode.postMessage({
         command: 'get-balance',
-        account
+        account,
+        testNetId
       });
     });
   }
