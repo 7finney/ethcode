@@ -19,9 +19,11 @@ interface IProps {
 interface IState {
   balance: number;
   publicAddress: string;
+  pvtKey: string;
   showButton: boolean;
   transferAmount: number;
   error: any;
+  msg: string;
 }
 
 class Account extends Component<IProps, IState> {
@@ -30,35 +32,45 @@ class Account extends Component<IProps, IState> {
     this.state = {
       balance: 0,
       publicAddress: '',
+      pvtKey: '',
       showButton: false,
       transferAmount: 0,
-      error: {}
+      error: {},
+      msg: ''
     };
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
 
-  componentDidUpdate(prevProps: IProps, preState: IState) {
-    const { addNewAcc, accountBalance } = this.props;
+  componentDidUpdate(prevProps: IProps, prevState: IState) {
+    const { addNewAcc, accountBalance, vscode, currAccount } = this.props;
     const { balance } = this.state;
-
-    console.log("Prevprops");
-    console.log(prevProps.accountBalance);
-    console.log("this.props");
-    console.log(this.props.accountBalance);
 
     window.addEventListener("message", async event => {
       const { data } = event;
+      // console.log(JSON.stringify(data));
       if (data.newAccount) {
         // Update account into redux
-        const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr }
+        const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr };
         addNewAcc(account);
         this.setState({ showButton: false, publicAddress: account.label });
+      } else if (data.pvtKey && (data.pvtKey !== this.state.pvtKey)) {
+        console.log("Setting active private key");
+        console.log(data.pvtKey);
+        this.setState({ pvtKey: data.pvtKey }, () => {
+          this.setState({ msg: 'process finshed' });
+        });
+      } else if (data.unsingedTx) {
+        console.log(data.unsingedTx);
       }
     });
 
     if (accountBalance !== balance) {
       this.setState({ balance: accountBalance });
+    }
+    if (currAccount !== prevProps.currAccount) {
+      // get private key for corresponding public key
+      vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
     }
   }
 
@@ -97,23 +109,39 @@ class Account extends Component<IProps, IState> {
   // handle send ether
   private handleTransactionSubmit(event: any) {
     event.preventDefault();
-    const { vscode, currAccount } = this.props;
+    const { vscode, currAccount, testNetId } = this.props;
+    const { pvtKey } = this.state;
     const data = new FormData(event.target);
 
-    const transactionInfo = {
-      fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
-      toAddress: data.get("toAddress"),
-      amount: data.get("amount")
-    };
-
     console.log("Try send :");
-    console.log(transactionInfo);
+    console.log(testNetId);
+
     try {
-      vscode.postMessage({
-        command: "send-ether",
-        payload: transactionInfo,
-        testnetId: this.props.testNetId
-      });
+      if (testNetId === "ganache") {
+        const transactionInfo = {
+          fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          toAddress: data.get("toAddress"),
+          amount: data.get("amount")
+        };
+        vscode.postMessage({
+          command: "send-ether",
+          payload: transactionInfo,
+          testNetId
+        });
+      } else {
+        // Build unsigned transaction
+        const transactionInfo = {
+          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          to: data.get("toAddress"),
+          data: '',
+          value: data.get("amount")
+        };
+        vscode.postMessage({
+          command: "send-ether-signed",
+          payload: { transactionInfo, pvtKey },
+          testNetId
+        });
+      }
     } catch (err) {
       this.setState({ error: err });
     }

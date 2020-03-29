@@ -57,11 +57,7 @@ class Deploy extends Component<IProps, IState> {
     
   }
   componentDidMount() {
-    this.setState({ msg: 'process yet to start' })
     const { abi, bytecode, vscode, currAccount } = this.props;
-    console.log("currAccount");
-    
-    console.log(currAccount);
     this.setState({ abi, bytecode });
 
     window.addEventListener("message", async event => {
@@ -70,8 +66,6 @@ class Deploy extends Component<IProps, IState> {
       if(data.deployedResult) {
         console.log("deployedResult");
         console.log(JSON.stringify(data.deployedResult));
-        // this.setState({  })
-        
       }
 
       if(data.gasEstimate) {

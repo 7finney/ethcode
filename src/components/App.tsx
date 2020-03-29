@@ -243,6 +243,8 @@ class App extends Component<IProps, IState> {
         this.setState({ accounts: this.props.accounts, currAccount: this.props.currAccount, balance: this.props.accountBalance });
       }
       if (data.transactionResult) {
+        console.log("Got transaction result");
+        console.log(data.transactionResult);
         this.setState({ transactionResult: data.transactionResult });
       }
       if (data.balance) {

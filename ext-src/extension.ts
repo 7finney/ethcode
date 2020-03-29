@@ -204,6 +204,10 @@ class ReactPanel {
           this.getLocalAccounts(this._extensionPath);
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
+        } else if (message.command === 'send-ether-signed') {
+          console.log("Sign and send ether");
+          console.log(message);
+          this.sendEtherSigned(message.payload, message.testNetId);
         } else if (message.command === 'get-pvt-key') {
           this.getPvtKey(message.payload, this._extensionPath);
         }
@@ -263,10 +267,10 @@ class ReactPanel {
 
   private createWorker(): ChildProcess {
     // enable --inspect for debug
-    // return fork(path.join(__dirname, "worker.js"), [], {
-    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
-    // });
-    return fork(path.join(__dirname, "worker.js"));
+    return fork(path.join(__dirname, "worker.js"), [], {
+      execArgv: ["--inspect=" + (process.debugPort + 1)]
+    });
+    // return fork(path.join(__dirname, "worker.js"));
   }
   private createVyperWorker(): ChildProcess {
     // enable --inspect for debug
@@ -529,6 +533,18 @@ class ReactPanel {
       }
     });
     sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
+  }
+  private sendEtherSigned(payload: any, testNetId: string) {
+    const sendEtherWorker = this.createWorker();
+    sendEtherWorker.on("message", (m: any) => {
+      if(m.unsingedTx) {
+        this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
+      } else if(m.transactionResult) {
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        success("Successfully send Ether");
+      }
+    });
+    sendEtherWorker.send({ command: "send-ether-signed", payload, jwtToken, testnetId: testNetId });
   }
   public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
     // send JSON serializable compiled data

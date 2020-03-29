@@ -8,6 +8,7 @@ import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 const EthereumTx = require('ethereumjs-tx').Transaction;
 import { sha3 } from './hash/sha3';
+var formatters = require('web3-core-helpers').formatters;
 
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
@@ -103,23 +104,34 @@ function findImports(path: any) {
 
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
+  console.log("Deploy unsigned transaction");
+  console.dir(JSON.parse(tx));
+  tx = JSON.parse(tx);
+  const txData = formatters.inputTransactionFormatter(tx);
+  console.log("txData");
+  console.log(txData);
+  
   // TODO: this method should not work for ganache and prysm and throw error
-  const unsignedTransaction = new EthereumTx(tx, { chain: Number(testnetId) });
+  const chainId = Number(testnetId) === 5 ? 6284 : Number(testnetId)
+  const unsignedTransaction = new EthereumTx({
+    nonce: txData.nonce || '0x',
+    gasPrice: txData.gasPrice,
+    gasLimit: txData.gas || txData.gasLimit,
+    to: txData.to || '0x',
+    value: txData.value || '0x',
+    data: txData.data || '0x'
+  }, { chain: chainId });
+  console.log("unsignedTransaction");
+  console.log(unsignedTransaction.serialize().toString('hex'));
   const pvtk = Buffer.from(privateKey, 'hex');
   unsignedTransaction.sign(pvtk);
+  console.log("unsignedTransaction signed");
+  console.log(unsignedTransaction.serialize().toString('hex'));
   const rlpEncoded = unsignedTransaction.serialize().toString('hex');
   const rawTransaction = '0x' + rlpEncoded;
   var transactionHash = sha3(rawTransaction);
-  var finalTransaction = {
-    messageHash: '0x' + Buffer.from(unsignedTransaction.hash(false)).toString('hex'),
-    v: '0x' + Buffer.from(unsignedTransaction.v).toString('hex'),
-    r: '0x' + Buffer.from(unsignedTransaction.r).toString('hex'),
-    s: '0x' + Buffer.from(unsignedTransaction.s).toString('hex'),
-    rawTransaction: rawTransaction,
-    transactionHash: transactionHash
-  };
   // @ts-ignore
-  process.send({ responses: finalTransaction });
+  process.send({ responses: transactionHash });
 
   const c = {
     callInterface: {
@@ -128,26 +140,51 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
       testnetId
     }
   };
-  const resp = client_call_client.RunDeploy(c, meta, (err: any, transactionReceipt: any) => {
+  console.log(c);
+  
+  const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
     if (err) {
       console.log("err", err);
     } else {
       // @ts-ignore
-      process.send({ deployedResult: transactionReceipt });
+      process.send({ response });
     }
   });
-  resp.on('data', (data: any) => {
-    const transactionReceipt = JSON.parse(data.txReciept);
+
+
+  call.on('data', (data: any) => {
     // @ts-ignore
-    process.send({ deployedResult: transactionReceipt });
+    process.send({ transactionResult: data.result });
   });
-  resp.on('end', function () {
+  call.on('end', function () {
     process.exit(0);
   });
-  resp.on('error', function (err: Error) {
+  call.on('error', function (err: Error) {
     // @ts-ignore
     process.send({ "error": err });
   });
+
+  // const resp = client_call_client.RunDeploy(c, meta, (err: any) => {
+  //   if (err) {
+  //     console.log("err", err);
+  //   }
+  // });
+  // resp.on('data', (data: any) => {
+  //   console.log("Tx receipt");
+  //   console.log(data);
+    
+    
+  //   const transactionReceipt = JSON.parse(data.txReciept);
+  //   // @ts-ignore
+  //   process.send({ deployedResult: transactionReceipt });
+  // });
+  // resp.on('end', function () {
+  //   process.exit(0);
+  // });
+  // resp.on('error', function (err: Error) {
+  //   // @ts-ignore
+  //   process.send({ "error": err });
+  // });
 }
 
 process.on("message", async m => {
@@ -244,24 +281,24 @@ process.on("message", async m => {
     });
   }
   // send wei value to address in other testnets
-  if (m.command == "custom-send-ether") {
-    const { to, from, data, value, gasEstimate, pvtKey } = JSON.parse(m.payload);
+  if (m.command == "send-ether-signed") {
+    const { transactionInfo, pvtKey } = m.payload;
     const c = {
-      to,
-      from,
-      data,
-      value,
-      gasEstimate
+      callInterface: {
+        command: 'build-raw-eth-tx',
+        payload: JSON.stringify(transactionInfo),
+        testnetId: m.testnetId
+      }
     };
-    const call = client_call_client.CreateRawTransaction(JSON.stringify(c), meta, (err: any, responses: any) => {
+    const call = client_call_client.RunDeploy(c, meta, (err: any) => {
       if (err) {
         console.log("err", err);
-      } else {
-        deployUnsignedTx(meta, responses.rawTX, pvtKey);
       }
     });
-    call.on('end', function () {
-      process.exit(0);
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ unsingedTx: data.result });
+      deployUnsignedTx(meta, data.result, pvtKey, m.testnetId);
     });
     call.on('error', function (err: Error) {
       // @ts-ignore
