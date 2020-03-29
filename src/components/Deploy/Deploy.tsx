@@ -53,12 +53,10 @@ class Deploy extends Component<IProps, IState> {
     const { abi, bytecode, vscode, currAccount, setUnsgTxn } = this.props;
     this.setState({ abi, bytecode });
 
-    window.addEventListener("message", async event => {
+    window.addEventListener("message", event => {
       const { data } = event;
 
       if (data.deployedResult) {
-        console.log("contract deployed successfully");
-        console.log(data.deployedResult);
         this.setState({ txtHash: data.deployedResult });
       }
 
@@ -66,8 +64,7 @@ class Deploy extends Component<IProps, IState> {
         this.setState({ gasEstimate: data.gasEstimate });
       }
       if (data.buildTxResult) {
-        console.log("Setting unsigned transaction");
-        console.log(data.buildTxResult);
+        // TODO: fix unsigned tx is not updated after once
         setUnsgTxn(data.buildTxResult);
       }
       if (data.pvtKey) {
