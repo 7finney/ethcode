@@ -104,13 +104,8 @@ function findImports(path: any) {
 
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
-  console.log("Deploy unsigned transaction");
-  console.dir(JSON.parse(tx));
   tx = JSON.parse(tx);
   const txData = formatters.inputTransactionFormatter(tx);
-  console.log("txData");
-  console.log(txData);
-  
   // TODO: this method should not work for ganache and prysm and throw error
   const chainId = Number(testnetId) === 5 ? 6284 : Number(testnetId)
   const unsignedTransaction = new EthereumTx({
@@ -121,12 +116,8 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
     value: txData.value || '0x',
     data: txData.data || '0x'
   }, { chain: chainId });
-  console.log("unsignedTransaction");
-  console.log(unsignedTransaction.serialize().toString('hex'));
   const pvtk = Buffer.from(privateKey, 'hex');
   unsignedTransaction.sign(pvtk);
-  console.log("unsignedTransaction signed");
-  console.log(unsignedTransaction.serialize().toString('hex'));
   const rlpEncoded = unsignedTransaction.serialize().toString('hex');
   const rawTransaction = '0x' + rlpEncoded;
   var transactionHash = sha3(rawTransaction);
@@ -140,11 +131,10 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
       testnetId
     }
   };
-  console.log(c);
-  
+
   const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
     if (err) {
-      console.log("err", err);
+      console.error(err);
     } else {
       // @ts-ignore
       process.send({ response });
@@ -163,32 +153,9 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
     // @ts-ignore
     process.send({ "error": err });
   });
-
-  // const resp = client_call_client.RunDeploy(c, meta, (err: any) => {
-  //   if (err) {
-  //     console.log("err", err);
-  //   }
-  // });
-  // resp.on('data', (data: any) => {
-  //   console.log("Tx receipt");
-  //   console.log(data);
-    
-    
-  //   const transactionReceipt = JSON.parse(data.txReciept);
-  //   // @ts-ignore
-  //   process.send({ deployedResult: transactionReceipt });
-  // });
-  // resp.on('end', function () {
-  //   process.exit(0);
-  // });
-  // resp.on('error', function (err: Error) {
-  //   // @ts-ignore
-  //   process.send({ "error": err });
-  // });
 }
 
 process.on("message", async m => {
-
   var meta = new grpc.Metadata();
   meta.add('authorization', m.jwtToken);
   if (m.command === "compile") {

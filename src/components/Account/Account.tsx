@@ -48,19 +48,19 @@ class Account extends Component<IProps, IState> {
 
     window.addEventListener("message", async event => {
       const { data } = event;
-      // console.log(JSON.stringify(data));
       if (data.newAccount) {
-        // Update account into redux
+        // TODO: Update account into redux
         const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr };
         addNewAcc(account);
         this.setState({ showButton: false, publicAddress: account.label });
       } else if (data.pvtKey && (data.pvtKey !== this.state.pvtKey)) {
-        console.log("Setting active private key");
-        console.log(data.pvtKey);
+        // TODO: handle pvt key not found errors
         this.setState({ pvtKey: data.pvtKey }, () => {
           this.setState({ msg: 'process finshed' });
         });
       } else if (data.unsingedTx) {
+        // TODO: handle or discard if we do not need unsigned transaction
+        console.log("Unsigned transaction");
         console.log(data.unsingedTx);
       }
     });
@@ -113,9 +113,6 @@ class Account extends Component<IProps, IState> {
     const { pvtKey } = this.state;
     const data = new FormData(event.target);
 
-    console.log("Try send :");
-    console.log(testNetId);
-
     try {
       if (testNetId === "ganache") {
         const transactionInfo = {
@@ -133,7 +130,6 @@ class Account extends Component<IProps, IState> {
         const transactionInfo = {
           from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
           to: data.get("toAddress"),
-          data: '',
           value: data.get("amount")
         };
         vscode.postMessage({

@@ -205,8 +205,6 @@ class ReactPanel {
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
         } else if (message.command === 'send-ether-signed') {
-          console.log("Sign and send ether");
-          console.log(message);
           this.sendEtherSigned(message.payload, message.testNetId);
         } else if (message.command === 'get-pvt-key') {
           this.getPvtKey(message.payload, this._extensionPath);
@@ -267,10 +265,10 @@ class ReactPanel {
 
   private createWorker(): ChildProcess {
     // enable --inspect for debug
-    return fork(path.join(__dirname, "worker.js"), [], {
-      execArgv: ["--inspect=" + (process.debugPort + 1)]
-    });
-    // return fork(path.join(__dirname, "worker.js"));
+    // return fork(path.join(__dirname, "worker.js"), [], {
+    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
+    // });
+    return fork(path.join(__dirname, "worker.js"));
   }
   private createVyperWorker(): ChildProcess {
     // enable --inspect for debug
@@ -378,10 +376,9 @@ class ReactPanel {
   }
   // get private key for given public key
   private getPvtKey(pubKey: string, keyStorePath: string) {
-    console.log("Try extracting pvtKey");
-    console.log(pubKey);
     const accWorker = this.createAccWorker();
     accWorker.on("message", (m: any) => {
+      // TODO: handle private key not found errors
       if (m.privateKey) {
         this._panel.webview.postMessage({ pvtKey: m.privateKey });
       }
@@ -430,12 +427,8 @@ class ReactPanel {
   }
   // create unsigned transactions
   private buildRawTx(payload: any, testNetId: string) {
-    console.log("buildRawTx extension");
     const txWorker = this.createWorker();
     txWorker.on("message", (m: any) => {
-      console.log("buildRawTx message");
-      console.log(m);
-
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
@@ -449,9 +442,6 @@ class ReactPanel {
   private signDeployTx(payload: any, testNetId: string) {
     const signedDeployWorker = this.createWorker();
     signedDeployWorker.on("message", (m: any) => {
-      console.log("deploy signed transaction message");
-      console.log(m);
-
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       }
@@ -486,13 +476,8 @@ class ReactPanel {
   }
   // get balance of a particular account
   private getBalance(account: IAccount, testNetId: string) {
-    console.log("getBalance");
-    console.log(account);
-    
     const balanceWorker = this.createWorker();
     balanceWorker.on("message", (m: any) => {
-      console.log(JSON.stringify(m));
-      
       this._panel.webview.postMessage({ balance: m.balance, account });
     });
     balanceWorker.send({ command: "get-balance", account, jwtToken, testnetId: testNetId });
@@ -524,6 +509,7 @@ class ReactPanel {
     });
     deployWorker.send({ command: "get-gas-estimate", payload, jwtToken, testnetId: testNetId });
   }
+  // Send ether on ganache
   private sendEther(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
@@ -534,6 +520,7 @@ class ReactPanel {
     });
     sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
   }
+  // Send ether using ethereum client
   private sendEtherSigned(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {

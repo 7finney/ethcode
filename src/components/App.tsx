@@ -227,7 +227,6 @@ class App extends Component<IProps, IState> {
       }
       if (data.fetchAccounts) {
         const balance = data.fetchAccounts.balance;
-        // const currAccount = data.fetchAccounts.accounts[0];
         const accounts = data.fetchAccounts.accounts;
         this.setState({
           testNetAcc: setSelectorOption(accounts)
@@ -243,15 +242,10 @@ class App extends Component<IProps, IState> {
         this.setState({ accounts: this.props.accounts, currAccount: this.props.currAccount, balance: this.props.accountBalance });
       }
       if (data.transactionResult) {
-        console.log("Got transaction result");
-        console.log(data.transactionResult);
         this.setState({ transactionResult: data.transactionResult });
       }
       if (data.balance) {
         const { balance, account } = data;
-        console.log("data.balance in App.tsx");
-        console.log(balance);
-        
         this.props.setCurrAccChange({ balance, currAccount: account });
         this.setState({ balance: this.props.accountBalance });
       }
@@ -263,17 +257,10 @@ class App extends Component<IProps, IState> {
   }
 
   mergeAccount = () => {
-    console.log("merging accounts");
-    
     const { localAcc, testNetAcc } = this.state;
-    console.log(JSON.stringify(localAcc));
-    console.log(JSON.stringify(testNetAcc));
     // merge and set accounts store
     const accounts = [...localAcc, ...testNetAcc];
-    console.log("Merged acc obj");
-    console.log(JSON.stringify(accounts));
     // TODO: update reducer
-    
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       this.setState({
