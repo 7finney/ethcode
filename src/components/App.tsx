@@ -21,7 +21,7 @@ import ContractDeploy from "./ContractDeploy";
 import Selector from './Selector';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
-import Deploy from "./Deploy/Deploy"
+import Deploy from "./Deploy/Deploy";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from "./Account/Account";
@@ -41,7 +41,7 @@ interface IProps {
   accountBalance: number,
   accounts: string[],
   currAccount: IAccount,
-  testNetId: string
+  testNetId: string;
 }
 
 interface IState {
@@ -69,7 +69,7 @@ interface IState {
   accountName: IAccount;
   testNets: object[];
   localAcc: any[],
-  testNetAcc: any[]
+  testNetAcc: any[];
 }
 interface IOpt {
   value: string;
@@ -122,33 +122,30 @@ class App extends Component<IProps, IState> {
       const { data } = event;
 
       if (data.fileType) {
-        this.setState({
-          fileType: data.fileType
-        });
+        this.setState({ fileType: data.fileType });
       }
       if (data.localAccounts) {
-        this.setState({
-          localAcc: setLocalAccountOption(data.localAccounts)
-        }, () => {
-          this.mergeAccount()
+        this.setState({ localAcc: setLocalAccountOption(data.localAccounts) }, () => {
+          this.mergeAccount();
         });
       }
 
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
-        const newCompile = JSON.stringify(data.newCompile)
+        const newCompile = JSON.stringify(data.newCompile);
 
         if (newCompile) {
-          this.props.clearDeployedResult()
+          // TODO: update compiled results via redux store
+          this.props.clearDeployedResult();
         }
-
-        const fileName = Object.keys(compiled.sources)[0];
 
         if (compiled.errors && compiled.errors.length > 0) {
           this.setState({ message: compiled.errors });
+          return;
         }
+        const fileName = Object.keys(compiled.sources)[0];
         var contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
-        var files = setFileSelectorOptions(Object.keys(compiled.sources))
+        var files = setFileSelectorOptions(Object.keys(compiled.sources));
         this.setState({
           compiled,
           fileName,
@@ -170,7 +167,7 @@ class App extends Component<IProps, IState> {
       }
 
       if (data.versions) {
-        var options = solidityVersion(data.versions.releases)
+        var options = solidityVersion(data.versions.releases);
         this.setState({
           availableVersions: options,
           processMessage: ""
@@ -182,11 +179,11 @@ class App extends Component<IProps, IState> {
       }
 
       if (data.testPanel === 'test') {
-        this.setState({ tabIndex: 4 })
+        this.setState({ tabIndex: 4 });
       }
 
       if (data.testPanel === 'main') {
-        this.setState({ tabIndex: 0 })
+        this.setState({ tabIndex: 0 });
       }
 
       if (data._testCallback) {
@@ -211,7 +208,7 @@ class App extends Component<IProps, IState> {
         this.setState({ gasEstimate: data.gasEstimate });
       }
       if (data.deployedResult) {
-        const result = data.deployedResult.deployedResult
+        const result = data.deployedResult.deployedResult;
         this.props.setDeployedResult(result);
         this.setState({ deployedResult: data.deployedResult.deployedResult });
       }
@@ -232,13 +229,13 @@ class App extends Component<IProps, IState> {
           testNetAcc: setSelectorOption(accounts)
         }, () => {
           this.mergeAccount();
-        })
+        });
         const accData = {
           balance,
           currAccount: this.state.testNetAcc[0],
           accounts
-        }
-        await this.props.setAccountBalance(accData)
+        };
+        await this.props.setAccountBalance(accData);
         this.setState({ accounts: this.props.accounts, currAccount: this.props.currAccount, balance: this.props.accountBalance });
       }
       if (data.transactionResult) {
@@ -272,31 +269,31 @@ class App extends Component<IProps, IState> {
             options: localAcc
           }
         ]
-      })
+      });
     } else if (localAcc.length > 0) {
       this.setState({
         selctorAccounts: [{
           label: 'Local Accounts',
           options: localAcc
         }]
-      })
+      });
     } else if (testNetAcc.length > 0) {
       this.setState({
         selctorAccounts: [{
           label: 'Ganache',
           options: testNetAcc
         }]
-      })
+      });
     } else {
       this.setState({ selctorAccounts: [] });
     }
-  }
+  };
 
   componentDidUpdate(_: any) {
     if (this.props.accounts !== this.state.accounts) {
       this.setState({
         accounts: this.props.accounts
-      })
+      });
     }
 
     if (this.props.testNetId !== this.state.testNetId) {
@@ -311,16 +308,16 @@ class App extends Component<IProps, IState> {
       this.changeContract({
         value: `${Object.keys(this.state.compiled.contracts[this.state.fileName])[0]}`,
         label: `${Object.keys(this.state.compiled.contracts[this.state.fileName])[0]}`
-      })
+      });
       this.setState((preState: IState) => ({
         contracts: setSelectorOption(Object.keys(preState.compiled.contracts[preState.fileName]))
-      }))
+      }));
     });
   };
 
   public changeContract = (selectedOpt: IOpt) => {
-    this.setState({ contractName: selectedOpt.value })
-  }
+    this.setState({ contractName: selectedOpt.value });
+  };
 
   public getSelectedVersion = (version: any) => {
     vscode.postMessage({
@@ -341,7 +338,7 @@ class App extends Component<IProps, IState> {
         testNetId
       });
     });
-  }
+  };
 
   public getSelectedAccount = (account: IAccount) => {
     this.setState({ currAccount: account, accountName: account }, () => {
@@ -352,15 +349,15 @@ class App extends Component<IProps, IState> {
         testNetId
       });
     });
-  }
+  };
 
   public handelChangeFromAddress = (event: any) => {
     this.setState({ currAccount: event.target.value });
-  }
+  };
 
   public openAdvanceDeploy = () => {
     this.setState({ tabIndex: 2 });
-  }
+  };
 
   public render() {
     const {
