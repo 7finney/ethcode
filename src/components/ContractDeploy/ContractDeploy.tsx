@@ -56,7 +56,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    this.setState({ testNetId: this.props.testNetId })
+    this.setState({ testNetId: this.props.testNetId });
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
     for (let i in abi) {
@@ -73,21 +73,15 @@ class ContractDeploy extends Component<IProps, IState> {
   componentDidUpdate(prevProps: any) {
     const { gasEstimate, deployedResult, error, abi } = this.props;
     if (this.props.testNetId !== this.state.testNetId && this.props.testNetId !== 'ganache') {
-      this.setState({
-        disable: true
-      })
+      this.setState({ disable: true });
     } else if (this.props.testNetId !== this.state.testNetId) {
-      this.setState({
-        disable: false
-      })
+      this.setState({ disable: false });
     }
     if (error !== prevProps.error) {
       this.setState({ error: error });
     }
     if (this.props.testNetId !== this.state.testNetId) {
-      this.setState({
-        testNetId: this.props.testNetId
-      })
+      this.setState({ testNetId: this.props.testNetId });
     }
     else if (deployedResult !== prevProps.deployedResult) {
       const deployedObj = JSON.parse(deployedResult);
@@ -97,7 +91,7 @@ class ContractDeploy extends Component<IProps, IState> {
       this.setState({ gasSupply: gasEstimate });
     }
 
-    const length = Object.keys(abi).length
+    const length = Object.keys(abi).length;
     if (prevProps.abi !== abi) {
       if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
@@ -223,7 +217,7 @@ class ContractDeploy extends Component<IProps, IState> {
                                 // @ts-ignore */}
                                 <input className="custom_input_css" type={x.type} placeholder={`${x.name} arguments (${x.type})`} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
                               </div>
-                            )
+                            );
                           })
                         }
                       </div> :

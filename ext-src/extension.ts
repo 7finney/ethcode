@@ -412,19 +412,6 @@ class ReactPanel {
     });
     debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
   }
-  // Deploy contracts
-  private runDeploy(payload: any, testNetId: string) {
-    const deployWorker = this.createWorker();
-    deployWorker.on("message", (m: any) => {
-      if (m.error) {
-        this._panel.webview.postMessage({ errors: m.error });
-      }
-      else {
-        this._panel.webview.postMessage({ deployedResult: m });
-      }
-    });
-    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
-  }
   // create unsigned transactions
   private buildRawTx(payload: any, testNetId: string) {
     const txWorker = this.createWorker();
@@ -438,15 +425,29 @@ class ReactPanel {
     });
     txWorker.send({ command: "build-rawtx", payload, jwtToken, testnetId: testNetId });
   }
-  // sign & deploy unsigned transaction
+  // Deploy contracts for ganache
+  private runDeploy(payload: any, testNetId: string) {
+    const deployWorker = this.createWorker();
+    deployWorker.on("message", (m: any) => {
+      if (m.error) {
+        this._panel.webview.postMessage({ errors: m.error });
+      }
+      else {
+        this._panel.webview.postMessage({ deployedResult: m });
+      }
+    });
+    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
+  }
+  // sign & deploy unsigned contract transactions
   private signDeployTx(payload: any, testNetId: string) {
     const signedDeployWorker = this.createWorker();
     signedDeployWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
-      }
-      else {
-        this._panel.webview.postMessage({ deployedResult: m.deployedResult });
+      } else if(m.transactionResult) {
+        this._panel.webview.postMessage({ deployedResult: m.transactionResult });
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        success("Contract transaction submitted!");
       }
     });
     signedDeployWorker.send({ command: "sign-deploy", payload, jwtToken, testnetId: testNetId });
@@ -474,7 +475,7 @@ class ReactPanel {
     });
     accWorker.send({ command: "get-localAccounts", keyStorePath });
   }
-  // get balance of a particular account
+  // get balance of given account
   private getBalance(account: IAccount, testNetId: string) {
     const balanceWorker = this.createWorker();
     balanceWorker.on("message", (m: any) => {
@@ -482,7 +483,7 @@ class ReactPanel {
     });
     balanceWorker.send({ command: "get-balance", account, jwtToken, testnetId: testNetId });
   }
-  // Call contract method
+  // call contract method
   private runContractCall(payload: any, testNetId: string) {
     var f: boolean = true;
     const callWorker = this.createWorker();
@@ -513,9 +514,9 @@ class ReactPanel {
   private sendEther(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
-      this._panel.webview.postMessage({ transactionResult: m.transactionResult });
       if (m.transactionResult) {
-        success("Successfully send Ether");
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        success("Successfully sent Ether");
       }
     });
     sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
@@ -528,7 +529,7 @@ class ReactPanel {
         this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
       } else if(m.transactionResult) {
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
-        success("Successfully send Ether");
+        success("Successfully sent Ether");
       }
     });
     sendEtherWorker.send({ command: "send-ether-signed", payload, jwtToken, testnetId: testNetId });

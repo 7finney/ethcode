@@ -132,17 +132,16 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
     }
   };
 
-  const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+  const call = client_call_client.RunDeploy(c, meta, (err: any) => {
     if (err) {
       console.error(err);
-    } else {
-      // @ts-ignore
-      process.send({ response });
     }
   });
 
 
   call.on('data', (data: any) => {
+    console.log("transactionResult");
+    console.log(data);
     // @ts-ignore
     process.send({ transactionResult: data.result });
   });
@@ -532,8 +531,6 @@ process.on("message", async m => {
   // sign and deploy unsigned transaction
   if (m.command == "sign-deploy") {
     const { unsignedTx, pvtKey } = m.payload;
-    // @ts-ignore
-    process.send({ help: "testnetid: " + m.testnetId + "pvtKey: " + pvtKey });
     deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
   }
 });

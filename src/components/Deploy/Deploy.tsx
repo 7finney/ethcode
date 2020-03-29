@@ -32,7 +32,7 @@ export interface IState {
 
 class Deploy extends Component<IProps, IState> {
   constructor(props: IProps) {
-    super(props)
+    super(props);
     this.state = {
       showUnsignedTxn: false,
       constructorInput: [],
@@ -49,41 +49,36 @@ class Deploy extends Component<IProps, IState> {
     this.getGasEstimate = this.getGasEstimate.bind(this);
   }
 
-  componentDidUpdate() {
-    const { unsignedTx, currAccount } = this.props;
-    // const publicKey = currAccount.value;
-    // console.log(JSON.stringify(unsignedTx));
-    console.log(JSON.stringify(currAccount));
-    
-  }
   componentDidMount() {
-    const { abi, bytecode, vscode, currAccount } = this.props;
+    const { abi, bytecode, vscode, currAccount, setUnsgTxn } = this.props;
     this.setState({ abi, bytecode });
 
     window.addEventListener("message", async event => {
       const { data } = event;
 
-      if(data.deployedResult) {
-        console.log("deployedResult");
-        console.log(JSON.stringify(data.deployedResult));
+      if (data.deployedResult) {
+        console.log("contract deployed successfully");
+        console.log(data.deployedResult);
+        this.setState({ txtHash: data.deployedResult });
       }
 
-      if(data.gasEstimate) {
+      if (data.gasEstimate) {
         this.setState({ gasEstimate: data.gasEstimate });
       }
-      if(data.buildTxResult) {
-        console.log("setting unsigned transaction");
-        console.log(JSON.stringify(data.buildTxResult));
-        this.props.setUnsgTxn(data.buildTxResult);
+      if (data.buildTxResult) {
+        console.log("Setting unsigned transaction");
+        console.log(data.buildTxResult);
+        setUnsgTxn(data.buildTxResult);
       }
-      if(data.pvtKey) {
+      if (data.pvtKey) {
+        // TODO: fetching private key process needs fix
         console.log("Setting active private key");
         console.log(data.pvtKey);
         this.setState({ pvtKey: data.pvtKey }, () => {
-          this.setState({ msg: 'process finshed' })
+          this.setState({ msg: 'process finshed' });
         });
       }
-    })
+    });
     // get private key for corresponding public key
     vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
 
@@ -120,7 +115,7 @@ class Deploy extends Component<IProps, IState> {
     } catch (error) {
       this.setState({ error });
     }
-  }
+  };
 
   getGasEstimate = () => {
     const { vscode, bytecode, abi, testNetId } = this.props;
@@ -139,27 +134,25 @@ class Deploy extends Component<IProps, IState> {
     } catch (err) {
       this.setState({ error: err });
     }
-  }
+  };
 
   signAndDeploy = () => {
     const { vscode, unsignedTx, testNetId } = this.props;
     const { pvtKey } = this.state;
-    this.setState({ msg: 'Process start' })
+    this.setState({ msg: 'Process start' });
     try {
-      // get private key for corresponding public key
       vscode.postMessage({
         command: "sign-deploy-tx",
         payload: {
           unsignedTx,
           pvtKey
-          // need to pass private Key
         },
         testNetId
       });
     } catch (error) {
       this.setState({ error });
     }
-  }
+  };
 
   render() {
     const { contractName, currAccount, unsignedTx, errors } = this.props;
@@ -181,7 +174,8 @@ class Deploy extends Component<IProps, IState> {
               name="bytecode"
               onChange={(e) => this.setState({ bytecode: e.target.value })}
               value={bytecode}
-              placeholder="byte code" />
+              placeholder="byte code"
+              disabled />
           </div>
           <div className="abi-definition">
             <input
@@ -189,9 +183,10 @@ class Deploy extends Component<IProps, IState> {
               style={{ width: '80vw' }}
               type="text"
               name="abi"
-              onChange={(e) => this.setState({ abi: e.target.value })}
-              value={abi}
-              placeholder="abi" />
+              onChange={(e) => this.setState({ abi: JSON.parse(e.target.value) })}
+              value={JSON.stringify(abi)}
+              placeholder="abi"
+              disabled />
           </div>
           <div>
             {
@@ -225,19 +220,21 @@ class Deploy extends Component<IProps, IState> {
           <button className="acc-button custom_button_css" onClick={this.handleBuildTxn}>Build transaction</button>
         </div>
 
-        {unsignedTx &&
-          (<div>
+        {
+          unsignedTx &&
+          <div>
             <h6 className="contract-name inline-block highlight-success">
               Unsigned Transaction:
             </h6>
             <div className="json_input_container" style={{ marginTop: '10px' }}>
               <textarea className="json_input custom_input_css">{unsignedTx}</textarea>
             </div>
-          </div>)}
+          </div>
+        }
 
         <div className="account_row">
           <div className="tag">
-            <h4>Public key </h4>
+            <h4>Public key</h4>
           </div>
           <div className="input-container">
             <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" />
@@ -246,11 +243,10 @@ class Deploy extends Component<IProps, IState> {
 
         <div className="account_row">
           <div className="tag">
-            <h4>Private key </h4>
+            <h4>Private key</h4>
           </div>
           <div className="input-container">
             <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
-            {msg}
           </div>
         </div>
 
@@ -263,7 +259,7 @@ class Deploy extends Component<IProps, IState> {
         {/* Final Transaction Hash */}
         <div className="account_row">
           <div className="tag">
-            <h4>Transaction hash </h4>
+            <h4>Transaction hash</h4>
           </div>
           <div className="input-container">
             <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />

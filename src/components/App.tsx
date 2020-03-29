@@ -259,7 +259,6 @@ class App extends Component<IProps, IState> {
   mergeAccount = () => {
     const { localAcc, testNetAcc } = this.state;
     // merge and set accounts store
-    const accounts = [...localAcc, ...testNetAcc];
     // TODO: update reducer
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
