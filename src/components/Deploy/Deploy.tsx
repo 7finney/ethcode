@@ -78,6 +78,10 @@ class Deploy extends Component<IProps, IState> {
           this.setState({ msg: 'process finshed' });
         });
       }
+
+      if (data.error) {
+        this.setState({ error: data.error });
+      }
     });
     // get private key for corresponding public key
     if (currAccount.type === 'Local') {
@@ -189,8 +193,8 @@ class Deploy extends Component<IProps, IState> {
   };
 
   render() {
-    const { contractName, currAccount, unsignedTx, errors } = this.props;
-    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage } = this.state;
+    const { contractName, currAccount, unsignedTx } = this.props;
+    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error } = this.state;
     const publicKey = currAccount.value;
 
     return (
@@ -224,9 +228,9 @@ class Deploy extends Component<IProps, IState> {
           </div>
           <div>
             {
-              errors &&
+              this.props.errors &&
               <div>
-                {errors}
+                {this.props.errors}
               </div>
             }
           </div>
@@ -339,6 +343,19 @@ class Deploy extends Component<IProps, IState> {
           processMessage &&
           <pre className="processMessage">{processMessage}</pre>
         }
+
+        {/* Error Handle */}
+        <div>
+          {
+            error &&
+            <pre className="large-code" style={{ color: 'red' }}>
+            {
+              // @ts-ignore
+              JSON.stringify(error)
+            }
+          </pre>
+          }
+        </div>
       </div>
     );
   }

@@ -35,7 +35,7 @@ class Account extends Component<IProps, IState> {
       pvtKey: '',
       showButton: false,
       transferAmount: 0,
-      error: {},
+      error: '',
       msg: ''
     };
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
@@ -62,6 +62,9 @@ class Account extends Component<IProps, IState> {
         // TODO: handle or discard if we do not need unsigned transaction
         console.log("Unsigned transaction");
         console.log(data.unsingedTx);
+      }
+      if (data.error) {
+        this.setState({ error: data.error });
       }
     });
 
@@ -145,7 +148,7 @@ class Account extends Component<IProps, IState> {
 
   render() {
     const { accounts, currAccount } = this.props;
-    const { balance, publicAddress, showButton } = this.state;
+    const { balance, publicAddress, showButton, error } = this.state;
 
     return (
       <div className="account_container">
@@ -263,6 +266,18 @@ class Account extends Component<IProps, IState> {
           </div>
         </div>
 
+        {/* Error Handle */}
+        <div>
+          {
+            error &&
+            <pre className="large-code" style={{ color: 'red' }}>
+              {
+                // @ts-ignore
+                JSON.stringify(error)
+              }
+            </pre>
+          }
+        </div>
       </div>
     );
   }
