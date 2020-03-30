@@ -29,6 +29,7 @@ export interface IState {
   txtHash: string;
   pvtKey: string;
   msg: string;
+  processMessage: string;
 }
 
 class Deploy extends Component<IProps, IState> {
@@ -45,6 +46,7 @@ class Deploy extends Component<IProps, IState> {
       txtHash: '',
       pvtKey: '',
       msg: 'initial',
+      processMessage: ''
     };
     this.handleBuildTxn = this.handleBuildTxn.bind(this);
     this.getGasEstimate = this.getGasEstimate.bind(this);
@@ -72,13 +74,16 @@ class Deploy extends Component<IProps, IState> {
         // TODO: fetching private key process needs fix
         console.log("Setting active private key");
         console.log(data.pvtKey);
-        this.setState({ pvtKey: data.pvtKey }, () => {
+        this.setState({ pvtKey: data.pvtKey, processMessage: '' }, () => {
           this.setState({ msg: 'process finshed' });
         });
       }
     });
     // get private key for corresponding public key
-    vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
+    if (currAccount.type === 'Local') {
+      this.setState({ processMessage: 'FETCHING PRIVATE KEY...'  });
+      vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
+    }
 
     // this.setState({ deployed: this.props.compiledResult });
     // for (let i in abi) {
@@ -154,7 +159,7 @@ class Deploy extends Component<IProps, IState> {
 
   render() {
     const { contractName, currAccount, unsignedTx, errors } = this.props;
-    const { gasEstimate, bytecode, abi, txtHash, pvtKey, msg } = this.state;
+    const { gasEstimate, bytecode, abi, txtHash, pvtKey, processMessage } = this.state;
     const publicKey = currAccount.value;
 
     return (
@@ -253,11 +258,15 @@ class Deploy extends Component<IProps, IState> {
 
         <div className="account_row">
           <div className="tag">
-            <button className="acc-button custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
+            {pvtKey ?
+              <button className="acc-button custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
+              : <button disabled={true} className="acc-button button_disable custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
+            }
           </div>
         </div>
 
         {/* Final Transaction Hash */}
+        { pvtKey &&
         <div className="account_row">
           <div className="tag">
             <h4>Transaction hash</h4>
@@ -265,7 +274,11 @@ class Deploy extends Component<IProps, IState> {
           <div className="input-container">
             <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />
           </div>
-        </div>
+        </div>}
+        {
+          processMessage &&
+          <pre className="processMessage">{processMessage}</pre>
+        }
       </div>
     );
   }

@@ -14,7 +14,13 @@ import {
 } from "../actions";
 import "./App.css";
 
-import { solidityVersion, setSelectorOption, setFileSelectorOptions, setLocalAccountOption } from '../helper';
+import {
+  solidityVersion,
+  setSelectorOption,
+  setFileSelectorOptions,
+  setGanacheAccountsOption,
+  setLocalAccountOption
+} from '../helper';
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
@@ -226,7 +232,7 @@ class App extends Component<IProps, IState> {
         const balance = data.fetchAccounts.balance;
         const accounts = data.fetchAccounts.accounts;
         this.setState({
-          testNetAcc: setSelectorOption(accounts)
+          testNetAcc: setGanacheAccountsOption(accounts)
         }, () => {
           this.mergeAccount();
         });
