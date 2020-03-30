@@ -5,7 +5,7 @@ const initialState = {
 };
 
 export default (state: any = initialState, action: any) => {
-  
+
   switch (action.type) {
     case SET_UNSG_TX:
       return {

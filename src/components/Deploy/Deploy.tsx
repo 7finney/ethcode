@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import JSONPretty from 'react-json-pretty';
 import "./deploy.css";
 import { connect } from "react-redux";
 import { setUnsgTxn } from "../../actions";
@@ -219,12 +220,15 @@ class Deploy extends Component<IProps, IState> {
 
         {
           unsignedTx &&
-          <div>
-            <h6 className="contract-name inline-block highlight-success">
+          <div className="tag">
+            <h4 className="contract-name inline-block highlight-success">
               Unsigned Transaction:
-            </h6>
+            </h4>
             <div className="json_input_container" style={{ marginTop: '10px' }}>
-              <textarea className="json_input custom_input_css">{unsignedTx}</textarea>
+              <pre className="large-code">
+                <JSONPretty id="json-pretty" data={unsignedTx}></JSONPretty>
+              </pre>
+              {/* <textarea className="json_input custom_input_css">{unsignedTx}</textarea> */}
             </div>
           </div>
         }
