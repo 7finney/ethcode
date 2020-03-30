@@ -81,21 +81,52 @@ class Deploy extends Component<IProps, IState> {
     });
     // get private key for corresponding public key
     if (currAccount.type === 'Local') {
-      this.setState({ processMessage: 'FETCHING PRIVATE KEY...'  });
+      this.setState({ processMessage: 'FETCHING PRIVATE KEY...' });
       vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
     }
 
-    // this.setState({ deployed: this.props.compiledResult });
-    // for (let i in abi) {
-    //   if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
-    //     const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-    //     for (let j in constructorInput) {
-    //       constructorInput[j]['value'] = "";
-    //     }
-    //     this.setState({ constructorInput: constructorInput });
-    //     break;
-    //   }
-    // }
+    // Extract constructor input from abi
+    for (let i in abi) {
+      if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
+        const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
+        for (let j in constructorInput) {
+          constructorInput[j]['value'] = "";
+        }
+        this.setState({ constructorInput });
+        break;
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps: any) {
+    const { abi } = this.props;
+
+    // Update constructor input
+    const length = Object.keys(abi).length;
+    if (prevProps.abi !== abi) {
+      if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
+        const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
+        for (let j in constructorInput) {
+          constructorInput[j]['value'] = "";
+        }
+        this.setState({ constructorInput });
+      } else {
+        this.setState({ constructorInput: [] });
+      }
+    }
+  }
+
+  private handleConstructorInputChange = (event: any) => {
+    const { constructorInput } = this.state;
+    if (constructorInput.length > 3) {
+      this.setState({ constructorInput: JSON.parse(event.target.value) });
+    } else {
+      const item = constructorInput[event.target.id];
+      // @ts-ignore
+      item['value'] = event.target.value;
+      constructorInput[event.target.id] = item;
+      this.setState({ constructorInput });
+    }
   }
 
   handleBuildTxn = () => {
@@ -159,7 +190,7 @@ class Deploy extends Component<IProps, IState> {
 
   render() {
     const { contractName, currAccount, unsignedTx, errors } = this.props;
-    const { gasEstimate, bytecode, abi, txtHash, pvtKey, processMessage } = this.state;
+    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage } = this.state;
     const publicKey = currAccount.value;
 
     return (
@@ -202,11 +233,38 @@ class Deploy extends Component<IProps, IState> {
         </div>
         {/* Constructor */}
         <div>
-          <h4 className="tag contract-name inline-block highlight-success">
-            Constructor:
-          </h4>
-          <div className="json_input_container" style={{ marginTop: '10px' }}>
-            <textarea className="json_input custom_input_css"></textarea>
+          <div className="form-container">
+            {
+              (constructorInput && constructorInput.length > 0) &&
+              <div>
+                {
+                  (constructorInput.length <= 3) ?
+                    <div>
+                      <h4 className="tag contract-name inline-block highlight-success">
+                        Constructor:
+                     </h4>
+                      {
+                        constructorInput.map((x: object, index) => {
+                          return (
+                            <div className="constructorInput input-flex" style={{ marginTop: '10px', marginBottom: '10px' }}>
+                              {/* 
+                                // @ts-ignore */}
+                              <label className="tag label_name">{x.name}:</label>
+                              {/* 
+                                // @ts-ignore */}
+                              <input className="custom_input_css" type={x.type} placeholder={`${x.name} arguments (${x.type})`} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
+                            </div>
+                          );
+                        })
+                      }
+                    </div> :
+                    <div className="json_input_container" style={{ marginLeft: '-10px' }}>
+                      <textarea className="json_input custom_input_css" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
+                      </textarea>
+                    </div>
+                }
+              </div>
+            }
           </div>
         </div>
         {/* Get gas estimate */}
@@ -266,15 +324,17 @@ class Deploy extends Component<IProps, IState> {
         </div>
 
         {/* Final Transaction Hash */}
-        { pvtKey &&
-        <div className="account_row">
-          <div className="tag">
-            <h4>Transaction hash</h4>
-          </div>
-          <div className="input-container">
-            <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />
-          </div>
-        </div>}
+        {pvtKey &&
+          <div className="account_row">
+            <div className="tag">
+              <h4>Transaction hash</h4>
+            </div>
+            <div className="input-container">
+              <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />
+            </div>
+          </div>}
+          
+        {/* Notification */}
         {
           processMessage &&
           <pre className="processMessage">{processMessage}</pre>
