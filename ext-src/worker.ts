@@ -47,8 +47,8 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -111,7 +111,7 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
   const unsignedTransaction = new EthereumTx({
     nonce: txData.nonce || '0x',
     gasPrice: txData.gasPrice,
-    gasLimit: txData.gas || txData.gasLimit,
+    gas: txData.gas || '0x',
     to: txData.to || '0x',
     value: txData.value || '0x',
     data: txData.data || '0x'
