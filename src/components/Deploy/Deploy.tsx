@@ -26,6 +26,9 @@ export interface IState {
   gasEstimate: number;
   bytecode: any;
   abi: any;
+  methodName: string;
+  methodInputs: string;
+  contractAddress: string;
   txtHash: string;
   pvtKey: string;
   msg: string;
@@ -43,6 +46,9 @@ class Deploy extends Component<IProps, IState> {
       gasEstimate: 0,
       bytecode: {},
       abi: {},
+      methodName: '',
+      methodInputs: '',
+      contractAddress: '',
       txtHash: '',
       pvtKey: '',
       msg: 'initial',
@@ -174,14 +180,53 @@ class Deploy extends Component<IProps, IState> {
     }
   };
 
+  private handleCall = () => {
+    const { vscode, abi, currAccount, testNetId } = this.props;
+    const { gasEstimate, methodName, contractAddress, methodInputs } = this.state;
+
+    vscode.postMessage({
+      command: "contract-method-call",
+      payload: {
+        abi,
+        address: contractAddress,
+        methodName: methodName,
+        params: JSON.parse(methodInputs),
+        gasEstimate,
+        deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
+      },
+      testNetId
+    });
+  }
+
+  private handleMethodnameInput = (event: any) => {
+    const { abi } = this.props;
+    for (let obj in abi) {
+      // @ts-ignore
+      if (abi[obj]['name'] === event.target.value) {
+        var funcObj: object = abi[obj];
+        this.setState({ methodName: event.target.value });
+        // @ts-ignore
+        for (let i in funcObj['inputs']) {
+          // @ts-ignore
+          funcObj['inputs'][i]['value'] = "";
+        }
+        // @ts-ignore
+        this.setState({ methodInputs: JSON.stringify(funcObj['inputs'], null, '\t') });
+        break;
+      }
+    }
+  }
+
   signAndDeploy = () => {
-    const { vscode, unsignedTx, testNetId } = this.props;
+    const { vscode, unsignedTx, currAccount, testNetId } = this.props;
     const { pvtKey } = this.state;
+    const publicKey = currAccount.value;
     this.setState({ msg: 'Process start' });
     try {
       vscode.postMessage({
         command: "sign-deploy-tx",
         payload: {
+          from: publicKey,
           unsignedTx,
           pvtKey
         },
@@ -194,7 +239,7 @@ class Deploy extends Component<IProps, IState> {
 
   render() {
     const { contractName, currAccount, unsignedTx } = this.props;
-    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error } = this.state;
+    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress } = this.state;
     const publicKey = currAccount.value;
 
     return (
@@ -270,6 +315,21 @@ class Deploy extends Component<IProps, IState> {
               </div>
             }
           </div>
+
+          {/* Call Function */}
+          <div className="tag">
+            <form onSubmit={this.handleCall} className="form_align" >
+              <input type="text" className="custom_input_css" placeholder='Enter contract address' style={{ marginRight: '5px' }} name="contractAddress" value={contractAddress} onChange={(e) => this.setState({ contractAddress: e.target.value })} />
+              <input type="text" className="custom_input_css" placeholder='Enter contract function name' name="methodName" onChange={this.handleMethodnameInput} />
+              {
+                methodName !== '' && methodInputs !== '[]' &&
+                <div className="json_input_container" style={{ marginTop: '10px' }}>
+                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={(e) => this.setState({ methodInputs: e.target.value })}></textarea>
+                </div>
+              }
+              <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
+            </form>
+          </div>
         </div>
         {/* Get gas estimate */}
         <div className="account_row">
@@ -337,7 +397,7 @@ class Deploy extends Component<IProps, IState> {
               <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />
             </div>
           </div>}
-          
+
         {/* Notification */}
         {
           processMessage &&
@@ -349,11 +409,11 @@ class Deploy extends Component<IProps, IState> {
           {
             error &&
             <pre className="large-code" style={{ color: 'red' }}>
-            {
-              // @ts-ignore
-              JSON.stringify(error)
-            }
-          </pre>
+              {
+                // @ts-ignore
+                JSON.stringify(error)
+              }
+            </pre>
           }
         </div>
       </div>
