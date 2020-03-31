@@ -497,7 +497,6 @@ class App extends Component<IProps, IState> {
                         gasEstimate={gasEstimate}
                         deployedResult={deployedResult}
                         deployAccount={currAccount}
-                        testNetId={testNetId}
                         openAdvanceDeploy={this.openAdvanceDeploy}
                       />
                     }

@@ -175,13 +175,15 @@ class Deploy extends Component<IProps, IState> {
   };
 
   signAndDeploy = () => {
-    const { vscode, unsignedTx, testNetId } = this.props;
+    const { vscode, unsignedTx, testNetId, currAccount } = this.props;
     const { pvtKey } = this.state;
+    const publicKey = currAccount.value;
     this.setState({ msg: 'Process start' });
     try {
       vscode.postMessage({
         command: "sign-deploy-tx",
         payload: {
+          from: publicKey,
           unsignedTx,
           pvtKey
         },
@@ -193,7 +195,7 @@ class Deploy extends Component<IProps, IState> {
   };
 
   render() {
-    const { contractName, currAccount, unsignedTx } = this.props;
+    const { contractName, currAccount, unsignedTx, testNetId } = this.props;
     const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error } = this.state;
     const publicKey = currAccount.value;
 
@@ -320,7 +322,7 @@ class Deploy extends Component<IProps, IState> {
 
         <div className="account_row">
           <div className="tag">
-            {pvtKey ?
+            {pvtKey && testNetId !== 'ganache' ?
               <button className="acc-button custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
               : <button disabled={true} className="acc-button button_disable custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
             }

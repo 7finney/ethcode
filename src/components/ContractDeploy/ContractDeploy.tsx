@@ -194,7 +194,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   public render() {
     const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, disable } = this.state;
-    const { callResult } = this.props;
+    const { callResult, testNetId } = this.props;
     return (
       <div>
         <div>
@@ -238,14 +238,15 @@ class ContractDeploy extends Component<IProps, IState> {
               }
             </div>
             <div style={{ marginBottom: '5px' }}>
-              <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} value="Deploy" />
-              <button
-                className={'acc-button custom_button_css'}
-                onClick={this.props.openAdvanceDeploy}>
-                Advance Deploy
-            </button>
+              {testNetId === 'ganache' ?
+                <input type="submit" className={'custom_button_css'} value="Deploy" /> :
+                <button
+                  className={'custom_button_css'}
+                  onClick={this.props.openAdvanceDeploy}>
+                  Advance Deploy
+                </button>
+              }
             </div>
-            {disable ? <p style={{ color: '#FFCC00' }}>Deploy currently avalable in Ganache Testnet only</p> : ''}
           </form>
           <div>
             <form onSubmit={this.handleGetGasEstimate}>
@@ -326,10 +327,13 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps(state: any) {
+function mapStateToProps({ debugStore, compiledStore }: any) {
+  const { testNetId } = debugStore;
+  const { compiledresult, callResult } = compiledStore;
   return {
-    compiledResult: state.compiledStore.compiledresult,
-    callResult: state.compiledStore.callResult
+    testNetId,
+    compiledResult: compiledresult,
+    callResult
   };
 }
 
