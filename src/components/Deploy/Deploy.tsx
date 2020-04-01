@@ -27,6 +27,7 @@ export interface IState {
   bytecode: any;
   abi: any;
   methodName: string;
+  methodArray: object;
   methodInputs: string;
   contractAddress: string;
   txtHash: string;
@@ -47,6 +48,7 @@ class Deploy extends Component<IProps, IState> {
       bytecode: {},
       abi: {},
       methodName: '',
+      methodArray: {},
       methodInputs: '',
       contractAddress: '',
       txtHash: '',
@@ -94,8 +96,8 @@ class Deploy extends Component<IProps, IState> {
       this.setState({ processMessage: 'FETCHING PRIVATE KEY...' });
       vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
     }
-
-    // Extract constructor input from abi
+    // Extract constructor input from abi and make array of all the methods input field.
+    let methodArray: object = {};
     for (let i in abi) {
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
@@ -104,8 +106,21 @@ class Deploy extends Component<IProps, IState> {
         }
         this.setState({ constructorInput });
         break;
+      } else {
+        let methodname = abi[i]['name'];
+        // @ts-ignore
+        methodArray[methodname] = abi[i]['inputs'];
+        // @ts-ignore
+        for (let i in methodArray[methodname]) {
+          // @ts-ignore
+          if(methodArray[methodname].length > 0) {
+            // @ts-ignore
+            methodArray[methodname][i]['value'] = "";
+          }
+        }
       }
     }
+    this.setState({ methodArray: methodArray });
   }
 
   componentDidUpdate(prevProps: any) {
@@ -198,22 +213,15 @@ class Deploy extends Component<IProps, IState> {
     });
   }
 
-  private handleMethodnameInput = (event: any) => {
-    const { abi } = this.props;
-    for (let obj in abi) {
-      // @ts-ignore
-      if (abi[obj]['name'] === event.target.value) {
-        var funcObj: object = abi[obj];
-        this.setState({ methodName: event.target.value });
+  private handleMethodnameInput(event: any) {
+    const { methodArray } = this.state;
+    // @ts-ignore
+    if(methodArray[event.target.value].length > 0) {
+      this.setState({
         // @ts-ignore
-        for (let i in funcObj['inputs']) {
-          // @ts-ignore
-          funcObj['inputs'][i]['value'] = "";
-        }
-        // @ts-ignore
-        this.setState({ methodInputs: JSON.stringify(funcObj['inputs'], null, '\t') });
-        break;
-      }
+        methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t'),
+        methodName: event.target.value
+      });
     }
   }
 
