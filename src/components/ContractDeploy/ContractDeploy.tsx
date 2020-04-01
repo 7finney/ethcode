@@ -84,8 +84,6 @@ class ContractDeploy extends Component<IProps, IState> {
         }
       }
     }
-    console.log("method Array: ")
-    console.log(JSON.stringify(methodArray));
     this.setState({ methodArray: methodArray });
   }
   componentDidUpdate(prevProps: any) {
@@ -191,17 +189,13 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleMethodnameInput(event: any) {
     const { methodArray } = this.state;
-    console.log("met ar: " + event.target.value)
-    console.log(JSON.stringify(methodArray));
     // @ts-ignore
     if(methodArray[event.target.value].length > 0) {
-      console.log("met ar: " + event.target.value)
-      console.log(JSON.stringify(methodArray));
-      console.log("field: ")
-      // @ts-ignore
-      console.log(JSON.stringify(methodArray[event.target.value]));
-      // @ts-ignore
-      this.setState({ methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t') });
+      this.setState({
+        // @ts-ignore
+        methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t'),
+        methodName: event.target.value
+      });
     }
   }
   private handleMethodInputs(event: any) {
@@ -210,8 +204,6 @@ class ContractDeploy extends Component<IProps, IState> {
   public render() {
     const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, disable } = this.state;
     const { callResult } = this.props;
-    console.log("method inputs: ")
-    console.log(methodInputs);
     return (
       <div>
         <div>
