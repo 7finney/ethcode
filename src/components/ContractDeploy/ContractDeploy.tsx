@@ -26,6 +26,7 @@ interface IState {
   deployed: object;
   methodName: string;
   deployedAddress: string;
+  methodArray: object;
   methodInputs: string;
   testNetId: string;
   disable: boolean;
@@ -39,6 +40,7 @@ class ContractDeploy extends Component<IProps, IState> {
     deployed: {},
     methodName: '',
     deployedAddress: '',
+    methodArray: {},
     methodInputs: '',
     testNetId: '',
     disable: false
@@ -59,6 +61,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ testNetId: this.props.testNetId });
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
+    let methodArray: object = {};
     for (let i in abi) {
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
@@ -67,8 +70,23 @@ class ContractDeploy extends Component<IProps, IState> {
         }
         this.setState({ constructorInput: constructorInput });
         break;
+      } else {
+        let methodname = abi[i]['name'];
+        // @ts-ignore
+        methodArray[methodname] = abi[i]['inputs'];
+        // @ts-ignore
+        for (let i in methodArray[methodname]) {
+          // @ts-ignore
+          if(methodArray[methodname].length > 0) {
+            // @ts-ignore
+            methodArray[methodname][i]['value'] = "";
+          }
+        }
       }
     }
+    console.log("method Array: ")
+    console.log(JSON.stringify(methodArray));
+    this.setState({ methodArray: methodArray });
   }
   componentDidUpdate(prevProps: any) {
     const { gasEstimate, deployedResult, error, abi } = this.props;
@@ -172,21 +190,18 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ deployedAddress: event.target.value });
   }
   private handleMethodnameInput(event: any) {
-    const { abi } = this.props;
-    for (let obj in abi) {
+    const { methodArray } = this.state;
+    console.log("met ar: " + event.target.value)
+    console.log(JSON.stringify(methodArray));
+    // @ts-ignore
+    if(methodArray[event.target.value].length > 0) {
+      console.log("met ar: " + event.target.value)
+      console.log(JSON.stringify(methodArray));
+      console.log("field: ")
       // @ts-ignore
-      if (abi[obj]['name'] === event.target.value) {
-        var funcObj: object = abi[obj];
-        this.setState({ methodName: event.target.value });
-        // @ts-ignore
-        for (let i in funcObj['inputs']) {
-          // @ts-ignore
-          funcObj['inputs'][i]['value'] = "";
-        }
-        // @ts-ignore
-        this.setState({ methodInputs: JSON.stringify(funcObj['inputs'], null, '\t') });
-        break;
-      }
+      console.log(JSON.stringify(methodArray[event.target.value]));
+      // @ts-ignore
+      this.setState({ methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t') });
     }
   }
   private handleMethodInputs(event: any) {
