@@ -499,10 +499,9 @@ class ReactPanel {
   // Get gas estimates
   private runGetGasEstimate(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
-
     deployWorker.on("message", (m: any) => {
       if (m.error) {
-        this._panel.webview.postMessage({ errors: m.error });
+        this._panel.webview.postMessage({ errors: JSON.stringify(m.error) });
       }
       else {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });

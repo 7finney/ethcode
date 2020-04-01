@@ -21,7 +21,7 @@ export interface IProps {
 export interface IState {
   showUnsignedTxn: boolean;
   constructorInput: object[];
-  error: string;
+  error: Error | any;
   deployed: object;
   gasEstimate: number;
   bytecode: any;
@@ -38,7 +38,7 @@ class Deploy extends Component<IProps, IState> {
     this.state = {
       showUnsignedTxn: false,
       constructorInput: [],
-      error: '',
+      error: null,
       deployed: {},
       gasEstimate: 0,
       bytecode: {},
@@ -78,10 +78,6 @@ class Deploy extends Component<IProps, IState> {
           this.setState({ msg: 'process finshed' });
         });
       }
-
-      if (data.error) {
-        this.setState({ error: data.error });
-      }
     });
     // get private key for corresponding public key
     if (currAccount.type === 'Local') {
@@ -103,7 +99,7 @@ class Deploy extends Component<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: any) {
-    const { abi } = this.props;
+    const { abi, errors } = this.props;
 
     // Update constructor input
     const length = Object.keys(abi).length;
@@ -196,7 +192,7 @@ class Deploy extends Component<IProps, IState> {
 
   render() {
     const { contractName, currAccount, unsignedTx, testNetId } = this.props;
-    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error } = this.state;
+    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage } = this.state;
     const publicKey = currAccount.value;
 
     return (
@@ -227,14 +223,6 @@ class Deploy extends Component<IProps, IState> {
               value={JSON.stringify(abi)}
               placeholder="abi"
               disabled />
-          </div>
-          <div>
-            {
-              this.props.errors &&
-              <div>
-                {this.props.errors}
-              </div>
-            }
           </div>
         </div>
         {/* Constructor */}
@@ -339,7 +327,7 @@ class Deploy extends Component<IProps, IState> {
               <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />
             </div>
           </div>}
-          
+
         {/* Notification */}
         {
           processMessage &&
@@ -347,15 +335,17 @@ class Deploy extends Component<IProps, IState> {
         }
 
         {/* Error Handle */}
-        <div>
+        <div className="error_message">
           {
-            error &&
-            <pre className="large-code" style={{ color: 'red' }}>
-            {
-              // @ts-ignore
-              JSON.stringify(error)
-            }
-          </pre>
+            this.props.errors &&
+            <div>
+              <span className="contract-name inline-block highlight-success">
+                Error Message:
+            </span>
+              <div>
+                <pre className="large-code-error">{this.props.errors}</pre>
+              </div>
+            </div>
           }
         </div>
       </div>
