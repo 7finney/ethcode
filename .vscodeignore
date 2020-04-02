@@ -13,6 +13,7 @@ ext-src/**
 *.sol
 .gitignore
 keystore/
+node_modules/remix-url-resolver/node_modules/solc
 node_modules/@babel
 node_modules/@emotion
 node_modules/@hapi/
