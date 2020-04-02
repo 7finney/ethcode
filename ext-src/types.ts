@@ -4,3 +4,9 @@ export interface ISource {
 export interface ISources {
     [key: string]: ISource
 }
+export interface IAccount {
+    label: string;
+    value: string;
+    pubAddr?: string;
+    checksumAddr?: string;
+}

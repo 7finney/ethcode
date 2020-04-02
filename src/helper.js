@@ -10,12 +10,28 @@ export function setSelectorOption(optionsArray) {
   return options;
 }
 
+export function setGanacheAccountsOption(optionsArray) {
+  var options = [];
+  optionsArray.map(obj => {
+    const optItm = {
+      value: obj,
+      label: obj,
+      type: 'Ganache'
+    };
+    return options.push(optItm);
+  });
+  return options;
+}
+
 export function setLocalAccountOption(optionsArray) {
   var options = [];
   optionsArray.map(obj => {
     const optItm = {
-      value: obj.pubAddress,
-      label: obj.checksumAddress
+      value: obj.checksumAddress,
+      label: obj.pubAddress,
+      type: 'Local',
+      pubAddress: obj.pubAddress,
+      checksumAddress: obj.checksumAddress
     };
     return options.push(optItm);
   });

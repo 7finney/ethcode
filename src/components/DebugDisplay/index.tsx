@@ -180,9 +180,7 @@ class DebugDisplay extends Component<IProps, IState> {
                         {
                             traceError &&
                             <div>
-                                <span className="contract-name inline-block highlight-success">
-                                    Error Message:
-                            </span>
+                                <span className="contract-name inline-block highlight-success">Error Message:</span>
                                 <div>
                                     <pre className="large-code-error">{JSON.stringify(traceError)}</pre>
                                 </div>

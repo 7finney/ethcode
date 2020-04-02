@@ -6,6 +6,9 @@ import axios from "axios";
 import { RemixURLResolver } from "remix-url-resolver";
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
+const EthereumTx = require('ethereumjs-tx').Transaction;
+import { sha3 } from './hash/sha3';
+var formatters = require('web3-core-helpers').formatters;
 
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
@@ -45,6 +48,7 @@ const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
   client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -61,6 +65,7 @@ function handleLocal(pathString: string, filePath: any) {
     return;
   } else {
     const o = { encoding: "UTF-8" };
+    // hack for compiler imports to work (do not change)
     const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
     const content = fs.readFileSync(p, o);
     return content;
@@ -97,13 +102,64 @@ function findImports(path: any) {
     });
 }
 
-process.on("message", async m => {
+// sign an unsigned raw transaction and deploy
+function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
+  tx = JSON.parse(tx);
+  const txData = formatters.inputTransactionFormatter(tx);
+  // TODO: this method should not work for ganache and prysm and throw error
+  const chainId = Number(testnetId) === 5 ? 6284 : Number(testnetId)
+  const unsignedTransaction = new EthereumTx({
+    nonce: txData.nonce || '0x',
+    gasPrice: txData.gasPrice,
+    gas: txData.gas || '0x',
+    to: txData.to || '0x',
+    value: txData.value || '0x',
+    data: txData.data || '0x'
+  }, { chain: chainId });
+  const pvtk = Buffer.from(privateKey, 'hex');
+  unsignedTransaction.sign(pvtk);
+  const rlpEncoded = unsignedTransaction.serialize().toString('hex');
+  const rawTransaction = '0x' + rlpEncoded;
+  var transactionHash = sha3(rawTransaction);
+  // @ts-ignore
+  process.send({ responses: transactionHash });
 
+  const c = {
+    callInterface: {
+      command: "deploy-signed-tx",
+      payload: rawTransaction,
+      testnetId
+    }
+  };
+
+  const call = client_call_client.RunDeploy(c, meta, (err: any) => {
+    if (err) {
+      console.error(err);
+    }
+  });
+
+
+  call.on('data', (data: any) => {
+    console.log("transactionResult");
+    console.log(data);
+    // @ts-ignore
+    process.send({ transactionResult: data.result });
+  });
+  call.on('end', function () {
+    process.exit(0);
+  });
+  call.on('error', function (err: Error) {
+    // @ts-ignore
+    process.send({ "error": err });
+  });
+}
+
+process.on("message", async m => {
   var meta = new grpc.Metadata();
   meta.add('authorization', m.jwtToken);
   if (m.command === "compile") {
     const input = m.payload;
-    if(m.version === 'latest') {
+    if (m.version === 'latest') {
       try {
         const output = await solc.compile(JSON.stringify(input), findImports);
         // @ts-ignore
@@ -114,7 +170,7 @@ process.on("message", async m => {
       }
     }
     solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-      if(err) {
+      if (err) {
         // @ts-ignore
         process.send({ error: e });
       } else {
@@ -132,7 +188,7 @@ process.on("message", async m => {
       }
     });
   }
-  if(m.command === "fetch_compiler_verison") {
+  if (m.command === "fetch_compiler_verison") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")
       .then((res: any) => {
@@ -144,36 +200,35 @@ process.on("message", async m => {
         process.send({ error: e });
       });
   }
-  if(m.command === "run-test") {
+  if (m.command === "run-test") {
     // TODO: move parsing to extension.ts
-    // const sources = JSON.parse(m.payload);
     const rt = {
       testInterface: {
         command: 'run-test-sources',
         payload: m.payload
       }
-    }
+    };
     const call = remix_tests_client.RunTests(rt);
     call.on('data', (data: any) => {
       const result = JSON.parse(data.result);
-      if(result.filePath) {
+      if (result.filePath) {
         findImports(result.filePath);
       } else {
         // @ts-ignore
         process.send({ utResp: data });
       }
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
   }
- // Fetch accounts and balance
-  if(m.command === "get-accounts") {
+  // Fetch accounts and balance
+  if (m.command === "get-accounts") {
     const c = {
       callInterface: {
         command: 'get-accounts'
       }
-    }
+    };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
@@ -183,20 +238,41 @@ process.on("message", async m => {
       }
     });
 
-    call.on('error', (data: any) => {
-      // @ts-ignore
-      process.send({ error: data });
-    })
 
-    call.on('data', (data: any) =>{
+    call.on('data', (data: any) => {
       // @ts-ignore
       const result = JSON.parse(data.result);
       // @ts-ignore
       process.send({ accounts: result.accounts, balance: result.balance });
-    })
+    });
+  }
+  // send wei value to address in other testnets
+  if (m.command == "send-ether-signed") {
+    const { transactionInfo, pvtKey } = m.payload;
+    const c = {
+      callInterface: {
+        command: 'build-raw-eth-tx',
+        payload: JSON.stringify(transactionInfo),
+        testnetId: m.testnetId
+      }
+    };
+    const call = client_call_client.RunDeploy(c, meta, (err: any) => {
+      if (err) {
+        console.log("err", err);
+      }
+    });
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ unsingedTx: data.result });
+      deployUnsignedTx(meta, data.result, pvtKey, m.testnetId);
+    });
+    call.on('error', function (err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    });
   }
   // send wei_value to a address
-  if(m.command === "send-ether") {
+  if (m.command === "send-ether") {
     const transactionInfo = m.transactionInfo;
     const c = {
       callInterface: {
@@ -216,16 +292,18 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ transactionResult: data.result });
-    })
+    });
   }
   // fetch balance of a account
-  if(m.command === "get-balance") {
+  if (m.command === "get-balance") {
+    const hashAddr = m.account.checksumAddr ? m.account.checksumAddr : m.account.value;
     const c = {
       callInterface: {
         command: 'get-balance',
-        payload: m.account
+        payload: hashAddr,
+        testnetId: m.testnetId
       }
-    }
+    };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
@@ -237,10 +315,10 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ balance: data.result });
-    })
+    });
   }
   // Deploy
-  if(m.command === "deploy-contract") {
+  if (m.command === "deploy-contract") {
     if (m.jwtToken) {
       // @ts-ignore
       process.send({ jwtToken: m.jwtToken });
@@ -273,16 +351,16 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ deployedResult: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
-    })
+    });
   }
   // Method call
-  if(m.command === "contract-method-call") {
+  if (m.command === "contract-method-call") {
     const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
       abi,
@@ -311,22 +389,63 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ callResult: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
-    })
+    });
   }
-  // Gas Estimate
-  if(m.command === "get-gas-estimate") {
-    const { abi, bytecode, params } = m.payload;
+
+  // custom Method call
+  if (m.command === "custom-method-call") {
+    const { abi, address, methodName, params, gasSupply, deployAccount, pvtKey, from } = m.payload;
     const inp = {
       abi,
-      bytecode,
-      params
-    }
+      address,
+      methodName,
+      params,
+      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
+      deployAccount
+    };
+    const c = {
+      callInterface: {
+        command: 'custom-method-call',
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
+      }
+    };
+    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+      if (err) {
+        console.log("err", err);
+      } else {
+        // @ts-ignore
+        process.send({ response });
+      }
+    });
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ callResult: data.result });
+      var rawTX = JSON.parse(data.result);
+      rawTX['from'] = from;
+      rawTX['to'] = address;
+      deployUnsignedTx(meta, rawTX, pvtKey);
+      // @ts-ignore
+      // process.send({ deployedResult: data.result });
+    });
+    call.on('end', function () {
+      process.exit(0);
+    });
+    call.on('error', function (err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    });
+  }
+  // Gas Estimate
+  if (m.command === "get-gas-estimate") {
+    const { abi, bytecode, params } = m.payload;
+    const inp = { abi, bytecode, params };
     const c = {
       callInterface: {
         command: 'get-gas-estimate',
@@ -346,13 +465,13 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ gasEstimate: data.result });
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     });
   }
   // Debug transaction
-  if(m.command === "debug-transaction") {
+  if (m.command === "debug-transaction") {
     const dt = {
       debugInterface: {
         command: 'debug',
@@ -360,21 +479,58 @@ process.on("message", async m => {
         testnetId: m.testnetId
       }
     };
-    // @ts-ignore
-    process.send({ message: "BEFORE" });
     const call = remix_debug_client.RunDebug(dt);
-    // @ts-ignore
-    process.send({ message: "AFTER" });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ debugResp: data.result });
     });
-    call.on('end', function() {
+    call.on('end', function () {
       process.exit(0);
     });
-    call.on('error', function(err: Error) {
+    call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });
     });
+  }
+  // Build raw transaction for contract creation
+  if (m.command == "build-rawtx") {
+    const { abi, bytecode, params, gasSupply, from } = m.payload;
+    const inp = {
+      from,
+      abi,
+      bytecode,
+      params,
+      gasSupply
+    };
+    const c = {
+      callInterface: {
+        command: 'build-rawtx',
+        payload: JSON.stringify(inp),
+        testnetId: m.testnetId
+      }
+    };
+    const call = client_call_client.RunDeploy(c, meta, (err: any) => {
+      if (err) {
+        console.error("err", err);
+        // @ts-ignore
+        process.send({ "error": err });
+      }
+    });
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ buildTxResult: data.result });
+    });
+    call.on('end', function () {
+      process.exit(0);
+    });
+    call.on('error', function (err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    });
+  }
+  // sign and deploy unsigned transaction
+  if (m.command == "sign-deploy") {
+    const { unsignedTx, pvtKey } = m.payload;
+    deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
   }
 });

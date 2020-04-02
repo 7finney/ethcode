@@ -1,9 +1,9 @@
-import { SET_ACC_BALANCE, SET_UPDATE_BALANCE } from "../actions/types"
+import { SET_ACC_BALANCE, SET_UPDATE_BALANCE, APPND_NEW_ACC } from "../actions/types";
 
 const initialState = {
   accountBalance: 0,
   accounts: [],
-  currAccount: ''
+  currAccount: {}
 };
 
 export default (state: any = initialState, action: any) => {
@@ -21,6 +21,11 @@ export default (state: any = initialState, action: any) => {
         ...state,
         accountBalance: +action.payload.balance,
         currAccount: action.payload.currAccount
+      }
+    case APPND_NEW_ACC:
+      return {
+        ...state,
+        accounts: [...state.accounts, action.payload.account]
       }
     default:
       return state;

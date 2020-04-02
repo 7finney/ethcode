@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./ContractDeploy.css";
 import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
+import { IAccount } from "types";
 
 interface IProps {
   contractName: string;
@@ -14,8 +15,9 @@ interface IProps {
   deployedResult: string;
   compiledResult: object;
   callResult: object;
-  deployAccount: string;
+  deployAccount: IAccount;
   testNetId: string;
+  openAdvanceDeploy: any;
 }
 interface IState {
   constructorInput: object[];
@@ -54,7 +56,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    this.setState({ testNetId: this.props.testNetId })
+    this.setState({ testNetId: this.props.testNetId });
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
     for (let i in abi) {
@@ -71,21 +73,15 @@ class ContractDeploy extends Component<IProps, IState> {
   componentDidUpdate(prevProps: any) {
     const { gasEstimate, deployedResult, error, abi } = this.props;
     if (this.props.testNetId !== this.state.testNetId && this.props.testNetId !== 'ganache') {
-      this.setState({
-        disable: true
-      })
+      this.setState({ disable: true });
     } else if (this.props.testNetId !== this.state.testNetId) {
-      this.setState({
-        disable: false
-      })
+      this.setState({ disable: false });
     }
     if (error !== prevProps.error) {
       this.setState({ error: error });
     }
     if (this.props.testNetId !== this.state.testNetId) {
-      this.setState({
-        testNetId: this.props.testNetId
-      })
+      this.setState({ testNetId: this.props.testNetId });
     }
     else if (deployedResult !== prevProps.deployedResult) {
       const deployedObj = JSON.parse(deployedResult);
@@ -95,7 +91,7 @@ class ContractDeploy extends Component<IProps, IState> {
       this.setState({ gasSupply: gasEstimate });
     }
 
-    const length = Object.keys(abi).length
+    const length = Object.keys(abi).length;
     if (prevProps.abi !== abi) {
       if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
@@ -135,7 +131,7 @@ class ContractDeploy extends Component<IProps, IState> {
         methodName: methodName,
         params: JSON.parse(methodInputs),
         gasSupply,
-        deployAccount
+        deployAccount: deployAccount.checksumAddr ? deployAccount.checksumAddr : deployAccount.value
       },
       testNetId
     });
@@ -197,8 +193,8 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodInputs: event.target.value });
   }
   public render() {
-    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, disable } = this.state;
-    const { callResult } = this.props;
+    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
+    const { callResult, testNetId } = this.props;
     return (
       <div>
         <div>
@@ -221,7 +217,7 @@ class ContractDeploy extends Component<IProps, IState> {
                                 // @ts-ignore */}
                                 <input className="custom_input_css" type={x.type} placeholder={`${x.name} arguments (${x.type})`} id={index} name={x.name} onChange={(e) => this.handleConstructorInputChange(e)} />
                               </div>
-                            )
+                            );
                           })
                         }
                       </div> :
@@ -242,9 +238,15 @@ class ContractDeploy extends Component<IProps, IState> {
               }
             </div>
             <div style={{ marginBottom: '5px' }}>
-              <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} value="Deploy" />
+              {testNetId === 'ganache' ?
+                <input type="submit" className={'custom_button_css'} value="Deploy" /> :
+                <button
+                  className={'custom_button_css'}
+                  onClick={this.props.openAdvanceDeploy}>
+                  Advance Deploy
+                </button>
+              }
             </div>
-            {disable ? <p style={{ color: '#FFCC00' }}>Deploy currently avalable in Ganache Testnet only</p> : '' }
           </form>
           <div>
             <form onSubmit={this.handleGetGasEstimate}>
@@ -325,10 +327,13 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps(state: any) {
+function mapStateToProps({ debugStore, compiledStore }: any) {
+  const { testNetId } = debugStore;
+  const { compiledresult, callResult } = compiledStore;
   return {
-    compiledResult: state.compiledStore.compiledresult,
-    callResult: state.compiledStore.callResult
+    testNetId,
+    compiledResult: compiledresult,
+    callResult
   };
 }
 

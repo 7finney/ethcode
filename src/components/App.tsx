@@ -14,17 +14,24 @@ import {
 } from "../actions";
 import "./App.css";
 
-import { solidityVersion, setSelectorOption, setFileSelectorOptions, setLocalAccountOption } from '../helper';
+import {
+  solidityVersion,
+  setSelectorOption,
+  setFileSelectorOptions,
+  setGanacheAccountsOption,
+  setLocalAccountOption
+} from '../helper';
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
-import Selector from './Selector';
+import { Selector } from './common/ui';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
-
+import Deploy from "./Deploy/Deploy";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from "./Account/Account";
+import { IAccount } from "../types";
 
 interface IProps {
   addTestResults: (result: any) => void;
@@ -37,10 +44,10 @@ interface IProps {
   setCurrAccChange: (accData: any) => void;
   setTestNetId: (testNetId: any) => void;
   test: any;
-  accountBalance: number,
-  accounts: string[],
-  currAccount: string,
-  testNetId: string
+  accountBalance: number;
+  accounts: string[];
+  currAccount: IAccount;
+  testNetId: string;
 }
 
 interface IState {
@@ -53,11 +60,11 @@ interface IState {
   availableVersions: any;
   gasEstimate: number;
   deployedResult: string;
-  tabIndex: number,
+  tabIndex: number;
   txTrace: object;
   traceError: string;
   accounts: string[];
-  currAccount: string;
+  currAccount: IAccount | undefined;
   balance: number;
   transactionResult: string;
   testNetId: string;
@@ -65,10 +72,10 @@ interface IState {
   selctorAccounts: any;
   contracts: any;
   files: any;
-  accountName: IOpt;
+  accountName: IAccount;
   testNets: object[];
-  localAcc: any[],
-  testNetAcc: any[]
+  localAcc: any[];
+  testNetAcc: any[];
 }
 interface IOpt {
   value: string;
@@ -96,7 +103,7 @@ class App extends Component<IProps, IState> {
       selctorAccounts: [],
       contracts: [],
       files: [],
-      currAccount: '',
+      currAccount: undefined,
       balance: 0,
       transactionResult: '',
       testNetId: '',
@@ -121,29 +128,30 @@ class App extends Component<IProps, IState> {
       const { data } = event;
 
       if (data.fileType) {
-        this.setState({
-          fileType: data.fileType
-        });
+        this.setState({ fileType: data.fileType });
       }
       if (data.localAccounts) {
-        this.setState({ localAcc: setLocalAccountOption(data.localAccounts) }, () => { this.mergeAccount() });
+        this.setState({ localAcc: setLocalAccountOption(data.localAccounts) }, () => {
+          this.mergeAccount();
+        });
       }
 
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
-        const newCompile = JSON.stringify(data.newCompile)
+        const newCompile = JSON.stringify(data.newCompile);
 
         if (newCompile) {
-          this.props.clearDeployedResult()
+          // TODO: update compiled results via redux store
+          this.props.clearDeployedResult();
         }
-
-        const fileName = Object.keys(compiled.sources)[0];
 
         if (compiled.errors && compiled.errors.length > 0) {
           this.setState({ message: compiled.errors });
+          return;
         }
+        const fileName = Object.keys(compiled.sources)[0];
         var contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
-        var files = setFileSelectorOptions(Object.keys(compiled.sources))
+        var files = setFileSelectorOptions(Object.keys(compiled.sources));
         this.setState({
           compiled,
           fileName,
@@ -165,7 +173,7 @@ class App extends Component<IProps, IState> {
       }
 
       if (data.versions) {
-        var options = solidityVersion(data.versions.releases)
+        var options = solidityVersion(data.versions.releases);
         this.setState({
           availableVersions: options,
           processMessage: ""
@@ -177,11 +185,11 @@ class App extends Component<IProps, IState> {
       }
 
       if (data.testPanel === 'test') {
-        this.setState({ tabIndex: 2 })
+        this.setState({ tabIndex: 4 });
       }
 
       if (data.testPanel === 'main') {
-        this.setState({ tabIndex: 0 })
+        this.setState({ tabIndex: 0 });
       }
 
       if (data._testCallback) {
@@ -206,7 +214,7 @@ class App extends Component<IProps, IState> {
         this.setState({ gasEstimate: data.gasEstimate });
       }
       if (data.deployedResult) {
-        const result = data.deployedResult.deployedResult
+        const result = data.deployedResult.deployedResult;
         this.props.setDeployedResult(result);
         this.setState({ deployedResult: data.deployedResult.deployedResult });
       }
@@ -221,47 +229,40 @@ class App extends Component<IProps, IState> {
         this.props.setCallResult(result);
       }
       if (data.fetchAccounts) {
-        const balance = data.fetchAccounts.balance
-        const currAccount = data.fetchAccounts.accounts[0]
-        const accounts = data.fetchAccounts.accounts
+        const balance = data.fetchAccounts.balance;
+        const accounts = data.fetchAccounts.accounts;
         this.setState({
-          testNetAcc: setSelectorOption(accounts)
+          testNetAcc: setGanacheAccountsOption(accounts)
         }, () => {
           this.mergeAccount();
-        })
+        });
         const accData = {
           balance,
-          currAccount,
+          currAccount: this.state.testNetAcc[0],
           accounts
-        }
-        await this.props.setAccountBalance(accData)
+        };
+        await this.props.setAccountBalance(accData);
         this.setState({ accounts: this.props.accounts, currAccount: this.props.currAccount, balance: this.props.accountBalance });
       }
       if (data.transactionResult) {
         this.setState({ transactionResult: data.transactionResult });
       }
       if (data.balance) {
-        const accData = {
-          balance: data.balance,
-          currAccount: this.state.currAccount
-        }
-        this.props.setCurrAccChange(accData)
+        const { balance, account } = data;
+        this.props.setCurrAccChange({ balance, currAccount: account });
         this.setState({ balance: this.props.accountBalance });
       }
     });
     // TODO: handle error message
     // Component mounted start getting gRPC things
-    vscode.postMessage({
-      command: "run-getAccounts"
-    });
-    vscode.postMessage({
-      command: "get-localAccounts"
-    });
+    vscode.postMessage({ command: "run-getAccounts" });
+    vscode.postMessage({ command: "get-localAccounts" });
   }
 
   mergeAccount = () => {
     const { localAcc, testNetAcc } = this.state;
-
+    // merge and set accounts store
+    // TODO: update reducer
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       this.setState({
@@ -274,31 +275,31 @@ class App extends Component<IProps, IState> {
             options: localAcc
           }
         ]
-      })
+      });
     } else if (localAcc.length > 0) {
       this.setState({
         selctorAccounts: [{
           label: 'Local Accounts',
           options: localAcc
         }]
-      })
+      });
     } else if (testNetAcc.length > 0) {
       this.setState({
         selctorAccounts: [{
           label: 'Ganache',
           options: testNetAcc
         }]
-      })
+      });
     } else {
-      this.setState({ selctorAccounts: [] })
+      this.setState({ selctorAccounts: [] });
     }
-  }
+  };
 
   componentDidUpdate(_: any) {
     if (this.props.accounts !== this.state.accounts) {
       this.setState({
         accounts: this.props.accounts
-      })
+      });
     }
 
     if (this.props.testNetId !== this.state.testNetId) {
@@ -313,16 +314,16 @@ class App extends Component<IProps, IState> {
       this.changeContract({
         value: `${Object.keys(this.state.compiled.contracts[this.state.fileName])[0]}`,
         label: `${Object.keys(this.state.compiled.contracts[this.state.fileName])[0]}`
-      })
+      });
       this.setState((preState: IState) => ({
         contracts: setSelectorOption(Object.keys(preState.compiled.contracts[preState.fileName]))
-      }))
+      }));
     });
   };
 
   public changeContract = (selectedOpt: IOpt) => {
-    this.setState({ contractName: selectedOpt.value })
-  }
+    this.setState({ contractName: selectedOpt.value });
+  };
 
   public getSelectedVersion = (version: any) => {
     vscode.postMessage({
@@ -332,22 +333,37 @@ class App extends Component<IProps, IState> {
   };
 
   public getSelectedNetwork = (testNet: any) => {
+    const { currAccount } = this.state;
     this.setState({ testNetId: testNet.value }, () => {
-      this.props.setTestNetId(this.state.testNetId);
+      const { testNetId } = this.state;
+      this.props.setTestNetId(testNetId);
+      // TODO: Fetch Account Balance
+      vscode.postMessage({
+        command: 'get-balance',
+        account: currAccount,
+        testNetId
+      });
     });
-  }
+  };
 
-  public getSelectedAccount = (account: any) => {
-    this.setState({ currAccount: account.value, accountName: account });
-    vscode.postMessage({
-      command: 'get-balance',
-      account: account.label
+  public getSelectedAccount = (account: IAccount) => {
+    this.setState({ currAccount: account, accountName: account }, () => {
+      const { testNetId } = this.state;
+      vscode.postMessage({
+        command: 'get-balance',
+        account,
+        testNetId
+      });
     });
-  }
+  };
 
   public handelChangeFromAddress = (event: any) => {
-    this.setState({ currAccount: event.target.value })
-  }
+    this.setState({ currAccount: event.target.value });
+  };
+
+  public openAdvanceDeploy = () => {
+    this.setState({ tabIndex: 2 });
+  };
 
   public render() {
     const {
@@ -373,8 +389,7 @@ class App extends Component<IProps, IState> {
       contracts,
       files,
       accountName,
-      testNets,
-      testNetAcc
+      testNets
     } = this.state;
 
     return (
@@ -382,30 +397,33 @@ class App extends Component<IProps, IState> {
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        {availableVersions && (fileType === 'solidity') && (
-          <Selector
-            getSelectedOption={this.getSelectedVersion}
-            options={availableVersions}
-            placeholder='Select Compiler Version'
-            defaultValue={availableVersions[0]}
-          />
-        )}
-        {
-          <Selector
-            getSelectedOption={this.getSelectedNetwork}
-            options={testNets}
-            placeholder='Select Network'
-            defaultValue={testNets[0]}
-          />
-        }
-        {compiled && Object.keys(compiled.sources).length > 0 && (
-          <Selector
-            options={files}
-            getSelectedOption={this.changeFile}
-            placeholder='Select Files'
-            defaultValue={files[0]}
-          />
-        )}
+        <div className="selectors">
+          {/* quick fix solidity version selector bug */}
+          {availableVersions && (fileType !== 'vyper') && (
+            <Selector
+              getSelectedOption={this.getSelectedVersion}
+              options={availableVersions}
+              placeholder='Select Compiler Version'
+              defaultValue={availableVersions[0]}
+            />
+          )}
+          {
+            <Selector
+              getSelectedOption={this.getSelectedNetwork}
+              options={testNets}
+              placeholder='Select Network'
+              defaultValue={testNets[0]}
+            />
+          }
+          {compiled && Object.keys(compiled.sources).length > 0 && (
+            <Selector
+              options={files}
+              getSelectedOption={this.changeFile}
+              placeholder='Select Files'
+              defaultValue={files[0]}
+            />
+          )}
+        </div>
         {
           transactionResult &&
           <div className="tx-info">
@@ -418,6 +436,10 @@ class App extends Component<IProps, IState> {
               <div className="tab-container">
                 <Tab>Main</Tab>
                 <Tab>Account</Tab>
+                {(compiled && fileName) ?
+                  <Tab>Deploy</Tab> :
+                  <Tab disabled>Deploy</Tab>
+                }
                 <Tab>Debug</Tab>
                 <Tab>Test</Tab>
               </div>
@@ -436,9 +458,9 @@ class App extends Component<IProps, IState> {
               }
               {accounts.length > 0 && (
                 <div className="account-brief">
-                  <b>Account: </b><span>{ accountName && accountName.label ? accountName.label : accounts[0] }</span>
-                  <br/>
-                  <b>Balance: </b><span>{ balance }</span>
+                  <b>Account: </b><span>{accountName && accountName.label ? accountName.label : accounts[0]}</span>
+                  <br />
+                  <b>Balance: </b><span>{balance}</span>
                 </div>
               )}
               {
@@ -466,7 +488,7 @@ class App extends Component<IProps, IState> {
                         errors={error}
                       />
                     }
-                    {
+                    {currAccount &&
                       <ContractDeploy
                         contractName={contractName}
                         bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
@@ -477,7 +499,7 @@ class App extends Component<IProps, IState> {
                         gasEstimate={gasEstimate}
                         deployedResult={deployedResult}
                         deployAccount={currAccount}
-                        testNetId={testNetId}
+                        openAdvanceDeploy={this.openAdvanceDeploy}
                       />
                     }
                   </div>
@@ -487,11 +509,21 @@ class App extends Component<IProps, IState> {
             <TabPanel>
               <Account
                 vscode={vscode}
-                defaultValue={(accountName && accountName.label) ? accountName : testNetAcc[0]}
                 accounts={selctorAccounts}
                 getSelectedAccount={this.getSelectedAccount}
                 accBalance={balance}
               />
+            </TabPanel>
+            <TabPanel>
+              {(compiled && contractName && compiled.contracts[fileName][contractName]) &&
+                <Deploy
+                  contractName={contractName}
+                  bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                  abi={compiled.contracts[fileName][contractName].abi}
+                  vscode={vscode}
+                  errors={error}
+                />
+              }
             </TabPanel>
             {/* Debug panel */}
             <TabPanel className="react-tab-panel">
@@ -534,8 +566,8 @@ class App extends Component<IProps, IState> {
 }
 
 function mapStateToProps({ test, accountStore, debugStore }: any) {
-  const { accountBalance, accounts, currAccount } = accountStore
-  const { testNetId } = debugStore
+  const { accountBalance, accounts, currAccount } = accountStore;
+  const { testNetId } = debugStore;
   return {
     accountBalance,
     accounts,

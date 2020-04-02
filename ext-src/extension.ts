@@ -5,6 +5,7 @@ import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
 import * as uuid from "uuid/v1";
 import axios from "axios";
+import { IAccount } from "./types";
 
 // @ts-ignore
 let jwtToken: any;
@@ -71,13 +72,13 @@ function getToken() {
 }
 
 function success(msg: string) {
-  vscode.window.showInformationMessage(msg, 'Dismiss')
+  vscode.window.showInformationMessage(msg, 'Dismiss');
 }
 function warning(msg: string) {
-  vscode.window.showWarningMessage(msg, 'Dismiss')
+  vscode.window.showWarningMessage(msg, 'Dismiss');
 }
 function errorToast(msg: string) {
-  vscode.window.showErrorMessage(msg, 'Dismiss')
+  vscode.window.showErrorMessage(msg, 'Dismiss');
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -139,6 +140,7 @@ class ReactPanel {
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
+  private _disposed: boolean = false;
   // @ts-ignore
   private version: string;
 
@@ -179,7 +181,11 @@ class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
-          this.getBalance(message.account);
+          this.getBalance(message.account, message.testNetId);
+        } else if (message.command === "build-rawtx") {
+          this.buildRawTx(message.payload, message.testNetId);
+        } else if (message.command === "sign-deploy-tx") {
+          this.signDeployTx(message.payload, message.testNetId);
         } else if (message.command === 'run-getAccounts') {
           if (ReactPanel.currentPanel) {
             ReactPanel.currentPanel.getAccounts();
@@ -199,7 +205,10 @@ class ReactPanel {
           this.getLocalAccounts(this._extensionPath);
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
-
+        } else if (message.command === 'send-ether-signed') {
+          this.sendEtherSigned(message.payload, message.testNetId);
+        } else if (message.command === 'get-pvt-key') {
+          this.getPvtKey(message.payload, this._extensionPath);
         }
       },
       null,
@@ -241,8 +250,10 @@ class ReactPanel {
       const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
 
-      // @ts-ignore
-      if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
+      if (this._disposed) {
+        return;
+        // @ts-ignore
+      } else if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
         // @ts-ignore
         this._panel.webview.postMessage({ fileType: 'vyper' });
         // @ts-ignore
@@ -257,10 +268,10 @@ class ReactPanel {
 
   private createWorker(): ChildProcess {
     // enable --inspect for debug
-    // return fork(path.join(__dirname, "worker.js"), [], {
-    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
-    // });
-    return fork(path.join(__dirname, "worker.js"));
+    return fork(path.join(__dirname, "worker.js"), [], {
+      execArgv: ["--inspect=" + (process.debugPort + 1)]
+    });
+    // return fork(path.join(__dirname, "worker.js"));
   }
   private createVyperWorker(): ChildProcess {
     // enable --inspect for debug
@@ -356,12 +367,26 @@ class ReactPanel {
     console.dir("Account worker invoked with WorkerID : ", accWorker.pid);
     // TODO: implementation according to the acc_system frontend
     accWorker.on("message", (m: any) => {
-      (m.checksumAddress && m.checksumAddress.length > 0) ? this._panel.webview.postMessage({ newAccount: m.checksumAddress }) : this._panel.webview.postMessage({ error: m.error });
-      if (m.localAddresses) {
+      if (m.account) {
+        this._panel.webview.postMessage({ newAccount: m.account });
+      } if (m.localAddresses) {
         this._panel.webview.postMessage({ localAccounts: m.localAddresses });
+      } else if (m.error) {
+        this._panel.webview.postMessage({ error: m.error });
       }
     });
     accWorker.send({ command: "create-account", pswd: password, ksPath });
+  }
+  // get private key for given public key
+  private getPvtKey(pubKey: string, keyStorePath: string) {
+    const accWorker = this.createAccWorker();
+    accWorker.on("message", (m: any) => {
+      // TODO: handle private key not found errors
+      if (m.privateKey) {
+        this._panel.webview.postMessage({ pvtKey: m.privateKey });
+      }
+    });
+    accWorker.send({ command: "extract-privateKey", address: pubKey, keyStorePath, pswd: "" });
   }
 
   private deleteKeyPair(publicKey: string, keyStorePath: string) {
@@ -371,22 +396,10 @@ class ReactPanel {
       m.resp ? success(m.resp) : errorToast(m.error);
       m.resp ? this._panel.webview.postMessage({ resp: m.resp }) : null;
       if (m.localAddresses) {
-        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
+        this._panel.webview.postMessage({ localAccounts: m.localAddresses });
       }
-    })
+    });
     accWorker.send({ command: "delete-keyPair", address: publicKey, keyStorePath });
-  }
-
-  private getLocalAccounts(keyStorePath: string) {
-    const accWorker = this.createAccWorker();
-
-    accWorker.on("message", (m: any) => {
-      console.log(JSON.stringify(m));
-      if (m.localAddresses) {
-        this._panel.webview.postMessage({ localAccounts: m.localAddresses })
-      }
-    })
-    accWorker.send({ command: "get-localAccounts", keyStorePath });
   }
 
   private debug(txHash: string, testNetId: string): void {
@@ -402,7 +415,20 @@ class ReactPanel {
     });
     debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
   }
-  // Deploy contracts
+  // create unsigned transactions
+  private buildRawTx(payload: any, testNetId: string) {
+    const txWorker = this.createWorker();
+    txWorker.on("message", (m: any) => {
+      if (m.error) {
+        this._panel.webview.postMessage({ errors: m.error });
+      }
+      else {
+        this._panel.webview.postMessage({ buildTxResult: m.buildTxResult });
+      }
+    });
+    txWorker.send({ command: "build-rawtx", payload, jwtToken, testnetId: testNetId });
+  }
+  // Deploy contracts for ganache
   private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
     deployWorker.on("message", (m: any) => {
@@ -415,6 +441,20 @@ class ReactPanel {
     });
     deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
   }
+  // sign & deploy unsigned contract transactions
+  private signDeployTx(payload: any, testNetId: string) {
+    const signedDeployWorker = this.createWorker();
+    signedDeployWorker.on("message", (m: any) => {
+      if (m.error) {
+        this._panel.webview.postMessage({ errors: m.error });
+      } else if (m.transactionResult) {
+        this._panel.webview.postMessage({ deployedResult: m.transactionResult });
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        success("Contract transaction submitted!");
+      }
+    });
+    signedDeployWorker.send({ command: "sign-deploy", payload, jwtToken, testnetId: testNetId });
+  }
   // get accounts
   public getAccounts() {
     const accountsWorker = this.createWorker();
@@ -423,32 +463,48 @@ class ReactPanel {
         errorToast(m.error.details);
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
-    })
+    });
     accountsWorker.send({ command: "get-accounts", jwtToken });
   }
-  // get balance of a particular account
-  private getBalance(account: string) {
+  // get local accounts
+  private getLocalAccounts(keyStorePath: string) {
+    const accWorker = this.createAccWorker();
+
+    accWorker.on("message", (m: any) => {
+      console.log(JSON.stringify(m));
+      if (m.localAddresses) {
+        this._panel.webview.postMessage({ localAccounts: m.localAddresses });
+      }
+    });
+    accWorker.send({ command: "get-localAccounts", keyStorePath });
+  }
+  // get balance of given account
+  private getBalance(account: IAccount, testNetId: string) {
     const balanceWorker = this.createWorker();
     balanceWorker.on("message", (m: any) => {
-      this._panel.webview.postMessage({ balance: m.balance });
-    })
-    balanceWorker.send({ command: "get-balance", account: account, jwtToken });
+      this._panel.webview.postMessage({ balance: m.balance, account });
+    });
+    balanceWorker.send({ command: "get-balance", account, jwtToken, testnetId: testNetId });
   }
-  // Call contract method
+  // call contract method
   private runContractCall(payload: any, testNetId: string) {
+    var f: boolean = true;
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
       this._panel.webview.postMessage({ callResult: m });
-    })
-    callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
+    });
+    if (f) {
+      callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
+    } else {
+      callWorker.send({ command: "custom-method-call", payload, jwtToken, testnetId: testNetId });
+    }
   }
   // Get gas estimates
   private runGetGasEstimate(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
-
     deployWorker.on("message", (m: any) => {
       if (m.error) {
-        this._panel.webview.postMessage({ errors: m.error });
+        this._panel.webview.postMessage({ errors: JSON.stringify(m.error) });
       }
       else {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
@@ -456,15 +512,29 @@ class ReactPanel {
     });
     deployWorker.send({ command: "get-gas-estimate", payload, jwtToken, testnetId: testNetId });
   }
+  // Send ether on ganache
   private sendEther(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
-      this._panel.webview.postMessage({ transactionResult: m.transactionResult });
       if (m.transactionResult) {
-        success("Successfully send Ether")
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        success("Successfully sent Ether");
       }
     });
     sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
+  }
+  // Send ether using ethereum client
+  private sendEtherSigned(payload: any, testNetId: string) {
+    const sendEtherWorker = this.createWorker();
+    sendEtherWorker.on("message", (m: any) => {
+      if (m.unsingedTx) {
+        this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
+      } else if (m.transactionResult) {
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        success("Successfully sent Ether");
+      }
+    });
+    sendEtherWorker.send({ command: "send-ether-signed", payload, jwtToken, testnetId: testNetId });
   }
   public sendCompiledContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
     // send JSON serializable compiled data
@@ -531,10 +601,14 @@ class ReactPanel {
 
 
   public dispose() {
+    if (this._disposed) {
+      return;
+    }
     ReactPanel.currentPanel = undefined;
 
     // Clean up our resources
     this._panel.dispose();
+    this._disposed = true;
 
     while (this._disposables.length) {
       const x = this._disposables.pop();
@@ -605,7 +679,7 @@ class ReactPanel {
         <title>ETH code</title>
         <link rel="stylesheet" type="text/css" href="${styleUri}">
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-        <base href="${vscode.Uri.file(path.join(this._extensionPath, "build")).with({scheme: "vscode-resource"})}/">
+        <base href="${vscode.Uri.file(path.join(this._extensionPath, "build")).with({ scheme: "vscode-resource" })}/">
       </head>
 
       <body>

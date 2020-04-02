@@ -1,75 +1,85 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
-import Selector from '../Selector';
+import { Selector } from '../common/ui';
 import './Account.css';
+import { addNewAcc } from '../../actions';
+import { IAccount } from '../../types';
 
 interface IProps {
-  accounts: string[],
-  getSelectedAccount: any,
-  accBalance: number,
-  vscode: any,
-  defaultValue: any,
-  testNetId: string
+  accounts: IAccount[];
+  getSelectedAccount: (result: any) => void;
+  accountBalance: number;
+  accBalance: number;
+  vscode: any;
+  currAccount: IAccount;
+  testNetId: string;
+  addNewAcc: (result: any) => void;
 }
 
 interface IState {
-  accounts: string[],
-  currAccount: any,
-  balance: number,
-  publicAddress: string,
-  showButton: boolean,
-  transferAmount: number,
-  error: any
+  balance: number;
+  publicAddress: string;
+  pvtKey: string;
+  showButton: boolean;
+  transferAmount: number;
+  error: any;
+  msg: string;
 }
 
 class Account extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      accounts: [],
-      currAccount: this.props.defaultValue,
       balance: 0,
       publicAddress: '',
+      pvtKey: '',
       showButton: false,
       transferAmount: 0,
-      error: {}
-    }
+      error: '',
+      msg: ''
+    };
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
   }
 
-  componentDidMount() {
-    this.setState({ accounts: this.props.accounts })
-  }
-
-  componentDidUpdate(prevProps: IProps, preState: IState) {
-    const { accounts, balance } = this.state;
+  componentDidUpdate(prevProps: IProps, prevState: IState) {
+    const { addNewAcc, accountBalance, vscode, currAccount } = this.props;
+    const { balance } = this.state;
 
     window.addEventListener("message", async event => {
       const { data } = event;
-      if(data.newAccount) {
-        this.setState({
-          publicAddress: data.newAccount,
-          showButton: false
-        })
+      if (data.newAccount) {
+        // TODO: Update account into redux
+        const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr };
+        addNewAcc(account);
+        this.setState({ showButton: false, publicAddress: account.label });
+      } else if (data.pvtKey && (data.pvtKey !== this.state.pvtKey)) {
+        // TODO: handle pvt key not found errors
+        this.setState({ pvtKey: data.pvtKey }, () => {
+          this.setState({ msg: 'process finshed' });
+        });
+      } else if (data.unsingedTx) {
+        // TODO: handle or discard if we do not need unsigned transaction
+        console.log("Unsigned transaction");
+        console.log(data.unsingedTx);
       }
-    })
+      if (data.error) {
+        this.setState({ error: data.error });
+      }
+    });
 
-    if (this.props.accounts !== accounts) {
-      this.setState({ accounts: this.props.accounts })
+    if (accountBalance !== balance) {
+      this.setState({ balance: accountBalance });
     }
-
-    if (this.props.accBalance !== balance) {
-      this.setState({ balance: this.props.accBalance })
+    if (currAccount !== prevProps.currAccount) {
+      // get private key for corresponding public key
+      vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
     }
   }
 
-  getSelectedAccount = (account: any) => {
-    this.setState({
-      currAccount: account
-    })
-    this.props.getSelectedAccount(account)
-  }
+  getSelectedAccount = (account: IAccount) => {
+    this.props.getSelectedAccount(account);
+  };
   // generate keypair
   private handleGenKeyPair() {
     const { vscode } = this.props;
@@ -79,16 +89,15 @@ class Account extends Component<IProps, IState> {
         command: "gen-keypair",
         payload: password
       });
-      this.setState({ showButton: true })
+      this.setState({ showButton: true });
     } catch (err) {
       console.error(err);
-      this.setState({ showButton: false })
+      this.setState({ showButton: false });
     }
   }
   // delete keypair
   private deleteAccount = () => {
-    const { vscode } = this.props;
-    const { currAccount } = this.state;
+    const { vscode, currAccount } = this.props;
 
     try {
       vscode.postMessage({
@@ -98,34 +107,48 @@ class Account extends Component<IProps, IState> {
     } catch (err) {
       console.error(err);
     }
-  }
+  };
 
   // handle send ether
   private handleTransactionSubmit(event: any) {
     event.preventDefault();
-    const { vscode } = this.props;
-    const { currAccount } = this.state;
+    const { vscode, currAccount, testNetId } = this.props;
+    const { pvtKey } = this.state;
     const data = new FormData(event.target);
-    
-    const transactionInfo = {
-      fromAddress: currAccount.value,
-      toAddress: data.get("toAddress"),
-      amount: data.get("amount")
-    };
 
     try {
-      vscode.postMessage({
-        command: "send-ether",
-        payload: transactionInfo,
-        testnetId: this.props.testNetId
-      });
+      if (testNetId === "ganache") {
+        const transactionInfo = {
+          fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          toAddress: data.get("toAddress"),
+          amount: data.get("amount")
+        };
+        vscode.postMessage({
+          command: "send-ether",
+          payload: transactionInfo,
+          testNetId
+        });
+      } else {
+        // Build unsigned transaction
+        const transactionInfo = {
+          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          to: data.get("toAddress"),
+          value: data.get("amount")
+        };
+        vscode.postMessage({
+          command: "send-ether-signed",
+          payload: { transactionInfo, pvtKey },
+          testNetId
+        });
+      }
     } catch (err) {
       this.setState({ error: err });
     }
   }
 
   render() {
-    const { accounts, balance, publicAddress, showButton, currAccount } = this.state;
+    const { accounts, currAccount } = this.props;
+    const { balance, publicAddress, showButton, error } = this.state;
 
     return (
       <div className="account_container">
@@ -139,7 +162,7 @@ class Account extends Component<IProps, IState> {
             <Selector
               options={accounts}
               getSelectedOption={this.getSelectedAccount}
-              defaultValue={this.props.defaultValue}
+              defaultValue={currAccount}
               placeholder='Select Accounts' />
           </div>
         </div>
@@ -176,7 +199,7 @@ class Account extends Component<IProps, IState> {
             <label className="header">Transfer Ether </label>
           </div>
         </div>
-        
+
         <form onSubmit={this.handleTransactionSubmit}>
           <div className="account_row">
             <div className="label-container">
@@ -239,18 +262,31 @@ class Account extends Component<IProps, IState> {
             <label className="label">Public key </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" value={publicAddress ? publicAddress: ''} type="text" placeholder="public key" />
+            <input className="input custom_input_css" value={publicAddress ? publicAddress : ''} type="text" placeholder="public key" />
           </div>
         </div>
 
+        {/* Error Handle */}
+        <div>
+          {
+            error &&
+            <pre className="large-code" style={{ color: 'red' }}>
+              {
+                // @ts-ignore
+                JSON.stringify(error)
+              }
+            </pre>
+          }
+        </div>
       </div>
-    )
+    );
   }
 }
 
-function mapStateToProps({ debugStore }: any) {
-  const { testNetId } = debugStore
-  return { testNetId };
+function mapStateToProps({ debugStore, accountStore }: any) {
+  const { testNetId } = debugStore;
+  const { currAccount, accountBalance } = accountStore;
+  return { testNetId, currAccount, accountBalance };
 }
 
-export default connect(mapStateToProps, {})(Account);
+export default connect(mapStateToProps, { addNewAcc })(Account);
