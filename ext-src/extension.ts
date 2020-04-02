@@ -140,6 +140,7 @@ class ReactPanel {
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionPath: string;
   private _disposables: vscode.Disposable[] = [];
+  private _disposed: boolean = false;
   // @ts-ignore
   private version: string;
 
@@ -249,8 +250,10 @@ class ReactPanel {
       const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
 
-      // @ts-ignore
-      if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
+      if (this._disposed) {
+        return;
+        // @ts-ignore
+      } else if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
         // @ts-ignore
         this._panel.webview.postMessage({ fileType: 'vyper' });
         // @ts-ignore
@@ -444,7 +447,7 @@ class ReactPanel {
     signedDeployWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
-      } else if(m.transactionResult) {
+      } else if (m.transactionResult) {
         this._panel.webview.postMessage({ deployedResult: m.transactionResult });
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Contract transaction submitted!");
@@ -524,9 +527,9 @@ class ReactPanel {
   private sendEtherSigned(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
-      if(m.unsingedTx) {
+      if (m.unsingedTx) {
         this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
-      } else if(m.transactionResult) {
+      } else if (m.transactionResult) {
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -598,10 +601,14 @@ class ReactPanel {
 
 
   public dispose() {
+    if (this._disposed) {
+      return;
+    }
     ReactPanel.currentPanel = undefined;
 
     // Clean up our resources
     this._panel.dispose();
+    this._disposed = true;
 
     while (this._disposables.length) {
       const x = this._disposables.pop();
