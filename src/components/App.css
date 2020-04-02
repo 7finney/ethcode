@@ -29,6 +29,15 @@
   border: 1px solid #38ffAf;
 }
 
+.selectors {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
 .compiledOutput {
   width: 85vw;
   overflow-x: scroll;
