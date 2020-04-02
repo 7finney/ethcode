@@ -56,8 +56,8 @@ class Deploy extends Component<IProps, IState> {
       msg: 'initial',
       processMessage: ''
     };
-    this.handleBuildTxn = this.handleBuildTxn.bind(this);
-    this.getGasEstimate = this.getGasEstimate.bind(this);
+    // this.handleBuildTxn = this.handleBuildTxn.bind(this);
+    // this.getGasEstimate = this.getGasEstimate.bind(this);
   }
 
   componentDidMount() {
@@ -85,6 +85,11 @@ class Deploy extends Component<IProps, IState> {
         this.setState({ pvtKey: data.pvtKey, processMessage: '' }, () => {
           this.setState({ msg: 'process finshed' });
         });
+      }
+
+      if (data.callResult) {
+        console.log("callresult");
+        console.log(JSON.stringify(data.callResult));
       }
 
       if (data.error) {
@@ -213,7 +218,7 @@ class Deploy extends Component<IProps, IState> {
     });
   }
 
-  private handleMethodnameInput(event: any) {
+  private handleMethodnameInput = (event: any) => {
     const { methodArray } = this.state;
     // @ts-ignore
     if(methodArray[event.target.value].length > 0) {
@@ -249,8 +254,7 @@ class Deploy extends Component<IProps, IState> {
     const { contractName, currAccount, unsignedTx } = this.props;
     const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress } = this.state;
     const publicKey = currAccount.value;
-    console.log("methodName and inputs: " + methodName)
-    console.log(JSON.stringify(methodInputs));
+
     return (
       <div className="deploy_container">
         {/* Bytecode and Abi */}
@@ -316,8 +320,8 @@ class Deploy extends Component<IProps, IState> {
                         })
                       }
                     </div> :
-                    <div className="json_input_container" style={{ marginLeft: '-10px' }}>
-                      <textarea className="json_input custom_input_css" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
+                    <div className="json_input_container">
+                      <textarea className="tag json_input custom_input_css" style={{ margin: '10px 0' }} value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
                       </textarea>
                     </div>
                 }
@@ -332,7 +336,7 @@ class Deploy extends Component<IProps, IState> {
               <input type="text" className="custom_input_css" placeholder='Enter contract function name' name="methodName" onChange={this.handleMethodnameInput} />
               {
                 methodName !== '' && methodInputs !== '[]' &&
-                <div className="json_input_container" style={{ marginTop: '10px' }}>
+                <div className="json_input_container" style={{ margin: '10px 0' }}>
                   <textarea className="json_input custom_input_css" value={methodInputs} onChange={(e) => this.setState({ methodInputs: e.target.value })}></textarea>
                 </div>
               }

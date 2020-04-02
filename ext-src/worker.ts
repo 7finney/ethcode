@@ -150,6 +150,8 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
   });
   call.on('error', function (err: Error) {
     // @ts-ignore
+    process.send({ "help1": err });
+    // @ts-ignore
     process.send({ "error": err });
   });
 }
@@ -438,6 +440,8 @@ process.on("message", async m => {
       process.exit(0);
     });
     call.on('error', function (err: Error) {
+      // @ts-ignore
+    process.send({ "help2": err });
       // @ts-ignore
       process.send({ "error": err });
     });
