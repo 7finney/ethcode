@@ -12,6 +12,7 @@ ext-src/**
 *.ts
 *.sol
 .gitignore
+keystore/
 node_modules/@babel
 node_modules/@emotion
 node_modules/@hapi/
