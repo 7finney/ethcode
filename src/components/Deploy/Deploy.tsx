@@ -222,12 +222,10 @@ class Deploy extends Component<IProps, IState> {
     const { methodArray } = this.state;
     // @ts-ignore
     if(methodArray[event.target.value].length > 0) {
-      this.setState({
-        // @ts-ignore
-        methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t'),
-        methodName: event.target.value
-      });
+      this.setState({ methodName: event.target.value });
     }
+    // @ts-ignore
+    this.setState({ methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t') });
   }
 
   signAndDeploy = () => {
