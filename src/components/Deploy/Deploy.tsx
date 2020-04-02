@@ -211,7 +211,7 @@ class Deploy extends Component<IProps, IState> {
         address: contractAddress,
         methodName: methodName,
         params: JSON.parse(methodInputs),
-        gasEstimate,
+        gasSupply: gasEstimate,
         deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
       },
       testNetId

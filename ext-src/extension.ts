@@ -485,10 +485,10 @@ class ReactPanel {
   }
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
+    console.log("mqqqqqqqqqqqqqqqqqqqqqqqqqqqqq nilsoumya");
+    console.log(JSON.stringify(payload));
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
-      console.log("mqqqqqqqqqqqqqqqqqqqqqqqqqqqqq nilsoumya");
-      console.log(JSON.stringify(m));
       this._panel.webview.postMessage({ callResult: m });
     });
     if (testNetId === 'ganache') {
