@@ -249,7 +249,8 @@ class Deploy extends Component<IProps, IState> {
     const { contractName, currAccount, unsignedTx } = this.props;
     const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress } = this.state;
     const publicKey = currAccount.value;
-
+    console.log("methodName and inputs: " + methodName)
+    console.log(JSON.stringify(methodInputs));
     return (
       <div className="deploy_container">
         {/* Bytecode and Abi */}

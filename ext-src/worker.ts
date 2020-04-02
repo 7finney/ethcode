@@ -360,7 +360,7 @@ process.on("message", async m => {
     });
   }
   // Method call
-  if (m.command === "contract-method-call") {
+  if (m.command === "ganache-contract-method-call") {
     const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
       abi,
@@ -372,7 +372,7 @@ process.on("message", async m => {
     };
     const c = {
       callInterface: {
-        command: 'contract-method-call',
+        command: 'ganache-contract-method-call',
         payload: JSON.stringify(inp),
         testnetId: m.testnetId
       }
@@ -399,8 +399,8 @@ process.on("message", async m => {
   }
 
   // custom Method call
-  if (m.command === "custom-method-call") {
-    const { abi, address, methodName, params, gasSupply, deployAccount, pvtKey, from } = m.payload;
+  if (m.command === "contract-method-call") {
+    const { abi, address, methodName, params, gasSupply, deployAccount, pvtKey } = m.payload;
     const inp = {
       abi,
       address,
@@ -411,7 +411,7 @@ process.on("message", async m => {
     };
     const c = {
       callInterface: {
-        command: 'custom-method-call',
+        command: 'contract-method-call',
         payload: JSON.stringify(inp),
         testnetId: m.testnetId
       }
@@ -428,7 +428,7 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ callResult: data.result });
       var rawTX = JSON.parse(data.result);
-      rawTX['from'] = from;
+      rawTX['from'] = deployAccount;
       rawTX['to'] = address;
       deployUnsignedTx(meta, rawTX, pvtKey);
       // @ts-ignore

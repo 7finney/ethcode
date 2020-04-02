@@ -140,7 +140,7 @@ class ContractDeploy extends Component<IProps, IState> {
     const { gasSupply, methodName, deployedAddress, methodInputs, testNetId } = this.state;
     this.setState({ error: null });
     vscode.postMessage({
-      command: "contract-method-call",
+      command: "ganache-contract-method-call",
       payload: {
         abi,
         address: deployedAddress,
