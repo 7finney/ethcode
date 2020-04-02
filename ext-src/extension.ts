@@ -250,7 +250,7 @@ class ReactPanel {
       const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
 
-      if(this._disposed) {
+      if (this._disposed) {
         return;
         // @ts-ignore
       } else if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
@@ -447,7 +447,7 @@ class ReactPanel {
     signedDeployWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
-      } else if(m.transactionResult) {
+      } else if (m.transactionResult) {
         this._panel.webview.postMessage({ deployedResult: m.transactionResult });
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Contract transaction submitted!");
@@ -527,9 +527,9 @@ class ReactPanel {
   private sendEtherSigned(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
-      if(m.unsingedTx) {
+      if (m.unsingedTx) {
         this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
-      } else if(m.transactionResult) {
+      } else if (m.transactionResult) {
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -602,8 +602,8 @@ class ReactPanel {
 
   public dispose() {
     if (this._disposed) {
-			return;
-		}
+      return;
+    }
     ReactPanel.currentPanel = undefined;
 
     // Clean up our resources
