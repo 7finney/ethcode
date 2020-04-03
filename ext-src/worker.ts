@@ -55,15 +55,12 @@ try {
 }
 
 function handleLocal(pathString: string, filePath: any) {
-  console.log("Handling local");
-  
   // if no relative/absolute path given then search in node_modules folder
   if (pathString && pathString.indexOf(".") !== 0 && pathString.indexOf("/") !== 0) {
-    console.log("condition 1");
+    console.error("Error: Node Modules Import is not implemented yet!");
     // return handleNodeModulesImport(pathString, filePath, pathString)
     return;
   } else {
-    console.log("condition 2");
     try {
       const o = { encoding: "UTF-8" };
       // hack for compiler imports to work (do not change)
@@ -71,6 +68,8 @@ function handleLocal(pathString: string, filePath: any) {
       const content = fs.readFileSync(p, o);
       return content;
     } catch (error) {
+      // @ts-ignore
+      process.send({ error });
       throw error;
     }
   }
@@ -84,12 +83,9 @@ function findImports(path: any) {
     {
       type: "local",
       match: (url: string) => {
-        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?(\w+\.sol)/g.exec(
-          url
-        );
+        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?(\w+\.sol)/g.exec(url);
       },
       handle: (match: Array<string>) => {
-        console.log(match);
         return handleLocal(match[2], match[3]);
       }
     }
@@ -98,15 +94,15 @@ function findImports(path: any) {
   const urlResolver = new RemixURLResolver();
   urlResolver.resolve(path, FSHandler)
     .then((data: any) => {
-      console.log("found file");
       // this section usually executes after solc returns error file not found
       // @ts-ignore
       process.send({ data, path });
     })
     .catch((e: Error) => {
-      throw e;
-    })
-  return { 'error': 'Deferred import' };
+      // @ts-ignore
+      process.send({ error: e });
+    });
+    return { 'error': 'Deferred import' };
 }
 
 // sign an unsigned raw transaction and deploy
@@ -147,8 +143,6 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
 
 
   call.on('data', (data: any) => {
-    console.log("transactionResult");
-    console.log(data);
     // @ts-ignore
     process.send({ transactionResult: data.result });
   });

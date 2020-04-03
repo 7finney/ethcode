@@ -135,14 +135,13 @@ class App extends Component<IProps, IState> {
           this.mergeAccount();
         });
       }
-
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
         if (compiled.errors && compiled.errors.length > 0) {
           this.setState({ message: compiled.errors });
           return;
         } else if (!compiled.errors) {
-          this.setState({ message: [] });
+          this.setState({ message: [], processMessage: "" });
         }
         const fileName = Object.keys(compiled.sources)[0];
         var contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
@@ -156,7 +155,6 @@ class App extends Component<IProps, IState> {
           files
         });
       }
-
       if (data.processMessage) {
         const { processMessage } = data;
         this.setState({
@@ -166,7 +164,6 @@ class App extends Component<IProps, IState> {
           message: []
         });
       }
-
       if (data.versions) {
         var options = solidityVersion(data.versions.releases);
         this.setState({
