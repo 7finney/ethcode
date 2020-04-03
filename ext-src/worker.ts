@@ -150,8 +150,6 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
   });
   call.on('error', function (err: Error) {
     // @ts-ignore
-    process.send({ "help1": err });
-    // @ts-ignore
     process.send({ "error": err });
   });
 }
@@ -339,8 +337,6 @@ process.on("message", async m => {
         testnetId: m.testnetId
       }
     };
-    // @ts-ignore
-    process.send({ help: m.jwtToken });
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
@@ -440,8 +436,6 @@ process.on("message", async m => {
       process.exit(0);
     });
     call.on('error', function (err: Error) {
-      // @ts-ignore
-    process.send({ "help2": err });
       // @ts-ignore
       process.send({ "error": err });
     });

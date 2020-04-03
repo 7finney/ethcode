@@ -485,11 +485,13 @@ class ReactPanel {
   }
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
-    console.log("mqqqqqqqqqqqqqqqqqqqqqqqqqqqqq nilsoumya");
-    console.log(JSON.stringify(payload));
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
-      this._panel.webview.postMessage({ callResult: m });
+      if (m.error) {
+        this._panel.webview.postMessage({ errors: m.error });  
+      } else {
+        this._panel.webview.postMessage({ TestnetCallResult: m.callResult });
+      }
     });
     if (testNetId === 'ganache') {
       console.log("testnet Id: " + testNetId);

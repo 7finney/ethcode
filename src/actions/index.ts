@@ -9,7 +9,8 @@ import {
   SET_UPDATE_BALANCE,
   SET_TESTNET_ID,
   SET_UNSG_TX,
-  APPND_NEW_ACC
+  APPND_NEW_ACC,
+  SET_TESTNET_CALL_RESULT
 } from "./types";
 
 import { IAccount } from "../types";
@@ -47,6 +48,12 @@ export const clearDeployedResult = () => {
 export const setCallResult = (data: any) => {
   return (dispatch: Function) => {
     dispatch({ type: SET_CALL_RESULT, payload: data });
+  };
+};
+
+export const setTestnetCallResult = (data: any) => {
+  return (dispatch: Function) => {
+    dispatch({ type: SET_TESTNET_CALL_RESULT, payload: data });
   };
 };
 

@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import JSONPretty from 'react-json-pretty';
 import "./deploy.css";
 import { connect } from "react-redux";
-import { setUnsgTxn } from "../../actions";
+import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { IAccount } from 'types';
 
 export interface IProps {
   setUnsgTxn: (unsgTxn: any) => void;
+  setTestnetCallResult: (result: any) => void;
   contractName: string;
   bytecode: any;
   abi: any;
@@ -16,6 +17,7 @@ export interface IProps {
   testNetId: string;
   currAccount: IAccount;
   unsignedTx: any;
+  testNetCallResult: any;
 }
 
 export interface IState {
@@ -56,8 +58,6 @@ class Deploy extends Component<IProps, IState> {
       msg: 'initial',
       processMessage: ''
     };
-    // this.handleBuildTxn = this.handleBuildTxn.bind(this);
-    // this.getGasEstimate = this.getGasEstimate.bind(this);
   }
 
   componentDidMount() {
@@ -87,9 +87,8 @@ class Deploy extends Component<IProps, IState> {
         });
       }
 
-      if (data.callResult) {
-        console.log("callresult");
-        console.log(JSON.stringify(data.callResult));
+      if (data.TestnetCallResult) {
+        this.props.setTestnetCallResult(data.TestnetCallResult);
       }
 
       if (data.error) {
@@ -118,7 +117,7 @@ class Deploy extends Component<IProps, IState> {
         // @ts-ignore
         for (let i in methodArray[methodname]) {
           // @ts-ignore
-          if(methodArray[methodname].length > 0) {
+          if (methodArray[methodname].length > 0) {
             // @ts-ignore
             methodArray[methodname][i]['value'] = "";
           }
@@ -221,7 +220,7 @@ class Deploy extends Component<IProps, IState> {
   private handleMethodnameInput = (event: any) => {
     const { methodArray } = this.state;
     // @ts-ignore
-    if(methodArray.hasOwnProperty(event.target.value)) {
+    if (methodArray.hasOwnProperty(event.target.value)) {
       this.setState({
         methodName: event.target.value,
         // @ts-ignore
@@ -251,7 +250,7 @@ class Deploy extends Component<IProps, IState> {
   };
 
   render() {
-    const { contractName, currAccount, unsignedTx } = this.props;
+    const { contractName, currAccount, unsignedTx, testNetCallResult } = this.props;
     const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress } = this.state;
     const publicKey = currAccount.value;
 
@@ -295,7 +294,7 @@ class Deploy extends Component<IProps, IState> {
         </div>
         {/* Constructor */}
         <div>
-          <div className="form-container">
+          <div className="tag form-container">
             {
               (constructorInput && constructorInput.length > 0) &&
               <div>
@@ -344,6 +343,25 @@ class Deploy extends Component<IProps, IState> {
             </form>
           </div>
         </div>
+
+        {/* Call function Result */}
+        {Object.entries(testNetCallResult).length > 0 &&
+          <div className="tag call-result">
+            <span>
+              {testNetCallResult ? 'Call result:' : 'Call error:'}
+            </span>
+            <div>
+              {testNetCallResult ?
+                <pre className="large-code">
+                  {testNetCallResult}
+                </pre> :
+                <pre className="large-code" style={{ color: 'red' }}>
+                  {JSON.stringify(error)}
+                </pre>
+              }
+            </div>
+          </div>}
+
         {/* Get gas estimate */}
         <div className="account_row">
           <div className="input-container">
@@ -393,7 +411,7 @@ class Deploy extends Component<IProps, IState> {
 
         <div className="account_row">
           <div className="tag">
-            {pvtKey ?
+            {pvtKey && unsignedTx ?
               <button className="acc-button custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
               : <button disabled={true} className="acc-button button_disable custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
             }
@@ -435,13 +453,13 @@ class Deploy extends Component<IProps, IState> {
 }
 
 function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: any) {
-  const { compiledResult, callResult } = compiledStore;
+  const { compiledResult, testNetCallResult } = compiledStore;
   const { testNetId } = debugStore;
   const { currAccount } = accountStore;
   const { unsignedTx } = txStore;
   return {
     compiledResult,
-    callResult,
+    testNetCallResult,
     testNetId,
     currAccount,
     unsignedTx
@@ -449,5 +467,6 @@ function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: a
 }
 
 export default connect(mapStateToProps, {
-  setUnsgTxn
+  setUnsgTxn,
+  setTestnetCallResult
 })(Deploy);
