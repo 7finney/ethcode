@@ -9162,13 +9162,13 @@ relateurl@0.2.x:
   resolved "https://registry.yarnpkg.com/relateurl/-/relateurl-0.2.7.tgz#54dbf377e51440aca90a4cd274600d3ff2d888a9"
   integrity sha1-VNvzd+UUQKypCkzSdGANP/LYiKk=
 
-remix-url-resolver@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/remix-url-resolver/-/remix-url-resolver-0.0.5.tgz#5cf8cd59a17ddc8b5d307795927b4a4289d63337"
-  integrity sha512-7wulHnpR29k/xIMBHnlY/FPDs0DJLckHpd9h1BqqXIXBLWgCRJQFkw4LTQTYHFFf0u7UuTLxSW6pH3Mi6PYWsg==
+remix-url-resolver@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/remix-url-resolver/-/remix-url-resolver-0.0.12.tgz#7401d937055046efc61f2d7b05633e969f08f195"
+  integrity sha512-bAIBTnkm/V9DRdhmaimM9K0KaiDshUz3B8Rphh5W7BOncecDCZ3SHytduTkuIBdL6OZdIOGR/dAQdtsC4CEfPg==
   dependencies:
     axios "^0.18.0"
-    solc "^0.5.0"
+    solc "^0.6.0"
     url "^0.11.0"
     valid-url "^1.0.9"
 
@@ -9805,10 +9805,10 @@ solc@0.5.7:
     tmp "0.0.33"
     yargs "^11.0.0"
 
-solc@^0.5.0:
-  version "0.5.13"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.13.tgz#2a5ba2b7681898c6293759441e0a768fb6955def"
-  integrity sha512-osybDVPGjAqcmSKLU3vh5iHuxbhGlJjQI5ZvI7nRDR0fgblQqYte4MGvNjbew8DPvCrmoH0ZBiz/KBBLlPxfMg==
+solc@^0.6.0:
+  version "0.6.4"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.6.4.tgz#4b0f11fccd6f5ef9802c6bb1c007abb16881c2ca"
+  integrity sha512-HjUCys7ue9n7lGCa1XNf+wDdEY/wY64CpwnD4iPxW+BYYUX6ytwWXKitoolPXOOVxq4jewvwtL7Pngs+5k954A==
   dependencies:
     command-exists "^1.2.8"
     commander "3.0.2"

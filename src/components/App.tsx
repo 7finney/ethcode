@@ -24,7 +24,7 @@ import {
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
-import Selector from './Selector';
+import { Selector } from './common/ui';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 import Deploy from "./Deploy/Deploy";
@@ -44,9 +44,9 @@ interface IProps {
   setCurrAccChange: (accData: any) => void;
   setTestNetId: (testNetId: any) => void;
   test: any;
-  accountBalance: number,
-  accounts: string[],
-  currAccount: IAccount,
+  accountBalance: number;
+  accounts: string[];
+  currAccount: IAccount;
   testNetId: string;
 }
 
@@ -60,7 +60,7 @@ interface IState {
   availableVersions: any;
   gasEstimate: number;
   deployedResult: string;
-  tabIndex: number,
+  tabIndex: number;
   txTrace: object;
   traceError: string;
   accounts: string[];
@@ -74,7 +74,7 @@ interface IState {
   files: any;
   accountName: IAccount;
   testNets: object[];
-  localAcc: any[],
+  localAcc: any[];
   testNetAcc: any[];
 }
 interface IOpt {
@@ -389,8 +389,7 @@ class App extends Component<IProps, IState> {
       contracts,
       files,
       accountName,
-      testNets,
-      testNetAcc
+      testNets
     } = this.state;
 
     return (
@@ -398,30 +397,33 @@ class App extends Component<IProps, IState> {
         <header className="App-header">
           <h1 className="App-title">ETHcode</h1>
         </header>
-        {availableVersions && (fileType === 'solidity') && (
-          <Selector
-            getSelectedOption={this.getSelectedVersion}
-            options={availableVersions}
-            placeholder='Select Compiler Version'
-            defaultValue={availableVersions[0]}
-          />
-        )}
-        {
-          <Selector
-            getSelectedOption={this.getSelectedNetwork}
-            options={testNets}
-            placeholder='Select Network'
-            defaultValue={testNets[0]}
-          />
-        }
-        {compiled && Object.keys(compiled.sources).length > 0 && (
-          <Selector
-            options={files}
-            getSelectedOption={this.changeFile}
-            placeholder='Select Files'
-            defaultValue={files[0]}
-          />
-        )}
+        <div className="selectors">
+          {/* quick fix solidity version selector bug */}
+          {availableVersions && (fileType !== 'vyper') && (
+            <Selector
+              getSelectedOption={this.getSelectedVersion}
+              options={availableVersions}
+              placeholder='Select Compiler Version'
+              defaultValue={availableVersions[0]}
+            />
+          )}
+          {
+            <Selector
+              getSelectedOption={this.getSelectedNetwork}
+              options={testNets}
+              placeholder='Select Network'
+              defaultValue={testNets[0]}
+            />
+          }
+          {compiled && Object.keys(compiled.sources).length > 0 && (
+            <Selector
+              options={files}
+              getSelectedOption={this.changeFile}
+              placeholder='Select Files'
+              defaultValue={files[0]}
+            />
+          )}
+        </div>
         {
           transactionResult &&
           <div className="tx-info">
@@ -497,7 +499,6 @@ class App extends Component<IProps, IState> {
                         gasEstimate={gasEstimate}
                         deployedResult={deployedResult}
                         deployAccount={currAccount}
-                        testNetId={testNetId}
                         openAdvanceDeploy={this.openAdvanceDeploy}
                       />
                     }
@@ -508,7 +509,6 @@ class App extends Component<IProps, IState> {
             <TabPanel>
               <Account
                 vscode={vscode}
-                // defaultValue={(accountName && accountName.label) ? accountName : testNetAcc[0]}
                 accounts={selctorAccounts}
                 getSelectedAccount={this.getSelectedAccount}
                 accBalance={balance}

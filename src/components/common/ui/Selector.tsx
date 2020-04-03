@@ -96,8 +96,7 @@ class Selector extends Component<IProps, IState> {
     const { placeholder } = this.props;
 
     return (
-      <div style={{ marginBottom: '30px' }}>
-        <Select
+      <Select
           placeholder={placeholder}
           value={selectedOption}
           onChange={this.handleChange}
@@ -105,7 +104,6 @@ class Selector extends Component<IProps, IState> {
           className="select-width"
           styles={customStyles}
         />
-      </div>
     );
   }
 }

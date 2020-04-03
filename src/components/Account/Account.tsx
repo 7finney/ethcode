@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
-import Selector from '../Selector';
+import { Selector } from '../common/ui';
 import './Account.css';
 import { addNewAcc } from '../../actions';
 import { IAccount } from '../../types';

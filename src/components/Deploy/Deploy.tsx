@@ -23,7 +23,7 @@ export interface IProps {
 export interface IState {
   showUnsignedTxn: boolean;
   constructorInput: object[];
-  error: string;
+  error: Error | any;
   deployed: object;
   gasEstimate: number;
   bytecode: any;
@@ -44,7 +44,7 @@ class Deploy extends Component<IProps, IState> {
     this.state = {
       showUnsignedTxn: false,
       constructorInput: [],
-      error: '',
+      error: null,
       deployed: {},
       gasEstimate: 0,
       bytecode: {},
@@ -80,17 +80,13 @@ class Deploy extends Component<IProps, IState> {
       }
       if (data.pvtKey) {
         // TODO: fetching private key process needs fix
-        console.log("Setting active private key");
-        console.log(data.pvtKey);
         this.setState({ pvtKey: data.pvtKey, processMessage: '' }, () => {
           this.setState({ msg: 'process finshed' });
         });
       }
-
       if (data.TestnetCallResult) {
         this.props.setTestnetCallResult(data.TestnetCallResult);
       }
-
       if (data.error) {
         this.setState({ error: data.error });
       }
@@ -230,7 +226,7 @@ class Deploy extends Component<IProps, IState> {
   }
 
   signAndDeploy = () => {
-    const { vscode, unsignedTx, currAccount, testNetId } = this.props;
+    const { vscode, unsignedTx, testNetId, currAccount } = this.props;
     const { pvtKey } = this.state;
     const publicKey = currAccount.value;
     this.setState({ msg: 'Process start' });
@@ -282,14 +278,6 @@ class Deploy extends Component<IProps, IState> {
               value={JSON.stringify(abi)}
               placeholder="abi"
               disabled />
-          </div>
-          <div>
-            {
-              this.props.errors &&
-              <div>
-                {this.props.errors}
-              </div>
-            }
           </div>
         </div>
         {/* Constructor */}
@@ -436,7 +424,7 @@ class Deploy extends Component<IProps, IState> {
         }
 
         {/* Error Handle */}
-        <div>
+        <div className="error_message">
           {
             error &&
             <pre className="large-code" style={{ color: 'red' }}>

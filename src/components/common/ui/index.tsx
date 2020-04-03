@@ -1,5 +1,6 @@
 import React from 'react'
 import './index.css'
+import Selector from './Selector';
 
 export const Input = ({ ...props }) => {
   return (
@@ -12,3 +13,5 @@ export const Button = ({ ...props }) => {
     <button className={'custom_button_css'} {...props} ></button>
   )
 }
+
+export { Selector };
