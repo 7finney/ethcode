@@ -268,10 +268,10 @@ class ReactPanel {
 
   private createWorker(): ChildProcess {
     // enable --inspect for debug
-    // return fork(path.join(__dirname, "worker.js"), [], {
-    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
-    // });
-    return fork(path.join(__dirname, "worker.js"));
+    return fork(path.join(__dirname, "worker.js"), [], {
+      execArgv: ["--inspect=" + (process.debugPort + 1)]
+    });
+    // return fork(path.join(__dirname, "worker.js"));
   }
   private createVyperWorker(): ChildProcess {
     // enable --inspect for debug
@@ -323,7 +323,6 @@ class ReactPanel {
       if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
         this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true, testPanel: 'main' });
-        solcWorker.kill();
       }
       if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
@@ -335,6 +334,8 @@ class ReactPanel {
     solcWorker.on("exit", (code: number, signal: string) => {
       console.log("%c Compile worker process exited with " + `code ${code} and signal ${signal}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
       this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` });
+      solcWorker.kill();
+      // TODO: now if we kill process anywhere except here things fails randomly, (todo) properly exit process
     });
   }
   private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {

@@ -55,20 +55,24 @@ try {
 }
 
 function handleLocal(pathString: string, filePath: any) {
+  console.log("Handling local");
+  
   // if no relative/absolute path given then search in node_modules folder
-  if (
-    pathString &&
-    pathString.indexOf(".") !== 0 &&
-    pathString.indexOf("/") !== 0
-  ) {
+  if (pathString && pathString.indexOf(".") !== 0 && pathString.indexOf("/") !== 0) {
+    console.log("condition 1");
     // return handleNodeModulesImport(pathString, filePath, pathString)
     return;
   } else {
-    const o = { encoding: "UTF-8" };
-    // hack for compiler imports to work (do not change)
-    const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
-    const content = fs.readFileSync(p, o);
-    return content;
+    console.log("condition 2");
+    try {
+      const o = { encoding: "UTF-8" };
+      // hack for compiler imports to work (do not change)
+      const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
+      const content = fs.readFileSync(p, o);
+      return content;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 
@@ -85,21 +89,24 @@ function findImports(path: any) {
         );
       },
       handle: (match: Array<string>) => {
+        console.log(match);
         return handleLocal(match[2], match[3]);
       }
     }
   ];
   // @ts-ignore
   const urlResolver = new RemixURLResolver();
-  urlResolver
-    .resolve(path, FSHandler)
+  urlResolver.resolve(path, FSHandler)
     .then((data: any) => {
+      console.log("found file");
+      // this section usually executes after solc returns error file not found
       // @ts-ignore
       process.send({ data, path });
     })
     .catch((e: Error) => {
       throw e;
-    });
+    })
+  return { 'error': 'Deferred import' };
 }
 
 // sign an unsigned raw transaction and deploy
@@ -158,35 +165,48 @@ process.on("message", async m => {
   var meta = new grpc.Metadata();
   meta.add('authorization', m.jwtToken);
   if (m.command === "compile") {
+    const vnReg = /(^[0-9].[0-9].[0-9]\+commit\..*?)+(\.)/g;
+    const vnRegArr = vnReg.exec(solc.version());
+    // @ts-ignore
+    const vn = 'v' + (vnRegArr ? vnRegArr[1] : '');
     const input = m.payload;
-    if (m.version === 'latest') {
+    if (m.version === 'latest' || m.version === vn) {
       try {
-        const output = await solc.compile(JSON.stringify(input), findImports);
+        console.log("compiling with local version: ", m.version);
+        const output = await solc.compile(JSON.stringify(input), { import: findImports });
         // @ts-ignore
         process.send({ compiled: output });
+        // we should not exit process here as findImports still might be running
       } catch (e) {
-        // @ts-ignore
-        process.send({ error: e });
-      }
-    }
-    solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-      if (err) {
-        // @ts-ignore
-        process.send({ error: e });
-      } else {
-        try {
-          const output = await newSolc.compile(
-            JSON.stringify(input),
-            findImports
-          );
-          // @ts-ignore
-          process.send({ compiled: output });
-        } catch (e) {
+          console.error(e);
           // @ts-ignore
           process.send({ error: e });
-        }
+          // @ts-ignore
+          process.exit(1);
       }
-    });
+    } else if (m.version !== vn) {
+        console.log("loading remote version " + m.version + "...");
+        solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
+          console.log("remote version loaded: ", m.version);
+          if (err) {
+            // @ts-ignore
+            process.send({ error: e });
+            // @ts-ignore
+            process.exit(1);
+          } else {
+            try {
+              const output = await newSolc.compile(JSON.stringify(input), findImports);
+              // @ts-ignore
+              process.send({ compiled: output });
+            } catch (e) {
+              // @ts-ignore
+              process.send({ error: e });
+              // @ts-ignore
+              process.exit(1);
+            }
+          }
+        });
+    }
   }
   if (m.command === "fetch_compiler_verison") {
     axios
@@ -198,6 +218,8 @@ process.on("message", async m => {
       .catch((e: Error) => {
         // @ts-ignore
         process.send({ error: e });
+        // @ts-ignore
+        process.exit(1);
       });
   }
   if (m.command === "run-test") {
@@ -232,6 +254,8 @@ process.on("message", async m => {
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
+        // @ts-ignore
+        process.exit(1);
       } else {
         // @ts-ignore
         process.send({ response });
@@ -258,7 +282,11 @@ process.on("message", async m => {
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any) => {
       if (err) {
-        console.log("err", err);
+        console.error("err", err);
+        // @ts-ignore
+        process.send({ error: err });
+        // @ts-ignore
+        process.exit(1);
       }
     });
     call.on('data', (data: any) => {
@@ -268,7 +296,9 @@ process.on("message", async m => {
     });
     call.on('error', function (err: Error) {
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
+      // @ts-ignore
+      process.exit(1);
     });
   }
   // send wei_value to a address
@@ -283,7 +313,11 @@ process.on("message", async m => {
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.log("err", err);
+        console.error("error", err);
+        // @ts-ignore
+        process.send({ error: err });
+        // @ts-ignore
+        process.exit(1);
       } else {
         // @ts-ignore
         process.send({ response });
