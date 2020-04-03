@@ -174,7 +174,7 @@ class ReactPanel {
           this.version = message.version;
         } else if (message.command === 'run-deploy') {
           this.runDeploy(message.payload, message.testNetId);
-        } else if (message.command === 'contract-method-call') {
+        } else if (message.command.endsWith('contract-method-call')) {
           this.runContractCall(message.payload, message.testNetId);
         } else if (message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload, message.testNetId);
@@ -488,15 +488,20 @@ class ReactPanel {
   }
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
-    var f: boolean = true;
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
-      this._panel.webview.postMessage({ callResult: m });
+      if (m.error) {
+        this._panel.webview.postMessage({ errors: m.error });  
+      } else {
+        this._panel.webview.postMessage({ TestnetCallResult: m.callResult });
+      }
     });
-    if (f) {
-      callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
+    if (testNetId === 'ganache') {
+      console.log("testnet Id: " + testNetId);
+      callWorker.send({ command: "ganache-contract-method-call", payload, jwtToken, testnetId: testNetId });
     } else {
-      callWorker.send({ command: "custom-method-call", payload, jwtToken, testnetId: testNetId });
+      console.log("testnet Id: " + testNetId);
+      callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
     }
   }
   // Get gas estimates
