@@ -447,16 +447,14 @@ process.on("message", async m => {
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
-      } else {
         // @ts-ignore
-        process.send({ response });
+        process.send({ error: err });
       }
     });
     call.on('data', (data: any) => {
-      console.log(data);
-      
       // @ts-ignore
       process.send({ callResult: data.result });
+      // TODO: only send to unsingedTx is data.result is a transaction
       // @ts-ignore
       process.send({ unsingedTx: data.result });
     });

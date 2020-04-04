@@ -128,7 +128,6 @@ class Deploy extends Component<IProps, IState> {
 
   componentDidUpdate(prevProps: any) {
     const { abi } = this.props;
-
     // Update constructor input
     const length = Object.keys(abi).length;
     if (prevProps.abi !== abi) {
