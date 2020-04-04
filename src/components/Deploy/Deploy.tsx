@@ -232,11 +232,8 @@ class Deploy extends Component<IProps, IState> {
   }
 
   signAndDeploy = () => {
-    console.log("Sign aNd deploy");
-    
-    const { vscode, unsignedTx, testNetId, currAccount } = this.props;
+    const { vscode, unsignedTx, testNetId } = this.props;
     const { pvtKey } = this.state;
-    const publicKey = currAccount.value;
     this.setState({ msg: 'Process start' });
     console.log(unsignedTx);
     
@@ -244,7 +241,6 @@ class Deploy extends Component<IProps, IState> {
       vscode.postMessage({
         command: "sign-deploy-tx",
         payload: {
-          from: publicKey,
           unsignedTx,
           pvtKey
         },

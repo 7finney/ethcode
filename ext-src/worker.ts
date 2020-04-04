@@ -106,13 +106,14 @@ function findImports(path: any) {
 }
 
 // sign an unsigned raw transaction and deploy
-function deployUnsignedTx(meta: any, tx: any, publicKey: any, privateKey: any, testnetId?: any) {
+function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
+  // TODO: error handling
   tx = JSON.parse(tx);
   const txData = formatters.inputTransactionFormatter(tx);
   // TODO: this method should not work for ganache and prysm and throw error
   const chainId = Number(testnetId) === 5 ? 6284 : Number(testnetId)
   const unsignedTransaction = new EthereumTx({
-    from: txData.from || publicKey || '0x',
+    from: txData.from || '0x',
     nonce: txData.nonce || '0x',
     gasPrice: txData.gasPrice,
     gas: txData.gas || '0x',
@@ -287,7 +288,7 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ unsingedTx: data.result });
-      deployUnsignedTx(meta, data.result, "", pvtKey, m.testnetId);
+      deployUnsignedTx(meta, data.result, pvtKey, m.testnetId);
     });
     call.on('error', function (err: Error) {
       // @ts-ignore
@@ -554,7 +555,7 @@ process.on("message", async m => {
   }
   // sign and deploy unsigned transaction
   if (m.command == "sign-deploy") {
-    const { unsignedTx, publicKey, pvtKey } = m.payload;
-    deployUnsignedTx(meta, unsignedTx, publicKey, pvtKey, m.testnetId);
+    const { unsignedTx, pvtKey } = m.payload;
+    deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
   }
 });
