@@ -58,12 +58,7 @@ class Account extends Component<IProps, IState> {
         this.setState({ pvtKey: data.pvtKey }, () => {
           this.setState({ msg: 'process finshed' });
         });
-      } else if (data.unsingedTx) {
-        // TODO: handle or discard if we do not need unsigned transaction
-        console.log("Unsigned transaction");
-        console.log(data.unsingedTx);
-      }
-      if (data.error) {
+      } else if (data.error) {
         this.setState({ error: data.error });
       }
     });

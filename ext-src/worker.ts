@@ -47,8 +47,8 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -107,11 +107,13 @@ function findImports(path: any) {
 
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
+  // TODO: error handling
   tx = JSON.parse(tx);
   const txData = formatters.inputTransactionFormatter(tx);
   // TODO: this method should not work for ganache and prysm and throw error
   const chainId = Number(testnetId) === 5 ? 6284 : Number(testnetId)
   const unsignedTransaction = new EthereumTx({
+    from: txData.from || '0x',
     nonce: txData.nonce || '0x',
     gasPrice: txData.gasPrice,
     gas: txData.gas || '0x',
@@ -424,10 +426,11 @@ process.on("message", async m => {
     });
   }
 
-  // custom Method call
+  // testnet method call
   if (m.command === "contract-method-call") {
-    const { abi, address, methodName, params, gasSupply, deployAccount, pvtKey } = m.payload;
+    const { from, abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
+      from,
       abi,
       address,
       methodName,
@@ -445,20 +448,16 @@ process.on("message", async m => {
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
-      } else {
         // @ts-ignore
-        process.send({ response });
+        process.send({ error: err });
       }
     });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ callResult: data.result });
-      var rawTX = JSON.parse(data.result);
-      rawTX['from'] = deployAccount;
-      rawTX['to'] = address;
-      deployUnsignedTx(meta, rawTX, pvtKey);
+      // TODO: only send to unsingedTx is data.result is a transaction
       // @ts-ignore
-      // process.send({ deployedResult: data.result });
+      process.send({ unsingedTx: data.result });
     });
     call.on('end', function () {
       process.exit(0);

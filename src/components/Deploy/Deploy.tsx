@@ -58,6 +58,8 @@ class Deploy extends Component<IProps, IState> {
       msg: 'initial',
       processMessage: ''
     };
+    this.handleMethodnameInput = this.handleMethodnameInput.bind(this);
+    this.handleMethodInputs = this.handleMethodInputs.bind(this);
   }
 
   componentDidMount() {
@@ -70,13 +72,15 @@ class Deploy extends Component<IProps, IState> {
       if (data.deployedResult) {
         this.setState({ txtHash: data.deployedResult });
       }
-
       if (data.gasEstimate) {
         this.setState({ gasEstimate: data.gasEstimate });
       }
       if (data.buildTxResult) {
         // TODO: fix unsigned tx is not updated after once
         setUnsgTxn(data.buildTxResult);
+      }
+      if (data.unsingedTx) {
+        setUnsgTxn(data.unsingedTx);
       }
       if (data.pvtKey) {
         // TODO: fetching private key process needs fix
@@ -93,7 +97,7 @@ class Deploy extends Component<IProps, IState> {
     });
     // get private key for corresponding public key
     if (currAccount.type === 'Local') {
-      this.setState({ processMessage: 'FETCHING PRIVATE KEY...' });
+      this.setState({ processMessage: 'Fetching private key...' });
       vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
     }
     // Extract constructor input from abi and make array of all the methods input field.
@@ -105,7 +109,6 @@ class Deploy extends Component<IProps, IState> {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput });
-        break;
       } else {
         let methodname = abi[i]['name'];
         // @ts-ignore
@@ -125,7 +128,6 @@ class Deploy extends Component<IProps, IState> {
 
   componentDidUpdate(prevProps: any) {
     const { abi } = this.props;
-
     // Update constructor input
     const length = Object.keys(abi).length;
     if (prevProps.abi !== abi) {
@@ -176,7 +178,7 @@ class Deploy extends Component<IProps, IState> {
     }
   };
 
-  getGasEstimate = () => {
+  private getGasEstimate = () => {
     const { vscode, bytecode, abi, testNetId } = this.props;
     const { constructorInput } = this.state;
 
@@ -198,10 +200,11 @@ class Deploy extends Component<IProps, IState> {
   private handleCall = () => {
     const { vscode, abi, currAccount, testNetId } = this.props;
     const { gasEstimate, methodName, contractAddress, methodInputs } = this.state;
-
+    const publicKey = currAccount.value;
     vscode.postMessage({
       command: "contract-method-call",
       payload: {
+        from: publicKey,
         abi,
         address: contractAddress,
         methodName: methodName,
@@ -213,10 +216,10 @@ class Deploy extends Component<IProps, IState> {
     });
   }
 
-  private handleMethodnameInput = (event: any) => {
+  private handleMethodnameInput(event: any) {
     const { methodArray } = this.state;
     // @ts-ignore
-    if (methodArray.hasOwnProperty(event.target.value)) {
+    if(methodArray.hasOwnProperty(event.target.value)) {
       this.setState({
         methodName: event.target.value,
         // @ts-ignore
@@ -224,17 +227,20 @@ class Deploy extends Component<IProps, IState> {
       });
     }
   }
+  private handleMethodInputs(event: any) {
+    this.setState({ methodInputs: event.target.value });
+  }
 
   signAndDeploy = () => {
-    const { vscode, unsignedTx, testNetId, currAccount } = this.props;
+    const { vscode, unsignedTx, testNetId } = this.props;
     const { pvtKey } = this.state;
-    const publicKey = currAccount.value;
     this.setState({ msg: 'Process start' });
+    console.log(unsignedTx);
+    
     try {
       vscode.postMessage({
         command: "sign-deploy-tx",
         payload: {
-          from: publicKey,
           unsignedTx,
           pvtKey
         },
@@ -324,7 +330,7 @@ class Deploy extends Component<IProps, IState> {
               {
                 methodName !== '' && methodInputs !== '[]' &&
                 <div className="json_input_container" style={{ margin: '10px 0' }}>
-                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={(e) => this.setState({ methodInputs: e.target.value })}></textarea>
+                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>
               }
               <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />

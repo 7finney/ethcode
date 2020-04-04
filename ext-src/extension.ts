@@ -349,7 +349,7 @@ class ReactPanel {
       source: sources,
       version: this.version
     });
-    vyperWorker.on('message', (m) => {
+    vyperWorker.on('message', (m: any) => {
       if (m.error) {
         errorToast(m.error);
       }
@@ -490,10 +490,13 @@ class ReactPanel {
   }
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
+    console.log("Running contract call");
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });  
+      } else if (m.unsingedTx) {
+        this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
       } else {
         this._panel.webview.postMessage({ TestnetCallResult: m.callResult });
       }
