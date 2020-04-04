@@ -495,6 +495,8 @@ class ReactPanel {
     callWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });  
+      } else if (m.unsingedTx) {
+        this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
       } else {
         this._panel.webview.postMessage({ TestnetCallResult: m.callResult });
       }

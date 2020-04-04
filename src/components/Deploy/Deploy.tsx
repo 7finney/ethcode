@@ -79,6 +79,9 @@ class Deploy extends Component<IProps, IState> {
         // TODO: fix unsigned tx is not updated after once
         setUnsgTxn(data.buildTxResult);
       }
+      if (data.unsingedTx) {
+        setUnsgTxn(data.unsingedTx);
+      }
       if (data.pvtKey) {
         // TODO: fetching private key process needs fix
         this.setState({ pvtKey: data.pvtKey, processMessage: '' }, () => {
@@ -198,9 +201,11 @@ class Deploy extends Component<IProps, IState> {
   private handleCall = () => {
     const { vscode, abi, currAccount, testNetId } = this.props;
     const { gasEstimate, methodName, contractAddress, methodInputs } = this.state;
+    const publicKey = currAccount.value;
     vscode.postMessage({
       command: "contract-method-call",
       payload: {
+        from: publicKey,
         abi,
         address: contractAddress,
         methodName: methodName,
@@ -228,10 +233,14 @@ class Deploy extends Component<IProps, IState> {
   }
 
   signAndDeploy = () => {
+    console.log("Sign aNd deploy");
+    
     const { vscode, unsignedTx, testNetId, currAccount } = this.props;
     const { pvtKey } = this.state;
     const publicKey = currAccount.value;
     this.setState({ msg: 'Process start' });
+    console.log(unsignedTx);
+    
     try {
       vscode.postMessage({
         command: "sign-deploy-tx",
