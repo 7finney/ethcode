@@ -47,8 +47,8 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -424,7 +424,7 @@ process.on("message", async m => {
     });
   }
 
-  // custom Method call
+  // testnet method call
   if (m.command === "contract-method-call") {
     const { abi, address, methodName, params, gasSupply, deployAccount, pvtKey } = m.payload;
     const inp = {
@@ -451,12 +451,14 @@ process.on("message", async m => {
       }
     });
     call.on('data', (data: any) => {
+      console.log(data);
+      
       // @ts-ignore
       process.send({ callResult: data.result });
       var rawTX = JSON.parse(data.result);
       rawTX['from'] = deployAccount;
       rawTX['to'] = address;
-      deployUnsignedTx(meta, rawTX, pvtKey);
+      // deployUnsignedTx(meta, rawTX, pvtKey);
       // @ts-ignore
       // process.send({ deployedResult: data.result });
     });

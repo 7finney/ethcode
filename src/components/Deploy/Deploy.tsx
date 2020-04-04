@@ -58,6 +58,8 @@ class Deploy extends Component<IProps, IState> {
       msg: 'initial',
       processMessage: ''
     };
+    this.handleMethodnameInput = this.handleMethodnameInput.bind(this);
+    this.handleMethodInputs = this.handleMethodInputs.bind(this);
   }
 
   componentDidMount() {
@@ -70,7 +72,6 @@ class Deploy extends Component<IProps, IState> {
       if (data.deployedResult) {
         this.setState({ txtHash: data.deployedResult });
       }
-
       if (data.gasEstimate) {
         this.setState({ gasEstimate: data.gasEstimate });
       }
@@ -98,10 +99,7 @@ class Deploy extends Component<IProps, IState> {
     }
     // Extract constructor input from abi and make array of all the methods input field.
     let methodArray: object = {};
-    console.log(JSON.stringify(abi));
     for (let i in abi) {
-      console.log("in for loop");
-      
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
         for (let j in constructorInput) {
@@ -109,7 +107,6 @@ class Deploy extends Component<IProps, IState> {
         }
         this.setState({ constructorInput });
       } else {
-        console.log("setting abi methods");
         let methodname = abi[i]['name'];
         // @ts-ignore
         methodArray[methodname] = abi[i]['inputs'];
@@ -119,13 +116,11 @@ class Deploy extends Component<IProps, IState> {
           if (methodArray[methodname].length > 0) {
             // @ts-ignore
             methodArray[methodname][i]['value'] = "";
-            console.log("setting method array");
-            console.log(JSON.stringify(methodArray));
-            this.setState({ methodArray });
           }
         }
       }
     }
+    this.setState({ methodArray: methodArray });
   }
 
   componentDidUpdate(prevProps: any) {
@@ -181,7 +176,7 @@ class Deploy extends Component<IProps, IState> {
     }
   };
 
-  getGasEstimate = () => {
+  private getGasEstimate = () => {
     const { vscode, bytecode, abi, testNetId } = this.props;
     const { constructorInput } = this.state;
 
@@ -201,18 +196,15 @@ class Deploy extends Component<IProps, IState> {
   };
 
   private handleCall = () => {
-    console.log("Handle call");
-    
     const { vscode, abi, currAccount, testNetId } = this.props;
     const { gasEstimate, methodName, contractAddress, methodInputs } = this.state;
-    console.log(methodInputs);
     vscode.postMessage({
       command: "contract-method-call",
       payload: {
         abi,
         address: contractAddress,
         methodName: methodName,
-        params: methodInputs,
+        params: JSON.parse(methodInputs),
         gasSupply: gasEstimate,
         deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
       },
@@ -220,21 +212,19 @@ class Deploy extends Component<IProps, IState> {
     });
   }
 
-  private handleMethodnameInput = (event: any) => {
-    console.log("Handle MethodnameInput");
-    
+  private handleMethodnameInput(event: any) {
     const { methodArray } = this.state;
-    console.dir(methodArray);
-    console.log(JSON.stringify(methodArray));
-    
     // @ts-ignore
-    if (methodArray.hasOwnProperty(event.target.value)) {
+    if(methodArray.hasOwnProperty(event.target.value)) {
       this.setState({
         methodName: event.target.value,
         // @ts-ignore
         methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t')
       });
     }
+  }
+  private handleMethodInputs(event: any) {
+    this.setState({ methodInputs: event.target.value });
   }
 
   signAndDeploy = () => {
@@ -336,7 +326,7 @@ class Deploy extends Component<IProps, IState> {
               {
                 methodName !== '' && methodInputs !== '[]' &&
                 <div className="json_input_container" style={{ margin: '10px 0' }}>
-                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={(e) => { console.log("set methodInputs: ", e.target); this.setState({ methodInputs: e.target.value }); }}></textarea>
+                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>
               }
               <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />

@@ -69,7 +69,6 @@ class ContractDeploy extends Component<IProps, IState> {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
-        break;
       } else {
         let methodname = abi[i]['name'];
         // @ts-ignore
