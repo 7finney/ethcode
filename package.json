@@ -131,7 +131,7 @@
     "react-tiny-virtual-list": "^2.2.0",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
-    "remix-url-resolver": "file:/home/0mkar/Karma/remix/remix-url-resolver",
+    "remix-url-resolver": "^0.0.12",
     "resolve": "1.10.0",
     "sass-loader": "7.1.0",
     "semver": "6.0.0",
