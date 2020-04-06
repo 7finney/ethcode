@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./ContractDeploy.css";
 import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
+import { setCallResult } from "../../actions";
 import { IAccount } from "types";
 
 interface IProps {
@@ -18,6 +19,7 @@ interface IProps {
   deployAccount: IAccount;
   testNetId: string;
   openAdvanceDeploy: any;
+  setCallResult: (result: any) => void;
 }
 interface IState {
   constructorInput: object[];
@@ -61,6 +63,18 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ testNetId: this.props.testNetId });
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
+    
+    window.addEventListener("message", event => {
+      const { data } = event;
+
+      if (data.ganacheCallResult) {
+        this.props.setCallResult(data.ganacheCallResult);
+      }
+      if (data.error) {
+        this.setState({ error: data.error });
+      }
+    });
+
     let methodArray: object = {};
     for (let i in abi) {
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
@@ -86,7 +100,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodArray: methodArray });
   }
   componentDidUpdate(prevProps: any) {
-    const { gasEstimate, deployedResult, error, abi } = this.props;
+    const { gasEstimate, deployedResult, error, abi, callResult } = this.props;
     if (this.props.testNetId !== this.state.testNetId && this.props.testNetId !== 'ganache') {
       this.setState({ disable: true });
     } else if (this.props.testNetId !== this.state.testNetId) {
@@ -295,24 +309,13 @@ class ContractDeploy extends Component<IProps, IState> {
             <span>
               {/* 
               // @ts-ignore */}
-              {callResult && callResult.callResult ? 'Call result:' : 'Call error:'}
+              {(callResult || (callResult && callResult.callResult)) ? 'Call result:' : 'Call error:'}
             </span>
             <div>
-              {/* 
-              // @ts-ignore */}
-              {callResult && callResult.callResult ?
-                <pre className="large-code">
-                  {
-                    // @ts-ignore
-                    callResult.callResult
-                  }
-                </pre> :
-                <pre className="large-code" style={{ color: 'red' }}>
-                  {
-                    // @ts-ignore
-                    JSON.stringify(callResult.error)
-                  }
-                </pre>
+              {/* TODO: add better way to show result and error */}
+              {
+                callResult &&
+                <pre className="large-code">{ callResult }</pre>
               }
             </div>
           </div>
@@ -345,4 +348,6 @@ function mapStateToProps({ debugStore, compiledStore }: any) {
   };
 }
 
-export default connect(mapStateToProps, {})(ContractDeploy);
+export default connect(mapStateToProps, {
+  setCallResult
+})(ContractDeploy);
