@@ -139,7 +139,6 @@ class App extends Component<IProps, IState> {
         const compiled = JSON.parse(data.compiled);
         if (compiled.errors && compiled.errors.length > 0) {
           this.setState({ message: compiled.errors });
-          return;
         } else if (!compiled.errors) {
           this.setState({ message: [], processMessage: "" });
         }

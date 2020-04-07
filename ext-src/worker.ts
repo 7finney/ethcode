@@ -48,8 +48,8 @@ const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
   // client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
-  client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -167,9 +167,9 @@ process.on("message", async m => {
     // @ts-ignore
     const vn = 'v' + (vnRegArr ? vnRegArr[1] : '');
     const input = m.payload;
-    if (m.version === 'latest' || m.version === vn) {
+    if (m.version === vn || m.version === 'latest') {
       try {
-        console.log("compiling with local version: ", m.version);
+        console.log("compiling with local version: ", solc.version());
         const output = await solc.compile(JSON.stringify(input), { import: findImports });
         // @ts-ignore
         process.send({ compiled: output });
@@ -184,18 +184,18 @@ process.on("message", async m => {
     } else if (m.version !== vn) {
         console.log("loading remote version " + m.version + "...");
         solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-          console.log("remote version loaded: ", m.version);
           if (err) {
+            console.error(err);
             // @ts-ignore
             process.send({ error: e });
-            // @ts-ignore
-            process.exit(1);
           } else {
+            console.log("compiling with remote version ", newSolc.version());
             try {
-              const output = await newSolc.compile(JSON.stringify(input), findImports);
+              const output = await newSolc.compile(JSON.stringify(input), { import: findImports });
               // @ts-ignore
               process.send({ compiled: output });
             } catch (e) {
+              console.error(e);
               // @ts-ignore
               process.send({ error: e });
               // @ts-ignore

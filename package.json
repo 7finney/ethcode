@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "publisher": "quantanetwork",
   "categories": [
     "Debuggers",
@@ -136,7 +136,7 @@
     "sass-loader": "7.1.0",
     "semver": "6.0.0",
     "shelljs": "^0.8.3",
-    "solc": "^0.6.4",
+    "solc": "0.6.4",
     "style-loader": "0.23.1",
     "terser-webpack-plugin": "1.2.3",
     "ts-pnp": "1.1.2",

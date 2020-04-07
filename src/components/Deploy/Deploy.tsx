@@ -234,9 +234,6 @@ class Deploy extends Component<IProps, IState> {
   signAndDeploy = () => {
     const { vscode, unsignedTx, testNetId } = this.props;
     const { pvtKey } = this.state;
-    this.setState({ msg: 'Process start' });
-    console.log(unsignedTx);
-    
     try {
       vscode.postMessage({
         command: "sign-deploy-tx",
