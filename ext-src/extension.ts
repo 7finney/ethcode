@@ -268,10 +268,10 @@ class ReactPanel {
 
   private createWorker(): ChildProcess {
     // enable --inspect for debug
-    // return fork(path.join(__dirname, "worker.js"), [], {
-    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
-    // });
-    return fork(path.join(__dirname, "worker.js"));
+    return fork(path.join(__dirname, "worker.js"), [], {
+      execArgv: ["--inspect=" + (process.debugPort + 1)]
+    });
+    // return fork(path.join(__dirname, "worker.js"));
   }
   private createVyperWorker(): ChildProcess {
     // enable --inspect for debug
