@@ -191,7 +191,7 @@ process.on("message", async m => {
           } else {
             console.log("compiling with remote version ", newSolc.version());
             try {
-              const output = await newSolc.compile(JSON.stringify(input), findImports);
+              const output = await newSolc.compile(JSON.stringify(input), { import: findImports });
               // @ts-ignore
               process.send({ compiled: output });
             } catch (e) {
