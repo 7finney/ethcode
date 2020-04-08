@@ -126,23 +126,6 @@ class Deploy extends Component<IProps, IState> {
     this.setState({ methodArray: methodArray });
   }
 
-  componentDidUpdate(prevProps: any) {
-    const { abi } = this.props;
-    // Update constructor input
-    const length = Object.keys(abi).length;
-    if (prevProps.abi !== abi) {
-      if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
-        for (let j in constructorInput) {
-          constructorInput[j]['value'] = "";
-        }
-        this.setState({ constructorInput });
-      } else {
-        this.setState({ constructorInput: [] });
-      }
-    }
-  }
-
   private handleConstructorInputChange = (event: any) => {
     const { constructorInput } = this.state;
     if (constructorInput.length > 3) {

@@ -119,19 +119,6 @@ class ContractDeploy extends Component<IProps, IState> {
     else if ((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
       this.setState({ gasSupply: gasEstimate });
     }
-
-    const length = Object.keys(abi).length;
-    if (prevProps.abi !== abi) {
-      if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
-        for (let j in constructorInput) {
-          constructorInput[j]['value'] = "";
-        }
-        this.setState({ constructorInput: constructorInput });
-      } else {
-        this.setState({ constructorInput: [] });
-      }
-    }
   }
   private handleDeploy() {
     const { vscode, bytecode, abi } = this.props;
