@@ -13,7 +13,7 @@
 ![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/71320562-e57b0c00-24d2-11ea-9b17-2629da608c6d.png)
 
 `ctrl+alt+t` - run unit testing.
-![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/67867273-26e4e000-fb50-11e9-9956-5f06e27c5a29.png)
+![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/78938685-448b7d80-7ad0-11ea-8248-d2494269b52e.png)
 
 **Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
 
