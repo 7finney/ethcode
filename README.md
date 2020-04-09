@@ -10,9 +10,14 @@
 ![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
 
 `ctrl+alt+c` - compile contracts.
+
 ![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/71320562-e57b0c00-24d2-11ea-9b17-2629da608c6d.png)
 
+Deploy contracts to test network.
+![Screenshot from 2020-04-10 03-04-40](https://user-images.githubusercontent.com/13261372/78942930-5709b500-7ad8-11ea-8557-511fd4e537cc.png)
+
 `ctrl+alt+t` - run unit testing.
+
 ![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/78938685-448b7d80-7ad0-11ea-8248-d2494269b52e.png)
 
 **Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
