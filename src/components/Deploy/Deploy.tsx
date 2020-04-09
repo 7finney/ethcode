@@ -79,8 +79,8 @@ class Deploy extends Component<IProps, IState> {
         // TODO: fix unsigned tx is not updated after once
         setUnsgTxn(data.buildTxResult);
       }
-      if (data.unsingedTx) {
-        setUnsgTxn(data.unsingedTx);
+      if (data.unsignedTx) {
+        setUnsgTxn(data.unsignedTx);
       }
       if (data.pvtKey) {
         // TODO: fetching private key process needs fix

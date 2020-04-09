@@ -288,7 +288,7 @@ process.on("message", async m => {
     });
     call.on('data', (data: any) => {
       // @ts-ignore
-      process.send({ unsingedTx: data.result });
+      process.send({ unsignedTx: data.result });
       deployUnsignedTx(meta, data.result, pvtKey, m.testnetId);
     });
     call.on('error', function (err: Error) {
@@ -456,9 +456,9 @@ process.on("message", async m => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ callResult: data.result });
-      // TODO: only send to unsingedTx is data.result is a transaction
+      // TODO: only send to unsignedTx is data.result is a transaction
       // @ts-ignore
-      process.send({ unsingedTx: data.result });
+      process.send({ unsignedTx: data.result });
     });
     call.on('end', function () {
       process.exit(0);

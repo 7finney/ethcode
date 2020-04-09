@@ -495,8 +495,8 @@ class ReactPanel {
     callWorker.on("message", (m: any) => {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });  
-      } else if (m.unsingedTx) {
-        this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
+      } else if (m.unsignedTx) {
+        this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else {
         this._panel.webview.postMessage({ ganacheCallResult: m.callResult });
       }
@@ -537,8 +537,8 @@ class ReactPanel {
   private sendEtherSigned(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
-      if (m.unsingedTx) {
-        this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
+      if (m.unsignedTx) {
+        this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
