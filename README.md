@@ -7,7 +7,7 @@
 ## Usage instructions
 `ctrl+alt+e` - activate the plugin.
 
-![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938247-8536c700-7acf-11ea-9e5e-deaef512d396.png)
+![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
 
 `ctrl+alt+c` - compile contracts.
 ![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/71320562-e57b0c00-24d2-11ea-9b17-2629da608c6d.png)
