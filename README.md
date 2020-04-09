@@ -14,6 +14,7 @@
 ![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/71320562-e57b0c00-24d2-11ea-9b17-2629da608c6d.png)
 
 Deploy contracts to test network.
+
 ![Screenshot from 2020-04-10 03-04-40](https://user-images.githubusercontent.com/13261372/78942930-5709b500-7ad8-11ea-8557-511fd4e537cc.png)
 
 `ctrl+alt+t` - run unit testing.
