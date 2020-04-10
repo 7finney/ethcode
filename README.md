@@ -28,6 +28,11 @@ Deploy contracts to test network.
 ## Vyper support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
 
+## Use locally generated key-pair to use with test networks
+Ethcode signs all transactions using generated key-pair in your computer. Use `Generate key pair` button to generate one. Then go to respective test network faucet and get some testnet ether. For `Görli` use [goerli-faucet](https://goerli-faucet.slock.it).
+
+![Screenshot from 2020-04-11 01-02-38](https://user-images.githubusercontent.com/13261372/79018200-db1f7380-7b90-11ea-98f6-846f26405b35.png)
+
 ## Help
 Please help ethcode developers continue their work.
 
