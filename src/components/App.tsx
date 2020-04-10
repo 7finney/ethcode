@@ -117,8 +117,8 @@ class App extends Component<IProps, IState> {
       testNetAcc: [],
       testNets: [
         { value: 'ganache', label: 'Ganache' },
-        { value: '3', label: 'Ropsten' },
-        { value: '4', label: 'Rinkeby' },
+        // { value: '3', label: 'Ropsten' },
+        // { value: '4', label: 'Rinkeby' },
         { value: '5', label: "Görli" }
       ]
     };
