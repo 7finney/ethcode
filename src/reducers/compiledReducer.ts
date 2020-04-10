@@ -1,12 +1,14 @@
 import {
   SET_DEPLOYED_RESULT,
   CLEAR_DEPLOYED_RESULT,
-  SET_CALL_RESULT
+  SET_CALL_RESULT,
+  SET_TESTNET_CALL_RESULT
 } from "../actions/types";
 
 const initialState = {
   compiledresult: {},
-  callResult: {}
+  callResult: {},
+  testNetCallResult: {}
 };
 
 export default (state: any = initialState, action: any) => {
@@ -26,6 +28,11 @@ export default (state: any = initialState, action: any) => {
       return {
         ...state,
         callResult: action.payload
+      }
+    case SET_TESTNET_CALL_RESULT:
+      return {
+        ...state,
+        testNetCallResult: action.payload
       }
     default:
       return state;

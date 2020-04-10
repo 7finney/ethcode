@@ -47,7 +47,8 @@ try {
 const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
   // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
@@ -56,19 +57,22 @@ try {
 
 function handleLocal(pathString: string, filePath: any) {
   // if no relative/absolute path given then search in node_modules folder
-  if (
-    pathString &&
-    pathString.indexOf(".") !== 0 &&
-    pathString.indexOf("/") !== 0
-  ) {
+  if (pathString && pathString.indexOf(".") !== 0 && pathString.indexOf("/") !== 0) {
+    console.error("Error: Node Modules Import is not implemented yet!");
     // return handleNodeModulesImport(pathString, filePath, pathString)
     return;
   } else {
-    const o = { encoding: "UTF-8" };
-    // hack for compiler imports to work (do not change)
-    const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
-    const content = fs.readFileSync(p, o);
-    return content;
+    try {
+      const o = { encoding: "UTF-8" };
+      // hack for compiler imports to work (do not change)
+      const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
+      const content = fs.readFileSync(p, o);
+      return content;
+    } catch (error) {
+      // @ts-ignore
+      process.send({ error });
+      throw error;
+    }
   }
 }
 
@@ -80,9 +84,7 @@ function findImports(path: any) {
     {
       type: "local",
       match: (url: string) => {
-        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?(\w+\.sol)/g.exec(
-          url
-        );
+        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?(\w+\.sol)/g.exec(url);
       },
       handle: (match: Array<string>) => {
         return handleLocal(match[2], match[3]);
@@ -91,24 +93,28 @@ function findImports(path: any) {
   ];
   // @ts-ignore
   const urlResolver = new RemixURLResolver();
-  urlResolver
-    .resolve(path, FSHandler)
+  urlResolver.resolve(path, FSHandler)
     .then((data: any) => {
+      // this section usually executes after solc returns error file not found
       // @ts-ignore
       process.send({ data, path });
     })
     .catch((e: Error) => {
-      throw e;
+      // @ts-ignore
+      process.send({ error: e });
     });
+    return { 'error': 'Deferred import' };
 }
 
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
+  // TODO: error handling
   tx = JSON.parse(tx);
   const txData = formatters.inputTransactionFormatter(tx);
   // TODO: this method should not work for ganache and prysm and throw error
   const chainId = Number(testnetId) === 5 ? 6284 : Number(testnetId)
   const unsignedTransaction = new EthereumTx({
+    from: txData.from || '0x',
     nonce: txData.nonce || '0x',
     gasPrice: txData.gasPrice,
     gas: txData.gas || '0x',
@@ -140,8 +146,6 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
 
 
   call.on('data', (data: any) => {
-    console.log("transactionResult");
-    console.log(data);
     // @ts-ignore
     process.send({ transactionResult: data.result });
   });
@@ -158,35 +162,48 @@ process.on("message", async m => {
   var meta = new grpc.Metadata();
   meta.add('authorization', m.jwtToken);
   if (m.command === "compile") {
+    const vnReg = /(^[0-9].[0-9].[0-9]\+commit\..*?)+(\.)/g;
+    const vnRegArr = vnReg.exec(solc.version());
+    // @ts-ignore
+    const vn = 'v' + (vnRegArr ? vnRegArr[1] : '');
     const input = m.payload;
-    if (m.version === 'latest') {
+    if (m.version === vn || m.version === 'latest') {
       try {
-        const output = await solc.compile(JSON.stringify(input), findImports);
+        console.log("compiling with local version: ", solc.version());
+        const output = await solc.compile(JSON.stringify(input), { import: findImports });
         // @ts-ignore
         process.send({ compiled: output });
+        // we should not exit process here as findImports still might be running
       } catch (e) {
-        // @ts-ignore
-        process.send({ error: e });
-      }
-    }
-    solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-      if (err) {
-        // @ts-ignore
-        process.send({ error: e });
-      } else {
-        try {
-          const output = await newSolc.compile(
-            JSON.stringify(input),
-            findImports
-          );
-          // @ts-ignore
-          process.send({ compiled: output });
-        } catch (e) {
+          console.error(e);
           // @ts-ignore
           process.send({ error: e });
-        }
+          // @ts-ignore
+          process.exit(1);
       }
-    });
+    } else if (m.version !== vn) {
+        console.log("loading remote version " + m.version + "...");
+        solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
+          if (err) {
+            console.error(err);
+            // @ts-ignore
+            process.send({ error: e });
+          } else {
+            console.log("compiling with remote version ", newSolc.version());
+            try {
+              const output = await newSolc.compile(JSON.stringify(input), { import: findImports });
+              // @ts-ignore
+              process.send({ compiled: output });
+            } catch (e) {
+              console.error(e);
+              // @ts-ignore
+              process.send({ error: e });
+              // @ts-ignore
+              process.exit(1);
+            }
+          }
+        });
+    }
   }
   if (m.command === "fetch_compiler_verison") {
     axios
@@ -198,6 +215,8 @@ process.on("message", async m => {
       .catch((e: Error) => {
         // @ts-ignore
         process.send({ error: e });
+        // @ts-ignore
+        process.exit(1);
       });
   }
   if (m.command === "run-test") {
@@ -232,6 +251,8 @@ process.on("message", async m => {
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
+        // @ts-ignore
+        process.exit(1);
       } else {
         // @ts-ignore
         process.send({ response });
@@ -258,17 +279,25 @@ process.on("message", async m => {
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any) => {
       if (err) {
-        console.log("err", err);
+        console.error("err", err);
+        // @ts-ignore
+        process.send({ error: err });
+        // @ts-ignore
+        process.exit(1);
       }
     });
     call.on('data', (data: any) => {
       // @ts-ignore
-      process.send({ unsingedTx: data.result });
+      process.send({ unsignedTx: data.result });
       deployUnsignedTx(meta, data.result, pvtKey, m.testnetId);
     });
     call.on('error', function (err: Error) {
+      console.log(err);
+      
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
+      // @ts-ignore
+      process.exit(1);
     });
   }
   // send wei_value to a address
@@ -283,7 +312,11 @@ process.on("message", async m => {
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.log("err", err);
+        console.error("error", err);
+        // @ts-ignore
+        process.send({ error: err });
+        // @ts-ignore
+        process.exit(1);
       } else {
         // @ts-ignore
         process.send({ response });
@@ -337,8 +370,6 @@ process.on("message", async m => {
         testnetId: m.testnetId
       }
     };
-    // @ts-ignore
-    process.send({ help: m.jwtToken });
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
@@ -360,7 +391,7 @@ process.on("message", async m => {
     });
   }
   // Method call
-  if (m.command === "contract-method-call") {
+  if (m.command === "ganache-contract-method-call") {
     const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
       abi,
@@ -372,7 +403,7 @@ process.on("message", async m => {
     };
     const c = {
       callInterface: {
-        command: 'contract-method-call',
+        command: 'ganache-contract-method-call',
         payload: JSON.stringify(inp),
         testnetId: m.testnetId
       }
@@ -398,10 +429,11 @@ process.on("message", async m => {
     });
   }
 
-  // custom Method call
-  if (m.command === "custom-method-call") {
-    const { abi, address, methodName, params, gasSupply, deployAccount, pvtKey, from } = m.payload;
+  // testnet method call
+  if (m.command === "contract-method-call") {
+    const { from, abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
     const inp = {
+      from,
       abi,
       address,
       methodName,
@@ -411,7 +443,7 @@ process.on("message", async m => {
     };
     const c = {
       callInterface: {
-        command: 'custom-method-call',
+        command: 'contract-method-call',
         payload: JSON.stringify(inp),
         testnetId: m.testnetId
       }
@@ -419,20 +451,16 @@ process.on("message", async m => {
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         console.log("err", err);
-      } else {
         // @ts-ignore
-        process.send({ response });
+        process.send({ error: err });
       }
     });
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ callResult: data.result });
-      var rawTX = JSON.parse(data.result);
-      rawTX['from'] = from;
-      rawTX['to'] = address;
-      deployUnsignedTx(meta, rawTX, pvtKey);
+      // TODO: only send to unsignedTx is data.result is a transaction
       // @ts-ignore
-      // process.send({ deployedResult: data.result });
+      process.send({ unsignedTx: data.result });
     });
     call.on('end', function () {
       process.exit(0);

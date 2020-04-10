@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import JSONPretty from 'react-json-pretty';
 import "./deploy.css";
 import { connect } from "react-redux";
-import { setUnsgTxn } from "../../actions";
+import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { IAccount } from 'types';
 
 export interface IProps {
   setUnsgTxn: (unsgTxn: any) => void;
+  setTestnetCallResult: (result: any) => void;
   contractName: string;
   bytecode: any;
   abi: any;
@@ -16,6 +17,7 @@ export interface IProps {
   testNetId: string;
   currAccount: IAccount;
   unsignedTx: any;
+  testNetCallResult: any;
 }
 
 export interface IState {
@@ -26,6 +28,10 @@ export interface IState {
   gasEstimate: number;
   bytecode: any;
   abi: any;
+  methodName: string;
+  methodArray: object;
+  methodInputs: string;
+  contractAddress: string;
   txtHash: string;
   pvtKey: string;
   msg: string;
@@ -43,13 +49,17 @@ class Deploy extends Component<IProps, IState> {
       gasEstimate: 0,
       bytecode: {},
       abi: {},
+      methodName: '',
+      methodArray: {},
+      methodInputs: '',
+      contractAddress: '',
       txtHash: '',
       pvtKey: '',
       msg: 'initial',
       processMessage: ''
     };
-    this.handleBuildTxn = this.handleBuildTxn.bind(this);
-    this.getGasEstimate = this.getGasEstimate.bind(this);
+    this.handleMethodnameInput = this.handleMethodnameInput.bind(this);
+    this.handleMethodInputs = this.handleMethodInputs.bind(this);
   }
 
   componentDidMount() {
@@ -62,7 +72,6 @@ class Deploy extends Component<IProps, IState> {
       if (data.deployedResult) {
         this.setState({ txtHash: data.deployedResult });
       }
-
       if (data.gasEstimate) {
         this.setState({ gasEstimate: data.gasEstimate });
       }
@@ -70,22 +79,29 @@ class Deploy extends Component<IProps, IState> {
         // TODO: fix unsigned tx is not updated after once
         setUnsgTxn(data.buildTxResult);
       }
+      if (data.unsignedTx) {
+        setUnsgTxn(data.unsignedTx);
+      }
       if (data.pvtKey) {
         // TODO: fetching private key process needs fix
-        console.log("Setting active private key");
-        console.log(data.pvtKey);
         this.setState({ pvtKey: data.pvtKey, processMessage: '' }, () => {
           this.setState({ msg: 'process finshed' });
         });
       }
+      if (data.TestnetCallResult) {
+        this.props.setTestnetCallResult(data.TestnetCallResult);
+      }
+      if (data.error) {
+        this.setState({ error: data.error });
+      }
     });
     // get private key for corresponding public key
     if (currAccount.type === 'Local') {
-      this.setState({ processMessage: 'FETCHING PRIVATE KEY...' });
+      this.setState({ processMessage: 'Fetching private key...' });
       vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
     }
-
-    // Extract constructor input from abi
+    // Extract constructor input from abi and make array of all the methods input field.
+    let methodArray: object = {};
     for (let i in abi) {
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
@@ -93,27 +109,21 @@ class Deploy extends Component<IProps, IState> {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput });
-        break;
-      }
-    }
-  }
-
-  componentDidUpdate(prevProps: any) {
-    const { abi } = this.props;
-
-    // Update constructor input
-    const length = Object.keys(abi).length;
-    if (prevProps.abi !== abi) {
-      if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
-        for (let j in constructorInput) {
-          constructorInput[j]['value'] = "";
-        }
-        this.setState({ constructorInput });
       } else {
-        this.setState({ constructorInput: [] });
+        let methodname = abi[i]['name'];
+        // @ts-ignore
+        methodArray[methodname] = abi[i]['inputs'];
+        // @ts-ignore
+        for (let i in methodArray[methodname]) {
+          // @ts-ignore
+          if (methodArray[methodname].length > 0) {
+            // @ts-ignore
+            methodArray[methodname][i]['value'] = "";
+          }
+        }
       }
     }
+    this.setState({ methodArray: methodArray });
   }
 
   private handleConstructorInputChange = (event: any) => {
@@ -151,7 +161,7 @@ class Deploy extends Component<IProps, IState> {
     }
   };
 
-  getGasEstimate = () => {
+  private getGasEstimate = () => {
     const { vscode, bytecode, abi, testNetId } = this.props;
     const { constructorInput } = this.state;
 
@@ -170,16 +180,47 @@ class Deploy extends Component<IProps, IState> {
     }
   };
 
-  signAndDeploy = () => {
-    const { vscode, unsignedTx, testNetId, currAccount } = this.props;
-    const { pvtKey } = this.state;
+  private handleCall = () => {
+    const { vscode, abi, currAccount, testNetId } = this.props;
+    const { gasEstimate, methodName, contractAddress, methodInputs } = this.state;
     const publicKey = currAccount.value;
-    this.setState({ msg: 'Process start' });
+    vscode.postMessage({
+      command: "contract-method-call",
+      payload: {
+        from: publicKey,
+        abi,
+        address: contractAddress,
+        methodName: methodName,
+        params: JSON.parse(methodInputs),
+        gasSupply: gasEstimate,
+        deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
+      },
+      testNetId
+    });
+  }
+
+  private handleMethodnameInput(event: any) {
+    const { methodArray } = this.state;
+    // @ts-ignore
+    if(methodArray.hasOwnProperty(event.target.value)) {
+      this.setState({
+        methodName: event.target.value,
+        // @ts-ignore
+        methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t')
+      });
+    }
+  }
+  private handleMethodInputs(event: any) {
+    this.setState({ methodInputs: event.target.value });
+  }
+
+  signAndDeploy = () => {
+    const { vscode, unsignedTx, testNetId } = this.props;
+    const { pvtKey } = this.state;
     try {
       vscode.postMessage({
         command: "sign-deploy-tx",
         payload: {
-          from: publicKey,
           unsignedTx,
           pvtKey
         },
@@ -191,8 +232,8 @@ class Deploy extends Component<IProps, IState> {
   };
 
   render() {
-    const { contractName, currAccount, unsignedTx, testNetId } = this.props;
-    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage } = this.state;
+    const { contractName, currAccount, unsignedTx, testNetCallResult } = this.props;
+    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress } = this.state;
     const publicKey = currAccount.value;
 
     return (
@@ -227,7 +268,7 @@ class Deploy extends Component<IProps, IState> {
         </div>
         {/* Constructor */}
         <div>
-          <div className="form-container">
+          <div className="tag form-container">
             {
               (constructorInput && constructorInput.length > 0) &&
               <div>
@@ -252,15 +293,49 @@ class Deploy extends Component<IProps, IState> {
                         })
                       }
                     </div> :
-                    <div className="json_input_container" style={{ marginLeft: '-10px' }}>
-                      <textarea className="json_input custom_input_css" value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
+                    <div className="json_input_container">
+                      <textarea className="tag json_input custom_input_css" style={{ margin: '10px 0' }} value={JSON.stringify(constructorInput, null, '\t')} onChange={(e) => this.handleConstructorInputChange(e)}>
                       </textarea>
                     </div>
                 }
               </div>
             }
           </div>
+
+          {/* Call Function */}
+          <div className="tag">
+            <form onSubmit={this.handleCall} className="form_align" >
+              <input type="text" className="custom_input_css" placeholder='Enter contract address' style={{ marginRight: '5px' }} name="contractAddress" value={contractAddress} onChange={(e) => this.setState({ contractAddress: e.target.value })} />
+              <input type="text" className="custom_input_css" placeholder='Enter contract function name' name="methodName" onChange={this.handleMethodnameInput} />
+              {
+                methodName !== '' && methodInputs !== '[]' &&
+                <div className="json_input_container" style={{ margin: '10px 0' }}>
+                  <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
+                </div>
+              }
+              <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
+            </form>
+          </div>
         </div>
+
+        {/* Call function Result */}
+        {Object.entries(testNetCallResult).length > 0 &&
+          <div className="tag call-result">
+            <span>
+              {testNetCallResult ? 'Call result:' : 'Call error:'}
+            </span>
+            <div>
+              {testNetCallResult ?
+                <pre className="large-code">
+                  {testNetCallResult}
+                </pre> :
+                <pre className="large-code" style={{ color: 'red' }}>
+                  {JSON.stringify(error)}
+                </pre>
+              }
+            </div>
+          </div>}
+
         {/* Get gas estimate */}
         <div className="account_row">
           <div className="input-container">
@@ -310,7 +385,7 @@ class Deploy extends Component<IProps, IState> {
 
         <div className="account_row">
           <div className="tag">
-            {pvtKey && testNetId !== 'ganache' ?
+            {pvtKey && unsignedTx ?
               <button className="acc-button custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
               : <button disabled={true} className="acc-button button_disable custom_button_css" onClick={this.signAndDeploy}>Sign & Deploy</button>
             }
@@ -337,15 +412,13 @@ class Deploy extends Component<IProps, IState> {
         {/* Error Handle */}
         <div className="error_message">
           {
-            this.props.errors &&
-            <div>
-              <span className="contract-name inline-block highlight-success">
-                Error Message:
-            </span>
-              <div>
-                <pre className="large-code-error">{this.props.errors}</pre>
-              </div>
-            </div>
+            error &&
+            <pre className="large-code" style={{ color: 'red' }}>
+              {
+                // @ts-ignore
+                JSON.stringify(error)
+              }
+            </pre>
           }
         </div>
       </div>
@@ -354,13 +427,13 @@ class Deploy extends Component<IProps, IState> {
 }
 
 function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: any) {
-  const { compiledResult, callResult } = compiledStore;
+  const { compiledResult, testNetCallResult } = compiledStore;
   const { testNetId } = debugStore;
   const { currAccount } = accountStore;
   const { unsignedTx } = txStore;
   return {
     compiledResult,
-    callResult,
+    testNetCallResult,
     testNetId,
     currAccount,
     unsignedTx
@@ -368,5 +441,6 @@ function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: a
 }
 
 export default connect(mapStateToProps, {
-  setUnsgTxn
+  setUnsgTxn,
+  setTestnetCallResult
 })(Deploy);

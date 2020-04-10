@@ -3595,7 +3595,7 @@ debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
   dependencies:
     ms "^2.1.1"
 
-decamelize@^1.1.1, decamelize@^1.2.0:
+decamelize@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-1.2.0.tgz#f6534d15148269b20352e7bee26f501f9a191290"
   integrity sha1-9lNNFRSCabIDUue+4m9QH5oZEpA=
@@ -6501,7 +6501,7 @@ jsx-ast-utils@^2.0.1:
     array-includes "^3.0.3"
     object.assign "^4.1.0"
 
-keccak@1.4.0, keccak@^1.0.2:
+keccak@1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/keccak/-/keccak-1.4.0.tgz#572f8a6dbee8e7b3aa421550f9e6408ca2186f80"
   integrity sha512-eZVaCpblK5formjPjeTBik7TAg+pqnDrMHIffSvi9Lh7PQgM1+hSzakUeZFCk9DVVG0dacZJuaz2ntwlzZUIBw==
@@ -7555,7 +7555,7 @@ os-homedir@^1.0.0:
   resolved "https://registry.yarnpkg.com/os-homedir/-/os-homedir-1.0.2.tgz#ffbc4988336e0e833de0c168c7ef152121aa7fb3"
   integrity sha1-/7xJiDNuDoM94MFox+8VISGqf7M=
 
-os-locale@^3.0.0, os-locale@^3.1.0:
+os-locale@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/os-locale/-/os-locale-3.1.0.tgz#a802a6ee17f24c10483ab9935719cef4ed16bf1a"
   integrity sha512-Z8l3R4wYWM40/52Z+S265okfFj8Kt2cC2MKY+xNi3kFs+XGI7WXu/I309QQQYbRW4ijiZ+yxs9pqEhJh0DqW3Q==
@@ -9791,21 +9791,7 @@ sockjs@0.3.19:
     faye-websocket "^0.10.0"
     uuid "^3.0.1"
 
-solc@0.5.7:
-  version "0.5.7"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.7.tgz#d84697ac5cc63d9b2139bfb349cec64b64861cdc"
-  integrity sha512-DaYFzB3AAYjzPtgUl9LenPY2xjI3wG9k8U8T8YE/sXHVIoCirCY5MB6mhcFPgk/VyUtaWZPUCWiYS1E6RSiiqw==
-  dependencies:
-    command-exists "^1.2.8"
-    fs-extra "^0.30.0"
-    keccak "^1.0.2"
-    memorystream "^0.3.1"
-    require-from-string "^2.0.0"
-    semver "^5.5.0"
-    tmp "0.0.33"
-    yargs "^11.0.0"
-
-solc@^0.6.0:
+solc@0.6.4, solc@^0.6.0:
   version "0.6.4"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.6.4.tgz#4b0f11fccd6f5ef9802c6bb1c007abb16881c2ca"
   integrity sha512-HjUCys7ue9n7lGCa1XNf+wDdEY/wY64CpwnD4iPxW+BYYUX6ytwWXKitoolPXOOVxq4jewvwtL7Pngs+5k954A==
@@ -11282,11 +11268,6 @@ xtend@^4.0.0, xtend@~4.0.1:
   resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.2.tgz#bb72779f5fa465186b1f438f674fa347fdb5db54"
   integrity sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
 
-y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.1.tgz#6d15fba884c08679c0d77e88e7759e811e07fa41"
-  integrity sha1-bRX7qITAhnnA136I53WegR4H+kE=
-
 "y18n@^3.2.1 || ^4.0.0", y18n@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/y18n/-/y18n-4.0.0.tgz#95ef94f85ecc81d007c264e190a120f0a3c8566b"
@@ -11319,13 +11300,6 @@ yargs-parser@^13.1.1:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
 
-yargs-parser@^9.0.2:
-  version "9.0.2"
-  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-9.0.2.tgz#9ccf6a43460fe4ed40a9bb68f48d43b8a68cc077"
-  integrity sha1-nM9qQ0YP5O1Aqbto9I1DuKaMwHc=
-  dependencies:
-    camelcase "^4.1.0"
-
 yargs@12.0.2:
   version "12.0.2"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-12.0.2.tgz#fe58234369392af33ecbef53819171eff0f5aadc"
@@ -11343,24 +11317,6 @@ yargs@12.0.2:
     which-module "^2.0.0"
     y18n "^3.2.1 || ^4.0.0"
     yargs-parser "^10.1.0"
-
-yargs@^11.0.0:
-  version "11.1.1"
-  resolved "https://registry.yarnpkg.com/yargs/-/yargs-11.1.1.tgz#5052efe3446a4df5ed669c995886cc0f13702766"
-  integrity sha512-PRU7gJrJaXv3q3yQZ/+/X6KBswZiaQ+zOmdprZcouPYtQgvNU35i+68M4b1ZHLZtYFT5QObFLV+ZkmJYcwKdiw==
-  dependencies:
-    cliui "^4.0.0"
-    decamelize "^1.1.1"
-    find-up "^2.1.0"
-    get-caller-file "^1.0.1"
-    os-locale "^3.1.0"
-    require-directory "^2.1.1"
-    require-main-filename "^1.0.1"
-    set-blocking "^2.0.0"
-    string-width "^2.0.0"
-    which-module "^2.0.0"
-    y18n "^3.2.1"
-    yargs-parser "^9.0.2"
 
 yargs@^13.3.0:
   version "13.3.0"

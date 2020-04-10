@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./ContractDeploy.css";
 import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
+import { setCallResult } from "../../actions";
 import { IAccount } from "types";
 
 interface IProps {
@@ -18,6 +19,7 @@ interface IProps {
   deployAccount: IAccount;
   testNetId: string;
   openAdvanceDeploy: any;
+  setCallResult: (result: any) => void;
 }
 interface IState {
   constructorInput: object[];
@@ -26,6 +28,7 @@ interface IState {
   deployed: object;
   methodName: string;
   deployedAddress: string;
+  methodArray: object;
   methodInputs: string;
   testNetId: string;
   disable: boolean;
@@ -39,6 +42,7 @@ class ContractDeploy extends Component<IProps, IState> {
     deployed: {},
     methodName: '',
     deployedAddress: '',
+    methodArray: {},
     methodInputs: '',
     testNetId: '',
     disable: false
@@ -59,6 +63,19 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ testNetId: this.props.testNetId });
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
+    
+    window.addEventListener("message", event => {
+      const { data } = event;
+
+      if (data.ganacheCallResult) {
+        this.props.setCallResult(data.ganacheCallResult);
+      }
+      if (data.error) {
+        this.setState({ error: data.error });
+      }
+    });
+
+    let methodArray: object = {};
     for (let i in abi) {
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
@@ -66,12 +83,24 @@ class ContractDeploy extends Component<IProps, IState> {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
-        break;
+      } else {
+        let methodname = abi[i]['name'];
+        // @ts-ignore
+        methodArray[methodname] = abi[i]['inputs'];
+        // @ts-ignore
+        for (let i in methodArray[methodname]) {
+          // @ts-ignore
+          if(methodArray[methodname].length > 0) {
+            // @ts-ignore
+            methodArray[methodname][i]['value'] = "";
+          }
+        }
       }
     }
+    this.setState({ methodArray: methodArray });
   }
   componentDidUpdate(prevProps: any) {
-    const { gasEstimate, deployedResult, error, abi } = this.props;
+    const { gasEstimate, deployedResult, error, abi, callResult } = this.props;
     if (this.props.testNetId !== this.state.testNetId && this.props.testNetId !== 'ganache') {
       this.setState({ disable: true });
     } else if (this.props.testNetId !== this.state.testNetId) {
@@ -89,19 +118,6 @@ class ContractDeploy extends Component<IProps, IState> {
     }
     else if ((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
       this.setState({ gasSupply: gasEstimate });
-    }
-
-    const length = Object.keys(abi).length;
-    if (prevProps.abi !== abi) {
-      if (abi[length - 1].type === 'constructor' && abi[length - 1].inputs.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(abi[abi.length - 1].inputs));
-        for (let j in constructorInput) {
-          constructorInput[j]['value'] = "";
-        }
-        this.setState({ constructorInput: constructorInput });
-      } else {
-        this.setState({ constructorInput: [] });
-      }
     }
   }
   private handleDeploy() {
@@ -124,7 +140,7 @@ class ContractDeploy extends Component<IProps, IState> {
     const { gasSupply, methodName, deployedAddress, methodInputs, testNetId } = this.state;
     this.setState({ error: null });
     vscode.postMessage({
-      command: "contract-method-call",
+      command: "ganache-contract-method-call",
       payload: {
         abi,
         address: deployedAddress,
@@ -172,21 +188,14 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ deployedAddress: event.target.value });
   }
   private handleMethodnameInput(event: any) {
-    const { abi } = this.props;
-    for (let obj in abi) {
-      // @ts-ignore
-      if (abi[obj]['name'] === event.target.value) {
-        var funcObj: object = abi[obj];
-        this.setState({ methodName: event.target.value });
+    const { methodArray } = this.state;
+    // @ts-ignore
+    if(methodArray.hasOwnProperty(event.target.value)) {
+      this.setState({
+        methodName: event.target.value,
         // @ts-ignore
-        for (let i in funcObj['inputs']) {
-          // @ts-ignore
-          funcObj['inputs'][i]['value'] = "";
-        }
-        // @ts-ignore
-        this.setState({ methodInputs: JSON.stringify(funcObj['inputs'], null, '\t') });
-        break;
-      }
+        methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t')
+      });
     }
   }
   private handleMethodInputs(event: any) {
@@ -287,24 +296,13 @@ class ContractDeploy extends Component<IProps, IState> {
             <span>
               {/* 
               // @ts-ignore */}
-              {callResult && callResult.callResult ? 'Call result:' : 'Call error:'}
+              {(callResult || (callResult && callResult.callResult)) ? 'Call result:' : 'Call error:'}
             </span>
             <div>
-              {/* 
-              // @ts-ignore */}
-              {callResult && callResult.callResult ?
-                <pre className="large-code">
-                  {
-                    // @ts-ignore
-                    callResult.callResult
-                  }
-                </pre> :
-                <pre className="large-code" style={{ color: 'red' }}>
-                  {
-                    // @ts-ignore
-                    JSON.stringify(callResult.error)
-                  }
-                </pre>
+              {/* TODO: add better way to show result and error */}
+              {
+                callResult &&
+                <pre className="large-code">{ callResult }</pre>
               }
             </div>
           </div>
@@ -337,4 +335,6 @@ function mapStateToProps({ debugStore, compiledStore }: any) {
   };
 }
 
-export default connect(mapStateToProps, {})(ContractDeploy);
+export default connect(mapStateToProps, {
+  setCallResult
+})(ContractDeploy);

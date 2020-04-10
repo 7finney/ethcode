@@ -1,23 +1,37 @@
-# Ethereum IDE in VSCode
+# Ethereum plugin for VSCode
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/Ethereum-Devtools-Developers-Studio/ethcode)
+
+Ethcode is a vscode plugin for compiling, deploy, execute solidity and vyper smart contracts/programs in Ethereum blockchian. It supports multiple test networks. Ethcode has inbuilt support for Remix transaction debug and solidity unit testing.
 
 ## System support
 * Linux, Mac, Windows
 
 ## Usage instructions
 `ctrl+alt+e` - activate the plugin.
-![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/65820327-15ed3a00-e245-11e9-9836-606bb1a71de6.png)
+
+![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
 
 `ctrl+alt+c` - compile contracts.
+
 ![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/71320562-e57b0c00-24d2-11ea-9b17-2629da608c6d.png)
 
+Deploy contracts to test network.
+
+![Screenshot from 2020-04-10 03-04-40](https://user-images.githubusercontent.com/13261372/78942930-5709b500-7ad8-11ea-8557-511fd4e537cc.png)
+
 `ctrl+alt+t` - run unit testing.
-![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/67867273-26e4e000-fb50-11e9-9956-5f06e27c5a29.png)
+
+![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/78938685-448b7d80-7ad0-11ea-8248-d2494269b52e.png)
 
 **Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
 
 ## Vyper support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
+
+## Use locally generated key-pair to use with test networks
+Ethcode signs all transactions using generated key-pair in your computer. Use `Generate key pair` button to generate one. Then go to respective test network faucet and get some testnet ether. For `Görli` use [goerli-faucet](https://goerli-faucet.slock.it).
+
+![Screenshot from 2020-04-11 01-02-38](https://user-images.githubusercontent.com/13261372/79018200-db1f7380-7b90-11ea-98f6-846f26405b35.png)
 
 ## Help
 Please help ethcode developers continue their work.

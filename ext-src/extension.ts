@@ -174,7 +174,7 @@ class ReactPanel {
           this.version = message.version;
         } else if (message.command === 'run-deploy') {
           this.runDeploy(message.payload, message.testNetId);
-        } else if (message.command === 'contract-method-call') {
+        } else if (message.command.endsWith('contract-method-call')) {
           this.runContractCall(message.payload, message.testNetId);
         } else if (message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload, message.testNetId);
@@ -310,7 +310,9 @@ class ReactPanel {
       version: this.version
     });
     solcWorker.on("message", (m: any) => {
-      if (m.data && m.path) {
+      if (m.error) {
+        errorToast(m.error);
+      } else if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content
         };
@@ -319,22 +321,22 @@ class ReactPanel {
           payload: input,
           version: this.version
         });
-      }
-      if (m.compiled) {
+      } else if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
-        this._panel.webview.postMessage({ compiled: m.compiled, sources, newCompile: true, testPanel: 'main' });
-        solcWorker.kill();
-      }
-      if (m.processMessage) {
+        this._panel.webview.postMessage({ compiled: m.compiled, sources, testPanel: 'main' });
+      } else if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
     });
     solcWorker.on("error", (error: Error) => {
       console.log("%c Compile worker process exited with error" + `${error.message}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
+      solcWorker.kill();
     });
     solcWorker.on("exit", (code: number, signal: string) => {
       console.log("%c Compile worker process exited with " + `code ${code} and signal ${signal}`, "background: rgba(36, 194, 203, 0.3); color: #EF525B");
-      this._panel.webview.postMessage({ message: `Error code ${code} : Error signal ${signal}` });
+      this._panel.webview.postMessage({ processMessage: `Error code ${code} : Error signal ${signal}` });
+      solcWorker.kill();
+      // TODO: now if we kill process anywhere except here things fails randomly, (todo) properly exit process
     });
   }
   private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
@@ -347,7 +349,7 @@ class ReactPanel {
       source: sources,
       version: this.version
     });
-    vyperWorker.on('message', (m) => {
+    vyperWorker.on('message', (m: any) => {
       if (m.error) {
         errorToast(m.error);
       }
@@ -488,15 +490,23 @@ class ReactPanel {
   }
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
-    var f: boolean = true;
+    console.log("Running contract call");
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
-      this._panel.webview.postMessage({ callResult: m });
+      if (m.error) {
+        this._panel.webview.postMessage({ errors: m.error });  
+      } else if (m.unsignedTx) {
+        this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
+      } else {
+        this._panel.webview.postMessage({ ganacheCallResult: m.callResult });
+      }
     });
-    if (f) {
-      callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
+    if (testNetId === 'ganache') {
+      console.log("testnet Id: " + testNetId);
+      callWorker.send({ command: "ganache-contract-method-call", payload, jwtToken, testnetId: testNetId });
     } else {
-      callWorker.send({ command: "custom-method-call", payload, jwtToken, testnetId: testNetId });
+      console.log("testnet Id: " + testNetId);
+      callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
     }
   }
   // Get gas estimates
@@ -527,8 +537,8 @@ class ReactPanel {
   private sendEtherSigned(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
-      if (m.unsingedTx) {
-        this._panel.webview.postMessage({ unsingedTx: m.unsingedTx });
+      if (m.unsignedTx) {
+        this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
