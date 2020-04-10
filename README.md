@@ -1,5 +1,7 @@
-# Ethereum IDE in VSCode
+# Ethereum plugin for VSCode
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/Ethereum-Devtools-Developers-Studio/ethcode)
+
+Ethcode is a vscode plugin for compiling, deploy, execute solidity and vyper smart contracts/programs in Ethereum blockchian. It supports multiple test networks. Ethcode has inbuilt support for Remix transaction debug and solidity unit testing.
 
 ## System support
 * Linux, Mac, Windows
