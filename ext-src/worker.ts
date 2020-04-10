@@ -292,6 +292,8 @@ process.on("message", async m => {
       deployUnsignedTx(meta, data.result, pvtKey, m.testnetId);
     });
     call.on('error', function (err: Error) {
+      console.log(err);
+      
       // @ts-ignore
       process.send({ error: err });
       // @ts-ignore
