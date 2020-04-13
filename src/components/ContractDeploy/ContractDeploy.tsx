@@ -4,6 +4,7 @@ import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
 import { setCallResult } from "../../actions";
 import { IAccount } from "types";
+import { Button } from '../common/ui';
 
 interface IProps {
   contractName: string;
@@ -45,7 +46,7 @@ class ContractDeploy extends Component<IProps, IState> {
     methodArray: {},
     methodInputs: '',
     testNetId: '',
-    disable: false
+    disable: true
   };
   constructor(props: IProps, state: IState) {
     super(props);
@@ -117,7 +118,7 @@ class ContractDeploy extends Component<IProps, IState> {
       this.setState({ deployed: deployedObj, deployedAddress: deployedObj.contractAddress });
     }
     else if ((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
-      this.setState({ gasSupply: gasEstimate });
+      this.setState({ gasSupply: gasEstimate, disable: false });
     }
   }
   private handleDeploy() {
@@ -155,6 +156,7 @@ class ContractDeploy extends Component<IProps, IState> {
   private handleGetGasEstimate() {
     const { vscode, bytecode, abi } = this.props;
     const { constructorInput, testNetId } = this.state;
+    this.setState({ disable: true });
     try {
       vscode.postMessage({
         command: "run-get-gas-estimate",
@@ -202,7 +204,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodInputs: event.target.value });
   }
   public render() {
-    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
+    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, disable } = this.state;
     const { callResult, testNetId } = this.props;
     return (
       <div>
@@ -248,18 +250,18 @@ class ContractDeploy extends Component<IProps, IState> {
             </div>
             <div style={{ marginBottom: '5px' }}>
               {testNetId === 'ganache' ?
-                <input type="submit" className={'custom_button_css'} value="Deploy" /> :
-                <button
-                  className={'custom_button_css'}
+                <Button ButtonType="input" disabled={disable} value="Deploy" /> :
+                <Button
+                  disabled={disable}
                   onClick={this.props.openAdvanceDeploy}>
                   Advance Deploy
-                </button>
+                </Button>
               }
             </div>
           </form>
           <div>
             <form onSubmit={this.handleGetGasEstimate}>
-              <input type="submit" className="custom_button_css" value="Get gas estimate" />
+              <Button ButtonType="input" disabled={!disable} value="Get gas estimate" />
             </form>
           </div>
           <div>

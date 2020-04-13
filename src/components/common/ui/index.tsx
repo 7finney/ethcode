@@ -8,9 +8,22 @@ export const Input = ({ ...props }) => {
   )
 }
 
-export const Button = ({ ...props }) => {
+export const Button = (props: any) => {
+  let Button = null;
+
+  switch (props.ButtonType) {
+    case 'input': 
+      Button = <input type='submit' className={props.disabled ? 'custom_button_css button_disable': 'custom_button_css'} disabled={ props.disabled } {...props} />
+      break;
+    case 'button':
+      Button = <button className={props.disabled ? 'custom_button_css button_disable': 'custom_button_css'}  disabled={ props.disabled } {...props} ></button>
+      break;
+    default:
+      Button = <button className={props.disabled ? 'custom_button_css button_disable': 'custom_button_css'}  disabled={ props.disabled } {...props} ></button>
+  }
+
   return (
-    <button className={'custom_button_css'} {...props} ></button>
+    Button
   )
 }
 
