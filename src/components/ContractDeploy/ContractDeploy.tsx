@@ -60,6 +60,8 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 
   componentDidMount() {
+    console.log("Mounted");
+    
     this.setState({ testNetId: this.props.testNetId });
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
@@ -84,7 +86,12 @@ class ContractDeploy extends Component<IProps, IState> {
         }
         this.setState({ constructorInput: constructorInput });
       } else {
+        console.log("Abi");
+        
+        console.dir(JSON.stringify(abi[i]));
+        // TODO: bellow strategy to extract method names and inputs should be improved
         let methodname = abi[i]['name'];
+        // if we have inputs
         // @ts-ignore
         methodArray[methodname] = abi[i]['inputs'];
         // @ts-ignore
@@ -95,6 +102,7 @@ class ContractDeploy extends Component<IProps, IState> {
             methodArray[methodname][i]['value'] = "";
           }
         }
+
       }
     }
     this.setState({ methodArray: methodArray });
@@ -147,6 +155,8 @@ class ContractDeploy extends Component<IProps, IState> {
         methodName: methodName,
         params: JSON.parse(methodInputs),
         gasSupply,
+        // TODO: add value supply in case of payable functions
+        value: value,
         deployAccount: deployAccount.checksumAddr ? deployAccount.checksumAddr : deployAccount.value
       },
       testNetId
