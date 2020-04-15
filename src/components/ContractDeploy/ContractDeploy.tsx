@@ -26,13 +26,14 @@ interface IState {
   gasSupply: number;
   error: Error | null;
   deployed: object;
-  methodName: string;
+  methodName: string | null;
   deployedAddress: string;
   methodArray: object;
   methodInputs: string;
   testNetId: string;
   disable: boolean;
   isPayable: boolean;
+  payableAmount: any;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -41,14 +42,14 @@ class ContractDeploy extends Component<IProps, IState> {
     gasSupply: 0,
     error: null,
     deployed: {},
-    // @ts-ignore
     methodName: null,
     deployedAddress: '',
     methodArray: {},
     methodInputs: '[]',
     testNetId: '',
     disable: false,
-    isPayable: false
+    isPayable: false,
+    payableAmount: null
   };
   constructor(props: IProps, state: IState) {
     super(props);
@@ -63,8 +64,6 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    console.log("Mounted");
-    
     this.setState({ testNetId: this.props.testNetId });
     this.setState({ deployed: this.props.compiledResult });
     const { abi } = this.props;
@@ -81,35 +80,23 @@ class ContractDeploy extends Component<IProps, IState> {
     });
 
     let methodArray: object = {};
-    console.log("step 1");
-    console.log(JSON.stringify(abi));
     
     for (let i in abi) {
-      console.log("step 2");
-      console.log(JSON.stringify(abi[i]));
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-        console.log("step 3");
-        console.log(JSON.stringify(abi[i]));
         for (let j in constructorInput) {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
-      } else if(abi[i].type !== 'constructor'){
-        console.log("Abi");
-        console.log(abi[i]['name']);
+      } else if(abi[i].type !== 'constructor') {
         // TODO: bellow strategy to extract method names and inputs should be improved
         const methodname: string = abi[i]['name'];
-        console.log(methodname);
         
         // if we have inputs
         // @ts-ignore
         methodArray[methodname] = {};
         // @ts-ignore
         if(abi[i].inputs.length > 0) {
-          console.log("here");
-          console.log("methodname: ");
-          console.log(methodname);
           // @ts-ignore
           methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
           // @ts-ignore
@@ -166,7 +153,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleCall() {
     const { vscode, abi, deployAccount } = this.props;
-    const { gasSupply, methodName, deployedAddress, methodInputs, testNetId } = this.state;
+    const { gasSupply, methodName, deployedAddress, methodInputs, testNetId, payableAmount } = this.state;
     this.setState({ error: null });
     vscode.postMessage({
       command: "ganache-contract-method-call",
@@ -177,7 +164,7 @@ class ContractDeploy extends Component<IProps, IState> {
         params: JSON.parse(methodInputs),
         gasSupply,
         // TODO: add value supply in case of payable functions
-        value: "value",
+        value: payableAmount,
         deployAccount: deployAccount.checksumAddr ? deployAccount.checksumAddr : deployAccount.value
       },
       testNetId
@@ -201,7 +188,9 @@ class ContractDeploy extends Component<IProps, IState> {
     }
   }
   private handleChange(event: any) {
-    this.setState({ gasSupply: event.target.value });
+    const { target: { name, value } } = event;
+    // @ts-ignore
+    this.setState({ [name]: value });
   }
   private handleConstructorInputChange(event: any) {
     const { constructorInput } = this.state;
@@ -236,7 +225,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodInputs: event.target.value });
   }
   public render() {
-    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress } = this.state;
+    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, isPayable, payableAmount } = this.state;
     const { callResult, testNetId } = this.props;
     return (
       <div>
@@ -276,8 +265,8 @@ class ContractDeploy extends Component<IProps, IState> {
               <label className="label_name" style={{ marginRight: '10px' }}>Gas Supply:</label>
               {
                 (gasSupply > 0) ?
-                  <input type="number" placeholder='click on "get gas estimate" ' className="input custom_input_css" value={gasSupply} id="deployGas" onChange={(e) => this.handleChange(e)} /> :
-                  <input type="number" placeholder='click on "get gas estimate" ' className="input custom_input_css" value="" id="deployGas" onChange={(e) => this.handleChange(e)} />
+                  <input type="number" placeholder='click on "get gas estimate" ' className="input custom_input_css" value={gasSupply} id="deployGas" name="gasSupply" onChange={(e) => this.handleChange(e)} /> :
+                  <input type="number" placeholder='click on "get gas estimate" ' className="input custom_input_css" value="" id="deployGas" name="gasSupply" onChange={(e) => this.handleChange(e)} />
               }
             </div>
             <div style={{ marginBottom: '5px' }}>
@@ -305,6 +294,9 @@ class ContractDeploy extends Component<IProps, IState> {
                 <div className="json_input_container" style={{ marginTop: '10px' }}>
                   <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>
+              }
+              {isPayable &&
+              <input type="number" className="custom_input_css" placeholder='Enter payable amount' style={{ margin: '5px' }} name="payableAmount" value={payableAmount} onChange={(e) =>this.handleChange(e)} />
               }
               <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
             </form>
