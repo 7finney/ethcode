@@ -96,7 +96,7 @@ class ContractDeploy extends Component<IProps, IState> {
         // @ts-ignore
         methodArray[methodname] = {};
         // @ts-ignore
-        if(abi[i].inputs.length > 0) {
+        if(abi[i].inputs && abi[i].inputs.length > 0) {
           // @ts-ignore
           methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
           // @ts-ignore
