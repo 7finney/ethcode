@@ -41,7 +41,8 @@ class ContractDeploy extends Component<IProps, IState> {
     gasSupply: 0,
     error: null,
     deployed: {},
-    methodName: '',
+    // @ts-ignore
+    methodName: null,
     deployedAddress: '',
     methodArray: {},
     methodInputs: '',
@@ -80,14 +81,21 @@ class ContractDeploy extends Component<IProps, IState> {
     });
 
     let methodArray: object = {};
+    console.log("step 1");
+    console.log(JSON.stringify(abi));
+    
     for (let i in abi) {
+      console.log("step 2");
+      console.log(JSON.stringify(abi[i]));
       if (abi[i].type === 'constructor' && abi[i].inputs.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
+        console.log("step 3");
+        console.log(JSON.stringify(abi[i]));
         for (let j in constructorInput) {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
-      } else {
+      } else if (abi[i].inputs.length > 0 && abi[i].type !== 'constructor') {
         console.log("Abi");
         
         console.dir(JSON.stringify(abi[i]));
@@ -205,7 +213,7 @@ class ContractDeploy extends Component<IProps, IState> {
     const { methodArray } = this.state;
     const methodName: string = event.target.value;
     // @ts-ignore
-    if(methodArray.hasOwnProperty(methodName)) {
+    if(methodName && methodArray.hasOwnProperty(methodName)) {
       this.setState({
         methodName,
         // @ts-ignore

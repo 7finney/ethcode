@@ -50,7 +50,8 @@ class Deploy extends Component<IProps, IState> {
       gasEstimate: 0,
       bytecode: {},
       abi: {},
-      methodName: '',
+      // @ts-ignore
+      methodName: null,
       methodArray: {},
       methodInputs: '',
       contractAddress: '',
@@ -111,7 +112,7 @@ class Deploy extends Component<IProps, IState> {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput });
-      } else {
+      } else if (abi[i].inputs.length > 0) {
         let methodname = abi[i]['name'];
         // @ts-ignore
         methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
@@ -207,7 +208,7 @@ class Deploy extends Component<IProps, IState> {
     const { methodArray } = this.state;
     const methodName: string = event.target.value;
     // @ts-ignore
-    if(methodArray.hasOwnProperty(event.target.value)) {
+    if(methodName && methodArray.hasOwnProperty(event.target.value)) {
       this.setState({
         methodName,
         // @ts-ignore
