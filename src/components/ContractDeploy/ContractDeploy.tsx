@@ -45,7 +45,7 @@ class ContractDeploy extends Component<IProps, IState> {
     methodName: null,
     deployedAddress: '',
     methodArray: {},
-    methodInputs: '',
+    methodInputs: '[]',
     testNetId: '',
     disable: false,
     isPayable: false
@@ -95,26 +95,35 @@ class ContractDeploy extends Component<IProps, IState> {
           constructorInput[j]['value'] = "";
         }
         this.setState({ constructorInput: constructorInput });
-      } else if (abi[i].inputs.length > 0 && abi[i].type !== 'constructor') {
+      } else if(abi[i].type !== 'constructor'){
         console.log("Abi");
-        
-        console.dir(JSON.stringify(abi[i]));
+        console.log(abi[i]['name']);
         // TODO: bellow strategy to extract method names and inputs should be improved
-        let methodname = abi[i]['name'];
+        const methodname: string = abi[i]['name'];
+        console.log(methodname);
+        
         // if we have inputs
         // @ts-ignore
-        methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
+        methodArray[methodname] = {};
         // @ts-ignore
-        methodArray[methodname]['stateMutability'] = abi[i]['stateMutability'];
-        // @ts-ignore
-        for (let i in methodArray[methodname]) {
+        if(abi[i].inputs.length > 0) {
+          console.log("here");
+          console.log("methodname: ");
+          console.log(methodname);
           // @ts-ignore
-          if(methodArray[methodname].length > 0) {
+          methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
+          // @ts-ignore
+          for (let i in methodArray[methodname]['inputs']) {
             // @ts-ignore
             methodArray[methodname]['inputs'][i]['value'] = "";
           }
         }
-
+        else {
+          // @ts-ignore
+          methodArray[methodname]['inputs'] = [];
+        }
+        // @ts-ignore
+        methodArray[methodname]['stateMutability'] = abi[i]['stateMutability'];
       }
     }
     this.setState({ methodArray: methodArray });
@@ -219,7 +228,7 @@ class ContractDeploy extends Component<IProps, IState> {
         // @ts-ignore
         methodInputs: JSON.stringify(methodArray[methodName]['inputs'], null, '\t'),
         // @ts-ignore
-        isPayable: (methodArray[methodName]['stateMutability'] === "payable")
+        isPayable: (methodArray[methodName]['stateMutability'] === "payable") ? true : false
       });
     }
   }
