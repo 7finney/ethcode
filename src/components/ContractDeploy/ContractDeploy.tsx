@@ -160,7 +160,7 @@ class ContractDeploy extends Component<IProps, IState> {
         params: JSON.parse(methodInputs),
         gasSupply,
         // TODO: add value supply in case of payable functions
-        value: value,
+        value: "value",
         deployAccount: deployAccount.checksumAddr ? deployAccount.checksumAddr : deployAccount.value
       },
       testNetId
@@ -203,7 +203,7 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleMethodnameInput(event: any) {
     const { methodArray } = this.state;
-    const methodName = event.target.value;
+    const methodName: string = event.target.value;
     // @ts-ignore
     if(methodArray.hasOwnProperty(methodName)) {
       this.setState({

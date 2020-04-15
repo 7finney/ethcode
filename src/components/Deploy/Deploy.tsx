@@ -205,12 +205,13 @@ class Deploy extends Component<IProps, IState> {
 
   private handleMethodnameInput(event: any) {
     const { methodArray } = this.state;
+    const methodName: string = event.target.value;
     // @ts-ignore
     if(methodArray.hasOwnProperty(event.target.value)) {
       this.setState({
-        methodName: event.target.value,
+        methodName,
         // @ts-ignore
-        methodInputs: JSON.stringify(methodArray[event.target.value]['inputs'], null, '\t'),
+        methodInputs: JSON.stringify(methodArray[methodName]['inputs'], null, '\t'),
         // @ts-ignore diptajit please check if this works properly
         isPayable: (methodArray[methodName]['stateMutability'] === "payable")
       });
