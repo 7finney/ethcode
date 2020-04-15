@@ -36,6 +36,7 @@ export interface IState {
   pvtKey: string;
   msg: string;
   processMessage: string;
+  isPayable: boolean;
 }
 
 class Deploy extends Component<IProps, IState> {
@@ -56,7 +57,8 @@ class Deploy extends Component<IProps, IState> {
       txtHash: '',
       pvtKey: '',
       msg: 'initial',
-      processMessage: ''
+      processMessage: '',
+      isPayable: false
     };
     this.handleMethodnameInput = this.handleMethodnameInput.bind(this);
     this.handleMethodInputs = this.handleMethodInputs.bind(this);
@@ -112,13 +114,15 @@ class Deploy extends Component<IProps, IState> {
       } else {
         let methodname = abi[i]['name'];
         // @ts-ignore
-        methodArray[methodname] = abi[i]['inputs'];
+        methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
+        // @ts-ignore
+        methodArray[methodname]['stateMutability'] = abi[i]['stateMutability'];
         // @ts-ignore
         for (let i in methodArray[methodname]) {
           // @ts-ignore
           if (methodArray[methodname].length > 0) {
             // @ts-ignore
-            methodArray[methodname][i]['value'] = "";
+            methodArray[methodname]['inputs'][i]['value'] = "";
           }
         }
       }
@@ -206,7 +210,9 @@ class Deploy extends Component<IProps, IState> {
       this.setState({
         methodName: event.target.value,
         // @ts-ignore
-        methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t')
+        methodInputs: JSON.stringify(methodArray[event.target.value]['inputs'], null, '\t'),
+        // @ts-ignore diptajit please check if this works properly
+        isPayable: (methodArray[methodName]['stateMutability'] === "payable")
       });
     }
   }

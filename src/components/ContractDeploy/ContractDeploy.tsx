@@ -32,6 +32,7 @@ interface IState {
   methodInputs: string;
   testNetId: string;
   disable: boolean;
+  isPayable: boolean;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -45,7 +46,8 @@ class ContractDeploy extends Component<IProps, IState> {
     methodArray: {},
     methodInputs: '',
     testNetId: '',
-    disable: false
+    disable: false,
+    isPayable: false
   };
   constructor(props: IProps, state: IState) {
     super(props);
@@ -93,13 +95,15 @@ class ContractDeploy extends Component<IProps, IState> {
         let methodname = abi[i]['name'];
         // if we have inputs
         // @ts-ignore
-        methodArray[methodname] = abi[i]['inputs'];
+        methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
+        // @ts-ignore
+        methodArray[methodname]['stateMutability'] = abi[i]['stateMutability'];
         // @ts-ignore
         for (let i in methodArray[methodname]) {
           // @ts-ignore
           if(methodArray[methodname].length > 0) {
             // @ts-ignore
-            methodArray[methodname][i]['value'] = "";
+            methodArray[methodname]['inputs'][i]['value'] = "";
           }
         }
 
@@ -199,12 +203,15 @@ class ContractDeploy extends Component<IProps, IState> {
   }
   private handleMethodnameInput(event: any) {
     const { methodArray } = this.state;
+    const methodName = event.target.value;
     // @ts-ignore
-    if(methodArray.hasOwnProperty(event.target.value)) {
+    if(methodArray.hasOwnProperty(methodName)) {
       this.setState({
-        methodName: event.target.value,
+        methodName,
         // @ts-ignore
-        methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t')
+        methodInputs: JSON.stringify(methodArray[methodName]['inputs'], null, '\t'),
+        // @ts-ignore
+        isPayable: (methodArray[methodName]['stateMutability'] === "payable")
       });
     }
   }
