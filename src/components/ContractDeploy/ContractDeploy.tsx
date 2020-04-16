@@ -45,7 +45,7 @@ class ContractDeploy extends Component<IProps, IState> {
     methodName: null,
     deployedAddress: '',
     methodArray: {},
-    methodInputs: '[]',
+    methodInputs: '',
     testNetId: '',
     disable: false,
     isPayable: false,
@@ -227,6 +227,11 @@ class ContractDeploy extends Component<IProps, IState> {
   public render() {
     const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, isPayable, payableAmount } = this.state;
     const { callResult, testNetId } = this.props;
+
+    console.log("qqqqqqqqqqqqqqqqqqqq");
+    console.log(JSON.stringify(methodInputs));
+    
+
     return (
       <div>
         <div>
@@ -290,7 +295,7 @@ class ContractDeploy extends Component<IProps, IState> {
               <input type="text" className="custom_input_css" placeholder='Enter contract address' style={{ marginRight: '5px' }} name="contractAddress" value={deployedAddress} onChange={this.handleContractAddrInput} />
               <input type="text" className="custom_input_css" placeholder='Enter contract function name' name="methodName" onChange={this.handleMethodnameInput} />
               {
-                methodName !== '' && methodInputs !== '[]' &&
+                methodName !== '' && methodInputs !== '' && methodInputs !== '[]' &&
                 <div className="json_input_container" style={{ marginTop: '10px' }}>
                   <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>
