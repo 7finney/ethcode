@@ -33,6 +33,8 @@ interface IState {
   methodInputs: string;
   testNetId: string;
   disable: boolean;
+  gasEstimateToggle: boolean;
+  callFunctionToggle: boolean;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -46,7 +48,9 @@ class ContractDeploy extends Component<IProps, IState> {
     methodArray: {},
     methodInputs: '',
     testNetId: '',
-    disable: true
+    disable: true,
+    gasEstimateToggle: false,
+    callFunctionToggle: true
   };
   constructor(props: IProps, state: IState) {
     super(props);
@@ -70,6 +74,7 @@ class ContractDeploy extends Component<IProps, IState> {
 
       if (data.ganacheCallResult) {
         this.props.setCallResult(data.ganacheCallResult);
+        this.setState({ callFunctionToggle: false });
       }
       if (data.error) {
         this.setState({ error: data.error });
@@ -115,16 +120,16 @@ class ContractDeploy extends Component<IProps, IState> {
     }
     else if (deployedResult !== prevProps.deployedResult) {
       const deployedObj = JSON.parse(deployedResult);
-      this.setState({ deployed: deployedObj, deployedAddress: deployedObj.contractAddress });
+      this.setState({ deployed: deployedObj, deployedAddress: deployedObj.contractAddress, disable: false });
     }
     else if ((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
-      this.setState({ gasSupply: gasEstimate, disable: false });
+      this.setState({ gasSupply: gasEstimate, disable: false, gasEstimateToggle: false });
     }
   }
   private handleDeploy() {
     const { vscode, bytecode, abi } = this.props;
     const { gasSupply, constructorInput, testNetId } = this.state;
-    this.setState({ error: null, deployed: {} });
+    this.setState({ error: null, deployed: {}, disable: true });
     vscode.postMessage({
       command: "run-deploy",
       payload: {
@@ -139,7 +144,7 @@ class ContractDeploy extends Component<IProps, IState> {
   private handleCall() {
     const { vscode, abi, deployAccount } = this.props;
     const { gasSupply, methodName, deployedAddress, methodInputs, testNetId } = this.state;
-    this.setState({ error: null });
+    this.setState({ error: null, callFunctionToggle: true });
     vscode.postMessage({
       command: "ganache-contract-method-call",
       payload: {
@@ -156,7 +161,7 @@ class ContractDeploy extends Component<IProps, IState> {
   private handleGetGasEstimate() {
     const { vscode, bytecode, abi } = this.props;
     const { constructorInput, testNetId } = this.state;
-    this.setState({ disable: true });
+    this.setState({ gasEstimateToggle: true });
     try {
       vscode.postMessage({
         command: "run-get-gas-estimate",
@@ -190,6 +195,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ deployedAddress: event.target.value });
   }
   private handleMethodnameInput(event: any) {
+    this.setState({ callFunctionToggle: false });
     const { methodArray } = this.state;
     // @ts-ignore
     if(methodArray.hasOwnProperty(event.target.value)) {
@@ -204,7 +210,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodInputs: event.target.value });
   }
   public render() {
-    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, disable } = this.state;
+    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, disable, gasEstimateToggle, callFunctionToggle } = this.state;
     const { callResult, testNetId } = this.props;
     return (
       <div>
@@ -261,7 +267,7 @@ class ContractDeploy extends Component<IProps, IState> {
           </form>
           <div>
             <form onSubmit={this.handleGetGasEstimate}>
-              <Button ButtonType="input" disabled={!disable} value="Get gas estimate" />
+              <Button ButtonType="input" disabled={gasEstimateToggle} value="Get gas estimate" />
             </form>
           </div>
           <div>
@@ -274,7 +280,8 @@ class ContractDeploy extends Component<IProps, IState> {
                   <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>
               }
-              <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
+              <Button ButtonType="input" disabled={callFunctionToggle} value="Call function" />
+              {/* <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" /> */}
             </form>
           </div>
         </div>
