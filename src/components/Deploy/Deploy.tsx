@@ -28,7 +28,7 @@ export interface IState {
   gasEstimate: number;
   bytecode: any;
   abi: any;
-  methodName: string;
+  methodName: string | null;
   methodArray: object;
   methodInputs: string;
   contractAddress: string;
@@ -113,19 +113,24 @@ class Deploy extends Component<IProps, IState> {
         }
         this.setState({ constructorInput });
       } else if (abi[i].inputs.length > 0) {
-        let methodname = abi[i]['name'];
+        const methodname: string = abi[i]['name'];
         // @ts-ignore
-        methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
+        methodArray[methodname] = {};
         // @ts-ignore
-        methodArray[methodname]['stateMutability'] = abi[i]['stateMutability'];
-        // @ts-ignore
-        for (let i in methodArray[methodname]) {
+        if(abi[i].inputs && abi[i].inputs.length > 0) {
           // @ts-ignore
-          if (methodArray[methodname].length > 0) {
+          methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
+          // @ts-ignore
+          for (let i in methodArray[methodname]['inputs']) {
             // @ts-ignore
             methodArray[methodname]['inputs'][i]['value'] = "";
           }
+        } else {
+          // @ts-ignore
+          methodArray[methodname]['inputs'] = [];
         }
+        // @ts-ignore
+        methodArray[methodname]['stateMutability'] = abi[i]['stateMutability'];
       }
     }
     this.setState({ methodArray: methodArray });
@@ -214,7 +219,15 @@ class Deploy extends Component<IProps, IState> {
         // @ts-ignore
         methodInputs: JSON.stringify(methodArray[methodName]['inputs'], null, '\t'),
         // @ts-ignore diptajit please check if this works properly
-        isPayable: (methodArray[methodName]['stateMutability'] === "payable")
+        isPayable: (methodArray[methodName]['stateMutability'] === "payable") ? true : false
+      });
+    } else {
+      this.setState({
+        methodName: null,
+        // @ts-ignore
+        methodInputs: '',
+        // @ts-ignore diptajit please check if this works properly
+        isPayable: false
       });
     }
   }
@@ -315,7 +328,7 @@ class Deploy extends Component<IProps, IState> {
               <input type="text" className="custom_input_css" placeholder='Enter contract address' style={{ marginRight: '5px' }} name="contractAddress" value={contractAddress} onChange={(e) => this.setState({ contractAddress: e.target.value })} />
               <input type="text" className="custom_input_css" placeholder='Enter contract function name' name="methodName" onChange={this.handleMethodnameInput} />
               {
-                methodName !== '' && methodInputs !== '[]' &&
+                methodName !== '' && methodInputs !== '' && methodInputs !== '[]' &&
                 <div className="json_input_container" style={{ margin: '10px 0' }}>
                   <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>

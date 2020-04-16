@@ -104,8 +104,7 @@ class ContractDeploy extends Component<IProps, IState> {
             // @ts-ignore
             methodArray[methodname]['inputs'][i]['value'] = "";
           }
-        }
-        else {
+        } else {
           // @ts-ignore
           methodArray[methodname]['inputs'] = [];
         }
@@ -218,6 +217,14 @@ class ContractDeploy extends Component<IProps, IState> {
         methodInputs: JSON.stringify(methodArray[methodName]['inputs'], null, '\t'),
         // @ts-ignore
         isPayable: (methodArray[methodName]['stateMutability'] === "payable") ? true : false
+      });
+    } else {
+      this.setState({
+        methodName: null,
+        // @ts-ignore
+        methodInputs: '',
+        // @ts-ignore
+        isPayable: false
       });
     }
   }
