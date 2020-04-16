@@ -281,7 +281,6 @@ class ContractDeploy extends Component<IProps, IState> {
                 </div>
               }
               <Button ButtonType="input" disabled={callFunctionToggle} value="Call function" />
-              {/* <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" /> */}
             </form>
           </div>
         </div>
