@@ -37,6 +37,7 @@ export interface IState {
   msg: string;
   processMessage: string;
   isPayable: boolean;
+  payableAmount: any;
 }
 
 class Deploy extends Component<IProps, IState> {
@@ -59,7 +60,8 @@ class Deploy extends Component<IProps, IState> {
       pvtKey: '',
       msg: 'initial',
       processMessage: '',
-      isPayable: false
+      isPayable: false,
+      payableAmount: null
     };
     this.handleMethodnameInput = this.handleMethodnameInput.bind(this);
     this.handleMethodInputs = this.handleMethodInputs.bind(this);
@@ -192,7 +194,7 @@ class Deploy extends Component<IProps, IState> {
 
   private handleCall = () => {
     const { vscode, abi, currAccount, testNetId } = this.props;
-    const { gasEstimate, methodName, contractAddress, methodInputs } = this.state;
+    const { gasEstimate, methodName, contractAddress, methodInputs, payableAmount } = this.state;
     const publicKey = currAccount.value;
     vscode.postMessage({
       command: "contract-method-call",
@@ -203,6 +205,7 @@ class Deploy extends Component<IProps, IState> {
         methodName: methodName,
         params: JSON.parse(methodInputs),
         gasSupply: gasEstimate,
+        value: payableAmount,
         deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
       },
       testNetId
@@ -252,9 +255,15 @@ class Deploy extends Component<IProps, IState> {
     }
   };
 
+  handleChange = (event: any) => {
+    const { target: { name, value } } = event;
+    // @ts-ignore
+    this.setState({ [name]: value });
+  }
+
   render() {
     const { contractName, currAccount, unsignedTx, testNetCallResult } = this.props;
-    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress } = this.state;
+    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress, isPayable, payableAmount } = this.state;
     const publicKey = currAccount.value;
     return (
       <div className="deploy_container">
@@ -333,7 +342,10 @@ class Deploy extends Component<IProps, IState> {
                   <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>
               }
-              <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
+              {isPayable &&
+              <input type="number" className="custom_input_css" placeholder='Enter payable amount' style={{ margin: '5px' }} name="payableAmount" value={payableAmount} onChange={(e) =>this.handleChange(e)} />
+              }
+              <input type="submit" style={{ margin: '10px' }} className="custom_button_css" value="Call function" />
             </form>
           </div>
         </div>

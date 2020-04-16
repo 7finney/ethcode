@@ -235,10 +235,6 @@ class ContractDeploy extends Component<IProps, IState> {
     const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, isPayable, payableAmount } = this.state;
     const { callResult, testNetId } = this.props;
 
-    console.log("qqqqqqqqqqqqqqqqqqqq");
-    console.log(JSON.stringify(methodInputs));
-    
-
     return (
       <div>
         <div>
