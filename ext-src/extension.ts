@@ -73,6 +73,16 @@ function getToken() {
   });
 }
 
+function updateUserSession(keys: string[], valueToAssign: any) {
+  if(keys.length === 2) {
+    // @ts-ignore
+    userSession[keys[0]][keys[1]] = valueToAssign;
+  } else if(keys.length === 3) {
+    // @ts-ignore
+    userSession[keys[0]][keys[1]][keys[2]] = valueToAssign;
+  }
+}
+
 function success(msg: string) {
   vscode.window.showInformationMessage(msg, 'Dismiss');
 }
@@ -189,8 +199,7 @@ class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
-          // @ts-ignore
-          userSession['user-session-config']['lastSelectedAcc'] = message.account;
+          updateUserSession(["user-session-config", "lastSelectedAcc"], message.account);
           this.getBalance(message.account, message.testNetId);
         } else if (message.command === "build-rawtx") {
           this.buildRawTx(message.payload, message.testNetId);
@@ -212,8 +221,7 @@ class ReactPanel {
         } else if (message.command === 'delete-keyPair') {
           this.deleteKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'get-localAccounts') {
-          // @ts-ignore
-          userSession['eth-config']['keyStorePath'] = this._extensionPath;
+          updateUserSession(["eth-config", "keyStorePath"], this._extensionPath);
           this.getLocalAccounts(this._extensionPath);
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
@@ -336,11 +344,13 @@ class ReactPanel {
       } else if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
         this._panel.webview.postMessage({ compiled: m.compiled, sources, testPanel: 'main' });
-        // @ts-ignore
-        userSession['user-session-config']['compile'] = {
-          'lang': "solidity",
-          'solidityCompilerVersion': this.version,
-        };
+        updateUserSession(
+          ['user-session-config', 'compile'],
+          {
+            'lang': "solidity",
+            'solidityCompilerVersion': this.version,
+          }
+        );
       } else if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
@@ -378,10 +388,13 @@ class ReactPanel {
         const fileName = Object.keys(m.compiled.sources)[0];
         const contractName = Object.keys(m.compiled.contracts[fileName])[0];
         // @ts-ignore
-        userSession['user-session-config']['compile'] = {
-          'lang': "vyper",
-          'solidityCompilerVersion': ""
-        };
+        updateUserSession(
+          ['user-session-config', 'compile'],
+          {
+            'lang': "vyper",
+            'solidityCompilerVersion': ""
+          }
+        );
       }
       if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
@@ -551,10 +564,8 @@ class ReactPanel {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       if (m.transactionResult) {
-        // @ts-ignore
-        userSession['user-session-config']['txHashOfLastSendEther'] = m.transactionResult;
-        // @ts-ignore
-        userSession['user-session-config']['networkId'] = testNetId;
+        updateUserSession(['user-session-config', 'txHashOfLastSendEther'], m.transactionResult);
+        updateUserSession(['user-session-config', 'networkId'], testNetId);
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -568,10 +579,8 @@ class ReactPanel {
       if (m.unsignedTx) {
         this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
-        // @ts-ignore
-        userSession['user-session-config']['txHashOfLastSendEther'] = m.transactionResult;
-        // @ts-ignore
-        userSession['user-session-config']['networkId'] = testNetId;
+        updateUserSession(['user-session-config', 'txHashOfLastSendEther'], m.transactionResult);
+        updateUserSession(['user-session-config', 'networkId'], testNetId);
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -645,8 +654,7 @@ class ReactPanel {
   public dispose() {
     console.log("Disposed: ");
     const timeStamp: string = new Date(Date.now()).toISOString();
-    // @ts-ignore
-    userSession['user-session-config']['session-timestamp'] = timeStamp;
+    updateUserSession(['user-session-config', 'session-timestamp'], timeStamp);
     // @ts-ignore
     fs.writeFileSync(userSession['eth-config']['keyStorePath'] + "/UserSession--UTC--" + timeStamp, JSON.stringify(userSession), 'utf8');
     if (this._disposed) {
