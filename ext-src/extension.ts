@@ -89,10 +89,6 @@ export function activate(context: vscode.ExtensionContext) {
   // @ts-ignore
   userSession['user-session-config'] = {
     'compile': {},
-    'deploy': {},
-    'methodCall': {},
-    'debug': {},
-    'unitTest': {}
   };
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", async () => {
@@ -187,20 +183,10 @@ class ReactPanel {
         } else if (message.command === 'run-deploy') {
           this.runDeploy(message.payload, message.testNetId);
         } else if (message.command.endsWith('contract-method-call')) {
-          // @ts-ignore
-          userSession['user-session-config']['methodCall'] = {
-            'contractAddress': message.payload.address,
-            'testnetId': message.testNetId
-          };
           this.runContractCall(message.payload, message.testNetId);
         } else if (message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload, message.testNetId);
         } else if (message.command === 'debugTransaction') {
-          // @ts-ignore
-          userSession['user-session-config']['debug'] = {
-            'testnetId': message.testNetId,
-            'txHash': message.txHash
-          };
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
           // @ts-ignore
@@ -350,15 +336,10 @@ class ReactPanel {
       } else if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
         this._panel.webview.postMessage({ compiled: m.compiled, sources, testPanel: 'main' });
-        const fileName = Object.keys(sources)[0];
-        const compiled = JSON.parse(m.compiled);
-        const contractName = Object.keys(compiled.contracts[fileName])[0];
         // @ts-ignore
         userSession['user-session-config']['compile'] = {
-          'langId': "solidity",
+          'lang': "solidity",
           'solidityCompilerVersion': this.version,
-          'abi': compiled.contracts[fileName][contractName].abi,
-          'byteCode': compiled.contracts[fileName][contractName].evm.bytecode.object
         };
       } else if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
@@ -398,9 +379,8 @@ class ReactPanel {
         const contractName = Object.keys(m.compiled.contracts[fileName])[0];
         // @ts-ignore
         userSession['user-session-config']['compile'] = {
-          'langId': "vyper",
-          'abi': m.compiled.contracts[fileName][contractName].evm.bytecode.object,
-          'byteCode': m.compiled.contracts[fileName][contractName].abi
+          'lang': "vyper",
+          'solidityCompilerVersion': ""
         };
       }
       if (m.processMessage) {
@@ -463,14 +443,6 @@ class ReactPanel {
   }
   // create unsigned transactions
   private buildRawTx(payload: any, testNetId: string) {
-    // @ts-ignore
-    userSession['user-session-config']['deploy'] = {
-      'testnetId': testNetId,
-      'abi': payload.abi,
-      'byteCode': payload.byteCode,
-      'txHash': '',
-      'txReceipt': {}
-    };
     const txWorker = this.createWorker();
     txWorker.on("message", (m: any) => {
       if (m.error) {
@@ -491,16 +463,6 @@ class ReactPanel {
       }
       else {
         this._panel.webview.postMessage({ deployedResult: m });
-        const deployedResult = JSON.parse(m.deployedResult);
-        const txHash: string = deployedResult['transactionHash']
-        // @ts-ignore
-        userSession['user-session-config']['deploy'] = {
-          'testnetId': testNetId,
-          'abi': payload.abi,
-          'byteCode': payload.byteCode,
-          'txHash': txHash,
-          'txReceipt': deployedResult
-        };
       }
     });
     deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
@@ -515,8 +477,6 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m.transactionResult });
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Contract transaction submitted!");
-        // @ts-ignore
-        userSession['user-session-config']['deploy']['txHash'] = m.transactionResult;
       }
     });
     signedDeployWorker.send({ command: "sign-deploy", payload, jwtToken, testnetId: testNetId });
@@ -581,8 +541,6 @@ class ReactPanel {
         this._panel.webview.postMessage({ errors: JSON.stringify(m.error) });
       }
       else {
-        // @ts-ignore
-        userSession['user-session-config']['gasEstimate'] = m.gasEstimate;
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       }
     });
@@ -595,6 +553,8 @@ class ReactPanel {
       if (m.transactionResult) {
         // @ts-ignore
         userSession['user-session-config']['txHashOfLastSendEther'] = m.transactionResult;
+        // @ts-ignore
+        userSession['user-session-config']['networkId'] = testNetId;
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -610,6 +570,8 @@ class ReactPanel {
       } else if (m.transactionResult) {
         // @ts-ignore
         userSession['user-session-config']['txHashOfLastSendEther'] = m.transactionResult;
+        // @ts-ignore
+        userSession['user-session-config']['networkId'] = testNetId;
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
