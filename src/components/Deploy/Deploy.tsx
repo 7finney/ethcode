@@ -113,9 +113,12 @@ class Deploy extends Component<IProps, IState> {
         for (let j in constructorInput) {
           constructorInput[j]['value'] = "";
         }
-        this.setState({ constructorInput });
-      } else if (abi[i].inputs.length > 0) {
+        this.setState({ constructorInput: constructorInput });
+      } else if(abi[i].type !== 'constructor') {
+        // TODO: bellow strategy to extract method names and inputs should be improved
         const methodname: string = abi[i]['name'];
+        
+        // if we have inputs
         // @ts-ignore
         methodArray[methodname] = {};
         // @ts-ignore
@@ -205,8 +208,7 @@ class Deploy extends Component<IProps, IState> {
         methodName: methodName,
         params: JSON.parse(methodInputs),
         gasSupply: gasEstimate,
-        value: payableAmount,
-        deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
+        value: payableAmount
       },
       testNetId
     });

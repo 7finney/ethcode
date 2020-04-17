@@ -93,9 +93,9 @@ function findImports(path: any) {
   ];
   // @ts-ignore
   const urlResolver = new RemixURLResolver();
+  // this section usually executes after solc returns error file not found
   urlResolver.resolve(path, FSHandler)
     .then((data: any) => {
-      // this section usually executes after solc returns error file not found
       // @ts-ignore
       process.send({ data, path });
     })
@@ -432,7 +432,7 @@ process.on("message", async m => {
 
   // testnet method call
   if (m.command === "contract-method-call") {
-    const { from, abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
+    const { from, abi, address, methodName, params, gasSupply, value } = m.payload;
     const inp = {
       from,
       abi,
@@ -440,7 +440,7 @@ process.on("message", async m => {
       methodName,
       params,
       gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
-      deployAccount
+      value
     };
     const c = {
       callInterface: {
