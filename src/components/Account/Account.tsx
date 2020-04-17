@@ -4,6 +4,7 @@ import { Selector } from '../common/ui';
 import './Account.css';
 import { addNewAcc } from '../../actions';
 import { IAccount } from '../../types';
+import { Button } from '../common/ui';
 
 interface IProps {
   accounts: IAccount[];
@@ -24,6 +25,7 @@ interface IState {
   transferAmount: number;
   error: any;
   msg: string;
+  sendBtnDisable: boolean;
 }
 
 class Account extends Component<IProps, IState> {
@@ -36,7 +38,8 @@ class Account extends Component<IProps, IState> {
       showButton: false,
       transferAmount: 0,
       error: '',
-      msg: ''
+      msg: '',
+      sendBtnDisable: false
     };
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
@@ -110,7 +113,7 @@ class Account extends Component<IProps, IState> {
     const { vscode, currAccount, testNetId } = this.props;
     const { pvtKey } = this.state;
     const data = new FormData(event.target);
-
+    // this.setState({ sendBtnDisable: true });
     try {
       if (testNetId === "ganache") {
         const transactionInfo = {
@@ -143,7 +146,7 @@ class Account extends Component<IProps, IState> {
 
   render() {
     const { accounts, currAccount } = this.props;
-    const { balance, publicAddress, showButton, error } = this.state;
+    const { balance, publicAddress, showButton, error, sendBtnDisable } = this.state;
 
     return (
       <div className="account_container">
@@ -226,7 +229,9 @@ class Account extends Component<IProps, IState> {
           <div className="account_row">
             <div className="label-container"></div>
             <div className="input-container">
-              <input type="submit" className="acc-button custom_button_css" value="Send" />
+              {/* // todo */}
+              <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: '10px' }} value="Send" />
+              {/* <input type="submit" className="acc-button custom_button_css" value="Send" /> */}
             </div>
           </div>
         </form>
@@ -243,12 +248,8 @@ class Account extends Component<IProps, IState> {
             <label className="label">Create New Account </label>
           </div>
           <div className="input-container">
-            <button
-              className={(showButton ? 'custom_button_css button_disable' : 'acc-button custom_button_css')}
-              disabled={showButton}
-              onClick={this.handleGenKeyPair}>
-              Genarate key pair
-            </button>
+            {/* todo */}
+            <Button disabled={showButton} onClick={this.handleGenKeyPair}>Genarate key pair</Button>
           </div>
         </div>
 
