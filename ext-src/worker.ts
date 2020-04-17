@@ -48,8 +48,8 @@ const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
   // client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
-  client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
+  client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -392,14 +392,15 @@ process.on("message", async m => {
   }
   // Method call
   if (m.command === "ganache-contract-method-call") {
-    const { abi, address, methodName, params, gasSupply, deployAccount } = m.payload;
+    const { abi, address, methodName, params, gasSupply, deployAccount, value } = m.payload;
     const inp = {
       abi,
       address,
       methodName,
       params,
       gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
-      deployAccount
+      deployAccount,
+      value
     };
     const c = {
       callInterface: {

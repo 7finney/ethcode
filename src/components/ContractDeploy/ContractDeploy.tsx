@@ -17,6 +17,7 @@ interface IProps {
   compiledResult: object;
   callResult: object;
   deployAccount: IAccount;
+  currAccount: IAccount;
   testNetId: string;
   openAdvanceDeploy: any;
   setCallResult: (result: any) => void;
@@ -151,7 +152,7 @@ class ContractDeploy extends Component<IProps, IState> {
     });
   }
   private handleCall() {
-    const { vscode, abi, deployAccount } = this.props;
+    const { vscode, abi, currAccount } = this.props;
     const { gasSupply, methodName, deployedAddress, methodInputs, testNetId, payableAmount } = this.state;
     this.setState({ error: null });
     vscode.postMessage({
@@ -164,7 +165,7 @@ class ContractDeploy extends Component<IProps, IState> {
         gasSupply,
         // TODO: add value supply in case of payable functions
         value: payableAmount,
-        deployAccount: deployAccount.checksumAddr ? deployAccount.checksumAddr : deployAccount.value
+        deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
       },
       testNetId
     });
@@ -359,13 +360,15 @@ class ContractDeploy extends Component<IProps, IState> {
   }
 }
 
-function mapStateToProps({ debugStore, compiledStore }: any) {
+function mapStateToProps({ debugStore, compiledStore, accountStore }: any) {
+  const { currAccount } = accountStore;
   const { testNetId } = debugStore;
   const { compiledresult, callResult } = compiledStore;
   return {
     testNetId,
     compiledResult: compiledresult,
-    callResult
+    callResult,
+    currAccount
   };
 }
 
