@@ -301,9 +301,8 @@ class ContractDeploy extends Component<IProps, IState> {
             </div>
             <div style={{ marginBottom: '5px' }}>
               {testNetId === 'ganache' ?
-                <Button ButtonType="input" disabled={disable} value="Deploy" /> :
+                (<Button ButtonType="input" disabled={disable} value="Deploy" />) :
                 <Button
-                  disabled={disable}
                   onClick={this.props.openAdvanceDeploy}>
                   Advance Deploy
                 </Button>
@@ -328,7 +327,6 @@ class ContractDeploy extends Component<IProps, IState> {
               {isPayable &&
               <input type="number" className="custom_input_css" placeholder='Enter payable amount' style={{ margin: '5px' }} name="payableAmount" value={payableAmount} onChange={(e) =>this.handleChange(e)} />
               }
-              {/* <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" /> */}
               <Button ButtonType="input" disabled={callFunctionToggle} value="Call function" />
             </form>
           </div>
