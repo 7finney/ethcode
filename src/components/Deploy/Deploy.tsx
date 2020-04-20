@@ -29,7 +29,7 @@ export interface IState {
   gasEstimate: number;
   bytecode: any;
   abi: any;
-  methodName: string;
+  methodName: string | null;
   methodArray: object;
   methodInputs: string;
   contractAddress: string;
@@ -37,6 +37,8 @@ export interface IState {
   pvtKey: string;
   msg: string;
   processMessage: string;
+  isPayable: boolean;
+  payableAmount: any;
   gasEstimateToggle: boolean;
   buildTxToggle: boolean;
   callFunToggle: boolean;
@@ -53,7 +55,8 @@ class Deploy extends Component<IProps, IState> {
       gasEstimate: 0,
       bytecode: {},
       abi: {},
-      methodName: '',
+      // @ts-ignore
+      methodName: null,
       methodArray: {},
       methodInputs: '',
       contractAddress: '',
@@ -61,6 +64,8 @@ class Deploy extends Component<IProps, IState> {
       pvtKey: '',
       msg: 'initial',
       processMessage: '',
+      isPayable: false,
+      payableAmount: null,
       gasEstimateToggle: false,
       buildTxToggle: true,
       callFunToggle: true
@@ -117,19 +122,29 @@ class Deploy extends Component<IProps, IState> {
         for (let j in constructorInput) {
           constructorInput[j]['value'] = "";
         }
-        this.setState({ constructorInput });
-      } else {
-        let methodname = abi[i]['name'];
+        this.setState({ constructorInput: constructorInput });
+      } else if(abi[i].type !== 'constructor') {
+        // TODO: bellow strategy to extract method names and inputs should be improved
+        const methodname: string = abi[i]['name'];
+        
+        // if we have inputs
         // @ts-ignore
-        methodArray[methodname] = abi[i]['inputs'];
+        methodArray[methodname] = {};
         // @ts-ignore
-        for (let i in methodArray[methodname]) {
+        if(abi[i].inputs && abi[i].inputs.length > 0) {
           // @ts-ignore
-          if (methodArray[methodname].length > 0) {
+          methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
+          // @ts-ignore
+          for (let i in methodArray[methodname]['inputs']) {
             // @ts-ignore
-            methodArray[methodname][i]['value'] = "";
+            methodArray[methodname]['inputs'][i]['value'] = "";
           }
+        } else {
+          // @ts-ignore
+          methodArray[methodname]['inputs'] = [];
         }
+        // @ts-ignore
+        methodArray[methodname]['stateMutability'] = abi[i]['stateMutability'];
       }
     }
     this.setState({ methodArray: methodArray });
@@ -192,7 +207,7 @@ class Deploy extends Component<IProps, IState> {
 
   private handleCall = () => {
     const { vscode, abi, currAccount, testNetId } = this.props;
-    const { gasEstimate, methodName, contractAddress, methodInputs } = this.state;
+    const { gasEstimate, methodName, contractAddress, methodInputs, payableAmount } = this.state;
     const publicKey = currAccount.value;
     this.setState({ callFunToggle: true });
     vscode.postMessage({
@@ -204,7 +219,7 @@ class Deploy extends Component<IProps, IState> {
         methodName: methodName,
         params: JSON.parse(methodInputs),
         gasSupply: gasEstimate,
-        deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
+        value: payableAmount
       },
       testNetId
     });
@@ -212,13 +227,24 @@ class Deploy extends Component<IProps, IState> {
 
   private handleMethodnameInput(event: any) {
     const { methodArray } = this.state;
+    const methodName: string = event.target.value;
     this.setState({ callFunToggle: false });
     // @ts-ignore
-    if(methodArray.hasOwnProperty(event.target.value)) {
+    if(methodName && methodArray.hasOwnProperty(event.target.value)) {
       this.setState({
-        methodName: event.target.value,
+        methodName,
         // @ts-ignore
-        methodInputs: JSON.stringify(methodArray[event.target.value], null, '\t')
+        methodInputs: JSON.stringify(methodArray[methodName]['inputs'], null, '\t'),
+        // @ts-ignore diptajit please check if this works properly
+        isPayable: (methodArray[methodName]['stateMutability'] === "payable") ? true : false
+      });
+    } else {
+      this.setState({
+        methodName: null,
+        // @ts-ignore
+        methodInputs: '',
+        // @ts-ignore diptajit please check if this works properly
+        isPayable: false
       });
     }
   }
@@ -243,11 +269,33 @@ class Deploy extends Component<IProps, IState> {
     }
   };
 
+  handleChange = (event: any) => {
+    const { target: { name, value } } = event;
+    // @ts-ignore
+    this.setState({ [name]: value });
+  }
+
   render() {
     const { contractName, currAccount, unsignedTx, testNetCallResult } = this.props;
-    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress, gasEstimateToggle, buildTxToggle, callFunToggle } = this.state;
+    const {
+      gasEstimate,
+      constructorInput,
+      bytecode,
+      abi,
+      txtHash,
+      pvtKey,
+      processMessage,
+      error,
+      methodInputs,
+      methodName,
+      contractAddress,
+      isPayable,
+      payableAmount,
+      gasEstimateToggle,
+      buildTxToggle,
+      callFunToggle
+    } = this.state;
     const publicKey = currAccount.value;
-
     return (
       <div className="deploy_container">
         {/* Bytecode and Abi */}
@@ -320,11 +368,15 @@ class Deploy extends Component<IProps, IState> {
               <input type="text" className="custom_input_css" placeholder='Enter contract address' style={{ marginRight: '5px' }} name="contractAddress" value={contractAddress} onChange={(e) => this.setState({ contractAddress: e.target.value })} />
               <input type="text" className="custom_input_css" placeholder='Enter contract function name' name="methodName" onChange={this.handleMethodnameInput} />
               {
-                methodName !== '' && methodInputs !== '[]' &&
+                methodName !== '' && methodInputs !== '' && methodInputs !== '[]' &&
                 <div className="json_input_container" style={{ margin: '10px 0' }}>
                   <textarea className="json_input custom_input_css" value={methodInputs} onChange={this.handleMethodInputs}></textarea>
                 </div>
               }
+              {isPayable &&
+              <input type="number" className="custom_input_css" placeholder='Enter payable amount' style={{ margin: '5px' }} name="payableAmount" value={payableAmount} onChange={(e) =>this.handleChange(e)} />
+              }
+              {/* <input type="submit" style={{ margin: '10px' }} className="custom_button_css" value="Call function" /> */}
               <Button ButtonType="input" disabled={callFunToggle} value="Call function" />
             </form>
           </div>
