@@ -4,6 +4,7 @@ import JSONPretty from 'react-json-pretty';
 import { connect } from "react-redux";
 import { setCallResult } from "../../actions";
 import { IAccount } from "types";
+import { Button } from '../common/ui';
 
 interface IProps {
   contractName: string;
@@ -35,6 +36,8 @@ interface IState {
   disable: boolean;
   isPayable: boolean;
   payableAmount: any;
+  gasEstimateToggle: boolean;
+  callFunctionToggle: boolean;
 }
 
 class ContractDeploy extends Component<IProps, IState> {
@@ -48,9 +51,11 @@ class ContractDeploy extends Component<IProps, IState> {
     methodArray: {},
     methodInputs: '',
     testNetId: '',
-    disable: false,
     isPayable: false,
-    payableAmount: null
+    payableAmount: null,
+    disable: true,
+    gasEstimateToggle: false,
+    callFunctionToggle: true
   };
   constructor(props: IProps, state: IState) {
     super(props);
@@ -74,6 +79,7 @@ class ContractDeploy extends Component<IProps, IState> {
 
       if (data.ganacheCallResult) {
         this.props.setCallResult(data.ganacheCallResult);
+        this.setState({ callFunctionToggle: false });
       }
       if (data.error) {
         this.setState({ error: data.error });
@@ -130,16 +136,16 @@ class ContractDeploy extends Component<IProps, IState> {
     }
     else if (deployedResult !== prevProps.deployedResult) {
       const deployedObj = JSON.parse(deployedResult);
-      this.setState({ deployed: deployedObj, deployedAddress: deployedObj.contractAddress });
+      this.setState({ deployed: deployedObj, deployedAddress: deployedObj.contractAddress, disable: false });
     }
     else if ((this.state.gasSupply === 0 && gasEstimate !== this.state.gasSupply) || gasEstimate !== prevProps.gasEstimate) {
-      this.setState({ gasSupply: gasEstimate });
+      this.setState({ gasSupply: gasEstimate, disable: false, gasEstimateToggle: false });
     }
   }
   private handleDeploy() {
     const { vscode, bytecode, abi } = this.props;
     const { gasSupply, constructorInput, testNetId } = this.state;
-    this.setState({ error: null, deployed: {} });
+    this.setState({ error: null, deployed: {}, disable: true });
     vscode.postMessage({
       command: "run-deploy",
       payload: {
@@ -154,7 +160,7 @@ class ContractDeploy extends Component<IProps, IState> {
   private handleCall() {
     const { vscode, abi, currAccount } = this.props;
     const { gasSupply, methodName, deployedAddress, methodInputs, testNetId, payableAmount } = this.state;
-    this.setState({ error: null });
+    this.setState({ error: null, callFunctionToggle: true });
     vscode.postMessage({
       command: "ganache-contract-method-call",
       payload: {
@@ -173,6 +179,7 @@ class ContractDeploy extends Component<IProps, IState> {
   private handleGetGasEstimate() {
     const { vscode, bytecode, abi } = this.props;
     const { constructorInput, testNetId } = this.state;
+    this.setState({ gasEstimateToggle: true });
     try {
       vscode.postMessage({
         command: "run-get-gas-estimate",
@@ -208,6 +215,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ deployedAddress: event.target.value });
   }
   private handleMethodnameInput(event: any) {
+    this.setState({ callFunctionToggle: false });
     const { methodArray } = this.state;
     const methodName: string = event.target.value;
     // @ts-ignore
@@ -233,7 +241,20 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodInputs: event.target.value });
   }
   public render() {
-    const { gasSupply, error, constructorInput, deployed, methodName, methodInputs, deployedAddress, isPayable, payableAmount } = this.state;
+    const {
+      gasSupply,
+      error,
+      constructorInput,
+      deployed,
+      methodName,
+      methodInputs,
+      deployedAddress,
+      isPayable,
+      payableAmount,
+      disable,
+      gasEstimateToggle,
+      callFunctionToggle
+    } = this.state;
     const { callResult, testNetId } = this.props;
 
     return (
@@ -280,18 +301,18 @@ class ContractDeploy extends Component<IProps, IState> {
             </div>
             <div style={{ marginBottom: '5px' }}>
               {testNetId === 'ganache' ?
-                <input type="submit" className={'custom_button_css'} value="Deploy" /> :
-                <button
-                  className={'custom_button_css'}
+                <Button ButtonType="input" disabled={disable} value="Deploy" /> :
+                <Button
+                  disabled={disable}
                   onClick={this.props.openAdvanceDeploy}>
                   Advance Deploy
-                </button>
+                </Button>
               }
             </div>
           </form>
           <div>
             <form onSubmit={this.handleGetGasEstimate}>
-              <input type="submit" className="custom_button_css" value="Get gas estimate" />
+              <Button ButtonType="input" disabled={gasEstimateToggle} value="Get gas estimate" />
             </form>
           </div>
           <div>
@@ -307,7 +328,8 @@ class ContractDeploy extends Component<IProps, IState> {
               {isPayable &&
               <input type="number" className="custom_input_css" placeholder='Enter payable amount' style={{ margin: '5px' }} name="payableAmount" value={payableAmount} onChange={(e) =>this.handleChange(e)} />
               }
-              <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" />
+              {/* <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" /> */}
+              <Button ButtonType="input" disabled={callFunctionToggle} value="Call function" />
             </form>
           </div>
         </div>

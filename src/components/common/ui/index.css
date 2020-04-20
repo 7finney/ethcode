@@ -30,3 +30,10 @@
   display: inline-block;
   cursor: pointer;
 } */
+
+.button_disable {
+  background: #081b13 !important;
+  border: 1px solid #081b13 !important;
+  color: white !important;
+  cursor: default !important;
+}

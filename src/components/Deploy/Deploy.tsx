@@ -4,6 +4,7 @@ import "./deploy.css";
 import { connect } from "react-redux";
 import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { IAccount } from 'types';
+import { Button } from '../common/ui';
 
 export interface IProps {
   setUnsgTxn: (unsgTxn: any) => void;
@@ -38,6 +39,9 @@ export interface IState {
   processMessage: string;
   isPayable: boolean;
   payableAmount: any;
+  gasEstimateToggle: boolean;
+  buildTxToggle: boolean;
+  callFunToggle: boolean;
 }
 
 class Deploy extends Component<IProps, IState> {
@@ -61,7 +65,10 @@ class Deploy extends Component<IProps, IState> {
       msg: 'initial',
       processMessage: '',
       isPayable: false,
-      payableAmount: null
+      payableAmount: null,
+      gasEstimateToggle: false,
+      buildTxToggle: true,
+      callFunToggle: true
     };
     this.handleMethodnameInput = this.handleMethodnameInput.bind(this);
     this.handleMethodInputs = this.handleMethodInputs.bind(this);
@@ -78,11 +85,12 @@ class Deploy extends Component<IProps, IState> {
         this.setState({ txtHash: data.deployedResult });
       }
       if (data.gasEstimate) {
-        this.setState({ gasEstimate: data.gasEstimate });
+        this.setState({ gasEstimate: data.gasEstimate, gasEstimateToggle: false, buildTxToggle: false });
       }
       if (data.buildTxResult) {
         // TODO: fix unsigned tx is not updated after once
         setUnsgTxn(data.buildTxResult);
+        this.setState({ buildTxToggle: false });
       }
       if (data.unsignedTx) {
         setUnsgTxn(data.unsignedTx);
@@ -95,6 +103,7 @@ class Deploy extends Component<IProps, IState> {
       }
       if (data.TestnetCallResult) {
         this.props.setTestnetCallResult(data.TestnetCallResult);
+        this.setState({ callFunToggle: false });
       }
       if (data.error) {
         this.setState({ error: data.error });
@@ -158,6 +167,7 @@ class Deploy extends Component<IProps, IState> {
     const { vscode, bytecode, abi, currAccount, testNetId } = this.props;
     const { constructorInput, gasEstimate } = this.state;
     const publicKey = currAccount.value;
+    this.setState({ buildTxToggle: true });
     // create unsigned transaction here
     try {
       vscode.postMessage({
@@ -179,7 +189,7 @@ class Deploy extends Component<IProps, IState> {
   private getGasEstimate = () => {
     const { vscode, bytecode, abi, testNetId } = this.props;
     const { constructorInput } = this.state;
-
+    this.setState({ gasEstimateToggle: true });
     try {
       vscode.postMessage({
         command: "run-get-gas-estimate",
@@ -199,6 +209,7 @@ class Deploy extends Component<IProps, IState> {
     const { vscode, abi, currAccount, testNetId } = this.props;
     const { gasEstimate, methodName, contractAddress, methodInputs, payableAmount } = this.state;
     const publicKey = currAccount.value;
+    this.setState({ callFunToggle: true });
     vscode.postMessage({
       command: "contract-method-call",
       payload: {
@@ -217,6 +228,7 @@ class Deploy extends Component<IProps, IState> {
   private handleMethodnameInput(event: any) {
     const { methodArray } = this.state;
     const methodName: string = event.target.value;
+    this.setState({ callFunToggle: false });
     // @ts-ignore
     if(methodName && methodArray.hasOwnProperty(event.target.value)) {
       this.setState({
@@ -237,7 +249,7 @@ class Deploy extends Component<IProps, IState> {
     }
   }
   private handleMethodInputs(event: any) {
-    this.setState({ methodInputs: event.target.value });
+    this.setState({ methodInputs: event.target.value, callFunToggle: false });
   }
 
   signAndDeploy = () => {
@@ -265,7 +277,24 @@ class Deploy extends Component<IProps, IState> {
 
   render() {
     const { contractName, currAccount, unsignedTx, testNetCallResult } = this.props;
-    const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress, isPayable, payableAmount } = this.state;
+    const {
+      gasEstimate,
+      constructorInput,
+      bytecode,
+      abi,
+      txtHash,
+      pvtKey,
+      processMessage,
+      error,
+      methodInputs,
+      methodName,
+      contractAddress,
+      isPayable,
+      payableAmount,
+      gasEstimateToggle,
+      buildTxToggle,
+      callFunToggle
+    } = this.state;
     const publicKey = currAccount.value;
     return (
       <div className="deploy_container">
@@ -347,7 +376,8 @@ class Deploy extends Component<IProps, IState> {
               {isPayable &&
               <input type="number" className="custom_input_css" placeholder='Enter payable amount' style={{ margin: '5px' }} name="payableAmount" value={payableAmount} onChange={(e) =>this.handleChange(e)} />
               }
-              <input type="submit" style={{ margin: '10px' }} className="custom_button_css" value="Call function" />
+              {/* <input type="submit" style={{ margin: '10px' }} className="custom_button_css" value="Call function" /> */}
+              <Button ButtonType="input" disabled={callFunToggle} value="Call function" />
             </form>
           </div>
         </div>
@@ -373,7 +403,7 @@ class Deploy extends Component<IProps, IState> {
         {/* Get gas estimate */}
         <div className="account_row">
           <div className="input-container">
-            <button className="acc-button custom_button_css" onClick={this.getGasEstimate}>Get gas estimate</button>
+            <Button disabled={gasEstimateToggle} onClick={this.getGasEstimate}>Get gas estimate</Button>
           </div>
           <div className="input-container">
             <input className="input custom_input_css" disabled type="text" placeholder="gas supply" value={gasEstimate} />
@@ -381,7 +411,7 @@ class Deploy extends Component<IProps, IState> {
         </div>
 
         <div className="input-container">
-          <button className="acc-button custom_button_css" onClick={this.handleBuildTxn}>Build transaction</button>
+          <Button disabled={buildTxToggle} onClick={this.handleBuildTxn}>Build transaction</Button>
         </div>
 
         {
