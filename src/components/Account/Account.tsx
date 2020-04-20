@@ -64,6 +64,9 @@ class Account extends Component<IProps, IState> {
       } else if (data.error) {
         this.setState({ error: data.error });
       }
+      if (data.transactionResult) {
+        this.setState({ sendBtnDisable: false });
+      }
     });
 
     if (accountBalance !== balance) {
@@ -73,6 +76,7 @@ class Account extends Component<IProps, IState> {
       // get private key for corresponding public key
       vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
     }
+
   }
 
   getSelectedAccount = (account: IAccount) => {
@@ -113,7 +117,7 @@ class Account extends Component<IProps, IState> {
     const { vscode, currAccount, testNetId } = this.props;
     const { pvtKey } = this.state;
     const data = new FormData(event.target);
-    // this.setState({ sendBtnDisable: true });
+    this.setState({ sendBtnDisable: true });
     try {
       if (testNetId === "ganache") {
         const transactionInfo = {
@@ -229,9 +233,7 @@ class Account extends Component<IProps, IState> {
           <div className="account_row">
             <div className="label-container"></div>
             <div className="input-container">
-              {/* // todo */}
               <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: '10px' }} value="Send" />
-              {/* <input type="submit" className="acc-button custom_button_css" value="Send" /> */}
             </div>
           </div>
         </form>
