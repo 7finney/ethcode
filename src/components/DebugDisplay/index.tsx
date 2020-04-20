@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import ReactDiffViewer from 'react-diff-viewer';
 import "./DebugDisplay.css";
+import { Button } from '../common/ui';
 
 interface IProps {
     vscode: any;
@@ -139,7 +140,7 @@ class DebugDisplay extends Component<IProps, IState> {
                             <span style={{ marginRight: '5px' }}>Transaction hash:</span>
                             <input type="text" className="custom_input_css" value={this.state.txHash} onChange={this.handleChange} />
                         </label>
-                        <input type="submit" disabled={disable} className={(disable ? 'custom_button_css button_disable' : 'custom_button_css')} style={{ marginLeft: '10px' }} value="Debug" />
+                        <Button ButtonType="input" disabled={disable} style={{ marginLeft: '10px' }} value="Debug" />
                     </form>
                     <p>
                         <button className="text-subtle custom_button_css" onClick={this.stopDebug}>Stop</button>
