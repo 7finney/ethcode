@@ -243,6 +243,10 @@ class Deploy extends Component<IProps, IState> {
     }
   };
 
+  handleChange = (event: any) => {
+    this.setState({ gasEstimate: event.target.value });
+  }
+
   render() {
     const { contractName, currAccount, unsignedTx, testNetCallResult } = this.props;
     const { gasEstimate, constructorInput, bytecode, abi, txtHash, pvtKey, processMessage, error, methodInputs, methodName, contractAddress, gasEstimateToggle, buildTxToggle, callFunToggle } = this.state;
@@ -354,7 +358,7 @@ class Deploy extends Component<IProps, IState> {
             <Button disabled={gasEstimateToggle} onClick={this.getGasEstimate}>Get gas estimate</Button>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" disabled type="text" placeholder="gas supply" value={gasEstimate} />
+            <input className="input custom_input_css" onChange={(e) => this.handleChange(e)} type="text" placeholder="gas supply" value={gasEstimate} />
           </div>
         </div>
 
