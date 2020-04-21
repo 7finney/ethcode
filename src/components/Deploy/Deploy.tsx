@@ -354,7 +354,7 @@ class Deploy extends Component<IProps, IState> {
             <Button disabled={gasEstimateToggle} onClick={this.getGasEstimate}>Get gas estimate</Button>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" name="gasEstimate" onChange={(e) => this.handleChange(e)} type="text" placeholder="gas supply" value={gasEstimate} />
+            {/* <input className="input custom_input_css" name="gasEstimate" onChange={(e) => this.handleChange(e)} type="text" placeholder="gas supply" value={gasEstimate} /> */}
           </div>
         </div>
 

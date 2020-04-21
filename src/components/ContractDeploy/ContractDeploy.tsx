@@ -255,13 +255,13 @@ class ContractDeploy extends Component<IProps, IState> {
               }
             </div>
             <div style={{ marginBottom: '5px' }}>
-              {testNetId === 'ganache' ?
-                <Button ButtonType="input" disabled={disable} value="Deploy" /> :
+              {testNetId !== 'ganache' ?
                 <Button
-                  disabled={disable}
                   onClick={this.props.openAdvanceDeploy}>
                   Advance Deploy
-                </Button>
+                </Button> :
+                (gasSupply > 0) ? <Button ButtonType="input" disabled={disable} value="Deploy" /> :
+                <Button ButtonType="input" disabled={true} value="Deploy" />
               }
             </div>
           </form>
