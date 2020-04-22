@@ -11,7 +11,6 @@ import * as fs from "fs";
 // @ts-ignore
 let jwtToken: any;
 const machineID = uuid();
-const userSession: Object = {};
 
 async function genToken() {
   const url = `https://auth.ethco.de/getToken/${machineID}`;
@@ -73,14 +72,60 @@ function getToken() {
   });
 }
 
-function updateUserSession(keys: string[], valueToAssign: any) {
-  if(keys.length === 2) {
-    // @ts-ignore
-    userSession[keys[0]][keys[1]] = valueToAssign;
-  } else if(keys.length === 3) {
-    // @ts-ignore
-    userSession[keys[0]][keys[1]][keys[2]] = valueToAssign;
-  }
+function updateUserSession(valueToAssign: any, keys?: string[]) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // @ts-ignore
+      const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
+      if(!keys) {
+        config.update('userSession', valueToAssign);
+        resolve('user session started');
+      } else {
+        // @ts-ignore
+        let userSession = config.get('userSession');
+        // @ts-ignore
+        if(keys.length === 2) {
+          // @ts-ignore
+          userSession[keys[0]][keys[1]] = valueToAssign;
+          config.update('userSession', userSession);
+          resolve(userSession);
+          // @ts-ignore
+        } else if(keys.length === 3) {
+          // @ts-ignore
+          userSession = config.get('userSession');
+          // @ts-ignore
+          userSession[keys[0]][keys[1]][keys[2]] = valueToAssign;
+          config.update('userSession', userSession);
+          resolve(userSession);
+        }
+      }
+    } catch(err) {
+      reject(err);
+    }
+  });
+}
+
+function getUserSession(keys?: string[]) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // @ts-ignore
+      const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
+      if(!keys){
+        resolve(config.get('userSession'));
+      } else if(keys.length === 1){
+        // @ts-ignore
+        resolve(config.get('userSession')[keys[0]]);
+      } else if(keys.length === 2) {
+        // @ts-ignore
+        resolve(config.get('userSession')[keys[0]][keys[1]]);
+      } else if(keys.length === 3) {
+        // @ts-ignore
+        resolve(config.get('userSession')[keys[0]][keys[1]][keys[2]]);
+      }
+    } catch(err) {
+      reject(err);
+    }
+  });
 }
 
 function success(msg: string) {
@@ -94,12 +139,28 @@ function errorToast(msg: string) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  // @ts-ignore
-  userSession['eth-config'] = {};
-  // @ts-ignore
-  userSession['user-session-config'] = {
-    'compile': {},
+  let userSession: object = {
+    "eth-config": {
+        "keyStorePath": "",
+        "grpc-endpoints": {
+            "client-call": "cc.ethcode.de:50053",
+            "remix-tests":"rt.ethco.de:50051",
+            "remix-debug":"rd.ethco.de:50052"
+        }
+    },
+    "user-session-config": {
+        "userSession(timestamp at closing point)": "",
+        "lastSelectedAcc": "",
+        "txHashOfLastSendEther": "",
+        "compile": {
+            "lang": "solidity/vyper",
+            "solidityCompilerVersion": ""
+        },
+        "networkId": "",
+        "gasStrategy": ""
+    }
   };
+  updateUserSession(userSession);
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", async () => {
       try {
@@ -199,7 +260,7 @@ class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
-          updateUserSession(["user-session-config", "lastSelectedAcc"], message.account);
+          updateUserSession(message.account, ["user-session-config", "lastSelectedAcc"]);
           this.getBalance(message.account, message.testNetId);
         } else if (message.command === "build-rawtx") {
           this.buildRawTx(message.payload, message.testNetId);
@@ -221,7 +282,7 @@ class ReactPanel {
         } else if (message.command === 'delete-keyPair') {
           this.deleteKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'get-localAccounts') {
-          updateUserSession(["eth-config", "keyStorePath"], this._extensionPath);
+          updateUserSession(this._extensionPath, ["eth-config", "keyStorePath"]);
           this.getLocalAccounts(this._extensionPath);
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
@@ -345,11 +406,11 @@ class ReactPanel {
         context.workspaceState.update("sources", JSON.stringify(sources));
         this._panel.webview.postMessage({ compiled: m.compiled, sources, testPanel: 'main' });
         updateUserSession(
-          ['user-session-config', 'compile'],
           {
             'lang': "solidity",
             'solidityCompilerVersion': this.version,
-          }
+          },
+          ['user-session-config', 'compile']
         );
       } else if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
@@ -389,11 +450,11 @@ class ReactPanel {
         const contractName = Object.keys(m.compiled.contracts[fileName])[0];
         // @ts-ignore
         updateUserSession(
-          ['user-session-config', 'compile'],
           {
             'lang': "vyper",
             'solidityCompilerVersion': ""
-          }
+          },
+          ['user-session-config', 'compile']
         );
       }
       if (m.processMessage) {
@@ -564,8 +625,8 @@ class ReactPanel {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       if (m.transactionResult) {
-        updateUserSession(['user-session-config', 'txHashOfLastSendEther'], m.transactionResult);
-        updateUserSession(['user-session-config', 'networkId'], testNetId);
+        updateUserSession(m.transactionResult, ['user-session-config', 'txHashOfLastSendEther']);
+        updateUserSession(testNetId, ['user-session-config', 'networkId']);
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -579,8 +640,8 @@ class ReactPanel {
       if (m.unsignedTx) {
         this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
-        updateUserSession(['user-session-config', 'txHashOfLastSendEther'], m.transactionResult);
-        updateUserSession(['user-session-config', 'networkId'], testNetId);
+        updateUserSession(m.transactionResult, ['user-session-config', 'txHashOfLastSendEther']);
+        updateUserSession(testNetId, ['user-session-config', 'networkId']);
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -654,9 +715,15 @@ class ReactPanel {
   public dispose() {
     console.log("Disposed: ");
     const timeStamp: string = new Date(Date.now()).toISOString();
-    updateUserSession(['user-session-config', 'session-timestamp'], timeStamp);
-    // @ts-ignore
-    fs.writeFileSync(userSession['eth-config']['keyStorePath'] + "/UserSession--UTC--" + timeStamp, JSON.stringify(userSession), 'utf8');
+    updateUserSession(timeStamp, ['user-session-config', 'session-timestamp']);
+    getUserSession().then((userSession) => {
+      console.log("userSession");
+      // logs the user session
+      console.log(userSession);
+    }).catch((err: any) => {
+      console.log("error: ");
+      console.log(err);
+    });
     if (this._disposed) {
       return;
     }
