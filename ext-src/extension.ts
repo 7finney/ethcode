@@ -72,32 +72,27 @@ function getToken() {
   });
 }
 
-function updateUserSession(valueToAssign: any, keys?: string[]) {
+function updateUserSession(valueToAssign: any, keys: string[]) {
   return new Promise(async (resolve, reject) => {
     try {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
-      if(!keys) {
-        config.update('userSession', valueToAssign);
-        resolve('user session started');
-      } else {
+      // @ts-ignore
+      let userSession = config.get('userSession');
+      // @ts-ignore
+      if(keys.length === 2) {
         // @ts-ignore
-        let userSession = config.get('userSession');
+        userSession[keys[0]][keys[1]] = valueToAssign;
+        config.update('userSession', userSession);
+        resolve(userSession);
         // @ts-ignore
-        if(keys.length === 2) {
-          // @ts-ignore
-          userSession[keys[0]][keys[1]] = valueToAssign;
-          config.update('userSession', userSession);
-          resolve(userSession);
-          // @ts-ignore
-        } else if(keys.length === 3) {
-          // @ts-ignore
-          userSession = config.get('userSession');
-          // @ts-ignore
-          userSession[keys[0]][keys[1]][keys[2]] = valueToAssign;
-          config.update('userSession', userSession);
-          resolve(userSession);
-        }
+      } else if(keys.length === 3) {
+        // @ts-ignore
+        userSession = config.get('userSession');
+        // @ts-ignore
+        userSession[keys[0]][keys[1]][keys[2]] = valueToAssign;
+        config.update('userSession', userSession);
+        resolve(userSession);
       }
     } catch(err) {
       reject(err);
@@ -139,28 +134,6 @@ function errorToast(msg: string) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  let userSession: object = {
-    "eth-config": {
-        "keyStorePath": "",
-        "grpc-endpoints": {
-            "client-call": "cc.ethcode.de:50053",
-            "remix-tests":"rt.ethco.de:50051",
-            "remix-debug":"rd.ethco.de:50052"
-        }
-    },
-    "user-session-config": {
-        "userSession(timestamp at closing point)": "",
-        "lastSelectedAcc": "",
-        "txHashOfLastSendEther": "",
-        "compile": {
-            "lang": "solidity/vyper",
-            "solidityCompilerVersion": ""
-        },
-        "networkId": "",
-        "gasStrategy": ""
-    }
-  };
-  updateUserSession(userSession);
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", async () => {
       try {

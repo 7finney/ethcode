@@ -32,6 +32,29 @@
   ],
   "main": "./build/ext-src/extension.js",
   "contributes": {
+    "configuration": {
+      "userSession": {
+        "eth-config": {
+            "keyStorePath": "",
+            "grpc-endpoints": {
+                "client-call": "cc.ethcode.de:50053",
+                "remix-tests":"rt.ethco.de:50051",
+                "remix-debug":"rd.ethco.de:50052"
+            }
+        },
+        "user-session-config": {
+            "userSession(timestamp at closing point)": "",
+            "lastSelectedAcc": "",
+            "txHashOfLastSendEther": "",
+            "compile": {
+                "lang": "",
+                "solidityCompilerVersion": ""
+            },
+            "networkId": "",
+            "gasStrategy": ""
+        }
+      }
+    },
     "commands": [
       {
         "command": "ethcode.activate",
