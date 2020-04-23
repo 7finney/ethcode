@@ -52,6 +52,11 @@
         "command": "ethcode.runTest",
         "title": "Solidity unit test",
         "category": "Ethereum"
+      },
+      {
+        "command": "ethcode.versionSelector",
+        "title": "Version selector",
+        "category": "Ethereum"
       }
     ],
     "keybindings": [
@@ -66,6 +71,10 @@
       {
         "key": "ctrl+alt+t",
         "command": "ethcode.runTest"
+      },
+      {
+        "key": "ctrl+alt+v",
+        "command": "ethcode.versionSelector"
       }
     ]
   },

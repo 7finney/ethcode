@@ -83,6 +83,25 @@ function errorToast(msg: string) {
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
+    vscode.commands.registerCommand("ethcode.versionSelector", async () => {
+      try {
+        if (ReactPanel.currentPanel) {
+          console.log("into if");
+          
+          const version = await ReactPanel.currentPanel.getCompilerVersion();
+          console.log("bcacjacvav");
+          console.log(JSON.stringify(version));
+          console.log(" m m, m, m, ,m ");
+          
+          // @ts-ignore
+          vscode.window.showQuickPick(['1', '2', '3', '4']);
+        }
+      } catch (error) {
+        errorToast("Something went worng");
+      }
+    })
+  );
+  context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", async () => {
       try {
         await getToken();
@@ -629,6 +648,7 @@ class ReactPanel {
   }
 
   public getCompilerVersion() {
+    console.log("getCompilerVersion");
     const solcWorker = this.createWorker();
     solcWorker.send({ command: "fetch_compiler_verison" });
     this._panel.webview.postMessage({
@@ -640,6 +660,14 @@ class ReactPanel {
         const { versions } = m;
         this._panel.webview.postMessage({ versions });
         this._panel.webview.postMessage({ processMessage: "" });
+        return new Promise((resolve, reject) => {
+          if(versions) {
+            console.log("into resolve");
+            resolve(versions.releases);
+          } else {
+            reject([]);
+          }
+        })
         solcWorker.kill();
       }
     });
