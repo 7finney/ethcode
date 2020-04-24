@@ -76,7 +76,7 @@ function updateUserSession(valueToAssign: any, keys: string[]) {
   return new Promise(async (resolve, reject) => {
     try {
       // @ts-ignore
-      const config = await vscode.workspace.getConfiguration('userSession', vscode.workspace.workspaceFolders[0].uri);
+      const config = await vscode.workspace.getConfiguration('ethcodeUserSession', vscode.workspace.workspaceFolders[0].uri);
       if(keys.length === 2) {
         let userSession = keys[0] + '.' + keys[1];
         config.update(userSession , valueToAssign);
@@ -98,7 +98,7 @@ function getUserSession(keys: string[]) {
   return new Promise(async (resolve, reject) => {
     try {
       // @ts-ignore
-      const config = await vscode.workspace.getConfiguration('userSession', vscode.workspace.workspaceFolders[0].uri);
+      const config = await vscode.workspace.getConfiguration('ethcodeUserSession', vscode.workspace.workspaceFolders[0].uri);
       if(keys.length === 1){
         // @ts-ignore
         resolve(config.get(keys[0]));
