@@ -198,6 +198,10 @@ class ContractDeploy extends Component<IProps, IState> {
     const { target: { name, value } } = event;
     // @ts-ignore
     this.setState({ [name]: value });
+
+    if (this.state.gasSupply > 0) {
+      this.setState({ disable: false });
+    }
   }
   private handleConstructorInputChange(event: any) {
     const { constructorInput } = this.state;
