@@ -76,22 +76,16 @@ function updateUserSession(valueToAssign: any, keys: string[]) {
   return new Promise(async (resolve, reject) => {
     try {
       // @ts-ignore
-      const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
-      // @ts-ignore
-      let userSession = config.get('userSession');
-      // @ts-ignore
+      const config = await vscode.workspace.getConfiguration('userSession', vscode.workspace.workspaceFolders[0].uri);
       if(keys.length === 2) {
-        // @ts-ignore
-        userSession[keys[0]][keys[1]] = valueToAssign;
-        config.update('userSession', userSession);
+        let userSession = keys[0] + '.' + keys[1];
+        config.update(userSession , valueToAssign);
         resolve(userSession);
         // @ts-ignore
       } else if(keys.length === 3) {
+        let userSession = keys[0] + '.' + keys[1] + '.' + keys[2];
         // @ts-ignore
-        userSession = config.get('userSession');
-        // @ts-ignore
-        userSession[keys[0]][keys[1]][keys[2]] = valueToAssign;
-        config.update('userSession', userSession);
+        config.update(userSession, valueToAssign);
         resolve(userSession);
       }
     } catch(err) {
@@ -100,22 +94,20 @@ function updateUserSession(valueToAssign: any, keys: string[]) {
   });
 }
 
-function getUserSession(keys?: string[]) {
+function getUserSession(keys: string[]) {
   return new Promise(async (resolve, reject) => {
     try {
       // @ts-ignore
-      const config = await vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders[0].uri);
-      if(!keys){
-        resolve(config.get('userSession'));
-      } else if(keys.length === 1){
+      const config = await vscode.workspace.getConfiguration('userSession', vscode.workspace.workspaceFolders[0].uri);
+      if(keys.length === 1){
         // @ts-ignore
-        resolve(config.get('userSession')[keys[0]]);
+        resolve(config.get(keys[0]));
       } else if(keys.length === 2) {
         // @ts-ignore
-        resolve(config.get('userSession')[keys[0]][keys[1]]);
+        resolve(config.get(keys[0] + '.' + keys[1]));
       } else if(keys.length === 3) {
         // @ts-ignore
-        resolve(config.get('userSession')[keys[0]][keys[1]][keys[2]]);
+        resolve(config.get(keys[0] + '.' + keys[1] + '.' + keys[2]));
       }
     } catch(err) {
       reject(err);
@@ -233,7 +225,7 @@ class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
-          updateUserSession(message.account, ["user-session-config", "lastSelectedAcc"]);
+          updateUserSession(message.account, ["userConfig", "lastSelectedAcc"]);
           this.getBalance(message.account, message.testNetId);
         } else if (message.command === "build-rawtx") {
           this.buildRawTx(message.payload, message.testNetId);
@@ -255,7 +247,7 @@ class ReactPanel {
         } else if (message.command === 'delete-keyPair') {
           this.deleteKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'get-localAccounts') {
-          updateUserSession(this._extensionPath, ["eth-config", "keyStorePath"]);
+          updateUserSession(this._extensionPath, ["ethConfig", "keyStorePath"]);
           this.getLocalAccounts(this._extensionPath);
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
@@ -383,7 +375,7 @@ class ReactPanel {
             'lang': "solidity",
             'solidityCompilerVersion': this.version,
           },
-          ['user-session-config', 'compile']
+          ['userConfig', 'compile']
         );
       } else if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
@@ -427,7 +419,7 @@ class ReactPanel {
             'lang': "vyper",
             'solidityCompilerVersion': ""
           },
-          ['user-session-config', 'compile']
+          ['userConfig', 'compile']
         );
       }
       if (m.processMessage) {
@@ -598,8 +590,8 @@ class ReactPanel {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       if (m.transactionResult) {
-        updateUserSession(m.transactionResult, ['user-session-config', 'txHashOfLastSendEther']);
-        updateUserSession(testNetId, ['user-session-config', 'networkId']);
+        updateUserSession(m.transactionResult, ['userConfig', 'txHashOfLastSendEther']);
+        updateUserSession(testNetId, ['userConfig', 'networkId']);
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -613,8 +605,8 @@ class ReactPanel {
       if (m.unsignedTx) {
         this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
-        updateUserSession(m.transactionResult, ['user-session-config', 'txHashOfLastSendEther']);
-        updateUserSession(testNetId, ['user-session-config', 'networkId']);
+        updateUserSession(m.transactionResult, ['userConfig', 'txHashOfLastSendEther']);
+        updateUserSession(testNetId, ['userConfig', 'networkId']);
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -688,9 +680,16 @@ class ReactPanel {
   public dispose() {
     console.log("Disposed: ");
     const timeStamp: string = new Date(Date.now()).toISOString();
-    updateUserSession(timeStamp, ['user-session-config', 'session-timestamp']);
-    getUserSession().then((userSession) => {
-      console.log("userSession");
+    updateUserSession(timeStamp, ['userConfig', 'sessionTimeStamp']);
+    console.log("userSession");
+    getUserSession(['userConfig']).then((userSession) => {
+      // logs the user session
+      console.log(userSession);
+    }).catch((err: any) => {
+      console.log("error: ");
+      console.log(err);
+    });
+    getUserSession(['ethConfig']).then((userSession) => {
       // logs the user session
       console.log(userSession);
     }).catch((err: any) => {
