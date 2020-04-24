@@ -198,6 +198,10 @@ class ContractDeploy extends Component<IProps, IState> {
     const { target: { name, value } } = event;
     // @ts-ignore
     this.setState({ [name]: value });
+
+    if (this.state.gasSupply > 0) {
+      this.setState({ disable: false });
+    }
   }
   private handleConstructorInputChange(event: any) {
     const { constructorInput } = this.state;
@@ -328,7 +332,6 @@ class ContractDeploy extends Component<IProps, IState> {
               {isPayable &&
               <input type="number" className="custom_input_css" placeholder='Enter payable amount' style={{ margin: '5px' }} name="payableAmount" value={payableAmount} onChange={(e) =>this.handleChange(e)} />
               }
-              {/* <input type="submit" style={{ marginLeft: '10px' }} className="custom_button_css" value="Call function" /> */}
               <Button ButtonType="input" disabled={callFunctionToggle} value="Call function" />
             </form>
           </div>

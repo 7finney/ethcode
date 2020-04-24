@@ -273,6 +273,9 @@ class Deploy extends Component<IProps, IState> {
     const { target: { name, value } } = event;
     // @ts-ignore
     this.setState({ [name]: value });
+    if (this.state.gasEstimate > 0) {
+      this.setState({ buildTxToggle: false });
+    }
   }
 
   render() {
@@ -411,7 +414,10 @@ class Deploy extends Component<IProps, IState> {
         </div>
 
         <div className="input-container">
-          <Button disabled={buildTxToggle} onClick={this.handleBuildTxn}>Build transaction</Button>
+          { gasEstimate > 0 ?
+            <Button disabled={buildTxToggle} onClick={this.handleBuildTxn}>Build transaction</Button>
+            : <Button disabled={true} onClick={this.handleBuildTxn}>Build transaction</Button>
+           }
         </div>
 
         {
