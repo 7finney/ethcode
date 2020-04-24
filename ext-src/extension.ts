@@ -656,20 +656,19 @@ class ReactPanel {
     });
 
     solcWorker.on("message", (m: any) => {
-      if (m.versions) {
+      return new Promise((resolve, reject) => {
         const { versions } = m;
-        this._panel.webview.postMessage({ versions });
-        this._panel.webview.postMessage({ processMessage: "" });
-        return new Promise((resolve, reject) => {
-          if(versions) {
+        if(versions) {
+          this._panel.webview.postMessage({ versions });
+          this._panel.webview.postMessage({ processMessage: "" });
             console.log("into resolve");
-            resolve(versions.releases);
+            resolve('hello');
+            solcWorker.kill();
           } else {
             reject([]);
+            solcWorker.kill();
           }
         })
-        solcWorker.kill();
-      }
     });
     solcWorker.on("error", (error: Error) => {
       console.log(
