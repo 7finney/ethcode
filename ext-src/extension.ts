@@ -88,13 +88,13 @@ export function activate(context: vscode.ExtensionContext) {
         if (ReactPanel.currentPanel) {
           console.log("into if");
           
-          const version = await ReactPanel.currentPanel.getCompilerVersion();
-          console.log("bcacjacvav");
-          console.log(JSON.stringify(version));
-          console.log(" m m, m, m, ,m ");
+          const version = ReactPanel.currentPanel.getCompilerVersion().then((versions) => {
+            // @ts-ignore
+            console.log(JSON.stringify(Object.keys(versions.releases)));
+            // @ts-ignore
+            vscode.window.showQuickPick(Object.keys(versions.releases));
+          });
           
-          // @ts-ignore
-          vscode.window.showQuickPick(['1', '2', '3', '4']);
         }
       } catch (error) {
         errorToast("Something went worng");
@@ -648,42 +648,41 @@ class ReactPanel {
   }
 
   public getCompilerVersion() {
-    console.log("getCompilerVersion");
-    const solcWorker = this.createWorker();
-    solcWorker.send({ command: "fetch_compiler_verison" });
-    this._panel.webview.postMessage({
-      processMessage: "Fetching Compiler Versions..."
-    });
-
-    solcWorker.on("message", (m: any) => {
-      return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      console.log("getCompilerVersion");
+      const solcWorker = this.createWorker();
+      solcWorker.send({ command: "fetch_compiler_verison" });
+      this._panel.webview.postMessage({
+        processMessage: "Fetching Compiler Versions..."
+      });
+      solcWorker.on("message", (m: any) => {
         const { versions } = m;
         if(versions) {
           this._panel.webview.postMessage({ versions });
           this._panel.webview.postMessage({ processMessage: "" });
             console.log("into resolve");
-            resolve('hello');
+            resolve(versions);
             solcWorker.kill();
-          } else {
-            reject([]);
-            solcWorker.kill();
-          }
-        })
-    });
-    solcWorker.on("error", (error: Error) => {
-      console.log(
-        "%c getVersion worker process exited with error" + `${error.message}`,
-        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-      );
-    });
-    solcWorker.on("exit", (code: number, signal: string) => {
-      console.log(
-        "%c getVersion worker process exited with " +
-        `code ${code} and signal ${signal}`,
-        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-      );
-      this._panel.webview.postMessage({
-        message: `Error code ${code} : Error signal ${signal}`
+        } else {
+          reject([]);
+          solcWorker.kill();
+        }
+      });
+      solcWorker.on("error", (error: Error) => {
+        console.log(
+          "%c getVersion worker process exited with error" + `${error.message}`,
+          "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+        );
+      });
+      solcWorker.on("exit", (code: number, signal: string) => {
+        console.log(
+          "%c getVersion worker process exited with " +
+          `code ${code} and signal ${signal}`,
+          "background: rgba(36, 194, 203, 0.3); color: #EF525B"
+        );
+        this._panel.webview.postMessage({
+          message: `Error code ${code} : Error signal ${signal}`
+        });
       });
     });
   }
