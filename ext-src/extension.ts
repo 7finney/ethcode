@@ -86,15 +86,19 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("ethcode.versionSelector", async () => {
       try {
         if (ReactPanel.currentPanel) {
-          console.log("into if");
-          
-          const version = ReactPanel.currentPanel.getCompilerVersion().then((versions) => {
+          ReactPanel.currentPanel.getCompilerVersion().then((versions) => {
             // @ts-ignore
             console.log(JSON.stringify(Object.keys(versions.releases)));
             // @ts-ignore
-            vscode.window.showQuickPick(Object.keys(versions.releases));
+            vscode.window.showQuickPick(Object.keys(versions.releases)).then((selected) => {
+              if(selected){
+                // @ts-ignore
+                ReactPanel.currentPanel.setSolidityVersion(selected);
+              }
+            });
+          }).catch((err: any) => {
+            errorToast(err);
           });
-          
         }
       } catch (error) {
         errorToast("Something went worng");
@@ -259,6 +263,10 @@ class ReactPanel {
         console.error(error);
       }
     }
+  }
+
+  public setSolidityVersion(selected: any) {
+    this.version = selected;
   }
 
   public checkFileName() {
@@ -672,7 +680,8 @@ class ReactPanel {
         console.log(
           "%c getVersion worker process exited with error" + `${error.message}`,
           "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-        );
+          );
+          reject(error);
       });
       solcWorker.on("exit", (code: number, signal: string) => {
         console.log(
@@ -683,6 +692,7 @@ class ReactPanel {
         this._panel.webview.postMessage({
           message: `Error code ${code} : Error signal ${signal}`
         });
+        reject(`Error code ${code} : Error signal ${signal}`);
       });
     });
   }
