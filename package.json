@@ -81,6 +81,11 @@
         },
         "ethcode.userConfig.gasStrategy": {
           "type":"string",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
           "default": "medium",
           "description": "Gas strategy for gas price during transactions",
           "scope": "application"
