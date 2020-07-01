@@ -402,7 +402,7 @@ class ReactPanel {
             'lang': "solidity",
             'solidityCompilerVersion': this.version,
           },
-          ['userConfig', 'compile']
+          ['userConfig', 'compiler']
         );
       } else if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
