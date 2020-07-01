@@ -225,7 +225,7 @@ class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
-          updateUserSession(message.account, ["userConfig", "lastSelectedAcc"]);
+          updateUserSession(message.account, ["userConfig", "defaultAccount"]);
           this.getBalance(message.account, message.testNetId);
         } else if (message.command === "build-rawtx") {
           this.buildRawTx(message.payload, message.testNetId);
@@ -247,7 +247,7 @@ class ReactPanel {
         } else if (message.command === 'delete-keyPair') {
           this.deleteKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'get-localAccounts') {
-          updateUserSession(this._extensionPath, ["ethConfig", "keyStorePath"]);
+          updateUserSession(this._extensionPath, ["keystore", "keyStorePath"]);
           this.getLocalAccounts(this._extensionPath);
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
@@ -679,8 +679,8 @@ class ReactPanel {
 
   public dispose() {
     console.log("Disposed: ");
-    const timeStamp: string = new Date(Date.now()).toISOString();
-    updateUserSession(timeStamp, ['userConfig', 'sessionTimeStamp']);
+    // const timeStamp: string = new Date(Date.now()).toISOString();
+    // updateUserSession(timeStamp, ['userConfig', 'sessionTimeStamp']);
     console.log("userSession");
     getUserSession(['userConfig']).then((userSession) => {
       // logs the user session
@@ -689,7 +689,7 @@ class ReactPanel {
       console.log("error: ");
       console.log(err);
     });
-    getUserSession(['ethConfig']).then((userSession) => {
+    getUserSession(['keystore']).then((userSession) => {
       // logs the user session
       console.log(userSession);
     }).catch((err: any) => {
