@@ -1,5 +1,6 @@
 # Ethereum plugin for VSCode
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/Ethereum-Devtools-Developers-Studio/ethcode)
+[![Discord chat](https://img.shields.io/discord/722971683388129290?color=7389D8&logo=discord&logoColor=ffffff)](https://discord.gg/87sE7Bm)
 
 Ethcode is a vscode plugin for compiling, deploy, execute solidity and vyper smart contracts/programs in Ethereum blockchian. It supports multiple test networks. Ethcode has inbuilt support for Remix transaction debug and solidity unit testing.
 
@@ -57,11 +58,11 @@ Step 1: Login to https://dev.azure.com/0mkar/ and generate PAT
 
 Step 2:
 ```
-vsce login quantanetwork
+vsce login ethential
 vsce publish 0.1.4 -p <access token> --yarn
 git push origin v0.1.4
 ```
-Extension marketplace link - https://marketplace.visualstudio.com/items?itemName=quantanetwork.ethcode
+Extension marketplace link - https://marketplace.visualstudio.com/items?itemName=ethential.ethcode
 
 ## Under the hood
 
