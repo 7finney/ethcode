@@ -6,6 +6,7 @@ import { ISources } from "./types";
 import * as uuid from "uuid/v1";
 import axios from "axios";
 import { IAccount } from "./types";
+import * as fs from "fs";
 
 // @ts-ignore
 let jwtToken: any;
@@ -67,6 +68,49 @@ function getToken() {
     } catch (error) {
       error(error);
       reject(error);
+    }
+  });
+}
+
+function updateUserSession(valueToAssign: any, keys: string[]) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // @ts-ignore
+      const config = await vscode.workspace.getConfiguration('ethcode', vscode.workspace.workspaceFolders[0].uri);
+      if(keys.length === 2) {
+        let userSession = keys[0] + '.' + keys[1];
+        config.update(userSession , valueToAssign);
+        resolve(userSession);
+        // @ts-ignore
+      } else if(keys.length === 3) {
+        let userSession = keys[0] + '.' + keys[1] + '.' + keys[2];
+        // @ts-ignore
+        config.update(userSession, valueToAssign);
+        resolve(userSession);
+      }
+    } catch(err) {
+      reject(err);
+    }
+  });
+}
+
+function getUserSession(keys: string[]) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // @ts-ignore
+      const config = await vscode.workspace.getConfiguration('ethcode', vscode.workspace.workspaceFolders[0].uri);
+      if(keys.length === 1){
+        // @ts-ignore
+        resolve(config.get(keys[0]));
+      } else if(keys.length === 2) {
+        // @ts-ignore
+        resolve(config.get(keys[0] + '.' + keys[1]));
+      } else if(keys.length === 3) {
+        // @ts-ignore
+        resolve(config.get(keys[0] + '.' + keys[1] + '.' + keys[2]));
+      }
+    } catch(err) {
+      reject(err);
     }
   });
 }
@@ -181,6 +225,7 @@ class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
+          updateUserSession(message.account, ["userConfig", "defaultAccount"]);
           this.getBalance(message.account, message.testNetId);
         } else if (message.command === "build-rawtx") {
           this.buildRawTx(message.payload, message.testNetId);
@@ -202,6 +247,7 @@ class ReactPanel {
         } else if (message.command === 'delete-keyPair') {
           this.deleteKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'get-localAccounts') {
+          updateUserSession(this._extensionPath, ["keystore", "keyStorePath"]);
           this.getLocalAccounts(this._extensionPath);
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
@@ -324,6 +370,13 @@ class ReactPanel {
       } else if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
         this._panel.webview.postMessage({ compiled: m.compiled, sources, testPanel: 'main' });
+        updateUserSession(
+          {
+            'lang': "solidity",
+            'solidityCompilerVersion': this.version,
+          },
+          ['userConfig', 'compile']
+        );
       } else if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
@@ -358,6 +411,16 @@ class ReactPanel {
 
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         vyperWorker.kill();
+        const fileName = Object.keys(m.compiled.sources)[0];
+        const contractName = Object.keys(m.compiled.contracts[fileName])[0];
+        // @ts-ignore
+        updateUserSession(
+          {
+            'lang': "vyper",
+            'solidityCompilerVersion': ""
+          },
+          ['userConfig', 'compile']
+        );
       }
       if (m.processMessage) {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
@@ -527,6 +590,8 @@ class ReactPanel {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
       if (m.transactionResult) {
+        updateUserSession(m.transactionResult, ['userConfig', 'txHashOfLastSendEther']);
+        updateUserSession(testNetId, ['userConfig', 'networkId']);
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -540,6 +605,8 @@ class ReactPanel {
       if (m.unsignedTx) {
         this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
+        updateUserSession(m.transactionResult, ['userConfig', 'txHashOfLastSendEther']);
+        updateUserSession(testNetId, ['userConfig', 'networkId']);
         this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         success("Successfully sent Ether");
       }
@@ -611,6 +678,26 @@ class ReactPanel {
 
 
   public dispose() {
+    // TODO: Save user session before dispose
+    // -------------------------------------------------------
+    // const timeStamp: string = new Date(Date.now()).toISOString();
+    // updateUserSession(timeStamp, ['userConfig', 'sessionTimeStamp']);
+    // console.log("userSession");
+    // getUserSession(['userConfig']).then((userSession) => {
+    //   // logs the user session
+    //   console.log(userSession);
+    // }).catch((err: any) => {
+    //   console.log("error: ");
+    //   console.log(err);
+    // });
+    // getUserSession(['keystore']).then((userSession) => {
+    //   // logs the user session
+    //   console.log(userSession);
+    // }).catch((err: any) => {
+    //   console.log("error: ");
+    //   console.log(err);
+    // });
+    // -------------------------------------------------------
     if (this._disposed) {
       return;
     }
