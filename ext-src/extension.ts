@@ -678,24 +678,26 @@ class ReactPanel {
 
 
   public dispose() {
-    console.log("Disposed: ");
+    // TODO: Save user session before dispose
+    // -------------------------------------------------------
     // const timeStamp: string = new Date(Date.now()).toISOString();
     // updateUserSession(timeStamp, ['userConfig', 'sessionTimeStamp']);
-    console.log("userSession");
-    getUserSession(['userConfig']).then((userSession) => {
-      // logs the user session
-      console.log(userSession);
-    }).catch((err: any) => {
-      console.log("error: ");
-      console.log(err);
-    });
-    getUserSession(['keystore']).then((userSession) => {
-      // logs the user session
-      console.log(userSession);
-    }).catch((err: any) => {
-      console.log("error: ");
-      console.log(err);
-    });
+    // console.log("userSession");
+    // getUserSession(['userConfig']).then((userSession) => {
+    //   // logs the user session
+    //   console.log(userSession);
+    // }).catch((err: any) => {
+    //   console.log("error: ");
+    //   console.log(err);
+    // });
+    // getUserSession(['keystore']).then((userSession) => {
+    //   // logs the user session
+    //   console.log(userSession);
+    // }).catch((err: any) => {
+    //   console.log("error: ");
+    //   console.log(err);
+    // });
+    // -------------------------------------------------------
     if (this._disposed) {
       return;
     }
