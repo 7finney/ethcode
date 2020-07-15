@@ -7,7 +7,6 @@ import * as uuid from "uuid/v1";
 import axios from "axios";
 import { IAccount } from "./types";
 import { Logger } from "./logger";
-import { errorToast } from "./utils";
 
 // @ts-ignore
 let jwtToken: any;
@@ -37,7 +36,7 @@ async function verifyToken(token: string | unknown) {
       return false;
     }
   } catch (error) {
-    logger.log("Error in verifyToken")
+    logger.log(`Error in verifyToken ${token}`);
     logger.error(error);
     return false;
   }
@@ -250,7 +249,7 @@ class ReactPanel {
               ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
               ReactPanel.currentPanel.getAccounts();
             } catch (error) {
-              errorToast(error);
+              logger.error(error);
             }
           }
         } else if (message.command === "gen-keypair") {
@@ -285,7 +284,7 @@ class ReactPanel {
         ReactPanel.currentPanel._panel.reveal(column);
         ReactPanel.currentPanel.checkFileName();
       } catch (error) {
-        console.error(error);
+        logger.error(error);
       }
     } else {
       try {
@@ -294,7 +293,7 @@ class ReactPanel {
         ReactPanel.currentPanel.getCompilerVersion();
         ReactPanel.currentPanel.checkFileName();
       } catch (error) {
-        console.error(error);
+        logger.error(error);
       }
     }
   }
@@ -361,8 +360,8 @@ class ReactPanel {
     // child_process will work when launched with ctrl+F5
     // more on this - https://github.com/Microsoft/vscode/issues/40875
     const solcWorker = this.createWorker();
-    console.dir("WorkerID: ", solcWorker.pid);
-    console.dir("Compiling with solidity version ", this.version);
+    logger.log(`Solidity compiler invoked with WorkerID: ${solcWorker.pid}`);
+    logger.log(`Compiling with solidity version ${this.version}`);
     // Reset Components State before compilation
     this._panel.webview.postMessage({ processMessage: "Compiling..." });
     solcWorker.send({
@@ -372,7 +371,7 @@ class ReactPanel {
     });
     solcWorker.on("message", (m: any) => {
       if (m.error) {
-        errorToast(m.error);
+        logger.error(m.error);
       } else if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content,
@@ -397,17 +396,11 @@ class ReactPanel {
       }
     });
     solcWorker.on("error", (error: Error) => {
-      console.log(
-        "%c Compile worker process exited with error" + `${error.message}`,
-        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-      );
+      logger.log(`Compile worker process exited with error ${error.message}`);
       solcWorker.kill();
     });
     solcWorker.on("exit", (code: number, signal: string) => {
-      console.log(
-        "%c Compile worker process exited with " + `code ${code} and signal ${signal}`,
-        "background: rgba(36, 194, 203, 0.3); color: #EF525B"
-      );
+      logger.log(`Compile worker process exited with code ${code} and signal ${signal}`);
       this._panel.webview.postMessage({ processMessage: `Error code ${code} : Error signal ${signal}` });
       solcWorker.kill();
       // TODO: now if we kill process anywhere except here things fails randomly, (todo) properly exit process
@@ -415,8 +408,8 @@ class ReactPanel {
   }
   private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
     const vyperWorker = this.createVyperWorker();
-    console.dir("WorkerID: ", vyperWorker.pid);
-    console.dir("Compiling with vyper compiler version ", this.version);
+    logger.log(`Vyper compiler invoked with WorkerID: ${vyperWorker.pid}`);
+    logger.log(`Compiling with vyper compiler version: ${this.version}`);
     this._panel.webview.postMessage({ processMessage: "Compiling..." });
     vyperWorker.send({
       command: "compile",
@@ -425,7 +418,7 @@ class ReactPanel {
     });
     vyperWorker.on("message", (m: any) => {
       if (m.error) {
-        errorToast(m.error);
+        logger.error(m.error);
       }
       if (m.compiled) {
         context.workspaceState.update("sources", JSON.stringify(sources));
@@ -450,7 +443,7 @@ class ReactPanel {
   }
   private genKeyPair(password: string, ksPath: string): void {
     const accWorker = this.createAccWorker();
-    console.dir("Account worker invoked with WorkerID : ", accWorker.pid);
+    logger.log(`Account worker invoked with WorkerID : ${accWorker.pid}.`);
     // TODO: implementation according to the acc_system frontend
     accWorker.on("message", (m: any) => {
       if (m.account) {
@@ -491,8 +484,7 @@ class ReactPanel {
 
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
-    logger.log(`WorkerID: ${debugWorker.pid}`);
-    console.log("Debugging transaction with remix-debug...");
+    logger.log(`Debug worker invoked with WorkerID: ${debugWorker.pid}`);
     debugWorker.on("message", (m: any) => {
       try {
         this._panel.webview.postMessage({ txTrace: JSON.parse(m.debugResp) });
@@ -573,7 +565,7 @@ class ReactPanel {
   }
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
-    logger.log("Running contract call");
+    logger.log("Running contract call...");
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
       if (m.error) {
