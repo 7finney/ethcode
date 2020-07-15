@@ -7,6 +7,7 @@ import * as uuid from "uuid/v1";
 import axios from "axios";
 import { IAccount } from "./types";
 import { Logger } from "./logger";
+import { log } from "console";
 
 // @ts-ignore
 let jwtToken: any;
@@ -36,7 +37,7 @@ async function verifyToken(token: string | unknown) {
       return false;
     }
   } catch (error) {
-    logger.log(`Error in verifyToken ${token}`);
+    logger.log(`Error in verifyToken ${JSON.stringify(token)}`);
     logger.error(error);
     return false;
   }
@@ -48,7 +49,9 @@ function getToken() {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration("launch", vscode.workspace.workspaceFolders[0].uri);
       // @ts-ignore
-      let token = config.get("ethcodeToken");
+      let tokenData = config.get("ethcodeToken");
+      // @ts-ignore
+      const token = tokenData.token;
 
       if (token) {
         // verify token
