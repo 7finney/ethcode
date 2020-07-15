@@ -7,8 +7,7 @@ export class Logger {
     this.outputChannel = window.createOutputChannel(name || "Ethcode");
   }
   private getNow(): string {
-    const now = Date.now();
-    const date = new Date(now * 1000);
+    const date = new Date(Date.now());
     return date.toLocaleTimeString();
   }
   public log(m: string) {
