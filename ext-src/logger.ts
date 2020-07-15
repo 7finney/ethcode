@@ -1,6 +1,8 @@
 import { window, OutputChannel } from "vscode";
+import {errorToast, successToast} from './utils';
+
 export class Logger {
-  outputChannel: OutputChannel;
+  private outputChannel: OutputChannel;
   constructor(name?: string) {
     this.outputChannel = window.createOutputChannel(name || "Ethcode");
   }
@@ -9,19 +11,22 @@ export class Logger {
     const date = new Date(now * 1000);
     return date.toISOString();
   }
-  log(m: string) {
+  public log(m: string) {
     const now = this.getNow();
-    this.outputChannel.appendLine(`[${now}]: ${m}`);
+    this.outputChannel.appendLine(`[${now}]: ${m}.`);
     this.outputChannel.show();
   }
-  error(e: Error) {
-    const now = Date.now();
-    this.outputChannel.appendLine(`[${now}] Error: ${e.message}`);
-    this.outputChannel.show();
-  }
-  success(m: string) {
+  public error(e: Error) {
     const now = this.getNow();
-    this.outputChannel.appendLine(`[${now}]: ${m}`);
+    this.outputChannel.appendLine(`[${now}] Error: ${e.message}.`);
+    this.outputChannel.appendLine(`[${now}] stack: ${e.stack}.`);
     this.outputChannel.show();
+    errorToast(`Error: ${e.message}`);
+  }
+  public success(m: string) {
+    const now = this.getNow();
+    this.outputChannel.appendLine(`[${now}]: ${m}.`);
+    this.outputChannel.show();
+    successToast(m);
   }
 }
