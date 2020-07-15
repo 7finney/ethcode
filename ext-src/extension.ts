@@ -7,6 +7,7 @@ import * as uuid from "uuid/v1";
 import axios from "axios";
 import { IAccount } from "./types";
 import * as fs from "fs";
+import {Logger} from "./logger";
 
 // @ts-ignore
 let jwtToken: any;
@@ -126,6 +127,7 @@ function errorToast(msg: string) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  const logger = new Logger;
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.versionSelector", async () => {
       try {
@@ -145,19 +147,23 @@ export function activate(context: vscode.ExtensionContext) {
           });
         }
       } catch (error) {
+        logger.log(error);
         errorToast("Something went worng");
       }
     })
   );
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.activate", async () => {
+      logger.log("Activating ethcode...")
       try {
         await getToken();
       } catch (error) {
+        logger.error(error);
         errorToast("Something went worng");
       } finally {
         ReactPanel.createOrShow(context.extensionPath);
-        success('Welcome to Ethcode');
+        logger.log("Ethcode activated!")
+        success('Welcome to Ethcode!');
       }
     })
   );
