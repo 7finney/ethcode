@@ -7,7 +7,6 @@ import * as uuid from "uuid/v1";
 import axios from "axios";
 import { IAccount } from "./types";
 import { Logger } from "./logger";
-import { log } from "console";
 
 // @ts-ignore
 let jwtToken: any;
@@ -95,27 +94,6 @@ function updateUserSession(valueToAssign: any, keys: string[]) {
         // @ts-ignore
         config.update(userSession, valueToAssign);
         resolve(userSession);
-      }
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
-
-function getUserSession(keys: string[]) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // @ts-ignore
-      const config = await vscode.workspace.getConfiguration("ethcode", vscode.workspace.workspaceFolders[0].uri);
-      if (keys.length === 1) {
-        // @ts-ignore
-        resolve(config.get(keys[0]));
-      } else if (keys.length === 2) {
-        // @ts-ignore
-        resolve(config.get(keys[0] + "." + keys[1]));
-      } else if (keys.length === 3) {
-        // @ts-ignore
-        resolve(config.get(keys[0] + "." + keys[1] + "." + keys[2]));
       }
     } catch (err) {
       reject(err);
@@ -227,6 +205,7 @@ class ReactPanel {
     // Handle messages from the webview
     this._panel.webview.onDidReceiveMessage(
       (message: any) => {
+        logger.log(`Worker message: ${JSON.stringify(message)}`);
         if (message.command === "version") {
           this.version = message.version;
         } else if (message.command === "run-deploy") {
@@ -373,6 +352,7 @@ class ReactPanel {
       version: this.version,
     });
     solcWorker.on("message", (m: any) => {
+      logger.log(`Solidity worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
       } else if (m.data && m.path) {
@@ -420,6 +400,7 @@ class ReactPanel {
       version: this.version,
     });
     vyperWorker.on("message", (m: any) => {
+      logger.log(`Vyper worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
       }
@@ -449,6 +430,7 @@ class ReactPanel {
     logger.log(`Account worker invoked with WorkerID : ${accWorker.pid}.`);
     // TODO: implementation according to the acc_system frontend
     accWorker.on("message", (m: any) => {
+      logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.account) {
         this._panel.webview.postMessage({ newAccount: m.account });
       }
@@ -464,6 +446,7 @@ class ReactPanel {
   private getPvtKey(pubKey: string, keyStorePath: string) {
     const accWorker = this.createAccWorker();
     accWorker.on("message", (m: any) => {
+      logger.log(`Account worker message: ${JSON.stringify(m)}`);
       // TODO: handle private key not found errors
       if (m.privateKey) {
         this._panel.webview.postMessage({ pvtKey: m.privateKey });
@@ -476,6 +459,7 @@ class ReactPanel {
     const accWorker = this.createAccWorker();
 
     accWorker.on("message", (m: any) => {
+      logger.log(`Account worker message: ${JSON.stringify(m)}`);
       m.resp ? logger.success(m.resp) : logger.error(m.error);
       m.resp ? this._panel.webview.postMessage({ resp: m.resp }) : null;
       if (m.localAddresses) {
@@ -489,6 +473,7 @@ class ReactPanel {
     const debugWorker = this.createWorker();
     logger.log(`Debug worker invoked with WorkerID: ${debugWorker.pid}`);
     debugWorker.on("message", (m: any) => {
+      logger.log(`Debug worker message: ${JSON.stringify(m)}`);
       try {
         this._panel.webview.postMessage({ txTrace: JSON.parse(m.debugResp) });
       } catch (error) {
@@ -501,6 +486,7 @@ class ReactPanel {
   private buildRawTx(payload: any, testNetId: string) {
     const txWorker = this.createWorker();
     txWorker.on("message", (m: any) => {
+      logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       } else {
@@ -513,6 +499,7 @@ class ReactPanel {
   private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
     deployWorker.on("message", (m: any) => {
+      logger.log(`Deploy worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       } else {
@@ -525,6 +512,7 @@ class ReactPanel {
   private signDeployTx(payload: any, testNetId: string) {
     const signedDeployWorker = this.createWorker();
     signedDeployWorker.on("message", (m: any) => {
+      logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       } else if (m.transactionResult) {
@@ -539,6 +527,7 @@ class ReactPanel {
   public getAccounts() {
     const accountsWorker = this.createWorker();
     accountsWorker.on("message", (m: any) => {
+      logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error.details);
       }
@@ -551,7 +540,7 @@ class ReactPanel {
     const accWorker = this.createAccWorker();
 
     accWorker.on("message", (m: any) => {
-      logger.log(JSON.stringify(m));
+      logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.localAddresses) {
         this._panel.webview.postMessage({ localAccounts: m.localAddresses });
       }
@@ -562,6 +551,7 @@ class ReactPanel {
   private getBalance(account: IAccount, testNetId: string) {
     const balanceWorker = this.createWorker();
     balanceWorker.on("message", (m: any) => {
+      logger.log(`Balance worker message: ${JSON.stringify(m)}`);
       this._panel.webview.postMessage({ balance: m.balance, account });
     });
     balanceWorker.send({ command: "get-balance", account, jwtToken, testnetId: testNetId });
@@ -571,6 +561,7 @@ class ReactPanel {
     logger.log("Running contract call...");
     const callWorker = this.createWorker();
     callWorker.on("message", (m: any) => {
+      logger.log(`Call worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
         this._panel.webview.postMessage({ errors: m.error });
@@ -592,6 +583,7 @@ class ReactPanel {
   private runGetGasEstimate(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
     deployWorker.on("message", (m: any) => {
+      logger.log(`Gas worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
         this._panel.webview.postMessage({ errors: JSON.stringify(m.error) });
@@ -605,6 +597,7 @@ class ReactPanel {
   private sendEther(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
+      logger.log(`Ether worker message: ${JSON.stringify(m)}`);
       if (m.transactionResult) {
         updateUserSession(m.transactionResult, ["userConfig", "txHashOfLastSendEther"]);
         updateUserSession(testNetId, ["userConfig", "networkId"]);
@@ -618,6 +611,7 @@ class ReactPanel {
   private sendEtherSigned(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
     sendEtherWorker.on("message", (m: any) => {
+      logger.log(`Ether worker message: ${JSON.stringify(m)}`);
       if (m.unsignedTx) {
         this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
@@ -674,6 +668,7 @@ class ReactPanel {
     });
     solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
     solcWorker.on("message", (m: any) => {
+      logger.log(`Remix-tests worker message: ${JSON.stringify(m)}`);
       if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content,
@@ -694,46 +689,8 @@ class ReactPanel {
       }
     });
     solcWorker.on("exit", () => {
-      logger.log("Tests worker exited");
+      logger.log("Remix-tests worker exited!");
     });
-  }
-
-  public dispose() {
-    // TODO: Save user session before dispose
-    // -------------------------------------------------------
-    // const timeStamp: string = new Date(Date.now()).toISOString();
-    // updateUserSession(timeStamp, ['userConfig', 'sessionTimeStamp']);
-    // console.log("userSession");
-    // getUserSession(['userConfig']).then((userSession) => {
-    //   // logs the user session
-    //   console.log(userSession);
-    // }).catch((err: any) => {
-    //   console.log("error: ");
-    //   console.log(err);
-    // });
-    // getUserSession(['keystore']).then((userSession) => {
-    //   // logs the user session
-    //   console.log(userSession);
-    // }).catch((err: any) => {
-    //   console.log("error: ");
-    //   console.log(err);
-    // });
-    // -------------------------------------------------------
-    if (this._disposed) {
-      return;
-    }
-    ReactPanel.currentPanel = undefined;
-
-    // Clean up our resources
-    this._panel.dispose();
-    this._disposed = true;
-
-    while (this._disposables.length) {
-      const x = this._disposables.pop();
-      if (x) {
-        x.dispose();
-      }
-    }
   }
 
   public getCompilerVersion() {
@@ -744,6 +701,7 @@ class ReactPanel {
         processMessage: "Fetching Compiler Versions...",
       });
       solcWorker.on("message", (m: any) => {
+        logger.log(`Solidity worker message: ${JSON.stringify(m)}`);
         const { versions } = m;
         if (versions) {
           this._panel.webview.postMessage({ versions });
@@ -768,6 +726,24 @@ class ReactPanel {
         reject(`Error code ${code} : Error signal ${signal}`);
       });
     });
+  }
+
+  public dispose() {
+    if (this._disposed) {
+      return;
+    }
+    ReactPanel.currentPanel = undefined;
+
+    // Clean up our resources
+    this._panel.dispose();
+    this._disposed = true;
+
+    while (this._disposables.length) {
+      const x = this._disposables.pop();
+      if (x) {
+        x.dispose();
+      }
+    }
   }
 
   private _getHtmlForWebview() {

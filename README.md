@@ -1,4 +1,4 @@
-# Ethereum plugin for VSCode
+# [Ethereum](https://ethereum.org/) plugin for [VSCode](https://code.visualstudio.com/)
 [![Join the chat at https://gitter.im/Ethential/ethcode](https://badges.gitter.im/Ethential/ethcode.svg)](https://gitter.im/Ethential/ethcode?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Discord chat](https://img.shields.io/discord/722971683388129290?color=7389D8&logo=discord&logoColor=ffffff)](https://discord.gg/87sE7Bm)
 
@@ -12,21 +12,21 @@ Ethcode is a vscode plugin for compiling, deploy, execute solidity and vyper sma
 
 ![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
 
-`ctrl+alt+c` - compile contracts.
+`ctrl+alt+c` - compile [solidity](https://solidity.readthedocs.io/en/v0.6.12/) contracts.
 
 ![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/71320562-e57b0c00-24d2-11ea-9b17-2629da608c6d.png)
 
-Deploy contracts to test network.
+Deploy contracts to [Goerli test network](https://github.com/goerli/testnet).
 
-![Screenshot from 2020-04-10 03-04-40](https://user-images.githubusercontent.com/13261372/78942930-5709b500-7ad8-11ea-8557-511fd4e537cc.png)
+![Screenshot from 2020-07-28 07-20-43](https://user-images.githubusercontent.com/13261372/88610617-c665dd80-d0a4-11ea-8c4a-bcb8fb0dbdbb.png)
 
-`ctrl+alt+t` - run unit testing.
+`ctrl+alt+t` - run [unit testing](https://www.npmjs.com/package/remix-tests).
 
 ![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/78938685-448b7d80-7ad0-11ea-8248-d2494269b52e.png)
 
 **Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
 
-## Vyper support
+## [Vyper](https://vyper.readthedocs.io/) support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
 
 ## Use locally generated key-pair to use with test networks
@@ -37,7 +37,7 @@ Ethcode signs all transactions using generated key-pair in your computer. Use `G
 ## Help
 Please help ethcode developers continue their work.
 
-Ethereum donation address: 0xd22fE4aEFed0A984B1165dc24095728EE7005a36
+Ethereum donation address: [0xd22fE4aEFed0A984B1165dc24095728EE7005a36](https://etherscan.io/address/0xd22fE4aEFed0A984B1165dc24095728EE7005a36)
 
 ## Development
 Run following commands in the terminal
