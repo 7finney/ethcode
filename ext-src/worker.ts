@@ -9,8 +9,6 @@ import * as protoLoader from '@grpc/proto-loader';
 const EthereumTx = require('ethereumjs-tx').Transaction;
 import { sha3 } from './hash/sha3';
 var formatters = require('web3-core-helpers').formatters;
-// import { Logger } from "./logger";
-// const logger = new Logger();
 
 const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH,
