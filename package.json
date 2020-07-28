@@ -17,7 +17,7 @@
   "icon": "images/ethcode_tsp.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/0mkara/ethcode"
+    "url": "https://github.com/ethential/ethcode"
   },
   "engines": {
     "vscode": "^1.25.0",
