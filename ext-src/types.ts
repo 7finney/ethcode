@@ -10,3 +10,8 @@ export interface IAccount {
     pubAddr?: string;
     checksumAddr?: string;
 }
+
+export interface TokenData {
+    machineID: string;
+    token: string;
+}

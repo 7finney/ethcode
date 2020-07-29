@@ -5,7 +5,7 @@ import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
 import * as uuid from "uuid/v1";
 import axios from "axios";
-import { IAccount } from "./types";
+import { IAccount, TokenData } from "./types";
 import { Logger } from "./logger";
 
 // @ts-ignore
@@ -47,13 +47,10 @@ function getToken() {
     try {
       // @ts-ignore
       const config = await vscode.workspace.getConfiguration("launch", vscode.workspace.workspaceFolders[0].uri);
-      // @ts-ignore
-      let tokenData = config.get("ethcodeToken");
-      // @ts-ignore
-      const token = tokenData.token;
-
-      if (token) {
+      let tokenData: TokenData | undefined = config.get("ethcodeToken");
+      if (tokenData && tokenData.token) {
         // verify token
+        const { token } = tokenData;
         const auth: boolean = await verifyToken(token);
         if (auth) {
           jwtToken = token;
