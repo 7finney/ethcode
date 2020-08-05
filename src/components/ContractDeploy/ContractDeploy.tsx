@@ -97,7 +97,7 @@ class ContractDeploy extends Component<IProps, IState> {
         this.setState({ constructorInput: constructorInput });
       } else if(abi[i].type !== 'constructor') {
         // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = abi[i]['name'];
+        const methodname: string = abi[i]['name'] ? abi[i]['name'] : "fallback";
         
         // if we have inputs
         // @ts-ignore

@@ -84,7 +84,7 @@ function findImports(path: any) {
     {
       type: "local",
       match: (url: string) => {
-        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?(\w+\.sol)/g.exec(url);
+        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?([\w-]+\.sol)/g.exec(url);
       },
       handle: (match: Array<string>) => {
         return handleLocal(match[2], match[3]);
@@ -187,7 +187,7 @@ process.on("message", async m => {
           if (err) {
             console.error(err);
             // @ts-ignore
-            process.send({ error: e });
+            process.send({ error: err });
           } else {
             console.log("compiling with remote version ", newSolc.version());
             try {
