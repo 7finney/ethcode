@@ -49,7 +49,7 @@ let client_call_client: any;
 try {
   client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
   // client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('localhost:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('192.168.0.7:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -356,8 +356,9 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ jwtToken: m.jwtToken });
     }
-    const { abi, bytecode, params, gasSupply } = m.payload;
+    const { from, abi, bytecode, params, gasSupply } = m.payload;
     const inp = {
+      from,
       abi,
       bytecode,
       params,
@@ -392,8 +393,9 @@ process.on("message", async m => {
   }
   // Method call
   if (m.command === "ganache-contract-method-call") {
-    const { abi, address, methodName, params, gasSupply, deployAccount, value } = m.payload;
+    const { from, abi, address, methodName, params, gasSupply, deployAccount, value } = m.payload;
     const inp = {
+      from,
       abi,
       address,
       methodName,
@@ -473,8 +475,8 @@ process.on("message", async m => {
   }
   // Gas Estimate
   if (m.command === "get-gas-estimate") {
-    const { abi, bytecode, params } = m.payload;
-    const inp = { abi, bytecode, params };
+    const { abi, bytecode, params, from } = m.payload;
+    const inp = { abi, bytecode, params, from };
     const c = {
       callInterface: {
         command: 'get-gas-estimate',
