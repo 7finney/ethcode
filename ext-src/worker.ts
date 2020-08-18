@@ -48,7 +48,6 @@ const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
   client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('cc.staging.ethco.de:50053', grpc.credentials.createInsecure());
   // client_call_client = new client_call_pb.ClientCallService('192.168.0.7:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
@@ -108,54 +107,57 @@ function findImports(path: any) {
 
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
-  // TODO: error handling
-  tx = JSON.parse(tx);
-  const txData = formatters.inputTransactionFormatter(tx);
-  // TODO: this method should not work for ganache and prysm and throw error
-  const chainId = Number(testnetId) === 5 ? 6284 : Number(testnetId)
-  const unsignedTransaction = new EthereumTx({
-    from: txData.from || '0x',
-    nonce: txData.nonce || '0x',
-    gasPrice: txData.gasPrice,
-    gas: txData.gas || '0x',
-    to: txData.to || '0x',
-    value: txData.value || '0x',
-    data: txData.data || '0x'
-  }, { chain: chainId });
-  const pvtk = Buffer.from(privateKey, 'hex');
-  unsignedTransaction.sign(pvtk);
-  const rlpEncoded = unsignedTransaction.serialize().toString('hex');
-  const rawTransaction = '0x' + rlpEncoded;
-  var transactionHash = sha3(rawTransaction);
-  // @ts-ignore
-  process.send({ responses: transactionHash });
-
-  const c = {
-    callInterface: {
-      command: "deploy-signed-tx",
-      payload: rawTransaction,
-      testnetId
-    }
-  };
-
-  const call = client_call_client.RunDeploy(c, meta, (err: any) => {
-    if (err) {
-      console.error(err);
-    }
-  });
-
-
-  call.on('data', (data: any) => {
+  try {
+    tx = JSON.parse(tx);
+    const txData = formatters.inputTransactionFormatter(tx);
+    const chainId = Number(testnetId)
+    const unsignedTransaction = new EthereumTx({
+      from: txData.from || '0x',
+      nonce: txData.nonce || '0x',
+      gasPrice: txData.gasPrice,
+      gas: txData.gas || '0x',
+      to: txData.to || '0x',
+      value: txData.value || '0x',
+      data: txData.data || '0x'
+    }, { chain: chainId });
+    const pvtk = Buffer.from(privateKey, 'hex');
+    unsignedTransaction.sign(pvtk);
+    const rlpEncoded = unsignedTransaction.serialize().toString('hex');
+    const rawTransaction = '0x' + rlpEncoded;
+    var transactionHash = sha3(rawTransaction);
     // @ts-ignore
-    process.send({ transactionResult: data.result });
-  });
-  call.on('end', function () {
-    process.exit(0);
-  });
-  call.on('error', function (err: Error) {
+    process.send({ responses: transactionHash });
+    const c = {
+      callInterface: {
+        command: "deploy-signed-tx",
+        payload: rawTransaction,
+        testnetId
+      }
+    };
+  
+    const call = client_call_client.RunDeploy(c, meta, (err: any) => {
+      if (err) {
+        console.error(err);
+      }
+    });
+  
+  
+    call.on('data', (data: any) => {
+      // @ts-ignore
+      process.send({ transactionResult: data.result });
+    });
+    // call.on('end', function () {
+    //   process.exit(0);
+    // });
+    call.on('error', function (err: Error) {
+      // @ts-ignore
+      process.send({ "error": err });
+    });
+  } catch (error) {
+    console.log(error);
     // @ts-ignore
-    process.send({ "error": err });
-  });
+    process.send({ "error": error.message });
+  }
 }
 
 process.on("message", async m => {
@@ -548,12 +550,14 @@ process.on("message", async m => {
       }
     });
     call.on('data', (data: any) => {
+      console.log(data);
+      
       // @ts-ignore
       process.send({ buildTxResult: data.result });
     });
-    call.on('end', function () {
-      process.exit(0);
-    });
+    // call.on('end', function () {
+    //   process.exit(0);
+    // });
     call.on('error', function (err: Error) {
       // @ts-ignore
       process.send({ "error": err });

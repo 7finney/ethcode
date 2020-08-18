@@ -187,13 +187,15 @@ class Deploy extends Component<IProps, IState> {
   };
 
   private getGasEstimate = () => {
-    const { vscode, bytecode, abi, testNetId } = this.props;
+    const { vscode, bytecode, abi, currAccount, testNetId } = this.props;
     const { constructorInput } = this.state;
     this.setState({ gasEstimateToggle: true });
+    const publicKey = currAccount.value;
     try {
       vscode.postMessage({
         command: "run-get-gas-estimate",
         payload: {
+          from: publicKey,
           abi,
           bytecode,
           params: constructorInput
