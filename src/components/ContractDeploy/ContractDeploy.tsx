@@ -97,7 +97,7 @@ class ContractDeploy extends Component<IProps, IState> {
         this.setState({ constructorInput: constructorInput });
       } else if(abi[i].type !== 'constructor') {
         // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = abi[i]['name'];
+        const methodname: string = abi[i]['name'] ? abi[i]['name'] : "fallback";
         
         // if we have inputs
         // @ts-ignore
@@ -143,7 +143,7 @@ class ContractDeploy extends Component<IProps, IState> {
     }
   }
   private handleDeploy() {
-    const { vscode, bytecode, abi } = this.props;
+    const { vscode, bytecode, abi, currAccount } = this.props;
     const { gasSupply, constructorInput, testNetId } = this.state;
     this.setState({ error: null, deployed: {}, disable: true });
     vscode.postMessage({
@@ -152,7 +152,8 @@ class ContractDeploy extends Component<IProps, IState> {
         abi,
         bytecode,
         params: constructorInput,
-        gasSupply
+        gasSupply,
+        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
       },
       testNetId
     });
@@ -171,13 +172,13 @@ class ContractDeploy extends Component<IProps, IState> {
         gasSupply,
         // TODO: add value supply in case of payable functions
         value: payableAmount,
-        deployAccount: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
+        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
       },
       testNetId
     });
   }
   private handleGetGasEstimate() {
-    const { vscode, bytecode, abi } = this.props;
+    const { vscode, bytecode, abi, currAccount } = this.props;
     const { constructorInput, testNetId } = this.state;
     this.setState({ gasEstimateToggle: true });
     try {
@@ -186,7 +187,8 @@ class ContractDeploy extends Component<IProps, IState> {
         payload: {
           abi,
           bytecode,
-          params: constructorInput
+          params: constructorInput,
+          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
         },
         testNetId
       });
