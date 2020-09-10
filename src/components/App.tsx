@@ -157,8 +157,6 @@ class App extends Component<IProps, IState> {
       if (data.processMessage) {
         const { processMessage } = data;
         this.setState({
-          fileName: "",
-          compiled: "",
           processMessage,
           message: []
         });

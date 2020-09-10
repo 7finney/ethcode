@@ -312,6 +312,12 @@ class ReactPanel {
     // });
     return fork(path.join(__dirname, "worker.js"));
   }
+  private createSolidityWorker(): ChildProcess {
+    // enable --inspect for debug
+    return fork(path.join(__dirname, "solc-worker.js"), [], {
+      execArgv: ["--inspect=" + (process.debugPort + 1)]
+    });
+  }
   private createVyperWorker(): ChildProcess {
     // enable --inspect for debug
     // return fork(path.join(__dirname, "vyp-worker.js"), [], {
@@ -323,6 +329,7 @@ class ReactPanel {
     return fork(path.join(__dirname, "accWorker.js"));
   }
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
+    var importStack: Array<string> = [];
     // solidity compiler code goes bellow
     var input = {
       language: "Solidity",
@@ -338,7 +345,7 @@ class ReactPanel {
     // child_process won't work because of debugging issue if launched with F5
     // child_process will work when launched with ctrl+F5
     // more on this - https://github.com/Microsoft/vscode/issues/40875
-    const solcWorker = this.createWorker();
+    const solcWorker = this.createSolidityWorker();
     logger.log(`Solidity compiler invoked with WorkerID: ${solcWorker.pid}`);
     logger.log(`Compiling with solidity version ${this.version}`);
     // Reset Components State before compilation
@@ -352,7 +359,17 @@ class ReactPanel {
       logger.log(`Solidity worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
-      } else if (m.data && m.path) {
+      } else if (m.command === "import") {
+        if (!importStack.includes(m.path)) {
+          importStack.push(m.path);
+          // import
+          solcWorker.send({
+            command: "import",
+            payload: m.path
+          });
+        }
+      } else if (m.command === "re-compile") {
+        if(m.path)
         sources[m.path] = {
           content: m.data.content,
         };
@@ -361,9 +378,9 @@ class ReactPanel {
           payload: input,
           version: this.version,
         });
-      } else if (m.compiled) {
+      } else if (m.command === "compiled") {
         context.workspaceState.update("sources", JSON.stringify(sources));
-        this._panel.webview.postMessage({ compiled: m.compiled, sources, testPanel: "main" });
+        this._panel.webview.postMessage({ compiled: m.output, sources, testPanel: "main" });
         updateUserSession(
           {
             lang: "solidity",
@@ -371,7 +388,8 @@ class ReactPanel {
           },
           ["userConfig", "compiler"]
         );
-      } else if (m.processMessage) {
+        solcWorker.send({ command: "exit" });
+      } else if (m.command === "process") {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
       }
     });
@@ -381,9 +399,6 @@ class ReactPanel {
     });
     solcWorker.on("exit", (code: number, signal: string) => {
       logger.log(`Compile worker process exited with code ${code} and signal ${signal}`);
-      this._panel.webview.postMessage({ processMessage: `Error code ${code} : Error signal ${signal}` });
-      solcWorker.kill();
-      // TODO: now if we kill process anywhere except here things fails randomly, (todo) properly exit process
     });
   }
   private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
