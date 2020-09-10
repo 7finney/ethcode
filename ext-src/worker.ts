@@ -163,50 +163,6 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
 process.on("message", async m => {
   var meta = new grpc.Metadata();
   meta.add('authorization', m.jwtToken);
-  if (m.command === "compile") {
-    const vnReg = /(^[0-9].[0-9].[0-9]\+commit\..*?)+(\.)/g;
-    const vnRegArr = vnReg.exec(solc.version());
-    // @ts-ignore
-    const vn = 'v' + (vnRegArr ? vnRegArr[1] : '');
-    const input = m.payload;
-    if (m.version === vn || m.version === 'latest') {
-      try {
-        console.log("compiling with local version: ", solc.version());
-        const output = await solc.compile(JSON.stringify(input), { import: findImports });
-        // @ts-ignore
-        process.send({ compiled: output });
-        // we should not exit process here as findImports still might be running
-      } catch (e) {
-          console.error(e);
-          // @ts-ignore
-          process.send({ error: e });
-          // @ts-ignore
-          process.exit(1);
-      }
-    } else if (m.version !== vn) {
-        console.log("loading remote version " + m.version + "...");
-        solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-          if (err) {
-            console.error(err);
-            // @ts-ignore
-            process.send({ error: err });
-          } else {
-            console.log("compiling with remote version ", newSolc.version());
-            try {
-              const output = await newSolc.compile(JSON.stringify(input), { import: findImports });
-              // @ts-ignore
-              process.send({ compiled: output });
-            } catch (e) {
-              console.error(e);
-              // @ts-ignore
-              process.send({ error: e });
-              // @ts-ignore
-              process.exit(1);
-            }
-          }
-        });
-    }
-  }
   if (m.command === "fetch_compiler_verison") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")

@@ -57,29 +57,34 @@ process.on("message", async m => {
           // @ts-ignore
           process.exit(1);
       }
-    }// else if (m.version !== vn) {
-    //     console.log("loading remote version " + m.version + "...");
-    //     solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-    //       if (err) {
-    //         console.error(err);
-    //         // @ts-ignore
-    //         process.send({ error: err });
-    //       } else {
-    //         console.log("compiling with remote version ", newSolc.version());
-    //         try {
-    //           const output = await newSolc.compile(JSON.stringify(input), { import: findImports });
-    //           // @ts-ignore
-    //           process.send({ compiled: output });
-    //         } catch (e) {
-    //           console.error(e);
-    //           // @ts-ignore
-    //           process.send({ error: e });
-    //           // @ts-ignore
-    //           process.exit(1);
-    //         }
-    //       }
-    //     });
-    // }
+    } else if (m.version !== vn) {
+        console.log("loading remote version " + m.version + "...");
+        solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
+          if (err) {
+            console.error(err);
+            // @ts-ignore
+            process.send({ error: err });
+            // @ts-ignore
+            process.exit(1);
+          } else {
+            console.log("compiling with remote version ", newSolc.version());
+            try {
+              const output = await newSolc.compile(JSON.stringify(input), { import: findImports });
+              const op = JSON.parse(output);
+              if(Object.keys(op.sources).length > 0) {
+                // @ts-ignore
+                process.send({ command: "compiled", output });
+              }
+            } catch (e) {
+              console.error(e);
+              // @ts-ignore
+              process.send({ error: e });
+              // @ts-ignore
+              process.exit(1);
+            }
+          }
+        });
+    }
   } else if (m.command === "import") {
     const path = m.payload;
     const FSHandler = [
