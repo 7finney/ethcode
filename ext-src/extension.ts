@@ -147,7 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
       const editorContent = vscode.window.activeTextEditor
         ? vscode.window.activeTextEditor.document.getText()
         : undefined;
-      ReactPanel.currentPanel.sendCompiledContract(context, editorContent, fileName);
+      ReactPanel.currentPanel.compileContract(context, editorContent, fileName);
     }),
     vscode.commands.registerCommand("ethcode.runTest", () => {
       if (!ReactPanel.currentPanel) {
@@ -328,8 +328,7 @@ class ReactPanel {
   private createAccWorker(): ChildProcess {
     return fork(path.join(__dirname, "accWorker.js"));
   }
-  private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources): void {
-    var importStack: Array<string> = [];
+  private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources, rootPath: vscode.Uri): void {
     // solidity compiler code goes bellow
     var input = {
       language: "Solidity",
@@ -360,19 +359,28 @@ class ReactPanel {
       if (m.error) {
         logger.error(m.error);
       } else if (m.command === "import") {
-        if (!importStack.includes(m.path)) {
-          importStack.push(m.path);
-          // import
+        if (!sources[m.path]) {
           solcWorker.send({
             command: "import",
-            payload: m.path
+            payload: {
+              path: m.path,
+              rootPath
+            }
+          });
+        } else {
+          solcWorker.send({
+            command: "import",
+            payload: {
+              path: m.path,
+              content: sources[m.path].content
+            }
           });
         }
       } else if (m.command === "re-compile") {
-        if(m.path)
-        sources[m.path] = {
-          content: m.data.content,
-        };
+        if (m.path)
+          sources[m.path] = {
+            content: m.data.content,
+          };
         solcWorker.send({
           command: "compile",
           payload: input,
@@ -388,9 +396,10 @@ class ReactPanel {
           },
           ["userConfig", "compiler"]
         );
-        solcWorker.send({ command: "exit" });
       } else if (m.command === "process") {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
+      } else if (m.command === "compile-ok") {
+        solcWorker.send({ command: "exit" });
       }
     });
     solcWorker.on("error", (error: Error) => {
@@ -635,7 +644,7 @@ class ReactPanel {
     });
     sendEtherWorker.send({ command: "send-ether-signed", payload, jwtToken, testnetId: testNetId });
   }
-  public sendCompiledContract(
+  public compileContract(
     context: vscode.ExtensionContext,
     editorContent: string | undefined,
     fn: string | undefined
@@ -656,8 +665,10 @@ class ReactPanel {
         this.invokeVyperCompiler(context, sources);
         // @ts-ignore
       } else if (fn.match(regexSol) && fn.match(regexSol).length > 0) {
+        // @ts-ignore
+        const rootPath = vscode.workspace.workspaceFolders[0];
         // invoke solidity compiler
-        this.invokeSolidityCompiler(context, sources);
+        this.invokeSolidityCompiler(context, sources, rootPath.uri);
       } else {
         const error = new Error("No matching file found!");
         logger.error(error);
