@@ -158,7 +158,6 @@ class App extends Component<IProps, IState> {
         const { processMessage } = data;
         this.setState({
           processMessage,
-          message: []
         });
       }
       if (data.versions) {

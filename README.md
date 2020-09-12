@@ -3,6 +3,11 @@
 [![Discord chat](https://img.shields.io/discord/722971683388129290?color=7389D8&logo=discord&logoColor=ffffff)](https://discord.gg/87sE7Bm)
 
 Ethcode is a vscode plugin for compiling, deploy, execute solidity and vyper smart contracts/programs in Ethereum blockchian. It supports multiple test networks. Ethcode has inbuilt support for Remix transaction debug and solidity unit testing.
+
+## Website
+https://ethcode.dev/
+## Docs
+https://docs.ethcode.dev/
 ## Installation
 VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=ethential.ethcode
 

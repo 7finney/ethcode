@@ -15,3 +15,18 @@ export interface TokenData {
     machineID: string;
     token: string;
 }
+
+interface ISrcLoc {
+    end: number;
+    file: string;
+    start: number;
+}
+export interface SolcError {
+    component: string;
+    errorCode: string;
+    formattedMessage: string;
+    message: string;
+    severity: string;
+    sourceLocation: ISrcLoc;
+    type: string;
+}

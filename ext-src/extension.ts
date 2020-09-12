@@ -361,6 +361,9 @@ class ReactPanel {
         logger.error(m.error);
       } else if (m.command === "import") {
         if (!sources[m.path]) {
+          sources[m.path] = {
+            content: undefined
+          };
           solcWorker.send({
             command: "import",
             payload: {
@@ -368,25 +371,22 @@ class ReactPanel {
               rootPath
             }
           });
-        } else {
-          solcWorker.send({
-            command: "import",
-            payload: {
-              path: m.path,
-              content: sources[m.path].content
-            }
-          });
         }
       } else if (m.command === "re-compile") {
-        if (m.path)
+        if (m.path) {
           sources[m.path] = {
             content: m.data.content,
           };
-        solcWorker.send({
-          command: "compile",
-          payload: input,
-          version: this.version,
-        });
+          input.sources = sources;
+          const noContent = Object.values(input.sources).filter(source => source.content === undefined);
+          if(noContent.length < 1) {
+            solcWorker.send({
+              command: "compile",
+              payload: input,
+              version: this.version,
+            });
+          }
+        }
       } else if (m.command === "compiled") {
         context.workspaceState.update("sources", JSON.stringify(sources));
         this._panel.webview.postMessage({ compiled: m.output, sources, testPanel: "main" });

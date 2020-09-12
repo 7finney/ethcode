@@ -4,6 +4,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { RemixURLResolver } from "remix-url-resolver";
 import { Uri } from "vscode";
+import { SolcError } from "./types";
 
 function handleLocal(pathString: string, fileName: any, rootPath: Uri) {
   // if no relative/absolute path given then search in node_modules folder
@@ -59,8 +60,18 @@ function compile(m: any) {
       console.log("compiling on solc-worker with local version: ", solc.version());
       const output = solc.compile(JSON.stringify(input), { import: findImports });
       const op = JSON.parse(output);
+      const operr: SolcError[] = op.errors;
       // @ts-ignores
       process.send({ command: "compiled", output });
+      // Iterate through errors
+      // If there is no import error left, exit worker
+      const dfimp = operr.filter((error: SolcError) => error.errorCode === "6275");
+      if (dfimp.length < 1) {
+        // @ts-ignore
+        process.send({ command: "process", processMessage: "compilation finished with error!" });
+        // @ts-ignore
+        process.send({ command: "compile-ok" });
+      }
       if (Object.keys(op.sources).length > 0) {
         // @ts-ignore
         process.send({ command: "process", processMessage: "compilation ok!" });
@@ -100,7 +111,7 @@ function compile(m: any) {
 }
 
 function importFiles(m: any) {
-  const { path, rootPath, content } = m.payload;
+  const { path, rootPath } = m.payload;
   const FSHandler = [
     {
       type: "local",
@@ -112,23 +123,18 @@ function importFiles(m: any) {
       }
     }
   ];
-  if (content) {
-    // @ts-ignore
-    process.send({ command: "re-compile", data: { content }, path });
-  } else {
-    // @ts-ignore
-    const urlResolver = new RemixURLResolver();
-    // this section usually executes after solc returns error file not found
-    urlResolver.resolve(path, FSHandler)
-      .then((data: any) => {
-        // @ts-ignore
-        process.send({ command: "re-compile", data, path });
-      })
-      .catch((e: Error) => {
-        // @ts-ignore
-        process.send({ error: e });
-      });
-  }
+  // @ts-ignore
+  const urlResolver = new RemixURLResolver();
+  // this section usually executes after solc returns error file not found
+  urlResolver.resolve(path, FSHandler)
+    .then((data: any) => {
+      // @ts-ignore
+      process.send({ command: "re-compile", data, path });
+    })
+    .catch((e: Error) => {
+      // @ts-ignore
+      process.send({ error: e });
+    });
 }
 
 
