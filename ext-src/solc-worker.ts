@@ -30,9 +30,7 @@ function handleNodeModulesImport(pathString: string, fileName: string, fileRoot:
 
   while (true) {
     try {
-      console.log("reading node modules");
       const p = path.join(modulesDir, '/node_modules', pathString, fileName);
-      console.log(p);
       const content = fs.readFileSync(p, o);
       return content;
     } catch (err) {

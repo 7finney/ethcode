@@ -314,9 +314,10 @@ class ReactPanel {
   }
   private createSolidityWorker(): ChildProcess {
     // enable --inspect for debug
-    return fork(path.join(__dirname, "solc-worker.js"), [], {
-      execArgv: ["--inspect=" + (process.debugPort + 1)]
-    });
+    // return fork(path.join(__dirname, "solc-worker.js"), [], {
+    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
+    // });
+    return fork(path.join(__dirname, "solc-worker.js"));
   }
   private createVyperWorker(): ChildProcess {
     // enable --inspect for debug
@@ -408,6 +409,7 @@ class ReactPanel {
     });
     solcWorker.on("exit", (code: number, signal: string) => {
       logger.log(`Compile worker process exited with code ${code} and signal ${signal}`);
+      this._panel.webview.postMessage({ processMessage: "" });
     });
   }
   private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
@@ -718,29 +720,29 @@ class ReactPanel {
 
   public getCompilerVersion() {
     return new Promise((resolve, reject) => {
-      const solcWorker = this.createWorker();
-      solcWorker.send({ command: "fetch_compiler_verison" });
+      const versionWorker = this.createWorker();
+      versionWorker.send({ command: "fetch_compiler_version" });
       this._panel.webview.postMessage({
         processMessage: "Fetching Compiler Versions...",
       });
-      solcWorker.on("message", (m: any) => {
+      versionWorker.on("message", (m: any) => {
         logger.log(`Solidity worker message: ${JSON.stringify(m)}`);
         const { versions } = m;
         if (versions) {
           this._panel.webview.postMessage({ versions });
           this._panel.webview.postMessage({ processMessage: "" });
           resolve(versions);
-          solcWorker.kill();
+          versionWorker.kill();
         } else {
           reject([]);
-          solcWorker.kill();
+          versionWorker.kill();
         }
       });
-      solcWorker.on("error", (error: Error) => {
+      versionWorker.on("error", (error: Error) => {
         logger.error(error);
         reject(error);
       });
-      solcWorker.on("exit", (code: number, signal: string) => {
+      versionWorker.on("exit", (code: number, signal: string) => {
         const em = `getVersion worker process exited with code ${code} and signal ${signal}`;
         logger.log(em);
         this._panel.webview.postMessage({
