@@ -1,15 +1,40 @@
 .App {
   text-align: center;
-}
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+  display: flex;
+  flex-direction: column;
 }
 
 .App-header {
   padding: 15px;
   color: white;
+}
+
+.selectors {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.tx-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #38ffAf;
+  height: 50px;
+  margin: 20px 15px;
+  text-align: center;
+  border-radius: 2px;
+}
+
+/* .tabs-container {
+
+} */
+
+.process-msg-container {
+  order: 5;
 }
 
 .App-title {
@@ -29,14 +54,6 @@
   border: 1px solid #38ffAf;
 }
 
-.selectors {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
 
 .compiledOutput {
   width: 85vw;
@@ -51,7 +68,6 @@
 }
 
 .processMessage {
-  position: absolute;
   bottom: 0;
   right: 0;
   left: 0;
@@ -72,7 +88,6 @@
   font-size: 18px;
   padding: 5px;
   text-align: left;
-  text-transform: uppercase;
   overflow-x: scroll;
   margin-top: 20px;
   border: 1px solid #38ffAf;
@@ -98,17 +113,6 @@
 .instructions {
   border: 1px solid #38ffAf;
   margin: 10px 30%;
-  text-align: center;
-  border-radius: 2px;
-}
-
-.tx-info {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #38ffAf;
-  height: 50px;
-  margin: 20px 15px;
   text-align: center;
   border-radius: 2px;
 }

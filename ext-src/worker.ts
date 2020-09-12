@@ -102,7 +102,7 @@ function findImports(path: any) {
       // @ts-ignore
       process.send({ error: e });
     });
-    return { 'error': 'Deferred import' };
+  return { 'error': 'Deferred import' };
 }
 
 // sign an unsigned raw transaction and deploy
@@ -134,14 +134,14 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
         testnetId
       }
     };
-  
+
     const call = client_call_client.RunDeploy(c, meta, (err: any) => {
       if (err) {
         console.error(err);
       }
     });
-  
-  
+
+
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ transactionResult: data.result });
@@ -163,51 +163,7 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
 process.on("message", async m => {
   var meta = new grpc.Metadata();
   meta.add('authorization', m.jwtToken);
-  if (m.command === "compile") {
-    const vnReg = /(^[0-9].[0-9].[0-9]\+commit\..*?)+(\.)/g;
-    const vnRegArr = vnReg.exec(solc.version());
-    // @ts-ignore
-    const vn = 'v' + (vnRegArr ? vnRegArr[1] : '');
-    const input = m.payload;
-    if (m.version === vn || m.version === 'latest') {
-      try {
-        console.log("compiling with local version: ", solc.version());
-        const output = await solc.compile(JSON.stringify(input), { import: findImports });
-        // @ts-ignore
-        process.send({ compiled: output });
-        // we should not exit process here as findImports still might be running
-      } catch (e) {
-          console.error(e);
-          // @ts-ignore
-          process.send({ error: e });
-          // @ts-ignore
-          process.exit(1);
-      }
-    } else if (m.version !== vn) {
-        console.log("loading remote version " + m.version + "...");
-        solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
-          if (err) {
-            console.error(err);
-            // @ts-ignore
-            process.send({ error: err });
-          } else {
-            console.log("compiling with remote version ", newSolc.version());
-            try {
-              const output = await newSolc.compile(JSON.stringify(input), { import: findImports });
-              // @ts-ignore
-              process.send({ compiled: output });
-            } catch (e) {
-              console.error(e);
-              // @ts-ignore
-              process.send({ error: e });
-              // @ts-ignore
-              process.exit(1);
-            }
-          }
-        });
-    }
-  }
-  if (m.command === "fetch_compiler_verison") {
+  if (m.command === "fetch_compiler_version") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")
       .then((res: any) => {
@@ -293,9 +249,7 @@ process.on("message", async m => {
       process.send({ unsignedTx: data.result });
       deployUnsignedTx(meta, data.result, pvtKey, m.testnetId);
     });
-    call.on('error', function (err: Error) {
-      console.log(err);
-      
+    call.on('error', (err: Error) => {
       // @ts-ignore
       process.send({ error: err });
       // @ts-ignore
@@ -341,7 +295,8 @@ process.on("message", async m => {
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.log("err", err);
+        // @ts-ignore
+        process.send({ error: err });
       } else {
         // @ts-ignore
         process.send({ response });
@@ -375,7 +330,8 @@ process.on("message", async m => {
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.log("err", err);
+        // @ts-ignore
+        process.send({ error: err });
       } else {
         // @ts-ignore
         process.send({ response });
@@ -385,10 +341,10 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ deployedResult: data.result });
     });
-    call.on('end', function () {
+    call.on('end', () => {
       process.exit(0);
     });
-    call.on('error', function (err: Error) {
+    call.on('error', (err: Error) => {
       // @ts-ignore
       process.send({ "error": err });
     });
@@ -425,10 +381,10 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ callResult: data.result });
     });
-    call.on('end', function () {
+    call.on('end', () => {
       process.exit(0);
     });
-    call.on('error', function (err: Error) {
+    call.on('error', (err: Error) => {
       // @ts-ignore
       process.send({ "error": err });
     });
@@ -455,7 +411,6 @@ process.on("message", async m => {
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.log("err", err);
         // @ts-ignore
         process.send({ error: err });
       }
@@ -467,10 +422,10 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ unsignedTx: data.result });
     });
-    call.on('end', function () {
+    call.on('end', () => {
       process.exit(0);
     });
-    call.on('error', function (err: Error) {
+    call.on('error', (err: Error) => {
       // @ts-ignore
       process.send({ "error": err });
     });
@@ -488,7 +443,8 @@ process.on("message", async m => {
     };
     const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.log("err", err);
+        // @ts-ignore
+        process.send({ "error": err });
       } else {
         // @ts-ignore
         process.send({ response });
@@ -498,7 +454,7 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ gasEstimate: data.result });
     });
-    call.on('error', function (err: Error) {
+    call.on('error', (err: Error) => {
       // @ts-ignore
       process.send({ "error": err });
     });
@@ -517,10 +473,10 @@ process.on("message", async m => {
       // @ts-ignore
       process.send({ debugResp: data.result });
     });
-    call.on('end', function () {
+    call.on('end', () => {
       process.exit(0);
     });
-    call.on('error', function (err: Error) {
+    call.on('error', (err: Error) => {
       // @ts-ignore
       process.send({ "error": err });
     });
@@ -551,14 +507,14 @@ process.on("message", async m => {
     });
     call.on('data', (data: any) => {
       console.log(data);
-      
+
       // @ts-ignore
       process.send({ buildTxResult: data.result });
     });
     // call.on('end', function () {
     //   process.exit(0);
     // });
-    call.on('error', function (err: Error) {
+    call.on('error', (err: Error) => {
       // @ts-ignore
       process.send({ "error": err });
     });

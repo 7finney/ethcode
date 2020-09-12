@@ -50,9 +50,11 @@ export function setFileSelectorOptions(optionsArray) {
   return options;
 }
 
-export function solidityVersion(versions) {
+export function solidityVersion(versions, latestRelease) {
   var options = [];
-    Object.keys(versions).reverse().map((v, i) => {
+  var vs = Object.keys(versions);
+  vs = vs[0] === latestRelease ? vs : vs.reverse();
+  vs.map((v, i) => {
     const optItm = {
       value: versions[v].split("soljson-")[1].split(".js")[0],
       label: v

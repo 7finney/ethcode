@@ -157,14 +157,12 @@ class App extends Component<IProps, IState> {
       if (data.processMessage) {
         const { processMessage } = data;
         this.setState({
-          fileName: "",
-          compiled: "",
           processMessage,
           message: []
         });
       }
       if (data.versions) {
-        var options = solidityVersion(data.versions.releases);
+        var options = solidityVersion(data.versions.releases, data.versions.latestRelease);
         this.setState({
           availableVersions: options,
           processMessage: ""
@@ -421,7 +419,7 @@ class App extends Component<IProps, IState> {
             <span>Last transaction:</span><pre>{transactionResult}</pre>
           </div>
         }
-        <p>
+        <div className="tabs-container">
           <Tabs selectedIndex={tabIndex} onSelect={tabIndex => this.setState({ tabIndex })} selectedTabClassName="react-tabs__tab--selected">
             <TabList className="react-tabs tab-padding">
               <div className="tab-container">
@@ -546,11 +544,13 @@ class App extends Component<IProps, IState> {
               );
             })}{" "}
           </div>
-        </p>
-        {
-          processMessage &&
-          <pre className="processMessage">{processMessage}</pre>
-        }
+        </div>
+        <div className="process-msg-container">
+          {
+            processMessage &&
+            <pre className="processMessage">{processMessage}</pre>
+          }
+        </div>
       </div>
     );
   }
