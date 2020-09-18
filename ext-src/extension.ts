@@ -7,7 +7,7 @@ import * as uuid from "uuid/v4";
 import axios from "axios";
 import { IAccount, TokenData } from "./types";
 import { Logger } from "./logger";
-import os from 'os'
+const os = require('os')
 
 // @ts-ignore
 let jwtToken: any;
@@ -103,12 +103,23 @@ function updateUserSession(valueToAssign: any, keys: string[]) {
 function getTokens(){
   const email = 'ayanb1999@gmail.com'
   const token = uuid();
-
+  const username = os.homedir()
+  const uri = vscode.Uri.file(`${username}/.ethcode_configuration.json`)
   axios.post('http://localhost:4550/user/token/app/add', {
     email,
     app_id: token
   }).then(r => {
     logger.log(JSON.stringify(r))
+    const fileData = {
+      app_id: token,
+      email
+    }
+    vscode.workspace.fs.writeFile(uri,  Buffer.from(JSON.stringify(fileData)))
+    .then((r) => {
+      logger.log("FileStream Writer", JSON.stringify(r))
+    }, err => {
+      logger.log("Error writing ", err)
+    })
   }).catch(e => {
     logger.log(e)
   })
@@ -120,7 +131,7 @@ async function registerAppToToken() {
  
   try {
     const username = os.homedir()
-    const uri = vscode.Uri.file(`/home/${username}/.ethcode_configuration.json`)
+    const uri = vscode.Uri.file(`${username}/.ethcode_configuration.json`)
     const fileData = await vscode.workspace.fs.readFile(uri)
     logger.log("FILE DATA")
     logger.log(fileData.toString())
