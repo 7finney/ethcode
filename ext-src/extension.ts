@@ -3,10 +3,11 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
 import { ISources } from "./types";
-import * as uuid from "uuid/v1";
+import * as uuid from "uuid/v4";
 import axios from "axios";
 import { IAccount, TokenData } from "./types";
 import { Logger } from "./logger";
+import os from 'os'
 
 // @ts-ignore
 let jwtToken: any;
@@ -98,6 +99,40 @@ function updateUserSession(valueToAssign: any, keys: string[]) {
   });
 }
 
+
+function getTokens(){
+  const email = 'ayanb1999@gmail.com'
+  const token = uuid();
+
+  axios.post('http://localhost:4550/user/token/app/add', {
+    email,
+    app_id: token
+  }).then(r => {
+    logger.log(JSON.stringify(r))
+  }).catch(e => {
+    logger.log(e)
+  })
+  logger.log(token)
+}
+
+
+async function registerAppToToken() {
+ 
+  try {
+    const username = os.homedir()
+    const uri = vscode.Uri.file(`/home/${username}/.ethcode_configuration.json`)
+    const fileData = await vscode.workspace.fs.readFile(uri)
+    logger.log("FILE DATA")
+    logger.log(fileData.toString())
+  } catch (e) {
+    logger.log("ERROR: ", e.code, e)
+    if(e.code === "FileNotFound"){
+      logger.log("FIle Not EXISTS")
+      getTokens()
+    }
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.versionSelector", async () => {
@@ -130,6 +165,7 @@ export function activate(context: vscode.ExtensionContext) {
       logger.log("Activating ethcode...");
       try {
         await getToken();
+        registerAppToToken()
       } catch (error) {
         logger.error(error);
       } finally {
