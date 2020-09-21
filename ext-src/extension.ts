@@ -99,46 +99,72 @@ function updateUserSession(valueToAssign: any, keys: string[]) {
   });
 }
 
+async function updateUserSettings(accessScope: string, valueToAdd: string): Promise<boolean> {
+  try {
+    await vscode.workspace.getConfiguration(accessScope).update(accessScope, valueToAdd)
+    return true
+  } catch(e) {
+    return false
+  }
+}
+
+function retrieveUserSettings(accessScope: string, valueToRetreive: string) : string | undefined{
+  return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive)
+}
+
 
 function getTokens(){
   const email = 'ayanb1999@gmail.com'
   const token = uuid();
   const username = os.homedir()
-  const uri = vscode.Uri.file(`${username}/.ethcode_configuration.json`)
   axios.post('http://localhost:4550/user/token/app/add', {
     email,
     app_id: token
-  }).then(r => {
-    logger.log(JSON.stringify(r))
-    const fileData = {
-      app_id: token,
+  }).then(async r => {
+    logger.log("Response Datya: ",JSON.stringify(r.data))
+    const settingsData = {
+      appId: token,
       email
     }
-    vscode.workspace.fs.writeFile(uri,  Buffer.from(JSON.stringify(fileData)))
-    .then((r) => {
-      logger.log("FileStream Writer", JSON.stringify(r))
-    }, err => {
-      logger.log("Error writing ", err)
-    })
+    logger.log("updated", updateUserSettings("ethcode.userConfig.appRegistration", JSON.stringify(settingsData)));
   }).catch(e => {
     logger.log(e)
   })
-  logger.log(token)
+}
+
+function verifyUserToken(token: string, email: string): boolean {
+  axios.post('http://localhost:4550/user/token/app/verify', {
+    email,
+    app_id: token
+  }).then(r => {
+    logger.log("Response Datya: ",JSON.stringify(r.data))
+    logger.log("Verified Successfully")
+    return true
+  }).catch(e => {
+    logger.log("Error Verification: ", e)
+    return false
+  })
+  return false
 }
 
 
 async function registerAppToToken() {
- 
-  try {
-    const username = os.homedir()
-    const uri = vscode.Uri.file(`${username}/.ethcode_configuration.json`)
-    const fileData = await vscode.workspace.fs.readFile(uri)
-    logger.log("FILE DATA")
-    logger.log(fileData.toString())
+   try {
+      const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId")
+      const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email")
+      if (appId === "" && email == "") {
+        logger.log("App Not Registered")
+        getTokens()
+      } else {
+        if (verifyUserToken(appId!, email!)) {
+          logger.log("Done")
+        } else {
+          logger.log("App Token Tampered with")
+        }  
+      }  
   } catch (e) {
-    logger.log("ERROR: ", e.code, e)
     if(e.code === "FileNotFound"){
-      logger.log("FIle Not EXISTS")
+      logger.log("Configuration file doesn't exists")
       getTokens()
     }
   }
