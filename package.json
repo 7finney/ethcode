@@ -51,14 +51,15 @@
           "description": "List of links to connect to ethcode backend.",
           "scope": "application"
         },
-        "ethcode.userConfig.appRegistration": {
-          "type": "object",
-          "default": {
-            "appId": "",
-            "email": ""
-          },
-          "description": "App registration to dApp Auth API",
-          "scope": "resource"
+        "ethcode.userConfig.appRegistration.appId": {
+          "type": "string",
+          "description": "AppId registration to dApp Auth API",
+          "scope": "application"
+        },
+        "ethcode.userConfig.appRegistration.email": {
+          "type": "string",
+          "description": "Email registration to dApp Auth API",
+          "scope": "application"
         },
         "ethcode.userConfig.defaultAccount": {
           "type": "string",

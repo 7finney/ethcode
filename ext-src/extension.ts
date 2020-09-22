@@ -101,9 +101,10 @@ function updateUserSession(valueToAssign: any, keys: string[]) {
 
 async function updateUserSettings(accessScope: string, valueToAdd: string): Promise<boolean> {
   try {
-    await vscode.workspace.getConfiguration(accessScope).update(accessScope, valueToAdd)
+    await vscode.workspace.getConfiguration("ethcode").update(accessScope, valueToAdd, vscode.ConfigurationTarget.Global)
     return true
   } catch(e) {
+    logger.log("Error updating: ", e)
     return false
   }
 }
@@ -116,7 +117,6 @@ function retrieveUserSettings(accessScope: string, valueToRetreive: string) : st
 function getTokens(){
   const email = 'ayanb1999@gmail.com'
   const token = uuid();
-  const username = os.homedir()
   axios.post('http://localhost:4550/user/token/app/add', {
     email,
     app_id: token
@@ -126,25 +126,29 @@ function getTokens(){
       appId: token,
       email
     }
-    logger.log("updated", updateUserSettings("ethcode.userConfig.appRegistration", JSON.stringify(settingsData)));
+    // updateUserSession(settingsData.appId, ["userConfig", "appRegistration", "appId"])
+    const a = await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId)
+    const b = await updateUserSettings("userConfig.appRegistration.email", settingsData.email)
+    logger.log("After Updating", a, b)
   }).catch(e => {
     logger.log(e)
   })
 }
 
-function verifyUserToken(token: string, email: string): boolean {
-  axios.post('http://localhost:4550/user/token/app/verify', {
-    email,
-    app_id: token
-  }).then(r => {
-    logger.log("Response Datya: ",JSON.stringify(r.data))
-    logger.log("Verified Successfully")
-    return true
-  }).catch(e => {
-    logger.log("Error Verification: ", e)
-    return false
-  })
-  return false
+
+async function verifyUserToken(token: string, email: string): Promise<boolean> {
+  try {
+    const r = await axios.post("http://localhost:4550/user/token/app/verify", {
+      email,
+      app_id: token,
+    });
+    logger.log("Response Datya: ", JSON.stringify(r.data));
+    logger.log("Verified Successfully");
+    return true;
+  } catch (error) {
+    logger.log("Error Verification: ", error);
+    return false;
+  }
 }
 
 
@@ -152,11 +156,12 @@ async function registerAppToToken() {
    try {
       const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId")
       const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email")
-      if (appId === "" && email == "") {
+      if (appId === "" || email == "") {
         logger.log("App Not Registered")
         getTokens()
       } else {
-        if (verifyUserToken(appId!, email!)) {
+       const verified =  await verifyUserToken(appId!, email!)
+        if(verified) {
           logger.log("Done")
         } else {
           logger.log("App Token Tampered with")
