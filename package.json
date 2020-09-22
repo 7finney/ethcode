@@ -53,12 +53,14 @@
         },
         "ethcode.userConfig.appRegistration.appId": {
           "type": "string",
-          "description": "AppId registration to dApp Auth API",
+          "description": "AppId for registration to dApp Auth API (DO NOT CHANGE/REMOVE)",
+          "default": "",
           "scope": "application"
         },
         "ethcode.userConfig.appRegistration.email": {
           "type": "string",
-          "description": "Email registration to dApp Auth API",
+          "description": "Email for registration to dApp Auth API (DO NOT CHANGE/REMOVE)",
+          "default": "",
           "scope": "application"
         },
         "ethcode.userConfig.defaultAccount": {

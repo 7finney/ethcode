@@ -121,17 +121,14 @@ function getTokens(){
     email,
     app_id: token
   }).then(async r => {
-    logger.log("Response Datya: ",JSON.stringify(r.data))
     const settingsData = {
       appId: token,
       email
     }
-    // updateUserSession(settingsData.appId, ["userConfig", "appRegistration", "appId"])
-    const a = await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId)
-    const b = await updateUserSettings("userConfig.appRegistration.email", settingsData.email)
-    logger.log("After Updating", a, b)
+    await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId)
+    await updateUserSettings("userConfig.appRegistration.email", settingsData.email)
   }).catch(e => {
-    logger.log(e)
+    logger.log(e.response.data.Error)
   })
 }
 
