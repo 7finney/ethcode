@@ -7,7 +7,6 @@ import * as uuid from "uuid/v4";
 import axios from "axios";
 import { IAccount, TokenData } from "./types";
 import { Logger } from "./logger";
-const os = require('os')
 
 // @ts-ignore
 let jwtToken: any;
@@ -109,28 +108,11 @@ async function updateUserSettings(accessScope: string, valueToAdd: string): Prom
   }
 }
 
-function retrieveUserSettings(accessScope: string, valueToRetreive: string) : string | undefined{
+function retrieveUserSettings(accessScope: string, valueToRetreive: string) : string | undefined {
   return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive)
 }
 
 
-function getTokens(){
-  const email = 'ayanb1999@gmail.com'
-  const token = uuid();
-  axios.post('http://localhost:4550/user/token/app/add', {
-    email,
-    app_id: token
-  }).then(async r => {
-    const settingsData = {
-      appId: token,
-      email
-    }
-    await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId)
-    await updateUserSettings("userConfig.appRegistration.email", settingsData.email)
-  }).catch(e => {
-    logger.log(e.response.data.Error)
-  })
-}
 
 
 async function verifyUserToken(token: string, email: string): Promise<boolean> {
@@ -139,11 +121,10 @@ async function verifyUserToken(token: string, email: string): Promise<boolean> {
       email,
       app_id: token,
     });
-    logger.log("Response Datya: ", JSON.stringify(r.data));
-    logger.log("Verified Successfully");
+    logger.success(r.data.Status);
     return true;
   } catch (error) {
-    logger.log("Error Verification: ", error);
+    logger.log(error.response.data.Error);
     return false;
   }
 }
@@ -155,19 +136,18 @@ async function registerAppToToken() {
       const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email")
       if (appId === "" || email == "") {
         logger.log("App Not Registered")
-        getTokens()
+        // await getTokens()
       } else {
        const verified =  await verifyUserToken(appId!, email!)
-        if(verified) {
-          logger.log("Done")
-        } else {
-          logger.log("App Token Tampered with")
-        }  
+        if (!verified) {
+          logger.error(new Error("App token tampered with or revoked"))
+        }  else {
+          
+        }
       }  
   } catch (e) {
     if(e.code === "FileNotFound"){
       logger.log("Configuration file doesn't exists")
-      getTokens()
     }
   }
 }
@@ -204,6 +184,7 @@ export function activate(context: vscode.ExtensionContext) {
       logger.log("Activating ethcode...");
       try {
         await getToken();
+        // TODO TO BE REMOVED
         registerAppToToken()
       } catch (error) {
         logger.error(error);
@@ -319,6 +300,8 @@ class ReactPanel {
           this.sendEtherSigned(message.payload, message.testNetId);
         } else if (message.command === "get-pvt-key") {
           this.getPvtKey(message.payload, this._extensionPath);
+        } else if (message.command === "app-register") {
+          this.getTokens()
         }
       },
       null,
@@ -404,6 +387,39 @@ class ReactPanel {
   private createAccWorker(): ChildProcess {
     return fork(path.join(__dirname, "accWorker.js"));
   }
+
+  public async getTokens() {
+    try {
+      const token = await vscode.window.showInputBox({
+        ignoreFocusOut: true, 
+        placeHolder: "Enter App Token from dApp Auth"
+      })
+        
+      const email = await vscode.window.showInputBox({
+        ignoreFocusOut: true,
+        placeHolder: "Enter email regitered from dApp Auth"
+      })
+      if (token || email) {
+        const appId = uuid();
+        await axios.post('http://localhost:4550/user/token/app/add', {
+          email,
+          app_id: appId,
+          token
+        })
+        const settingsData = {
+          appId: appId,
+          email,
+          token
+        }
+        await updateUserSettings("userConfig.appRegistration.token", settingsData.token!)
+        await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId!)
+        await updateUserSettings("userConfig.appRegistration.email", settingsData.email!)
+      }
+    } catch (error) {
+      logger.error(error.response.data.Error)
+    }
+  }
+
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources, rootPath: vscode.Uri): void {
     // solidity compiler code goes bellow
     var input = {

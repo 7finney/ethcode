@@ -24,7 +24,7 @@ import {
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
-import { Selector } from './common/ui';
+import { Button, Selector } from './common/ui';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 import Deploy from "./Deploy/Deploy";
@@ -76,6 +76,7 @@ interface IState {
   testNets: object[];
   localAcc: any[];
   testNetAcc: any[];
+  appRegistered: boolean;
 }
 interface IOpt {
   value: string;
@@ -120,7 +121,9 @@ class App extends Component<IProps, IState> {
         // { value: '3', label: 'Ropsten' },
         // { value: '4', label: 'Rinkeby' },
         { value: '5', label: "Görli" }
-      ]
+      ],
+      appRegistered: false,
+
     };
   }
   public componentDidMount() {
@@ -349,6 +352,12 @@ class App extends Component<IProps, IState> {
     this.setState({ currAccount: event.target.value });
   };
 
+  public handleAppRegister = () => {
+    vscode.postMessage({
+      command: 'app-register',
+    })
+  };
+
   public openAdvanceDeploy = () => {
     this.setState({ tabIndex: 2 });
   };
@@ -451,6 +460,11 @@ class App extends Component<IProps, IState> {
                   <b>Balance: </b><span>{balance}</span>
                 </div>
               )}
+              {
+                <div className="app-register">
+                  <Button disabled={this.state.appRegistered} onClick={this.handleAppRegister} >Register App</Button>
+                </div>
+              }
               {
                 (compiled && fileName) &&
                 <div className="container-margin">

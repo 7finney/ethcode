@@ -57,6 +57,12 @@
           "default": "",
           "scope": "application"
         },
+        "ethcode.userConfig.appRegistration.token": {
+          "type": "string",
+          "description": "Token provided during registration to dApp Auth API (DO NOT CHANGE/REMOVE)",
+          "default": "",
+          "scope": "application"
+        },
         "ethcode.userConfig.appRegistration.email": {
           "type": "string",
           "description": "Email for registration to dApp Auth API (DO NOT CHANGE/REMOVE)",
