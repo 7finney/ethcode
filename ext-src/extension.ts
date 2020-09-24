@@ -117,7 +117,7 @@ function retrieveUserSettings(accessScope: string, valueToRetreive: string) : st
 
 async function verifyUserToken(token: string, email: string): Promise<boolean> {
   try {
-    const r = await axios.post("http://localhost:4550/user/token/app/verify", {
+    const r = await axios.post("https://newauth.ethco.de/user/token/app/verify", {
       email,
       app_id: token,
     });
@@ -408,7 +408,7 @@ class ReactPanel {
       })
       if (token || email) {
         const appId = uuid();
-        await axios.post('http://localhost:4550/user/token/app/add', {
+        await axios.post('https://newauth.ethco.de/user/token/app/add', {
           email,
           app_id: appId,
           token
