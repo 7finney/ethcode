@@ -136,19 +136,20 @@ async function registerAppToToken() {
       const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email")
       if (appId === "" || email == "") {
         logger.log("App Not Registered")
-        // await getTokens()
+        return false
       } else {
        const verified =  await verifyUserToken(appId!, email!)
         if (!verified) {
           logger.error(new Error("App token tampered with or revoked"))
-        }  else {
-          
-        }
+          return false
+        }  
+        return true
       }  
   } catch (e) {
     if(e.code === "FileNotFound"){
       logger.log("Configuration file doesn't exists")
     }
+    return false
   }
 }
 
@@ -183,9 +184,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("ethcode.activate", async () => {
       logger.log("Activating ethcode...");
       try {
-        await getToken();
-        // TODO TO BE REMOVED
-        registerAppToToken()
+        await getToken();        
       } catch (error) {
         logger.error(error);
       } finally {
@@ -320,6 +319,7 @@ class ReactPanel {
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel._panel.reveal(column);
         ReactPanel.currentPanel.checkFileName();
+        ReactPanel.currentPanel.checkAppRegistration()
       } catch (error) {
         logger.error(error);
       }
@@ -329,6 +329,7 @@ class ReactPanel {
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel.getCompilerVersion();
         ReactPanel.currentPanel.checkFileName();
+        ReactPanel.currentPanel.checkAppRegistration()
       } catch (error) {
         logger.error(error);
       }
@@ -388,6 +389,11 @@ class ReactPanel {
     return fork(path.join(__dirname, "accWorker.js"));
   }
 
+  public async checkAppRegistration () {
+    const registered = await registerAppToToken()
+    this._panel.webview.postMessage({ registered})
+  }
+
   public async getTokens() {
     try {
       const token = await vscode.window.showInputBox({
@@ -416,7 +422,7 @@ class ReactPanel {
         await updateUserSettings("userConfig.appRegistration.email", settingsData.email!)
       }
     } catch (error) {
-      logger.error(error.response.data.Error)
+      logger.error(error)
     }
   }
 

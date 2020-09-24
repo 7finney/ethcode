@@ -243,6 +243,9 @@ class App extends Component<IProps, IState> {
         this.props.setCurrAccChange({ balance, currAccount: account });
         this.setState({ balance: this.props.accountBalance });
       }
+      if (data.registered) {
+        this.setState({appRegistered: data.registered})
+      }
     });
     // TODO: handle error message
     // Component mounted start getting gRPC things
