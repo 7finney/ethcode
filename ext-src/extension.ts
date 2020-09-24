@@ -300,7 +300,8 @@ class ReactPanel {
         } else if (message.command === "get-pvt-key") {
           this.getPvtKey(message.payload, this._extensionPath);
         } else if (message.command === "app-register") {
-          this.getTokens()
+          this.getTokens().then(r => this._panel.webview.postMessage({ registered: r}))
+          .catch(e => this._panel.webview.postMessage({ registered: false}))
         }
       },
       null,
@@ -394,7 +395,7 @@ class ReactPanel {
     this._panel.webview.postMessage({ registered})
   }
 
-  public async getTokens() {
+  public async getTokens(): Promise<boolean> {
     try {
       const token = await vscode.window.showInputBox({
         ignoreFocusOut: true, 
@@ -420,9 +421,12 @@ class ReactPanel {
         await updateUserSettings("userConfig.appRegistration.token", settingsData.token!)
         await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId!)
         await updateUserSettings("userConfig.appRegistration.email", settingsData.email!)
+        return true
       }
+      return false
     } catch (error) {
       logger.error(error)
+      return false
     }
   }
 
