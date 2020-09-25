@@ -254,6 +254,8 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "build": "node scripts/build.js && tsc -p tsconfig.extension.json",
     "build:stats": "node scripts/build.js --json > stats.json",
+    "format": "prettier --write src/**/*.ts{,x}",
+    "lint": "tsc --noEmit && eslint src/**/*.ts{,x}",
     "test": "node scripts/test.js",
     "watch": "tsc -watch -p ./"
   },
@@ -337,5 +339,6 @@
       "name": "Soumyanil Jana",
       "email": "soumyaniljana@gmail.com"
     }
-  ]
+  ],
+  "pre-commit": ["format"]
 }

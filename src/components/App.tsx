@@ -135,9 +135,12 @@ class App extends Component<IProps, IState> {
         this.setState({ fileType: data.fileType });
       }
       if (data.localAccounts) {
-        this.setState({ localAcc: setLocalAccountOption(data.localAccounts) }, () => {
-          this.mergeAccount();
-        });
+        this.setState(
+          { localAcc: setLocalAccountOption(data.localAccounts) },
+          () => {
+            this.mergeAccount();
+          }
+        );
       }
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
@@ -147,7 +150,9 @@ class App extends Component<IProps, IState> {
           this.setState({ message: [], processMessage: "" });
         }
         const fileName = Object.keys(compiled.sources)[0];
-        const contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
+        const contractsArray = setSelectorOption(
+          Object.keys(compiled.contracts[fileName])
+        );
         const files = setFileSelectorOptions(Object.keys(compiled.sources));
         this.setState({
           compiled,
@@ -165,7 +170,10 @@ class App extends Component<IProps, IState> {
         });
       }
       if (data.versions) {
-        const options = solidityVersion(data.versions.releases, data.versions.latestRelease);
+        const options = solidityVersion(
+          data.versions.releases,
+          data.versions.latestRelease
+        );
         this.setState({
           availableVersions: options,
           processMessage: "",
@@ -319,11 +327,17 @@ class App extends Component<IProps, IState> {
   public changeFile = (selectedOpt: IOpt) => {
     this.setState({ fileName: selectedOpt.value }, () => {
       this.changeContract({
-        value: `${Object.keys(this.state.compiled.contracts[this.state.fileName])[0]}`,
-        label: `${Object.keys(this.state.compiled.contracts[this.state.fileName])[0]}`,
+        value: `${
+          Object.keys(this.state.compiled.contracts[this.state.fileName])[0]
+        }`,
+        label: `${
+          Object.keys(this.state.compiled.contracts[this.state.fileName])[0]
+        }`,
       });
       this.setState((preState: IState) => ({
-        contracts: setSelectorOption(Object.keys(preState.compiled.contracts[preState.fileName])),
+        contracts: setSelectorOption(
+          Object.keys(preState.compiled.contracts[preState.fileName])
+        ),
       }));
     });
   };
@@ -451,7 +465,11 @@ class App extends Component<IProps, IState> {
               <div className="tab-container">
                 <Tab>Main</Tab>
                 <Tab>Account</Tab>
-                {compiled && fileName ? <Tab>Deploy</Tab> : <Tab disabled>Deploy</Tab>}
+                {compiled && fileName ? (
+                  <Tab>Deploy</Tab>
+                ) : (
+                  <Tab disabled>Deploy</Tab>
+                )}
                 <Tab>Debug</Tab>
                 <Tab>Test</Tab>
               </div>
@@ -475,7 +493,11 @@ class App extends Component<IProps, IState> {
               {accounts.length > 0 && (
                 <div className="account-brief">
                   <b>Account: </b>
-                  <span>{accountName && accountName.label ? accountName.label : accounts[0]}</span>
+                  <span>
+                    {accountName && accountName.label
+                      ? accountName.label
+                      : accounts[0]}
+                  </span>
                   <br />
                   <b>Balance: </b>
                   <span>{balance}</span>
@@ -492,34 +514,42 @@ class App extends Component<IProps, IState> {
                   </div>
                 </div>
               )}
-              {compiled && contractName && compiled.contracts[fileName][contractName] && (
-                <div className="compiledOutput">
-                  <div id={contractName} className="contract-container">
-                    <ContractCompiled
-                      contractName={contractName}
-                      bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                      abi={compiled.contracts[fileName][contractName].abi}
-                      vscode={vscode}
-                      compiled={compiled}
-                      errors={error}
-                    />
-                    {currAccount && (
-                      <ContractDeploy
+              {compiled &&
+                contractName &&
+                compiled.contracts[fileName][contractName] && (
+                  <div className="compiledOutput">
+                    <div id={contractName} className="contract-container">
+                      <ContractCompiled
                         contractName={contractName}
-                        bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                        bytecode={
+                          compiled.contracts[fileName][contractName].evm
+                            .bytecode.object
+                        }
                         abi={compiled.contracts[fileName][contractName].abi}
                         vscode={vscode}
                         compiled={compiled}
-                        error={error}
-                        gasEstimate={gasEstimate}
-                        deployedResult={deployedResult}
-                        deployAccount={currAccount}
-                        openAdvanceDeploy={this.openAdvanceDeploy}
+                        errors={error}
                       />
-                    )}
+                      {currAccount && (
+                        <ContractDeploy
+                          contractName={contractName}
+                          bytecode={
+                            compiled.contracts[fileName][contractName].evm
+                              .bytecode.object
+                          }
+                          abi={compiled.contracts[fileName][contractName].abi}
+                          vscode={vscode}
+                          compiled={compiled}
+                          error={error}
+                          gasEstimate={gasEstimate}
+                          deployedResult={deployedResult}
+                          deployAccount={currAccount}
+                          openAdvanceDeploy={this.openAdvanceDeploy}
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </TabPanel>
             {/* Account Panel */}
             <TabPanel>
@@ -533,15 +563,20 @@ class App extends Component<IProps, IState> {
               />
             </TabPanel>
             <TabPanel>
-              {compiled && contractName && compiled.contracts[fileName][contractName] && (
-                <Deploy
-                  contractName={contractName}
-                  bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                  abi={compiled.contracts[fileName][contractName].abi}
-                  vscode={vscode}
-                  errors={error}
-                />
-              )}
+              {compiled &&
+                contractName &&
+                compiled.contracts[fileName][contractName] && (
+                  <Deploy
+                    contractName={contractName}
+                    bytecode={
+                      compiled.contracts[fileName][contractName].evm.bytecode
+                        .object
+                    }
+                    abi={compiled.contracts[fileName][contractName].abi}
+                    vscode={vscode}
+                    errors={error}
+                  />
+                )}
             </TabPanel>
             {/* Debug panel */}
             <TabPanel className="react-tab-panel">
@@ -555,23 +590,39 @@ class App extends Component<IProps, IState> {
             </TabPanel>
             {/* Test panel */}
             <TabPanel className="react-tab-panel">
-              {this.props.test.testResults.length > 0 ? <TestDisplay /> : "No contracts to test"}
+              {this.props.test.testResults.length > 0 ? (
+                <TestDisplay />
+              ) : (
+                "No contracts to test"
+              )}
             </TabPanel>
           </Tabs>
           <div className="err_warning_container">
             {message.map((m, i) => {
               return (
                 <div key={i}>
-                  {m.severity === "warning" && <pre className="error-message yellow-text">{m.formattedMessage}</pre>}
-                  {m.severity === "error" && <pre className="error-message red-text">{m.formattedMessage}</pre>}
-                  {!m.severity && <pre className="error-message">{m.formattedMessage}</pre>}
+                  {m.severity === "warning" && (
+                    <pre className="error-message yellow-text">
+                      {m.formattedMessage}
+                    </pre>
+                  )}
+                  {m.severity === "error" && (
+                    <pre className="error-message red-text">
+                      {m.formattedMessage}
+                    </pre>
+                  )}
+                  {!m.severity && (
+                    <pre className="error-message">{m.formattedMessage}</pre>
+                  )}
                 </div>
               );
             })}{" "}
           </div>
         </div>
         <div className="process-msg-container">
-          {processMessage && <pre className="processMessage">{processMessage}</pre>}
+          {processMessage && (
+            <pre className="processMessage">{processMessage}</pre>
+          )}
         </div>
       </div>
     );
