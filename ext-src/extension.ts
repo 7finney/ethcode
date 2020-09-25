@@ -8,73 +8,10 @@ import axios from "axios";
 import { IAccount, TokenData } from "./types";
 import { Logger } from "./logger";
 
-// @ts-ignore
-let jwtToken: any;
-const machineID = uuid();
+let jwtToken = "TO BE REMOVED"
 
 // Create logger
 const logger = new Logger();
-
-async function genToken() {
-  const url = `https://auth.ethco.de/getToken/${machineID}`;
-  try {
-    const { data } = await axios.get(url);
-    return { machineID: machineID, token: data.token };
-  } catch (error) {
-    logger.error(error);
-    return { machineID: machineID, token: null };
-  }
-}
-
-async function verifyToken(token: string | unknown) {
-  const url = `https://auth.ethco.de/verifyToken/${token}`;
-  try {
-    const { status } = await axios.get(url);
-    if (status === 200) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    logger.log(`Error in verifyToken ${JSON.stringify(token)}`);
-    logger.error(error);
-    return false;
-  }
-}
-
-function getToken() {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // @ts-ignore
-      const config = await vscode.workspace.getConfiguration("launch", vscode.workspace.workspaceFolders[0].uri);
-      let tokenData: TokenData | undefined = config.get("ethcodeToken");
-      if (tokenData && tokenData.token) {
-        // verify token
-        const { token } = tokenData;
-        const auth: boolean = await verifyToken(token);
-        if (auth) {
-          jwtToken = token;
-          resolve(token);
-        } else {
-          // create new token
-          const tokenData = await genToken();
-          config.update("ethcodeToken", tokenData);
-          jwtToken = tokenData.token;
-          resolve(tokenData.token);
-        }
-      } else {
-        // create new token
-        const tokenData = await genToken();
-        config.update("ethcodeToken", tokenData);
-        jwtToken = tokenData.token;
-        resolve(tokenData.token);
-      }
-    } catch (error) {
-      logger.error(error);
-      reject(error);
-    }
-  });
-}
 
 function updateUserSession(valueToAssign: any, keys: string[]) {
   return new Promise(async (resolve, reject) => {
@@ -112,9 +49,6 @@ function retrieveUserSettings(accessScope: string, valueToRetreive: string) : st
   return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive)
 }
 
-
-
-
 async function verifyUserToken(token: string, email: string): Promise<boolean> {
   try {
     const r = await axios.post("https://newauth.ethco.de/user/token/app/verify", {
@@ -128,7 +62,6 @@ async function verifyUserToken(token: string, email: string): Promise<boolean> {
     return false;
   }
 }
-
 
 async function registerAppToToken() {
    try {
@@ -184,7 +117,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("ethcode.activate", async () => {
       logger.log("Activating ethcode...");
       try {
-        await getToken();        
       } catch (error) {
         logger.error(error);
       } finally {

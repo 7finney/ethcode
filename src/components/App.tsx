@@ -464,11 +464,6 @@ class App extends Component<IProps, IState> {
                 </div>
               )}
               {
-                <div className="app-register">
-                  <Button disabled={this.state.appRegistered} onClick={this.handleAppRegister} >Register App</Button>
-                </div>
-              }
-              {
                 (compiled && fileName) &&
                 <div className="container-margin">
                   <div className="contractSelect_container">
@@ -517,6 +512,8 @@ class App extends Component<IProps, IState> {
                 accounts={selctorAccounts}
                 getSelectedAccount={this.getSelectedAccount}
                 accBalance={balance}
+                appRegistered={this.state.appRegistered}
+                handleAppRegister={this.handleAppRegister}
               />
             </TabPanel>
             <TabPanel>
