@@ -245,6 +245,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.21.2",
     "eslint-plugin-react-hooks": "^4.1.2",
+    "pre-commit": "^1.2.2",
     "prettier": "^2.1.2",
     "redux-logger": "^3.0.6",
     "vscode": "^1.1.37"
@@ -340,5 +341,7 @@
       "email": "soumyaniljana@gmail.com"
     }
   ],
-  "pre-commit": ["format"]
+  "pre-commit": [
+    "format"
+  ]
 }
