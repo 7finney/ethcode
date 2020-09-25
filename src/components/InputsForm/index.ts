@@ -1,4 +1,3 @@
 import InputsForm from "./InputsForm";
 
-export default InputsForm
-
+export default InputsForm;

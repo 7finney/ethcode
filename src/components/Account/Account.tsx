@@ -1,10 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 import { connect } from "react-redux";
-import { Selector } from '../common/ui';
-import './Account.css';
-import { addNewAcc } from '../../actions';
-import { IAccount } from '../../types';
-import { Button } from '../common/ui';
+import { Selector, Button } from "../common/ui";
+import "./Account.css";
+import { addNewAcc } from "../../actions";
+import { IAccount } from "../../types";
 
 interface IProps {
   accounts: IAccount[];
@@ -35,13 +34,13 @@ class Account extends Component<IProps, IState> {
     super(props);
     this.state = {
       balance: 0,
-      publicAddress: '',
-      pvtKey: '',
+      publicAddress: "",
+      pvtKey: "",
       showButton: false,
       transferAmount: 0,
-      error: '',
-      msg: '',
-      sendBtnDisable: false
+      error: "",
+      msg: "",
+      sendBtnDisable: false,
     };
     this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
     this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
@@ -51,17 +50,20 @@ class Account extends Component<IProps, IState> {
     const { addNewAcc, accountBalance, vscode, currAccount } = this.props;
     const { balance } = this.state;
 
-    window.addEventListener("message", async event => {
+    window.addEventListener("message", async (event) => {
       const { data } = event;
       if (data.newAccount) {
         // TODO: Update account into redux
-        const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr };
+        const account: IAccount = {
+          label: data.newAccount.pubAddr,
+          value: data.newAccount.checksumAddr,
+        };
         addNewAcc(account);
         this.setState({ showButton: false, publicAddress: account.label });
-      } else if (data.pvtKey && (data.pvtKey !== this.state.pvtKey)) {
+      } else if (data.pvtKey && data.pvtKey !== this.state.pvtKey) {
         // TODO: handle pvt key not found errors
         this.setState({ pvtKey: data.pvtKey }, () => {
-          this.setState({ msg: 'process finshed' });
+          this.setState({ msg: "process finshed" });
         });
       } else if (data.error) {
         this.setState({ error: data.error });
@@ -76,22 +78,25 @@ class Account extends Component<IProps, IState> {
     }
     if (currAccount !== prevProps.currAccount) {
       // get private key for corresponding public key
-      vscode.postMessage({ command: "get-pvt-key", payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value });
+      vscode.postMessage({
+        command: "get-pvt-key",
+        payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value,
+      });
     }
-
   }
 
   getSelectedAccount = (account: IAccount) => {
     this.props.getSelectedAccount(account);
   };
+
   // generate keypair
   private handleGenKeyPair() {
     const { vscode } = this.props;
-    let password = "";
+    const password = "";
     try {
       vscode.postMessage({
         command: "gen-keypair",
-        payload: password
+        payload: password,
       });
       this.setState({ showButton: true });
     } catch (err) {
@@ -99,6 +104,7 @@ class Account extends Component<IProps, IState> {
       this.setState({ showButton: false });
     }
   }
+
   // delete keypair
   private deleteAccount = () => {
     const { vscode, currAccount } = this.props;
@@ -106,7 +112,7 @@ class Account extends Component<IProps, IState> {
     try {
       vscode.postMessage({
         command: "delete-keyPair",
-        payload: currAccount.value
+        payload: currAccount.value,
       });
     } catch (err) {
       console.error(err);
@@ -125,24 +131,24 @@ class Account extends Component<IProps, IState> {
         const transactionInfo = {
           fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
           toAddress: data.get("toAddress"),
-          amount: data.get("amount")
+          amount: data.get("amount"),
         };
         vscode.postMessage({
           command: "send-ether",
           payload: transactionInfo,
-          testNetId
+          testNetId,
         });
       } else {
         // Build unsigned transaction
         const transactionInfo = {
           from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
           to: data.get("toAddress"),
-          value: data.get("amount")
+          value: data.get("amount"),
         };
         vscode.postMessage({
           command: "send-ether-signed",
           payload: { transactionInfo, pvtKey },
-          testNetId
+          testNetId,
         });
       }
     } catch (err) {
@@ -156,17 +162,16 @@ class Account extends Component<IProps, IState> {
 
     return (
       <div className="account_container">
-
-        {
         <div className="account_row">
-           <div className="label-container">
-            <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified" } </label>
+          <div className="label-container">
+            <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified"}</label>
           </div>
           <div className="input-container">
-            <Button disabled={appRegistered} onClick={this.props.handleAppRegister} >Register App</Button>
+            <Button disabled={appRegistered} onClick={this.props.handleAppRegister}>
+              Register App
+            </Button>
           </div>
         </div>
-        }
 
         {/* Account Selection */}
         <div className="account_row">
@@ -178,7 +183,8 @@ class Account extends Component<IProps, IState> {
               options={accounts}
               getSelectedOption={this.getSelectedAccount}
               defaultValue={currAccount}
-              placeholder='Select Accounts' />
+              placeholder="Select Accounts"
+            />
           </div>
         </div>
 
@@ -193,16 +199,17 @@ class Account extends Component<IProps, IState> {
 
         {/* Account Delete */}
         <div className="account_row">
-          <div className="label-container"></div>
+          <div className="label-container" />
           <div className="input-container">
             <button
               className="acc-button custom_button_css"
               style={{
-                background: '#fa4138',
-                color: 'white',
-                border: '1px solid #fa4138'
+                background: "#fa4138",
+                color: "white",
+                border: "1px solid #fa4138",
               }}
-              onClick={this.deleteAccount}>
+              onClick={this.deleteAccount}
+            >
               Delete Account
             </button>
           </div>
@@ -244,9 +251,9 @@ class Account extends Component<IProps, IState> {
           </div>
 
           <div className="account_row">
-            <div className="label-container"></div>
+            <div className="label-container" />
             <div className="input-container">
-              <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: '10px' }} value="Send" />
+              <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: "10px" }} value="Send" />
             </div>
           </div>
         </form>
@@ -264,7 +271,9 @@ class Account extends Component<IProps, IState> {
           </div>
           <div className="input-container">
             {/* todo */}
-            <Button disabled={showButton} onClick={this.handleGenKeyPair}>Genarate key pair</Button>
+            <Button disabled={showButton} onClick={this.handleGenKeyPair}>
+              Genarate key pair
+            </Button>
           </div>
         </div>
 
@@ -273,21 +282,25 @@ class Account extends Component<IProps, IState> {
             <label className="label">Public key </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" value={publicAddress ? publicAddress : ''} type="text" placeholder="public key" />
+            <input
+              className="input custom_input_css"
+              value={publicAddress || ""}
+              type="text"
+              placeholder="public key"
+            />
           </div>
         </div>
 
         {/* Error Handle */}
         <div>
-          {
-            error &&
-            <pre className="large-code" style={{ color: 'red' }}>
+          {error && (
+            <pre className="large-code" style={{ color: "red" }}>
               {
                 // @ts-ignore
                 JSON.stringify(error)
               }
             </pre>
-          }
+          )}
         </div>
       </div>
     );

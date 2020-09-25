@@ -1,4 +1,3 @@
 import TestDisplay from "./TestDisplay";
 
-export default TestDisplay
-
+export default TestDisplay;
