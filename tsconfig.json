@@ -3,11 +3,7 @@
     "baseUrl": "src",
     "outDir": "build/",
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "sourceMap": true,
     "allowJs": true,
     "jsx": "preserve",
@@ -21,14 +17,9 @@
     "resolveJsonModule": true,
     "noEmit": true,
     "isolatedModules": true,
-    "typeRoots": [
-      "./@types",
-      "./node_modules/@types"
-    ]
+    "typeRoots": ["./@types", "./node_modules/@types"]
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "exclude": [
     "node_modules",
     ".vscode-test",

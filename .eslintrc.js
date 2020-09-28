@@ -4,6 +4,8 @@ module.exports = {
     "airbnb/hooks",
     "plugin:@typescript-eslint/recommended",
     "plugin:jest/recommended",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
     "prettier",
     "prettier/react",
     "prettier/@typescript-eslint",
@@ -40,6 +42,8 @@ module.exports = {
     "@typescript-eslint/no-shadow": "off",
     "react/destructuring-assignment": "off",
     "react/no-unused-state": "off",
+    "no-underscore-dangle": 0,
+    "@typescript-eslint/no-unused-vars": "off",
     "prettier/prettier": [
       "error",
       {
