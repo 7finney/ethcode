@@ -12,7 +12,7 @@ export interface IAccount {
 }
 
 export interface TokenData {
-    machineID: string;
+    appId: string;
     token: string;
 }
 

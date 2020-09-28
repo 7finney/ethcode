@@ -162,7 +162,8 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
 
 process.on("message", async m => {
   var meta = new grpc.Metadata();
-  meta.add('authorization', m.jwtToken);
+  meta.add('token', m.authToken.token);
+  meta.add('appId', m.authToken.appId);
   if (m.command === "fetch_compiler_version") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")
@@ -309,9 +310,9 @@ process.on("message", async m => {
   }
   // Deploy
   if (m.command === "deploy-contract") {
-    if (m.jwtToken) {
+    if (m.authToken) {
       // @ts-ignore
-      process.send({ jwtToken: m.jwtToken });
+      process.send({ authToken: m.authToken });
     }
     const { from, abi, bytecode, params, gasSupply } = m.payload;
     const inp = {

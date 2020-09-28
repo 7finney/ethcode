@@ -8,7 +8,10 @@ import axios from "axios";
 import { IAccount, TokenData } from "./types";
 import { Logger } from "./logger";
 
-let jwtToken = "TO BE REMOVED"
+let authToken: TokenData = {
+  token: "",
+  appId: ""
+}
 
 // Create logger
 const logger = new Logger();
@@ -49,14 +52,17 @@ function retrieveUserSettings(accessScope: string, valueToRetreive: string) : st
   return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive)
 }
 
-async function verifyUserToken(token: string, email: string): Promise<boolean> {
+async function verifyUserToken(appId: string, email: string): Promise<boolean> {
   try {
-    const r = await axios.post("https://newauth.ethco.de/user/token/app/verify", {
+    const r = await axios.post("http://newauth.ethco.de/user/token/app/verify", {
       email,
-      app_id: token,
+      app_id: appId,
     });
     logger.success(r.data.Status);
-    return true;
+    if(r.status === 200){
+      return true;
+    }
+    return false
   } catch (error) {
     logger.log(error.response.data.Error);
     return false;
@@ -67,7 +73,8 @@ async function registerAppToToken() {
    try {
       const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId")
       const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email")
-      if (appId === "" || email == "") {
+      const token = retrieveUserSettings("ethcode.userConfig.appRegistration", "token")
+      if (appId === "" || email === "") {
         logger.log("App Not Registered")
         return false
       } else {
@@ -75,7 +82,9 @@ async function registerAppToToken() {
         if (!verified) {
           logger.error(new Error("App token tampered with or revoked"))
           return false
-        }  
+        } 
+        authToken.appId = appId!
+        authToken.token = token!
         return true
       }  
   } catch (e) {
@@ -340,7 +349,7 @@ class ReactPanel {
       })
       if (token || email) {
         const appId = uuid();
-        await axios.post('https://newauth.ethco.de/user/token/app/add', {
+        await axios.post('http://newauth.ethco.de/user/token/app/add', {
           email,
           app_id: appId,
           token
@@ -549,7 +558,11 @@ class ReactPanel {
         this._panel.webview.postMessage({ buildTxResult: m.buildTxResult });
       }
     });
-    txWorker.send({ command: "build-rawtx", payload, jwtToken, testnetId: testNetId });
+    if (authToken.appId === "" && authToken.token === "") {
+        logger.error(new Error("App Not registered"))
+        return
+    }
+    txWorker.send({ command: "build-rawtx", payload, authToken, testnetId: testNetId });
   }
   // Deploy contracts for ganache
   private runDeploy(payload: any, testNetId: string) {
@@ -562,7 +575,11 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    deployWorker.send({ command: "deploy-contract", payload, jwtToken, testnetId: testNetId });
+    if (authToken.appId === "" && authToken.token === "") {
+        logger.error(new Error("App Not registered"))
+        return
+    }
+    deployWorker.send({ command: "deploy-contract", payload, authToken, testnetId: testNetId });
   }
   // sign & deploy unsigned contract transactions
   private signDeployTx(payload: any, testNetId: string) {
@@ -577,7 +594,11 @@ class ReactPanel {
         logger.success("Contract transaction submitted!");
       }
     });
-    signedDeployWorker.send({ command: "sign-deploy", payload, jwtToken, testnetId: testNetId });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    signedDeployWorker.send({ command: "sign-deploy", payload, authToken, testnetId: testNetId });
   }
   // get accounts
   public getAccounts() {
@@ -589,7 +610,11 @@ class ReactPanel {
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
     });
-    accountsWorker.send({ command: "get-accounts", jwtToken });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    accountsWorker.send({ command: "get-accounts", authToken });
   }
   // get local accounts
   private getLocalAccounts(keyStorePath: string) {
@@ -610,7 +635,11 @@ class ReactPanel {
       logger.log(`Balance worker message: ${JSON.stringify(m)}`);
       this._panel.webview.postMessage({ balance: m.balance, account });
     });
-    balanceWorker.send({ command: "get-balance", account, jwtToken, testnetId: testNetId });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    balanceWorker.send({ command: "get-balance", account, authToken, testnetId: testNetId });
   }
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
@@ -627,12 +656,16 @@ class ReactPanel {
         this._panel.webview.postMessage({ ganacheCallResult: m.callResult });
       }
     });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
     if (testNetId === "ganache") {
       logger.log("testnet Id: " + testNetId);
-      callWorker.send({ command: "ganache-contract-method-call", payload, jwtToken, testnetId: testNetId });
+      callWorker.send({ command: "ganache-contract-method-call", payload, authToken, testnetId: testNetId });
     } else {
       logger.log("testnet Id: " + testNetId);
-      callWorker.send({ command: "contract-method-call", payload, jwtToken, testnetId: testNetId });
+      callWorker.send({ command: "contract-method-call", payload, authToken, testnetId: testNetId });
     }
   }
   // Get gas estimates
@@ -647,7 +680,11 @@ class ReactPanel {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       }
     });
-    deployWorker.send({ command: "get-gas-estimate", payload, jwtToken, testnetId: testNetId });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    deployWorker.send({ command: "get-gas-estimate", payload, authToken, testnetId: testNetId });
   }
   // Send ether on ganache
   private sendEther(payload: any, testNetId: string) {
@@ -661,7 +698,11 @@ class ReactPanel {
         logger.success("Successfully sent Ether");
       }
     });
-    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, jwtToken, testnetId: testNetId });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, authToken, testnetId: testNetId });
   }
   // Send ether using ethereum client
   private sendEtherSigned(payload: any, testNetId: string) {
@@ -677,7 +718,11 @@ class ReactPanel {
         logger.success("Successfully sent Ether");
       }
     });
-    sendEtherWorker.send({ command: "send-ether-signed", payload, jwtToken, testnetId: testNetId });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    sendEtherWorker.send({ command: "send-ether-signed", payload, authToken, testnetId: testNetId });
   }
   public compileContract(
     context: vscode.ExtensionContext,
