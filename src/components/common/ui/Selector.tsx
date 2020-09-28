@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import Select from "react-select";
+import React, { Component } from 'react';
+import Select from 'react-select';
 
 interface IProps {
   options: any;
@@ -23,28 +23,28 @@ const customStyles = {
     backgroundColor: "#000",
     color: "#fff",
     menu: "20px",
-    borderColor: "#38ffAf",
+    borderColor: '#38ffAf'
   }),
 
   menu: (base: any) => ({
     ...base,
     color: "#fff",
-    background: "#000",
+    background: "#000"
   }),
   menuList: (base: any) => ({
     ...base,
     color: "#fff",
-    background: "#000",
+    background: "#000"
   }),
   singleValue: (base: any) => ({
     ...base,
-    color: "#fff",
+    color: "#fff"
   }),
   option: (base: any, { isFocused }: any) => ({
     ...base,
     color: "#fff",
-    backgroundColor: isFocused ? "#aaa" : null,
-  }),
+    backgroundColor: isFocused ? "#aaa" : null
+  })
 };
 
 class Selector extends Component<IProps, IState> {
@@ -52,7 +52,7 @@ class Selector extends Component<IProps, IState> {
     super(props);
     this.state = {
       selectedOption: null,
-      options: [],
+      options: []
     };
   }
 
@@ -61,8 +61,8 @@ class Selector extends Component<IProps, IState> {
 
     this.setState({
       options,
-      selectedOption: defaultValue,
-    });
+      selectedOption: defaultValue
+    })
   }
 
   public componentDidUpdate(prevProps: any, preState: any) {
@@ -70,14 +70,14 @@ class Selector extends Component<IProps, IState> {
 
     if (prevProps.defaultValue !== defaultValue && preState.defaultValue !== defaultValue) {
       this.setState({
-        selectedOption: defaultValue,
-      });
+        selectedOption: defaultValue
+      })
     }
 
     if (options !== prevProps.options) {
       this.setState({
-        options,
-      });
+        options
+      })
     }
   }
 
@@ -97,13 +97,13 @@ class Selector extends Component<IProps, IState> {
 
     return (
       <Select
-        placeholder={placeholder}
-        value={selectedOption}
-        onChange={this.handleChange}
-        options={options}
-        className="select-width"
-        styles={customStyles}
-      />
+          placeholder={placeholder}
+          value={selectedOption}
+          onChange={this.handleChange}
+          options={options}
+          className="select-width"
+          styles={customStyles}
+        />
     );
   }
 }

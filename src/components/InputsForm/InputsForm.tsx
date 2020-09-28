@@ -11,16 +11,14 @@ class InputsForm extends Component<IProps> {
     super(props);
     this._handleChange = this._handleChange.bind(this);
   }
-
   public _handleChange(input: any, event: any) {
     input.value = event.target.value;
   }
-
   public render() {
     const { contractName, abi } = this.props;
 
     return (
-      <div id={`${contractName}_inputs`}>
+      <div id={contractName + "_inputs"}>
         {abi.type === "constructor" &&
           abi.inputs.map((input: any, i: string) => {
             return (
@@ -32,7 +30,7 @@ class InputsForm extends Component<IProps> {
                   className="inputs"
                   placeholder={input.type}
                   value={input.value}
-                  onChange={(e) => this._handleChange(input, e)}
+                  onChange={e => this._handleChange(input, e)}
                 />
               </form>
             );

@@ -18,7 +18,7 @@ class ContractCompiled extends Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
     this.state = {
-      error: null,
+      error: null
     };
   }
 
@@ -27,14 +27,23 @@ class ContractCompiled extends Component<IProps, IState> {
     const { error } = this.state;
     return (
       <div>
-        <span className="contract-name inline-block highlight-success">Contract Name: {contractName}</span>
+        <span className="contract-name inline-block highlight-success">
+          Contract Name: {contractName}
+        </span>
         <div className="byte-code">
           <pre className="large-code">{JSON.stringify(bytecode)}</pre>
         </div>
         <div className="abi-definition">
           <pre className="large-code">{JSON.stringify(abi)}</pre>
         </div>
-        <div>{error && <div>{error}</div>}</div>
+        <div>
+          {
+            error &&
+            <div>
+              {error}
+            </div>
+          }
+        </div>
       </div>
     );
   }
