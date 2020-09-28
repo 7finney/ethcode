@@ -10,7 +10,7 @@ import {
   SET_TESTNET_ID,
   SET_UNSG_TX,
   APPND_NEW_ACC,
-  SET_TESTNET_CALL_RESULT,
+  SET_TESTNET_CALL_RESULT
 } from "./types";
 
 import { IAccount } from "../types";
