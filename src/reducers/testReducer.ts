@@ -1,12 +1,12 @@
 import {
   ADD_TEST_RESULTS,
   ADD_FINAL_RESULT_CALLBACK,
-  CLEAR_FINAL_RESULT
+  CLEAR_FINAL_RESULT,
 } from "../actions/types";
 
 const initialState = {
   testResults: [],
-  testResult: {}
+  testResult: {},
 };
 
 export default (state: any = initialState, action: any) => {
