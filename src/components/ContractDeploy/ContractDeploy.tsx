@@ -122,7 +122,7 @@ class ContractDeploy extends Component<IProps, IState> {
     this.setState({ methodArray: methodArray });
   }
   componentDidUpdate(prevProps: any) {
-    const { gasEstimate, deployedResult, error, abi, callResult } = this.props;
+    const { gasEstimate, deployedResult, error } = this.props;
     if (this.props.testNetId !== this.state.testNetId && this.props.testNetId !== 'ganache') {
       this.setState({ disable: true });
     } else if (this.props.testNetId !== this.state.testNetId) {

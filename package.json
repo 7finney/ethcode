@@ -51,6 +51,24 @@
           "description": "List of links to connect to ethcode backend.",
           "scope": "application"
         },
+        "ethcode.userConfig.appRegistration.appId": {
+          "type": "string",
+          "description": "AppId for registration to dApp Auth API (DO NOT CHANGE/REMOVE)",
+          "default": "",
+          "scope": "application"
+        },
+        "ethcode.userConfig.appRegistration.token": {
+          "type": "string",
+          "description": "Token provided during registration to dApp Auth API (DO NOT CHANGE/REMOVE)",
+          "default": "",
+          "scope": "application"
+        },
+        "ethcode.userConfig.appRegistration.email": {
+          "type": "string",
+          "description": "Email for registration to dApp Auth API (DO NOT CHANGE/REMOVE)",
+          "default": "",
+          "scope": "application"
+        },
         "ethcode.userConfig.defaultAccount": {
           "type": "string",
           "default": null,

@@ -10,7 +10,7 @@ export class Logger {
     const date = new Date(Date.now());
     return date.toLocaleTimeString();
   }
-  public log(m: string) {
+  public log(...m: Array<any>) {
     const now = this.getNow();
     this.outputChannel.appendLine(`[${now}]: ${m}`);
     this.outputChannel.show();
