@@ -44,6 +44,8 @@ module.exports = {
     "react/no-unused-state": "off",
     "no-underscore-dangle": 0,
     "@typescript-eslint/no-unused-vars": "off",
+    "react/button-has-type": "off",
+    "jsx-a11y/label-has-associated-control": "off",
     "prettier/prettier": [
       "error",
       {
