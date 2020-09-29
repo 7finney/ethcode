@@ -76,6 +76,7 @@ interface IState {
   testNets: object[];
   localAcc: any[];
   testNetAcc: any[];
+  appRegistered: boolean;
 }
 interface IOpt {
   value: string;
@@ -120,7 +121,9 @@ class App extends Component<IProps, IState> {
         // { value: '3', label: 'Ropsten' },
         // { value: '4', label: 'Rinkeby' },
         { value: '5', label: "Görli" }
-      ]
+      ],
+      appRegistered: false,
+
     };
   }
   public componentDidMount() {
@@ -240,10 +243,13 @@ class App extends Component<IProps, IState> {
         this.props.setCurrAccChange({ balance, currAccount: account });
         this.setState({ balance: this.props.accountBalance });
       }
+      if (data.registered) {
+        this.setState({appRegistered: data.registered})
+        vscode.postMessage({ command: "run-getAccounts" });
+      }
     });
     // TODO: handle error message
     // Component mounted start getting gRPC things
-    vscode.postMessage({ command: "run-getAccounts" });
     vscode.postMessage({ command: "get-localAccounts" });
   }
 
@@ -347,6 +353,12 @@ class App extends Component<IProps, IState> {
 
   public handelChangeFromAddress = (event: any) => {
     this.setState({ currAccount: event.target.value });
+  };
+
+  public handleAppRegister = () => {
+    vscode.postMessage({
+      command: 'app-register',
+    })
   };
 
   public openAdvanceDeploy = () => {
@@ -500,6 +512,8 @@ class App extends Component<IProps, IState> {
                 accounts={selctorAccounts}
                 getSelectedAccount={this.getSelectedAccount}
                 accBalance={balance}
+                appRegistered={this.state.appRegistered}
+                handleAppRegister={this.handleAppRegister}
               />
             </TabPanel>
             <TabPanel>

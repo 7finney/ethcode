@@ -14,7 +14,9 @@ interface IProps {
   vscode: any;
   currAccount: IAccount;
   testNetId: string;
+  appRegistered: boolean;
   addNewAcc: (result: any) => void;
+  handleAppRegister: () => void;
 }
 
 interface IState {
@@ -149,11 +151,22 @@ class Account extends Component<IProps, IState> {
   }
 
   render() {
-    const { accounts, currAccount } = this.props;
+    const { accounts, currAccount, appRegistered } = this.props;
     const { balance, publicAddress, showButton, error, sendBtnDisable } = this.state;
 
     return (
       <div className="account_container">
+
+        {
+        <div className="account_row">
+           <div className="label-container">
+            <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified" } </label>
+          </div>
+          <div className="input-container">
+            <Button disabled={appRegistered} onClick={this.props.handleAppRegister} >Register App</Button>
+          </div>
+        </div>
+        }
 
         {/* Account Selection */}
         <div className="account_row">
