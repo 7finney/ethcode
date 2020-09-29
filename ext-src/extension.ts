@@ -54,7 +54,7 @@ function retrieveUserSettings(accessScope: string, valueToRetreive: string) : st
 
 async function verifyUserToken(appId: string, email: string): Promise<boolean> {
   try {
-    const r = await axios.post("http://newauth.ethco.de/user/token/app/verify", {
+    const r = await axios.post("https://newauth.ethco.de/user/token/app/verify", {
       email,
       app_id: appId,
     });

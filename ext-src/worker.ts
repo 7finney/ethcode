@@ -48,7 +48,7 @@ const client_call_pb = protoDescriptor.eth_client_call;
 let client_call_client: any;
 try {
   client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('192.168.0.7:50053', grpc.credentials.createInsecure());
+  // client_call_client = new client_call_pb.ClientCallService('192.168.0.9:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -162,8 +162,10 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
 
 process.on("message", async m => {
   var meta = new grpc.Metadata();
-  meta.add('token', m.authToken.token);
-  meta.add('appId', m.authToken.appId);
+  if(m.authToken) {
+    meta.add('token', m.authToken.token);
+    meta.add('appId', m.authToken.appId);
+  }
   if (m.command === "fetch_compiler_version") {
     axios
       .get("https://ethereum.github.io/solc-bin/bin/list.json")

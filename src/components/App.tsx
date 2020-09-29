@@ -24,7 +24,7 @@ import {
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
-import { Button, Selector } from './common/ui';
+import { Selector } from './common/ui';
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 import Deploy from "./Deploy/Deploy";
@@ -245,11 +245,11 @@ class App extends Component<IProps, IState> {
       }
       if (data.registered) {
         this.setState({appRegistered: data.registered})
+        vscode.postMessage({ command: "run-getAccounts" });
       }
     });
     // TODO: handle error message
     // Component mounted start getting gRPC things
-    vscode.postMessage({ command: "run-getAccounts" });
     vscode.postMessage({ command: "get-localAccounts" });
   }
 
