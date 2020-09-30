@@ -9,8 +9,8 @@ import { IAccount, TokenData } from "./types";
 import { Logger } from "./logger";
 
 let authToken: TokenData = {
-  token: "",
-  appId: ""
+  token: retrieveUserSettings("ethcode.userConfig.appRegistration", "token"),
+  appId: retrieveUserSettings("ethcode.userConfig.appRegistration", "appId")
 }
 
 // Create logger
@@ -42,13 +42,13 @@ async function updateUserSettings(accessScope: string, valueToAdd: string): Prom
   try {
     await vscode.workspace.getConfiguration("ethcode").update(accessScope, valueToAdd, vscode.ConfigurationTarget.Global)
     return true
-  } catch(e) {
+  } catch (e) {
     logger.log("Error updating: ", e)
     return false
   }
 }
 
-function retrieveUserSettings(accessScope: string, valueToRetreive: string) : string | undefined {
+function retrieveUserSettings(accessScope: string, valueToRetreive: string): string | undefined {
   return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive)
 }
 
@@ -59,7 +59,7 @@ async function verifyUserToken(appId: string, email: string): Promise<boolean> {
       app_id: appId,
     });
     logger.success(r.data.Status);
-    if(r.status === 200){
+    if (r.status === 200) {
       return true;
     }
     return false
@@ -70,25 +70,25 @@ async function verifyUserToken(appId: string, email: string): Promise<boolean> {
 }
 
 async function registerAppToToken() {
-   try {
-      const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId")
-      const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email")
-      const token = retrieveUserSettings("ethcode.userConfig.appRegistration", "token")
-      if (appId === "" || email === "") {
-        logger.log("App Not Registered")
+  try {
+    const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId")
+    const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email")
+    const token = retrieveUserSettings("ethcode.userConfig.appRegistration", "token")
+    if (appId === "" || email === "") {
+      logger.log("App Not Registered")
+      return false
+    } else {
+      const verified = await verifyUserToken(appId!, email!)
+      if (!verified) {
+        logger.error(new Error("App token tampered with or revoked"))
         return false
-      } else {
-       const verified =  await verifyUserToken(appId!, email!)
-        if (!verified) {
-          logger.error(new Error("App token tampered with or revoked"))
-          return false
-        } 
-        authToken.appId = appId!
-        authToken.token = token!
-        return true
-      }  
+      }
+      authToken.appId = appId!
+      authToken.token = token!
+      return true
+    }
   } catch (e) {
-    if(e.code === "FileNotFound"){
+    if (e.code === "FileNotFound") {
       logger.log("Configuration file doesn't exists")
     }
     return false
@@ -241,8 +241,9 @@ class ReactPanel {
         } else if (message.command === "get-pvt-key") {
           this.getPvtKey(message.payload, this._extensionPath);
         } else if (message.command === "app-register") {
-          this.getTokens().then(r => this._panel.webview.postMessage({ registered: r}))
-          .catch(e => this._panel.webview.postMessage({ registered: false}))
+          this.getTokens()
+            .then(r => this._panel.webview.postMessage({ registered: r }))
+            .catch(e => this._panel.webview.postMessage({ registered: false }))
         }
       },
       null,
@@ -331,25 +332,24 @@ class ReactPanel {
     return fork(path.join(__dirname, "accWorker.js"));
   }
 
-  public async checkAppRegistration () {
+  public async checkAppRegistration() {
     const registered = await registerAppToToken()
-    this._panel.webview.postMessage({ registered})
+    this._panel.webview.postMessage({ registered })
   }
 
   public async getTokens(): Promise<boolean> {
     try {
       const token = await vscode.window.showInputBox({
-        ignoreFocusOut: true, 
+        ignoreFocusOut: true,
         placeHolder: "Enter App Token from dApp Auth"
       })
-        
       const email = await vscode.window.showInputBox({
         ignoreFocusOut: true,
         placeHolder: "Enter email regitered from dApp Auth"
       })
       if (token || email) {
         const appId = uuid();
-        await axios.post('http://newauth.ethco.de/user/token/app/add', {
+        await axios.post('https://newauth.ethco.de/user/token/app/add', {
           email,
           app_id: appId,
           token
@@ -363,10 +363,11 @@ class ReactPanel {
         await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId!)
         await updateUserSettings("userConfig.appRegistration.email", settingsData.email!)
         return true
+      } else {
+        return false
       }
-      return false
     } catch (error) {
-      logger.error(error)
+      logger.log(error)
       return false
     }
   }
@@ -421,7 +422,7 @@ class ReactPanel {
           };
           input.sources = sources;
           const noContent = Object.values(input.sources).filter(source => source.content === undefined);
-          if(noContent.length < 1) {
+          if (noContent.length < 1) {
             solcWorker.send({
               command: "compile",
               payload: input,
@@ -559,8 +560,8 @@ class ReactPanel {
       }
     });
     if (authToken.appId === "" && authToken.token === "") {
-        logger.error(new Error("App Not registered"))
-        return
+      logger.error(new Error("App Not registered"))
+      return
     }
     txWorker.send({ command: "build-rawtx", payload, authToken, testnetId: testNetId });
   }
@@ -576,8 +577,8 @@ class ReactPanel {
       }
     });
     if (authToken.appId === "" && authToken.token === "") {
-        logger.error(new Error("App Not registered"))
-        return
+      logger.error(new Error("App Not registered"))
+      return
     }
     deployWorker.send({ command: "deploy-contract", payload, authToken, testnetId: testNetId });
   }
@@ -610,9 +611,15 @@ class ReactPanel {
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
     });
+    const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId");
+    const token = retrieveUserSettings("ethcode.userConfig.appRegistration", "token");
+    const authToken = {
+      appId,
+      token
+    }
     if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"))
-      return
+      logger.error(new Error("App Not registered"));
+      return;
     }
     accountsWorker.send({ command: "get-accounts", authToken });
   }

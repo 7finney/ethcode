@@ -244,8 +244,9 @@ class App extends Component<IProps, IState> {
         this.setState({ balance: this.props.accountBalance });
       }
       if (data.registered) {
-        this.setState({appRegistered: data.registered})
+        this.setState({ appRegistered: data.registered });
         vscode.postMessage({ command: "run-getAccounts" });
+        // TODO: after new tokens are registered we must reload extension
       }
     });
     // TODO: handle error message
