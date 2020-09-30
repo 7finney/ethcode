@@ -12,8 +12,9 @@ export interface IAccount {
 }
 
 export interface TokenData {
-    appId: string;
-    token: string;
+    appId?: string;
+    token?: string;
+    email?: string;
 }
 
 interface ISrcLoc {

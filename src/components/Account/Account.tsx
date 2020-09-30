@@ -163,7 +163,7 @@ class Account extends Component<IProps, IState> {
             <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified" } </label>
           </div>
           <div className="input-container">
-            <Button disabled={appRegistered} onClick={this.props.handleAppRegister} >Register App</Button>
+            <Button disabled={appRegistered} onClick={this.props.handleAppRegister}>Register App</Button>
           </div>
         </div>
         }
