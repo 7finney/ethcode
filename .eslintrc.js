@@ -46,6 +46,7 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": "off",
     "react/button-has-type": "off",
     "jsx-a11y/label-has-associated-control": "off",
+    "no-nested-ternary": "off",
     "prettier/prettier": [
       "error",
       {
