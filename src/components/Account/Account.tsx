@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Selector, Button } from "../common/ui";
 import "./Account.css";
@@ -7,49 +7,29 @@ import { IAccount } from "../../types";
 
 interface IProps {
   accounts: IAccount[];
-  getSelectedAccount: (result: any) => void;
+  // eslint-disable-next-line no-unused-vars
+  getSelectedAccount: (account: IAccount) => void;
   accountBalance: number;
-  accBalance: number;
   vscode: any;
   currAccount: IAccount;
   testNetId: string;
   appRegistered: boolean;
+  // eslint-disable-next-line no-unused-vars
   addNewAcc: (result: any) => void;
   handleAppRegister: () => void;
 }
 
-interface IState {
-  balance: number;
-  publicAddress: string;
-  pvtKey: string;
-  showButton: boolean;
-  transferAmount: number;
-  error: any;
-  msg: string;
-  sendBtnDisable: boolean;
-}
+const Account = (props: IProps) => {
+  const [balance, setBalance] = useState(0);
+  const [publicAddress, setPublicAddress] = useState("");
+  const [pvtKey, setPvtKey] = useState("");
+  const [showButton, setShowButton] = useState(false);
+  const [error, setError] = useState("");
+  const [sendBtnDisable, setSendBtnDisable] = useState(false);
 
-class Account extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      balance: 0,
-      publicAddress: "",
-      pvtKey: "",
-      showButton: false,
-      transferAmount: 0,
-      error: "",
-      msg: "",
-      sendBtnDisable: false,
-    };
-    this.handleGenKeyPair = this.handleGenKeyPair.bind(this);
-    this.handleTransactionSubmit = this.handleTransactionSubmit.bind(this);
-  }
+  const { addNewAcc, accountBalance, vscode, currAccount, accounts, appRegistered } = props;
 
-  componentDidUpdate(prevProps: IProps, prevState: IState) {
-    const { addNewAcc, accountBalance, vscode, currAccount } = this.props;
-    const { balance } = this.state;
-
+  useEffect(() => {
     window.addEventListener("message", async (event) => {
       const { data } = event;
       if (data.newAccount) {
@@ -59,55 +39,56 @@ class Account extends Component<IProps, IState> {
           value: data.newAccount.checksumAddr,
         };
         addNewAcc(account);
-        this.setState({ showButton: false, publicAddress: account.label });
-      } else if (data.pvtKey && data.pvtKey !== this.state.pvtKey) {
+        setShowButton(false);
+        setPublicAddress(account.label);
+      } else if (data.pvtKey && data.pvtKey !== pvtKey) {
         // TODO: handle pvt key not found errors
-        this.setState({ pvtKey: data.pvtKey }, () => {
-          this.setState({ msg: "process finshed" });
-        });
+        setPvtKey(data.pvtKey);
       } else if (data.error) {
-        this.setState({ error: data.error });
+        setError(data.error);
       }
       if (data.transactionResult) {
-        this.setState({ sendBtnDisable: false });
+        setSendBtnDisable(false);
       }
     });
+  }, [addNewAcc, pvtKey]);
 
+  useEffect(() => {
     if (accountBalance !== balance) {
-      this.setState({ balance: accountBalance });
+      setBalance(accountBalance);
     }
-    if (currAccount !== prevProps.currAccount) {
-      // get private key for corresponding public key
-      vscode.postMessage({
-        command: "get-pvt-key",
-        payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value,
-      });
-    }
-  }
+  }, [accountBalance, balance]);
 
-  getSelectedAccount = (account: IAccount) => {
-    this.props.getSelectedAccount(account);
+  useEffect(() => {
+    vscode.postMessage({
+      command: "get-pvt-key",
+      payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currAccount]);
+
+  const getSelectedAccount = (account: IAccount) => {
+    props.getSelectedAccount(account);
   };
 
   // generate keypair
-  private handleGenKeyPair() {
-    const { vscode } = this.props;
+  const handleGenKeyPair = () => {
+    const { vscode } = props;
     const password = "";
     try {
       vscode.postMessage({
         command: "gen-keypair",
         payload: password,
       });
-      this.setState({ showButton: true });
+      setShowButton(true);
     } catch (err) {
-      console.error(err);
-      this.setState({ showButton: false });
+      setShowButton(false);
     }
-  }
+  };
 
   // delete keypair
-  private deleteAccount = () => {
-    const { vscode, currAccount } = this.props;
+  const deleteAccount = () => {
+    const { vscode, currAccount } = props;
 
     try {
       vscode.postMessage({
@@ -115,17 +96,16 @@ class Account extends Component<IProps, IState> {
         payload: currAccount.value,
       });
     } catch (err) {
-      console.error(err);
+      setError(err);
     }
   };
 
   // handle send ether
-  private handleTransactionSubmit(event: any) {
+  const handleTransactionSubmit = (event: any) => {
     event.preventDefault();
-    const { vscode, currAccount, testNetId } = this.props;
-    const { pvtKey } = this.state;
+    const { vscode, currAccount, testNetId } = props;
     const data = new FormData(event.target);
-    this.setState({ sendBtnDisable: true });
+    setSendBtnDisable(true);
     try {
       if (testNetId === "ganache") {
         const transactionInfo = {
@@ -152,160 +132,150 @@ class Account extends Component<IProps, IState> {
         });
       }
     } catch (err) {
-      this.setState({ error: err });
+      setError(err);
     }
-  }
+  };
 
-  render() {
-    const { accounts, currAccount, appRegistered } = this.props;
-    const { balance, publicAddress, showButton, error, sendBtnDisable } = this.state;
+  return (
+    <div className="account_container">
+      <div className="account_row">
+        <div className="label-container">
+          <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified"}</label>
+        </div>
+        <div className="input-container">
+          <Button disabled={appRegistered} onClick={props.handleAppRegister}>
+            Register App
+          </Button>
+        </div>
+      </div>
 
-    return (
-      <div className="account_container">
+      {/* Account Selection */}
+      <div className="account_row">
+        <div className="label-container">
+          <label className="label">Select Account </label>
+        </div>
+        <div className="select-container">
+          <Selector
+            options={accounts}
+            getSelectedOption={getSelectedAccount}
+            defaultValue={currAccount}
+            placeholder="Select Accounts"
+          />
+        </div>
+      </div>
+
+      <div className="account_row">
+        <div className="label-container">
+          <label className="label">Account Balance </label>
+        </div>
+        <div className="input-container">
+          <input className="input custom_input_css" value={balance} type="text" placeholder="account balance" />
+        </div>
+      </div>
+
+      {/* Account Delete */}
+      <div className="account_row">
+        <div className="label-container" />
+        <div className="input-container">
+          <button
+            className="acc-button custom_button_css"
+            style={{
+              background: "#fa4138",
+              color: "white",
+              border: "1px solid #fa4138",
+            }}
+            onClick={deleteAccount}
+          >
+            Delete Account
+          </button>
+        </div>
+      </div>
+
+      {/* Transfer Section */}
+      <div className="account_row">
+        <div className="label-container">
+          <label className="header">Transfer Ether </label>
+        </div>
+      </div>
+
+      <form onSubmit={handleTransactionSubmit}>
         <div className="account_row">
           <div className="label-container">
-            <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified"}</label>
+            <label className="label">From </label>
           </div>
           <div className="input-container">
-            <Button disabled={appRegistered} onClick={this.props.handleAppRegister}>
-              Register App
-            </Button>
-          </div>
-        </div>
-
-        {/* Account Selection */}
-        <div className="account_row">
-          <div className="label-container">
-            <label className="label">Select Account </label>
-          </div>
-          <div className="select-container">
-            <Selector
-              options={accounts}
-              getSelectedOption={this.getSelectedAccount}
-              defaultValue={currAccount}
-              placeholder="Select Accounts"
-            />
+            <input className="input custom_input_css" value={currAccount.label} type="text" placeholder="from" />
           </div>
         </div>
 
         <div className="account_row">
           <div className="label-container">
-            <label className="label">Account Balance </label>
+            <label className="label">To </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" value={balance} type="text" placeholder="account balance" />
+            <input className="input custom_input_css" name="toAddress" type="text" placeholder="to" />
           </div>
         </div>
 
-        {/* Account Delete */}
+        <div className="account_row">
+          <div className="label-container">
+            <label className="label">Amount </label>
+          </div>
+          <div className="input-container">
+            <input className="input custom_input_css" type="text" name="amount" placeholder="amount" />
+          </div>
+        </div>
+
         <div className="account_row">
           <div className="label-container" />
           <div className="input-container">
-            <button
-              className="acc-button custom_button_css"
-              style={{
-                background: "#fa4138",
-                color: "white",
-                border: "1px solid #fa4138",
-              }}
-              onClick={this.deleteAccount}
-            >
-              Delete Account
-            </button>
+            <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: "10px" }} value="Send" />
           </div>
         </div>
+      </form>
 
-        {/* Transfer Section */}
-        <div className="account_row">
-          <div className="label-container">
-            <label className="header">Transfer Ether </label>
-          </div>
-        </div>
-
-        <form onSubmit={this.handleTransactionSubmit}>
-          <div className="account_row">
-            <div className="label-container">
-              <label className="label">From </label>
-            </div>
-            <div className="input-container">
-              <input className="input custom_input_css" value={currAccount.label} type="text" placeholder="from" />
-            </div>
-          </div>
-
-          <div className="account_row">
-            <div className="label-container">
-              <label className="label">To </label>
-            </div>
-            <div className="input-container">
-              <input className="input custom_input_css" name="toAddress" type="text" placeholder="to" />
-            </div>
-          </div>
-
-          <div className="account_row">
-            <div className="label-container">
-              <label className="label">Amount </label>
-            </div>
-            <div className="input-container">
-              <input className="input custom_input_css" type="text" name="amount" placeholder="amount" />
-            </div>
-          </div>
-
-          <div className="account_row">
-            <div className="label-container" />
-            <div className="input-container">
-              <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: "10px" }} value="Send" />
-            </div>
-          </div>
-        </form>
-
-        {/* Account Create */}
-        <div className="account_row">
-          <div className="label-container">
-            <label className="header">Account Creation </label>
-          </div>
-        </div>
-
-        <div className="account_row">
-          <div className="label-container">
-            <label className="label">Create New Account </label>
-          </div>
-          <div className="input-container">
-            {/* todo */}
-            <Button disabled={showButton} onClick={this.handleGenKeyPair}>
-              Genarate key pair
-            </Button>
-          </div>
-        </div>
-
-        <div className="account_row">
-          <div className="label-container">
-            <label className="label">Public key </label>
-          </div>
-          <div className="input-container">
-            <input
-              className="input custom_input_css"
-              value={publicAddress || ""}
-              type="text"
-              placeholder="public key"
-            />
-          </div>
-        </div>
-
-        {/* Error Handle */}
-        <div>
-          {error && (
-            <pre className="large-code" style={{ color: "red" }}>
-              {
-                // @ts-ignore
-                JSON.stringify(error)
-              }
-            </pre>
-          )}
+      {/* Account Create */}
+      <div className="account_row">
+        <div className="label-container">
+          <label className="header">Account Creation </label>
         </div>
       </div>
-    );
-  }
-}
+
+      <div className="account_row">
+        <div className="label-container">
+          <label className="label">Create New Account </label>
+        </div>
+        <div className="input-container">
+          {/* todo */}
+          <Button disabled={showButton} onClick={handleGenKeyPair}>
+            Genarate key pair
+          </Button>
+        </div>
+      </div>
+
+      <div className="account_row">
+        <div className="label-container">
+          <label className="label">Public key </label>
+        </div>
+        <div className="input-container">
+          <input className="input custom_input_css" value={publicAddress || ""} type="text" placeholder="public key" />
+        </div>
+      </div>
+
+      {/* Error Handle */}
+      <div>
+        {error && (
+          <pre className="large-code" style={{ color: "red" }}>
+            {
+              // @ts-ignore
+              JSON.stringify(error)
+            }
+          </pre>
+        )}
+      </div>
+    </div>
+  );
+};
 
 function mapStateToProps({ debugStore, accountStore }: any) {
   const { testNetId } = debugStore;
