@@ -41,6 +41,13 @@ Ethcode signs all transactions using generated key-pair in your computer. Use `G
 
 ![Screenshot from 2020-04-11 01-02-38](https://user-images.githubusercontent.com/13261372/79018200-db1f7380-7b90-11ea-98f6-846f26405b35.png)
 
+## Register token to use ethereum cloud gateway
+1. Register and create a token on https://auth.ethco.de/
+2. Use your registered email & generated token in ethcode settings to authenticate to our cloud gateway.
+
+<img width="1440" alt="Screenshot 2020-09-29 at 6 58 29 PM" src="https://user-images.githubusercontent.com/13261372/94686544-9e1a8980-0348-11eb-92c0-9b1eea1a71be.png">
+
+
 ## Help
 Please help ethcode developers continue their work.
 

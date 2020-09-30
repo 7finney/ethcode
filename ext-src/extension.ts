@@ -577,8 +577,8 @@ class ReactPanel {
       }
     });
     if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"))
-      return
+      logger.error(new Error("App Not registered"));
+      return;
     }
     deployWorker.send({ command: "deploy-contract", payload, authToken, testnetId: testNetId });
   }
@@ -611,12 +611,10 @@ class ReactPanel {
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
     });
-    const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId");
-    const token = retrieveUserSettings("ethcode.userConfig.appRegistration", "token");
     const authToken = {
-      appId,
-      token
-    }
+      appId: retrieveUserSettings("ethcode.userConfig.appRegistration", "appId"),
+      token: retrieveUserSettings("ethcode.userConfig.appRegistration", "token")
+    };
     if (authToken.appId === "" && authToken.token === "") {
       logger.error(new Error("App Not registered"));
       return;
