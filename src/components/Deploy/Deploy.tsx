@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import JSONPretty from "react-json-pretty";
 import "./deploy.css";
 import { connect } from "react-redux";
@@ -7,141 +7,114 @@ import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { Button } from "../common/ui";
 
 export interface IProps {
+  // eslint-disable-next-line no-unused-vars
   setUnsgTxn: (unsgTxn: any) => void;
+  // eslint-disable-next-line no-unused-vars
   setTestnetCallResult: (result: any) => void;
   contractName: string;
   bytecode: any;
   abi: any;
   vscode: any;
   errors: any;
-  compiledResult: object;
+  compiledResult: any;
   testNetId: string;
   currAccount: IAccount;
   unsignedTx: any;
   testNetCallResult: any;
 }
 
-export interface IState {
-  showUnsignedTxn: boolean;
-  constructorInput: object[];
-  error: Error | any;
-  deployed: object;
-  gasEstimate: number;
-  bytecode: any;
-  abi: any;
-  methodName: string | null;
-  methodArray: object;
-  methodInputs: string;
-  contractAddress: string;
-  txtHash: string;
-  pvtKey: string;
-  msg: string;
-  processMessage: string;
-  isPayable: boolean;
-  payableAmount: any;
-  gasEstimateToggle: boolean;
-  buildTxToggle: boolean;
-  callFunToggle: boolean;
-}
+const Deploy = (props: IProps) => {
+  const [constructorInput, setConstructorInput] = useState([]);
+  const [error, setError] = useState(null);
+  const [gasEstimate, setGasEstimate] = useState(0);
+  const [byteCode, setByteCode] = useState<string>("");
+  const [abi, setAbi] = useState({});
+  const [methodName, setMethodName] = useState<string>("");
+  const [methodArray, setMethodArray] = useState({});
+  const [methodInputs, setMethodInputs] = useState("");
+  const [contractAddress, setContractAddress] = useState("");
+  const [txtHash, setTxtHash] = useState("");
+  const [pvtKey, setPvtKey] = useState("");
+  const [, setMsg] = useState("initial");
+  const [processMessage, setProcessMessage] = useState("");
+  const [isPayable, setIsPayable] = useState(false);
+  const [payableAmount] = useState<number>(0);
+  const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
+  const [buildTxToggle, setBuildTxToggle] = useState(true);
+  const [callFunToggle, setCallFunToggle] = useState(true);
 
-class Deploy extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      showUnsignedTxn: false,
-      constructorInput: [],
-      error: null,
-      deployed: {},
-      gasEstimate: 0,
-      bytecode: {},
-      abi: {},
-      // @ts-ignore
-      methodName: null,
-      methodArray: {},
-      methodInputs: "",
-      contractAddress: "",
-      txtHash: "",
-      pvtKey: "",
-      msg: "initial",
-      processMessage: "",
-      isPayable: false,
-      payableAmount: null,
-      gasEstimateToggle: false,
-      buildTxToggle: true,
-      callFunToggle: true,
-    };
-    this.handleMethodnameInput = this.handleMethodnameInput.bind(this);
-    this.handleMethodInputs = this.handleMethodInputs.bind(this);
-  }
-
-  componentDidMount() {
-    const { abi, bytecode, vscode, currAccount, setUnsgTxn } = this.props;
-    this.setState({ abi, bytecode });
+  useEffect(() => {
+    setAbi(props.abi);
+    setByteCode(props.bytecode);
 
     window.addEventListener("message", (event) => {
       const { data } = event;
 
       if (data.deployedResult) {
-        this.setState({ txtHash: data.deployedResult });
+        setTxtHash(data.deployedResult);
+        // this.setState({ txtHash: data.deployedResult });
       }
       if (data.gasEstimate) {
-        this.setState({
-          gasEstimate: data.gasEstimate,
-          gasEstimateToggle: false,
-          buildTxToggle: false,
-        });
+        setGasEstimate(data.gasEstimate);
+        setGasEstimateToggle(false);
+        setBuildTxToggle(false);
       }
       if (data.buildTxResult) {
         // TODO: fix unsigned tx is not updated after once
-        setUnsgTxn(data.buildTxResult);
-        this.setState({ buildTxToggle: false });
+        props.setUnsgTxn(data.buildTxResult);
+        setBuildTxToggle(false);
       }
       if (data.unsignedTx) {
-        setUnsgTxn(data.unsignedTx);
+        props.setUnsgTxn(data.unsignedTx);
       }
       if (data.pvtKey) {
         // TODO: fetching private key process needs fix
-        this.setState({ pvtKey: data.pvtKey, processMessage: "" }, () => {
-          this.setState({ msg: "process finshed" });
-        });
+        setPvtKey(data.pvtKey);
+        setProcessMessage("");
+        setMsg("process Finished");
       }
       if (data.TestnetCallResult) {
-        this.props.setTestnetCallResult(data.TestnetCallResult);
-        this.setState({ callFunToggle: false });
+        props.setTestnetCallResult(data.TestnetCallResult);
+        setCallFunToggle(true);
       }
       if (data.error) {
-        this.setState({ error: data.error });
+        setError(data.error);
       }
     });
+
     // get private key for corresponding public key
-    if (currAccount.type === "Local") {
-      this.setState({ processMessage: "Fetching private key..." });
-      vscode.postMessage({
+    if (props.currAccount.type === "Local") {
+      setProcessMessage("Fetching private key...");
+      // this.setState({ processMessage: "Fetching private key..." });
+      props.vscode.postMessage({
         command: "get-pvt-key",
-        payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value,
+        payload: props.currAccount.pubAddr ? props.currAccount.pubAddr : props.currAccount.value,
       });
     }
+
     // Extract constructor input from abi and make array of all the methods input field.
-    const methodArray: object = {};
-    for (const i in abi) {
-      if (abi[i].type === "constructor" && abi[i].inputs.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
+    const methodArray: any = {};
+    // eslint-disable-next-line no-restricted-syntax
+    for (const i in props.abi) {
+      if (props.abi[i].type === "constructor" && props.abi[i].inputs.length > 0) {
+        const constructorInput = JSON.parse(JSON.stringify(props.abi[i].inputs));
+        // eslint-disable-next-line guard-for-in, no-restricted-syntax
         for (const j in constructorInput) {
           constructorInput[j].value = "";
         }
-        this.setState({ constructorInput });
-      } else if (abi[i].type !== "constructor") {
+        setConstructorInput(constructorInput);
+      } else if (props.abi[i].type !== "constructor") {
         // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = abi[i].name;
-
+        const methodname: string = props.abi[i].name;
         // if we have inputs
         // @ts-ignore
         methodArray[methodname] = {};
         // @ts-ignore
-        if (abi[i].inputs && abi[i].inputs.length > 0) {
+        if (props.abi[i].inputs && props.abi[i].inputs.length > 0) {
           // @ts-ignore
-          methodArray[methodname].inputs = JSON.parse(JSON.stringify(abi[i].inputs));
+          methodArray[methodname].inputs = JSON.parse(JSON.stringify(props.abi[i].inputs));
           // @ts-ignore
+          // eslint-disable-next-line guard-for-in, no-restricted-syntax
           for (const i in methodArray[methodname].inputs) {
             // @ts-ignore
             methodArray[methodname].inputs[i].value = "";
@@ -151,30 +124,28 @@ class Deploy extends Component<IProps, IState> {
           methodArray[methodname].inputs = [];
         }
         // @ts-ignore
-        methodArray[methodname].stateMutability = abi[i].stateMutability;
+        methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
       }
     }
-    this.setState({ methodArray });
-  }
+    setMethodArray(methodArray);
+  }, [props]);
 
-  private handleConstructorInputChange = (event: any) => {
-    const { constructorInput } = this.state;
+  const handleConstructorInputChange = (event: any) => {
     if (constructorInput.length > 3) {
-      this.setState({ constructorInput: JSON.parse(event.target.value) });
+      setConstructorInput(JSON.parse(event.target.value));
     } else {
       const item = constructorInput[event.target.id];
       // @ts-ignore
       item.value = event.target.value;
       constructorInput[event.target.id] = item;
-      this.setState({ constructorInput });
+      setConstructorInput(constructorInput);
     }
   };
 
-  handleBuildTxn = () => {
-    const { vscode, bytecode, abi, currAccount, testNetId } = this.props;
-    const { constructorInput, gasEstimate } = this.state;
+  const handleBuildTxn = () => {
+    const { vscode, bytecode, abi, currAccount, testNetId } = props;
     const publicKey = currAccount.value;
-    this.setState({ buildTxToggle: true });
+    setBuildTxToggle(true);
     // create unsigned transaction here
     try {
       vscode.postMessage({
@@ -189,14 +160,13 @@ class Deploy extends Component<IProps, IState> {
         testNetId,
       });
     } catch (error) {
-      this.setState({ error });
+      setError(error);
     }
   };
 
-  private getGasEstimate = () => {
-    const { vscode, bytecode, abi, currAccount, testNetId } = this.props;
-    const { constructorInput } = this.state;
-    this.setState({ gasEstimateToggle: true });
+  const getGasEstimate = () => {
+    const { vscode, bytecode, abi, currAccount, testNetId } = props;
+    setGasEstimateToggle(true);
     const publicKey = currAccount.value;
     try {
       vscode.postMessage({
@@ -210,15 +180,14 @@ class Deploy extends Component<IProps, IState> {
         testNetId,
       });
     } catch (err) {
-      this.setState({ error: err });
+      setError(err);
     }
   };
 
-  private handleCall = () => {
-    const { vscode, abi, currAccount, testNetId } = this.props;
-    const { gasEstimate, methodName, contractAddress, methodInputs, payableAmount } = this.state;
+  const handleCall = () => {
+    const { vscode, abi, currAccount, testNetId } = props;
     const publicKey = currAccount.value;
-    this.setState({ callFunToggle: true });
+    setCallFunToggle(true);
     vscode.postMessage({
       command: "contract-method-call",
       payload: {
@@ -234,37 +203,31 @@ class Deploy extends Component<IProps, IState> {
     });
   };
 
-  private handleMethodnameInput(event: any) {
-    const { methodArray } = this.state;
+  const handleMethodnameInput = (event: any) => {
     const methodName: string = event.target.value;
-    this.setState({ callFunToggle: false });
-    // @ts-ignore
-    if (methodName && methodArray.hasOwnProperty(event.target.value)) {
-      this.setState({
-        methodName,
-        // @ts-ignore
-        methodInputs: JSON.stringify(methodArray[methodName].inputs, null, "\t"),
-        // @ts-ignore diptajit please check if this works properly
-        isPayable: methodArray[methodName].stateMutability === "payable",
-      });
+    setCallFunToggle(false);
+    if (methodName && Object.prototype.hasOwnProperty.call(methodArray, event.target.value)) {
+      setMethodName(methodName);
+      // @ts-ignore
+      setMethodArray(JSON.stringify(methodArray[methodName].inputs, null, "\t"));
+      // @ts-ignore
+      setIsPayable(methodArray[methodName].stateMutability === "payable");
     } else {
-      this.setState({
-        methodName: null,
-        // @ts-ignore
-        methodInputs: "",
-        // @ts-ignore diptajit please check if this works properly
-        isPayable: false,
-      });
+      setMethodName("");
+      // @ts-ignore
+      setMethodArray("");
+      // @ts-ignore
+      setIsPayable(false);
     }
-  }
+  };
 
-  private handleMethodInputs(event: any) {
-    this.setState({ methodInputs: event.target.value, callFunToggle: false });
-  }
+  const handleMethodInputs = (event: any) => {
+    setMethodInputs(event.target.value);
+    setCallFunToggle(false);
+  };
 
-  signAndDeploy = () => {
-    const { vscode, unsignedTx, testNetId } = this.props;
-    const { pvtKey } = this.state;
+  const signAndDeploy = () => {
+    const { vscode, unsignedTx, testNetId } = props;
     try {
       vscode.postMessage({
         command: "sign-deploy-tx",
@@ -275,285 +238,259 @@ class Deploy extends Component<IProps, IState> {
         testNetId,
       });
     } catch (error) {
-      this.setState({ error });
+      setError(error);
     }
   };
 
-  handleChange = (event: any) => {
+  const handleChange = (event: any) => {
     const {
       target: { name, value },
     } = event;
     // @ts-ignore
     this.setState({ [name]: value });
-    if (this.state.gasEstimate > 0) {
-      this.setState({ buildTxToggle: false });
+    if (gasEstimate > 0) {
+      setBuildTxToggle(false);
     }
   };
 
-  render() {
-    const { contractName, currAccount, unsignedTx, testNetCallResult } = this.props;
-    const {
-      gasEstimate,
-      constructorInput,
-      bytecode,
-      abi,
-      txtHash,
-      pvtKey,
-      processMessage,
-      error,
-      methodInputs,
-      methodName,
-      contractAddress,
-      isPayable,
-      payableAmount,
-      gasEstimateToggle,
-      buildTxToggle,
-      callFunToggle,
-    } = this.state;
-    const publicKey = currAccount.value;
-    return (
-      <div className="deploy_container">
-        {/* Bytecode and Abi */}
-        <div>
-          <h4 className="tag contract-name inline-block highlight-success">
-            Contract Name: <span>{contractName}</span>
-          </h4>
-          <div className="byte-code" style={{ marginBottom: "15px" }}>
-            <input
-              className="input custom_input_css"
-              style={{ width: "80vw" }}
-              type="text"
-              name="bytecode"
-              onChange={(e) => this.setState({ bytecode: e.target.value })}
-              value={bytecode}
-              placeholder="byte code"
-              disabled
-            />
-          </div>
-          <div className="abi-definition">
-            <input
-              className="input custom_input_css"
-              style={{ width: "80vw" }}
-              type="text"
-              name="abi"
-              onChange={(e) => this.setState({ abi: JSON.parse(e.target.value) })}
-              value={JSON.stringify(abi)}
-              placeholder="abi"
-              disabled
-            />
-          </div>
-        </div>
-        {/* Constructor */}
-        <div>
-          <div className="tag form-container">
-            {constructorInput && constructorInput.length > 0 && (
-              <div>
-                {constructorInput.length <= 3 ? (
-                  <div>
-                    <h4 className="tag contract-name inline-block highlight-success">Constructor:</h4>
-                    {constructorInput.map((x: object, index) => {
-                      return (
-                        <div
-                          className="constructorInput input-flex"
-                          style={{ marginTop: "10px", marginBottom: "10px" }}
-                        >
-                          {/* 
-                                // @ts-ignore */}
-                          <label className="tag label_name">{x.name}:</label>
-                          {/* 
-                                // @ts-ignore */}
-                          <input
-                            className="custom_input_css"
-                            type={x.type}
-                            placeholder={`${x.name} arguments (${x.type})`}
-                            id={index}
-                            name={x.name}
-                            onChange={(e) => this.handleConstructorInputChange(e)}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="json_input_container">
-                    <textarea
-                      className="tag json_input custom_input_css"
-                      style={{ margin: "10px 0" }}
-                      value={JSON.stringify(constructorInput, null, "\t")}
-                      onChange={(e) => this.handleConstructorInputChange(e)}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+  const { contractName, currAccount, unsignedTx, testNetCallResult } = props;
 
-          {/* Call Function */}
-          <div className="tag">
-            <form onSubmit={this.handleCall} className="form_align">
-              <input
-                type="text"
-                className="custom_input_css"
-                placeholder="Enter contract address"
-                style={{ marginRight: "5px" }}
-                name="contractAddress"
-                value={contractAddress}
-                onChange={(e) => this.setState({ contractAddress: e.target.value })}
-              />
-              <input
-                type="text"
-                className="custom_input_css"
-                placeholder="Enter contract function name"
-                name="methodName"
-                onChange={this.handleMethodnameInput}
-              />
-              {methodName !== "" && methodInputs !== "" && methodInputs !== "[]" && (
-                <div className="json_input_container" style={{ margin: "10px 0" }}>
+  const publicKey = currAccount.value;
+  return (
+    <div className="deploy_container">
+      {/* Bytecode and Abi */}
+      <div>
+        <h4 className="tag contract-name inline-block highlight-success">
+          Contract Name: <span>{contractName}</span>
+        </h4>
+        <div className="byte-code" style={{ marginBottom: "15px" }}>
+          <input
+            className="input custom_input_css"
+            style={{ width: "80vw" }}
+            type="text"
+            name="bytecode"
+            onChange={(e) => setByteCode(e.target.value)}
+            value={byteCode}
+            placeholder="byte code"
+            disabled
+          />
+        </div>
+        <div className="abi-definition">
+          <input
+            className="input custom_input_css"
+            style={{ width: "80vw" }}
+            type="text"
+            name="abi"
+            onChange={(e) => setAbi(JSON.parse(e.target.value))}
+            value={JSON.stringify(abi)}
+            placeholder="abi"
+            disabled
+          />
+        </div>
+      </div>
+      {/* Constructor */}
+      <div>
+        <div className="tag form-container">
+          {constructorInput && constructorInput.length > 0 && (
+            <div>
+              {constructorInput.length <= 3 ? (
+                <div>
+                  <h4 className="tag contract-name inline-block highlight-success">Constructor:</h4>
+                  {constructorInput.map((x: any, index) => {
+                    return (
+                      <div className="constructorInput input-flex" style={{ marginTop: "10px", marginBottom: "10px" }}>
+                        {/* 
+                                // @ts-ignore */}
+                        <label className="tag label_name">{x.name}:</label>
+                        {/* 
+                                // @ts-ignore */}
+                        <input
+                          className="custom_input_css"
+                          type={x.type}
+                          placeholder={`${x.name} arguments (${x.type})`}
+                          id={index.toString()}
+                          name={x.name}
+                          onChange={(e) => handleConstructorInputChange(e)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="json_input_container">
                   <textarea
-                    className="json_input custom_input_css"
-                    value={methodInputs}
-                    onChange={this.handleMethodInputs}
+                    className="tag json_input custom_input_css"
+                    style={{ margin: "10px 0" }}
+                    value={JSON.stringify(constructorInput, null, "\t")}
+                    onChange={(e) => handleConstructorInputChange(e)}
                   />
                 </div>
               )}
-              {isPayable && (
-                <input
-                  type="number"
-                  className="custom_input_css"
-                  placeholder="Enter payable amount"
-                  style={{ margin: "5px" }}
-                  name="payableAmount"
-                  value={payableAmount}
-                  onChange={(e) => this.handleChange(e)}
-                />
-              )}
-              {/* <input type="submit" style={{ margin: '10px' }} className="custom_button_css" value="Call function" /> */}
-              <Button ButtonType="input" disabled={callFunToggle} value="Call function" />
-            </form>
-          </div>
-        </div>
-
-        {/* Call function Result */}
-        {Object.entries(testNetCallResult).length > 0 && (
-          <div className="tag call-result">
-            <span>{testNetCallResult ? "Call result:" : "Call error:"}</span>
-            <div>
-              {testNetCallResult ? (
-                <pre className="large-code">{testNetCallResult}</pre>
-              ) : (
-                <pre className="large-code" style={{ color: "red" }}>
-                  {JSON.stringify(error)}
-                </pre>
-              )}
             </div>
-          </div>
-        )}
-
-        {/* Get gas estimate */}
-        <div className="account_row">
-          <div className="input-container">
-            <Button disabled={gasEstimateToggle} onClick={this.getGasEstimate}>
-              Get gas estimate
-            </Button>
-          </div>
-          <div className="input-container">
-            <input
-              className="input custom_input_css"
-              name="gasEstimate"
-              onChange={(e) => this.handleChange(e)}
-              type="text"
-              placeholder="gas supply"
-              value={gasEstimate}
-            />
-          </div>
-        </div>
-
-        <div className="input-container">
-          {gasEstimate > 0 ? (
-            <Button disabled={buildTxToggle} onClick={this.handleBuildTxn}>
-              Build transaction
-            </Button>
-          ) : (
-            <Button disabled onClick={this.handleBuildTxn}>
-              Build transaction
-            </Button>
           )}
         </div>
 
-        {unsignedTx && (
-          <div className="tag">
-            <h4 className="contract-name inline-block highlight-success">Unsigned Transaction:</h4>
-            <div className="json_input_container" style={{ marginTop: "10px" }}>
-              <pre className="large-code">
-                <JSONPretty id="json-pretty" data={unsignedTx} />
-              </pre>
-              {/* <textarea className="json_input custom_input_css">{unsignedTx}</textarea> */}
-            </div>
-          </div>
-        )}
-
-        <div className="account_row">
-          <div className="tag">
-            <h4>Public key</h4>
-          </div>
-          <div className="input-container">
-            <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" />
-          </div>
+        {/* Call Function */}
+        <div className="tag">
+          <form onSubmit={handleCall} className="form_align">
+            <input
+              type="text"
+              className="custom_input_css"
+              placeholder="Enter contract address"
+              style={{ marginRight: "5px" }}
+              name="contractAddress"
+              value={contractAddress}
+              onChange={(e) => setContractAddress(e.target.value)}
+            />
+            <input
+              type="text"
+              className="custom_input_css"
+              placeholder="Enter contract function name"
+              name="methodName"
+              onChange={handleMethodnameInput}
+            />
+            {methodName !== "" && methodInputs !== "" && methodInputs !== "[]" && (
+              <div className="json_input_container" style={{ margin: "10px 0" }}>
+                <textarea className="json_input custom_input_css" value={methodInputs} onChange={handleMethodInputs} />
+              </div>
+            )}
+            {isPayable && (
+              <input
+                type="number"
+                className="custom_input_css"
+                placeholder="Enter payable amount"
+                style={{ margin: "5px" }}
+                name="payableAmount"
+                value={payableAmount}
+                onChange={(e) => handleChange(e)}
+              />
+            )}
+            {/* <input type="submit" style={{ margin: '10px' }} className="custom_button_css" value="Call function" /> */}
+            <Button ButtonType="input" disabled={callFunToggle} value="Call function" />
+          </form>
         </div>
+      </div>
 
-        <div className="account_row">
-          <div className="tag">
-            <h4>Private key</h4>
-          </div>
-          <div className="input-container">
-            <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
-          </div>
-        </div>
-
-        <div className="account_row">
-          <div className="tag">
-            {pvtKey && unsignedTx ? (
-              <button className="acc-button custom_button_css" onClick={this.signAndDeploy}>
-                Sign & Deploy
-              </button>
+      {/* Call function Result */}
+      {Object.entries(testNetCallResult).length > 0 && (
+        <div className="tag call-result">
+          <span>{testNetCallResult ? "Call result:" : "Call error:"}</span>
+          <div>
+            {testNetCallResult ? (
+              <pre className="large-code">{testNetCallResult}</pre>
             ) : (
-              <button disabled className="acc-button button_disable custom_button_css" onClick={this.signAndDeploy}>
-                Sign & Deploy
-              </button>
+              <pre className="large-code" style={{ color: "red" }}>
+                {JSON.stringify(error)}
+              </pre>
             )}
           </div>
         </div>
+      )}
 
-        {/* Final Transaction Hash */}
-        {pvtKey && (
-          <div className="account_row">
-            <div className="tag">
-              <h4>Transaction hash</h4>
-            </div>
-            <div className="input-container">
-              <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />
-            </div>
-          </div>
+      {/* Get gas estimate */}
+      <div className="account_row">
+        <div className="input-container">
+          <Button disabled={gasEstimateToggle} onClick={getGasEstimate}>
+            Get gas estimate
+          </Button>
+        </div>
+        <div className="input-container">
+          <input
+            className="input custom_input_css"
+            name="gasEstimate"
+            onChange={(e) => handleChange(e)}
+            type="text"
+            placeholder="gas supply"
+            value={gasEstimate}
+          />
+        </div>
+      </div>
+
+      <div className="input-container">
+        {gasEstimate > 0 ? (
+          <Button disabled={buildTxToggle} onClick={handleBuildTxn}>
+            Build transaction
+          </Button>
+        ) : (
+          <Button disabled onClick={handleBuildTxn}>
+            Build transaction
+          </Button>
         )}
+      </div>
 
-        {/* Notification */}
-        {processMessage && <pre className="processMessage">{processMessage}</pre>}
-
-        {/* Error Handle */}
-        <div className="error_message">
-          {error && (
-            <pre className="large-code" style={{ color: "red" }}>
-              {
-                // @ts-ignore
-                JSON.stringify(error)
-              }
+      {unsignedTx && (
+        <div className="tag">
+          <h4 className="contract-name inline-block highlight-success">Unsigned Transaction:</h4>
+          <div className="json_input_container" style={{ marginTop: "10px" }}>
+            <pre className="large-code">
+              <JSONPretty id="json-pretty" data={unsignedTx} />
             </pre>
+            {/* <textarea className="json_input custom_input_css">{unsignedTx}</textarea> */}
+          </div>
+        </div>
+      )}
+
+      <div className="account_row">
+        <div className="tag">
+          <h4>Public key</h4>
+        </div>
+        <div className="input-container">
+          <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" />
+        </div>
+      </div>
+
+      <div className="account_row">
+        <div className="tag">
+          <h4>Private key</h4>
+        </div>
+        <div className="input-container">
+          <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
+        </div>
+      </div>
+
+      <div className="account_row">
+        <div className="tag">
+          {pvtKey && unsignedTx ? (
+            <button className="acc-button custom_button_css" onClick={signAndDeploy}>
+              Sign & Deploy
+            </button>
+          ) : (
+            <button disabled className="acc-button button_disable custom_button_css" onClick={signAndDeploy}>
+              Sign & Deploy
+            </button>
           )}
         </div>
       </div>
-    );
-  }
-}
+
+      {/* Final Transaction Hash */}
+      {pvtKey && (
+        <div className="account_row">
+          <div className="tag">
+            <h4>Transaction hash</h4>
+          </div>
+          <div className="input-container">
+            <input className="input custom_input_css" type="text" value={txtHash} placeholder="transaction hash" />
+          </div>
+        </div>
+      )}
+
+      {/* Notification */}
+      {processMessage && <pre className="processMessage">{processMessage}</pre>}
+
+      {/* Error Handle */}
+      <div className="error_message">
+        {error && (
+          <pre className="large-code" style={{ color: "red" }}>
+            {
+              // @ts-ignore
+              JSON.stringify(error)
+            }
+          </pre>
+        )}
+      </div>
+    </div>
+  );
+};
 
 function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: any) {
   const { compiledResult, testNetCallResult } = compiledStore;
