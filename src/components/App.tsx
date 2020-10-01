@@ -1,5 +1,5 @@
 // @ts-ignore
-import React, { Component } from "react";
+import React, { Component, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import {
@@ -84,229 +84,191 @@ interface IOpt {
 }
 // @ts-ignore
 const vscode = acquireVsCodeApi(); // eslint-disable-line
-class App extends Component<IProps, IState> {
-  public state: IState;
+const App = (props: IProps) => {
+  const [message, setMessage] = useState([])
+  const [compiled, setCompiled] = useState("")
+  const [error, setError] = useState(null)
+  const [fileName, setFileName] = useState("")
+  const [contractName, setContractName] = useState("")
+  const [processMessage, setProcessMessage] = useState("")
+  const [availableVersions, setAvailableVersions] = useState<any[]>([])
+  const [gasEstimate, setGasEstimate] = useState(0)
+  const [deployedResult, setDeployedResult] = useState("")
+  const [tabIndex, setTabIndex] = useState(0)
+  const [txTrace, setTxTrace] = useState({})
+  const [accounts, setAccounts] = useState([])
+  const [selctorAccounts, setSelctorAccounts] = useState([])
+  const [contracts, setContracts] = useState<any[]>([])
+  const [files, setFiles] = useState<any[]>([])
+  const [currAccount, setCurrAccount] = useState(undefined)
+  const [balance, setBalance] = useState(0)
+  const [transactionResult, setTransactionResult] = useState("")
+  const [testNetId, setTestNetId] = useState("")
+  const [fileType, setFileType] = useState("")
+  const [traceError, setTraceError] = useState("")
+  const [accountName, setAccountName] = useState({ label: "",  value: ""})
+  const [localAcc, setLocalAcc] = useState<any[]>([])
+  const [testNetAcc, setTestNetAcc] = useState([])
+  const [testNets, setTestNets] = useState([
+    { value: "ganache", label: "Ganache" },
+    // { value: '3', label: 'Ropsten' },
+    // { value: '4', label: 'Rinkeby' },
+    { value: "5", label: "Görli" },
+  ])
+  const [appRegistered, setAppRegistered] = useState(false)
 
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      message: [],
-      compiled: "",
-      error: null,
-      fileName: "",
-      contractName: "",
-      processMessage: "",
-      availableVersions: "",
-      gasEstimate: 0,
-      deployedResult: "",
-      tabIndex: 0,
-      txTrace: {},
-      accounts: [],
-      selctorAccounts: [],
-      contracts: [],
-      files: [],
-      currAccount: undefined,
-      balance: 0,
-      transactionResult: "",
-      testNetId: "",
-      fileType: "",
-      traceError: "",
-      accountName: {
-        label: "",
-        value: "",
-      },
-      localAcc: [],
-      testNetAcc: [],
-      testNets: [
-        { value: "ganache", label: "Ganache" },
-        // { value: '3', label: 'Ropsten' },
-        // { value: '4', label: 'Rinkeby' },
-        { value: "5", label: "Görli" },
-      ],
-      appRegistered: false,
-    };
-  }
-
-  public componentDidMount() {
+  useEffect(() => {
     window.addEventListener("message", async (event) => {
       const { data } = event;
 
       if (data.fileType) {
-        this.setState({ fileType: data.fileType });
+        setFileType(data.fileType)
       }
       if (data.localAccounts) {
-        this.setState(
-          { localAcc: setLocalAccountOption(data.localAccounts) },
-          () => {
-            this.mergeAccount();
-          }
-        );
+        setLocalAcc(setLocalAccountOption(data.localAccounts))
+        mergeAccount();
       }
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
         if (compiled.errors && compiled.errors.length > 0) {
-          this.setState({ message: compiled.errors });
+          setMessage(compiled.errors)
         } else if (!compiled.errors) {
-          this.setState({ message: [], processMessage: "" });
+          setMessage([])
+          setProcessMessage("")
         }
         const fileName = Object.keys(compiled.sources)[0];
         const contractsArray = setSelectorOption(
           Object.keys(compiled.contracts[fileName])
         );
         const files = setFileSelectorOptions(Object.keys(compiled.sources));
-        this.setState({
-          compiled,
-          fileName,
-          processMessage: "",
-          contractName: Object.keys(compiled.contracts[fileName])[0],
-          contracts: contractsArray,
-          files,
-        });
+        setCompiled(compiled)
+        setFileName(fileName)
+        setProcessMessage("")
+        setContractName(Object.keys(compiled.contracts[fileName])[0])
+        setContracts(contractsArray)
+        setFiles(files)
       }
       if (data.processMessage) {
         const { processMessage } = data;
-        this.setState({
-          processMessage,
-        });
+        setProcessMessage(processMessage)
       }
       if (data.versions) {
         const options = solidityVersion(
           data.versions.releases,
           data.versions.latestRelease
         );
-        this.setState({
-          availableVersions: options,
-          processMessage: "",
-        });
+        setAvailableVersions(options)
+        setProcessMessage("")
       }
 
       if (data.resetTestState === "resetTestState") {
-        this.props.clearFinalResult();
+        props.clearFinalResult();
       }
 
       if (data.testPanel === "test") {
-        this.setState({ tabIndex: 4 });
+        setTabIndex(4)
       }
 
       if (data.testPanel === "main") {
-        this.setState({ tabIndex: 0 });
+        setTabIndex(0)
       }
 
       if (data._testCallback) {
         const result = data._testCallback;
-        this.props.addTestResults(result);
+        props.addTestResults(result);
       }
       if (data._finalCallback) {
         const result = data._finalCallback;
-        this.props.addFinalResultCallback(result);
-        this.setState({
-          processMessage: "",
-        });
+        props.addFinalResultCallback(result);
+        setProcessMessage("")
       }
       if (data._importFileCb) {
         return;
       }
       if (data.errors) {
-        this.setState({ error: data.errors });
+        setError(data.errors)
       }
       if (data.gasEstimate) {
-        // @ts-ignore
-        this.setState({ gasEstimate: data.gasEstimate });
+        setGasEstimate( data.gasEstimate)
       }
       if (data.deployedResult) {
         const result = data.deployedResult.deployedResult;
-        this.props.setDeployedResult(result);
-        this.setState({ deployedResult: data.deployedResult.deployedResult });
+        props.setDeployedResult(result);
+        setDeployedResult( data.deployedResult.deployedResult)
       }
       if (data.txTrace) {
-        this.setState({ txTrace: data.txTrace });
+        setTxTrace(data.txTrace)
       }
       if (data.traceError) {
-        this.setState({ traceError: data.traceError });
+        setTraceError( data.traceError )
       }
       if (data.callResult) {
         const result = data.callResult;
-        this.props.setCallResult(result);
+        props.setCallResult(result);
       }
       if (data.fetchAccounts) {
         const { balance } = data.fetchAccounts;
         const { accounts } = data.fetchAccounts;
-        this.setState(
-          {
-            testNetAcc: setGanacheAccountsOption(accounts),
-          },
-          () => {
-            this.mergeAccount();
-          }
-        );
+        setTestNetAcc(setGanacheAccountsOption(accounts))
+          mergeAccount();
         const accData = {
           balance,
-          currAccount: this.state.testNetAcc[0],
+          currAccount: testNetAcc[0],
           accounts,
         };
-        await this.props.setAccountBalance(accData);
-        this.setState({
-          accounts: this.props.accounts,
-          currAccount: this.props.currAccount,
-          balance: this.props.accountBalance,
-        });
+        await props.setAccountBalance(accData);
+        setAccounts(props.accounts)
+        setCurrAccount(props.currAccount)
+        setBalance(props.accountBalance)
       }
       if (data.transactionResult) {
-        this.setState({ transactionResult: data.transactionResult });
+        setTransactionResult(data.transactionResult)
       }
       if (data.balance) {
         const { balance, account } = data;
-        this.props.setCurrAccChange({ balance, currAccount: account });
-        this.setState({ balance: this.props.accountBalance });
+        props.setCurrAccChange({ balance, currAccount: account });
+        setBalance(props.accountBalance)
       }
       if (data.registered) {
-        this.setState({ appRegistered: data.registered });
+        setAppRegistered(data.registered)
       }
     });
-    // TODO: handle error message
     // Component mounted start getting gRPC things
     vscode.postMessage({ command: "run-getAccounts" });
     vscode.postMessage({ command: "get-localAccounts" });
-  }
+  }, [])
 
-  mergeAccount = () => {
-    const { localAcc, testNetAcc } = this.state;
+  const  mergeAccount = () => {
     // merge and set accounts store
     // TODO: update reducer
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
-      this.setState({
-        selctorAccounts: [
-          {
-            label: "Ganache",
-            options: testNetAcc,
-          },
-          {
-            label: "Local Accounts",
-            options: localAcc,
-          },
-        ],
-      });
+      setSelctorAccounts([
+        {
+          label: "Ganache",
+          options: testNetAcc,
+        },
+        {
+          label: "Local Accounts",
+          options: localAcc,
+        },
+      ])
     } else if (localAcc.length > 0) {
-      this.setState({
-        selctorAccounts: [
-          {
-            label: "Local Accounts",
-            options: localAcc,
-          },
-        ],
-      });
+      setSelctorAccounts([
+        {
+          label: "Local Accounts",
+          options: localAcc,
+        }
+      ])
     } else if (testNetAcc.length > 0) {
-      this.setState({
-        selctorAccounts: [
-          {
-            label: "Ganache",
-            options: testNetAcc,
-          },
-        ],
-      });
+      setSelctorAccounts([
+        {
+          label: "Ganache",
+          options: testNetAcc,
+        }
+      ])
     } else {
-      this.setState({ selctorAccounts: [] });
+      setSelctorAccounts([])
     }
   };
 
@@ -324,36 +286,43 @@ class App extends Component<IProps, IState> {
     }
   }
 
-  public changeFile = (selectedOpt: IOpt) => {
-    this.setState({ fileName: selectedOpt.value }, () => {
-      this.changeContract({
-        value: `${
-          Object.keys(this.state.compiled.contracts[this.state.fileName])[0]
-        }`,
-        label: `${
-          Object.keys(this.state.compiled.contracts[this.state.fileName])[0]
-        }`,
-      });
-      this.setState((preState: IState) => ({
-        contracts: setSelectorOption(
-          Object.keys(preState.compiled.contracts[preState.fileName])
-        ),
-      }));
+  useState(() => {
+    if (props.accounts !== accounts) {
+      setAccounts(props.accounts)
+    }
+
+    if (props.testNetId !== testNetId) {
+      setTestNetId(props.testNetId)
+    }
+  })
+
+  const changeFile = (selectedOpt: IOpt) => {
+    setFileName(selectedOpt.value)
+    changeContract({
+      value: `${
+        Object.keys(compiled.contracts[fileName])[0]
+      }`,
+      label: `${
+        Object.keys(compiled.contracts[fileName])[0]
+      }`,
     });
+    setContracts(setSelectorOption(
+      Object.keys(compiled.contracts[fileName])
+    ))
   };
 
-  public changeContract = (selectedOpt: IOpt) => {
-    this.setState({ contractName: selectedOpt.value });
+  const changeContract = (selectedOpt: IOpt) => {
+    setContractName(selectedOpt.value)
   };
 
-  public getSelectedVersion = (version: any) => {
+  const getSelectedVersion = (version: any) => {
     vscode.postMessage({
       command: "version",
       version: version.value,
     });
   };
 
-  public getSelectedNetwork = (testNet: any) => {
+  const getSelectedNetwork = (testNet: any) => {
     const { currAccount } = this.state;
     this.setState({ testNetId: testNet.value }, () => {
       const { testNetId } = this.state;
