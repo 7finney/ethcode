@@ -149,7 +149,9 @@ const App = (props: IProps) => {
           setProcessMessage("");
         }
         const fileName = Object.keys(compiled.sources)[0];
-        const contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
+        const contractsArray = setSelectorOption(
+          Object.keys(compiled.contracts[fileName])
+        );
         const files = setFileSelectorOptions(Object.keys(compiled.sources));
         setCompiled(compiled);
         setFileName(fileName);
@@ -163,7 +165,10 @@ const App = (props: IProps) => {
         setProcessMessage(processMessage);
       }
       if (data.versions) {
-        const options = solidityVersion(data.versions.releases, data.versions.latestRelease);
+        const options = solidityVersion(
+          data.versions.releases,
+          data.versions.latestRelease
+        );
         setAvailableVersions(options);
         setProcessMessage("");
       }
@@ -334,7 +339,12 @@ const App = (props: IProps) => {
           defaultValue={testNets[0]}
         />
         {compiled && Object.keys(compiled.sources).length > 0 && (
-          <Selector options={files} getSelectedOption={changeFile} placeholder="Select Files" defaultValue={files[0]} />
+          <Selector
+            options={files}
+            getSelectedOption={changeFile}
+            placeholder="Select Files"
+            defaultValue={files[0]}
+          />
         )}
       </div>
       {transactionResult && (
@@ -353,7 +363,11 @@ const App = (props: IProps) => {
             <div className="tab-container">
               <Tab>Main</Tab>
               <Tab>Account</Tab>
-              {compiled && fileName ? <Tab>Deploy</Tab> : <Tab disabled>Deploy</Tab>}
+              {compiled && fileName ? (
+                <Tab>Deploy</Tab>
+              ) : (
+                <Tab disabled>Deploy</Tab>
+              )}
               <Tab>Debug</Tab>
               <Tab>Test</Tab>
             </div>
@@ -377,7 +391,11 @@ const App = (props: IProps) => {
             {accounts.length > 0 && (
               <div className="account-brief">
                 <b>Account: </b>
-                <span>{accountName && accountName.label ? accountName.label : accounts[0]}</span>
+                <span>
+                  {accountName && accountName.label
+                    ? accountName.label
+                    : accounts[0]}
+                </span>
                 <br />
                 <b>Balance: </b>
                 <span>{balance}</span>
@@ -386,31 +404,43 @@ const App = (props: IProps) => {
             {compiled && fileName && (
               <div className="container-margin">
                 <div className="contractSelect_container">
-                  <Selector options={contracts} getSelectedOption={changeContract} placeholder="Select Contract" />
-                </div>
-              </div>
-            )}
-            {compiled && contractName && compiled.contracts[fileName][contractName] && (
-              <div className="compiledOutput">
-                <div id={contractName} className="contract-container">
-                  <ContractCompiled
-                    contractName={contractName}
-                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                    abi={compiled.contracts[fileName][contractName].abi}
+                  <Selector
+                    options={contracts}
+                    getSelectedOption={changeContract}
+                    placeholder="Select Contract"
                   />
-                  {currAccount && (
-                    <ContractDeploy
-                      bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                      abi={compiled.contracts[fileName][contractName].abi}
-                      vscode={vscode}
-                      gasEstimate={gasEstimate}
-                      deployedResult={deployedResult}
-                      openAdvanceDeploy={openAdvanceDeploy}
-                    />
-                  )}
                 </div>
               </div>
             )}
+            {compiled &&
+              contractName &&
+              compiled.contracts[fileName][contractName] && (
+                <div className="compiledOutput">
+                  <div id={contractName} className="contract-container">
+                    <ContractCompiled
+                      contractName={contractName}
+                      bytecode={
+                        compiled.contracts[fileName][contractName].evm.bytecode
+                          .object
+                      }
+                      abi={compiled.contracts[fileName][contractName].abi}
+                    />
+                    {currAccount && (
+                      <ContractDeploy
+                        bytecode={
+                          compiled.contracts[fileName][contractName].evm
+                            .bytecode.object
+                        }
+                        abi={compiled.contracts[fileName][contractName].abi}
+                        vscode={vscode}
+                        gasEstimate={gasEstimate}
+                        deployedResult={deployedResult}
+                        openAdvanceDeploy={openAdvanceDeploy}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
           </TabPanel>
           {/* Account Panel */}
           <TabPanel>
@@ -424,23 +454,37 @@ const App = (props: IProps) => {
             />
           </TabPanel>
           <TabPanel>
-            {compiled && contractName && compiled.contracts[fileName][contractName] && (
-              <Deploy
-                contractName={contractName}
-                bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                abi={compiled.contracts[fileName][contractName].abi}
-                vscode={vscode}
-                errors={error}
-              />
-            )}
+            {compiled &&
+              contractName &&
+              compiled.contracts[fileName][contractName] && (
+                <Deploy
+                  contractName={contractName}
+                  bytecode={
+                    compiled.contracts[fileName][contractName].evm.bytecode
+                      .object
+                  }
+                  abi={compiled.contracts[fileName][contractName].abi}
+                  vscode={vscode}
+                  errors={error}
+                />
+              )}
           </TabPanel>
           {/* Debug panel */}
           <TabPanel className="react-tab-panel">
-            <DebugDisplay vscode={vscode} testNetId={testNetId} txTrace={txTrace} traceError={traceError} />
+            <DebugDisplay
+              vscode={vscode}
+              testNetId={testNetId}
+              txTrace={txTrace}
+              traceError={traceError}
+            />
           </TabPanel>
           {/* Test panel */}
           <TabPanel className="react-tab-panel">
-            {props.test.testResults.length > 0 ? <TestDisplay /> : "No contracts to test"}
+            {props.test.testResults.length > 0 ? (
+              <TestDisplay />
+            ) : (
+              "No contracts to test"
+            )}
           </TabPanel>
         </Tabs>
         <div className="err_warning_container">
@@ -448,16 +492,28 @@ const App = (props: IProps) => {
             return (
               // eslint-disable-next-line react/no-array-index-key
               <div key={i}>
-                {m.severity === "warning" && <pre className="error-message yellow-text">{m.formattedMessage}</pre>}
-                {m.severity === "error" && <pre className="error-message red-text">{m.formattedMessage}</pre>}
-                {!m.severity && <pre className="error-message">{m.formattedMessage}</pre>}
+                {m.severity === "warning" && (
+                  <pre className="error-message yellow-text">
+                    {m.formattedMessage}
+                  </pre>
+                )}
+                {m.severity === "error" && (
+                  <pre className="error-message red-text">
+                    {m.formattedMessage}
+                  </pre>
+                )}
+                {!m.severity && (
+                  <pre className="error-message">{m.formattedMessage}</pre>
+                )}
               </div>
             );
           })}
         </div>
       </div>
       <div className="process-msg-container">
-        {processMessage && <pre className="processMessage">{processMessage}</pre>}
+        {processMessage && (
+          <pre className="processMessage">{processMessage}</pre>
+        )}
       </div>
     </div>
   );

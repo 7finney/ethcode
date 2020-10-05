@@ -1,4 +1,8 @@
-import { SET_ACC_BALANCE, SET_UPDATE_BALANCE, APPND_NEW_ACC } from "../actions/types";
+import {
+  SET_ACC_BALANCE,
+  SET_UPDATE_BALANCE,
+  APPND_NEW_ACC,
+} from "../actions/types";
 
 const initialState = {
   accountBalance: 0,
