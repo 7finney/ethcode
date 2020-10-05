@@ -7,9 +7,9 @@ import { IAccount } from "../../types";
 
 interface IProps {
   accounts: IAccount[];
+  accountBalance: number;
   // eslint-disable-next-line no-unused-vars
   getSelectedAccount: (account: IAccount) => void;
-  accountBalance: number;
   vscode: any;
   currAccount: IAccount;
   testNetId: string;

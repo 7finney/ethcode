@@ -1,6 +1,6 @@
 export interface IAccount {
   label: string;
-  value: string;
+  value: any[];
   type?: string;
   pubAddr?: string;
   checksumAddr?: string;
