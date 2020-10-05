@@ -87,6 +87,7 @@ async function registerAppToToken() {
   }
 }
 
+// eslint-disable-next-line import/prefer-default-export
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("ethcode.versionSelector", async () => {

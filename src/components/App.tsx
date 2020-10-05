@@ -81,7 +81,10 @@ const App = (props: IProps) => {
   const [testNetId, setTestNetId] = useState("");
   const [fileType, setFileType] = useState("");
   const [traceError, setTraceError] = useState("");
-  const [accountName, setAccountName] = useState<IAccount>({ label: "", value: [""] });
+  const [accountName, setAccountName] = useState<IAccount>({
+    label: "",
+    value: [""],
+  });
   const [localAcc, setLocalAcc] = useState<any[]>([]);
   const [testNetAcc, setTestNetAcc] = useState<any[]>([]);
   const [testNets, setTestNets] = useState([

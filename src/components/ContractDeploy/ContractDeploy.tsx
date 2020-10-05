@@ -176,11 +176,12 @@ const ContractDeploy = (props: IProps) => {
   };
 
   const handleChange = (event: any) => {
-    const {
-      target: { name, value },
-    } = event;
+    // const {
+    //   target: { name, value },
+    // } = event;
+    console.log(event);
     // @ts-ignore
-    this.setState({ [name]: value });
+    // this.setState({ [name]: value });
 
     if (gasSupply > 0) {
       setDisable(false);
