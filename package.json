@@ -341,7 +341,5 @@
       "email": "soumyaniljana@gmail.com"
     }
   ],
-  "pre-commit": [
-    "format"
-  ]
+  "pre-commit": []
 }
