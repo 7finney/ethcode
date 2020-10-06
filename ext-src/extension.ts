@@ -54,7 +54,7 @@ function retrieveUserSettings(accessScope: string, valueToRetreive: string): str
 
 async function verifyUserToken(appId: string, email: string): Promise<boolean> {
   try {
-    const r = await axios.post("https://newauth.ethco.de/user/token/app/verify", {
+    const r = await axios.post("https://auth.ethco.de/user/token/app/verify", {
       email,
       app_id: appId,
     });
@@ -349,7 +349,7 @@ class ReactPanel {
       })
       if (token || email) {
         const appId = uuid();
-        await axios.post('https://newauth.ethco.de/user/token/app/add', {
+        await axios.post('https://auth.ethco.de/user/token/app/add', {
           email,
           app_id: appId,
           token
