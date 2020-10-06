@@ -4,6 +4,7 @@ import { Selector, Button } from "../common/ui";
 import "./Account.css";
 import { addNewAcc } from "../../actions";
 import { IAccount } from "../../types";
+import { useForm } from "react-hook-form";
 
 interface IProps {
   accounts: IAccount[];
@@ -19,6 +20,12 @@ interface IProps {
   handleAppRegister: () => void;
 }
 
+type FormInputs = {
+  accountFromAddress: string;
+  accountToAddress: string;
+  amount: number;
+};
+
 const Account = (props: IProps) => {
   const [balance, setBalance] = useState(0);
   const [publicAddress, setPublicAddress] = useState("");
@@ -27,6 +34,7 @@ const Account = (props: IProps) => {
   const [error, setError] = useState("");
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
 
+  const { register, handleSubmit } = useForm<FormInputs>();
   const { addNewAcc, accountBalance, vscode, currAccount, accounts, appRegistered } = props;
 
   useEffect(() => {
@@ -101,17 +109,15 @@ const Account = (props: IProps) => {
   };
 
   // handle send ether
-  const handleTransactionSubmit = (event: any) => {
-    event.preventDefault();
+  const handleTransactionSubmit = (formData: FormInputs) => {
     const { vscode, currAccount, testNetId } = props;
-    const data = new FormData(event.target);
     setSendBtnDisable(true);
     try {
       if (testNetId === "ganache") {
         const transactionInfo = {
           fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
-          toAddress: data.get("toAddress"),
-          amount: data.get("amount"),
+          toAddress: formData.accountToAddress,
+          amount: formData.amount,
         };
         vscode.postMessage({
           command: "send-ether",
@@ -122,8 +128,8 @@ const Account = (props: IProps) => {
         // Build unsigned transaction
         const transactionInfo = {
           from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
-          to: data.get("toAddress"),
-          value: data.get("amount"),
+          to: formData.accountToAddress,
+          value: formData.amount,
         };
         vscode.postMessage({
           command: "send-ether-signed",
@@ -198,13 +204,20 @@ const Account = (props: IProps) => {
         </div>
       </div>
 
-      <form onSubmit={handleTransactionSubmit}>
+      <form onSubmit={handleSubmit(handleTransactionSubmit)}>
         <div className="account_row">
           <div className="label-container">
             <label className="label">From </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" value={currAccount.label} type="text" placeholder="from" />
+            <input
+              name="accountFromAddress"
+              className="input custom_input_css"
+              value={currAccount.label}
+              type="text"
+              placeholder="from"
+              ref={register}
+            />
           </div>
         </div>
 
@@ -213,7 +226,13 @@ const Account = (props: IProps) => {
             <label className="label">To </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" name="toAddress" type="text" placeholder="to" />
+            <input
+              name="accountToAddress"
+              className="input custom_input_css"
+              type="text"
+              placeholder="to"
+              ref={register}
+            />
           </div>
         </div>
 
@@ -222,7 +241,7 @@ const Account = (props: IProps) => {
             <label className="label">Amount </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" name="amount" placeholder="amount" />
+            <input className="input custom_input_css" type="text" name="amount" placeholder="amount" ref={register} />
           </div>
         </div>
 
