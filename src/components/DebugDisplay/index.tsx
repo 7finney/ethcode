@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDiffViewer from "react-diff-viewer";
 import "./DebugDisplay.css";
 import { Button } from "../common/ui";
+import { useForm } from "react-hook-form";
 
 interface IProps {
   vscode: any;
@@ -10,8 +11,12 @@ interface IProps {
   traceError: string;
 }
 
+type FormInputs = {
+  txHash: string;
+};
+
 const DebugDisplay = (props: IProps) => {
-  const [txHash, setTxHash] = useState("");
+  // const [txHash, setTxHash] = useState("");
   const [oldDebugObj, setOldDebugObj] = useState({});
   const [newDebugObj, setNewDebugObj] = useState({});
   const [indx, setIndx] = useState(-1);
@@ -19,7 +24,9 @@ const DebugDisplay = (props: IProps) => {
   const [disable, setDisable] = useState(false);
   const [traceError, setTraceError] = useState("");
 
-  const handleSubmit = () => {
+  const { register, handleSubmit } = useForm<FormInputs>();
+
+  const onSubmit = ({ txHash }: FormInputs) => {
     setIndx(-1);
     setDisable(true);
     setNewDebugObj({});
@@ -49,9 +56,9 @@ const DebugDisplay = (props: IProps) => {
     setTestNetId(props.testNetId);
   }, [props.testNetId]);
 
-  const handleChange = (event: any) => {
-    setTxHash(event.target.value);
-  };
+  // const handleChange = (event: any) => {
+  //   setTxHash(event.target.value);
+  // };
 
   const stopDebug = () => {
     setDisable(false);
@@ -84,10 +91,10 @@ const DebugDisplay = (props: IProps) => {
   return (
     <div className="container">
       <div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <label>
             <span style={{ marginRight: "5px" }}>Transaction hash:</span>
-            <input type="text" className="custom_input_css" value={txHash} onChange={handleChange} />
+            <input name="txHash" type="text" className="custom_input_css" ref={register} />
           </label>
           <Button ButtonType="input" disabled={disable} style={{ marginLeft: "10px" }} value="Debug" />
         </form>
