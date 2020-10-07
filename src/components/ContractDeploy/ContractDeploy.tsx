@@ -48,6 +48,7 @@ const ContractDeploy = (props: IProps) => {
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [callFunctionToggle, setCallFunctionToggle] = useState(true);
 
+  // TODO WIll refactor this with proper types
   const { register: registerDeploy, handleSubmit: handleDeploySubmit } = useForm<FormDeploy>();
   const { register: registerContract, handleSubmit: handleContractSubmit } = useForm<FormContract>();
 

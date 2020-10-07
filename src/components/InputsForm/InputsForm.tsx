@@ -9,6 +9,8 @@ interface IProps {
 const InputsForm = (props: IProps) => {
   const { contractName, abi } = props;
 
+  const { register, handleSubmit } = useForm();
+
   const handleChange = (input: any, event: any) => {
     // eslint-disable-next-line no-param-reassign
     input.value = event.target.value;
