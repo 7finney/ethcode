@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { IAccount } from "types";
 import { setCallResult } from "../../actions";
 import { Button } from "../common/ui";
+import { useForm } from "react-hook-form";
 
 interface IProps {
   bytecode: any;
@@ -21,6 +22,16 @@ interface IProps {
   setCallResult: (result: any) => void;
 }
 
+type FormDeploy = {
+  gasSupply: number;
+};
+
+type FormContract = {
+  contractAddress: string;
+  methodName: string;
+  payableAmount: number;
+};
+
 const ContractDeploy = (props: IProps) => {
   const [constructorInput, setConstructorInput] = useState([]);
   const [gasSupply, setGasSupply] = useState(0);
@@ -36,6 +47,9 @@ const ContractDeploy = (props: IProps) => {
   const [disable, setDisable] = useState(true);
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [callFunctionToggle, setCallFunctionToggle] = useState(true);
+
+  const { register: registerDeploy, handleSubmit: handleDeploySubmit } = useForm<FormDeploy>();
+  const { register: registerContract, handleSubmit: handleContractSubmit } = useForm<FormContract>();
 
   useEffect(() => {
     setTestNetId(props.testNetId);
@@ -118,7 +132,8 @@ const ContractDeploy = (props: IProps) => {
     }
   }, [disable, gasSupply, props.deployedResult, props.gasEstimate, props.testNetId, testNetId]);
 
-  const handleDeploy = () => {
+  const handleDeploy = (formDeployData: FormDeploy) => {
+    setGasSupply(formDeployData.gasSupply);
     const { vscode, bytecode, abi, currAccount } = props;
     setError(null);
     setDeployed({});
@@ -136,7 +151,8 @@ const ContractDeploy = (props: IProps) => {
     });
   };
 
-  const handleCall = () => {
+  const handleCall = (FormContractData: FormContract) => {
+    setDeployedAddress(FormContractData.contractAddress);
     const { vscode, abi, currAccount } = props;
     setError(null);
     setCallFunctionToggle(true);
@@ -175,18 +191,18 @@ const ContractDeploy = (props: IProps) => {
     }
   };
 
-  const handleChange = (event: any) => {
-    // const {
-    //   target: { name, value },
-    // } = event;
-    console.log(event);
-    // @ts-ignore
-    // this.setState({ [name]: value });
+  // const handleChange = (event: any) => {
+  //   // const {
+  //   //   target: { name, value },
+  //   // } = event;
+  //   console.log(event);
+  //   // @ts-ignore
+  //   // this.setState({ [name]: value });
 
-    if (gasSupply > 0) {
-      setDisable(false);
-    }
-  };
+  //   if (gasSupply > 0) {
+  //     setDisable(false);
+  //   }
+  // };
 
   const handleConstructorInputChange = (event: any) => {
     if (constructorInput.length > 3) {
@@ -198,10 +214,6 @@ const ContractDeploy = (props: IProps) => {
       constructorInput[event.target.id] = item;
       setConstructorInput(constructorInput);
     }
-  };
-
-  const handleContractAddrInput = (event: any) => {
-    setDeployedAddress(event.target.value);
   };
 
   const handleMethodnameInput = (event: any) => {
@@ -228,7 +240,7 @@ const ContractDeploy = (props: IProps) => {
   return (
     <div>
       <div>
-        <form onSubmit={handleDeploy}>
+        <form onSubmit={handleDeploySubmit(handleDeploy)}>
           <div className="form-container">
             {constructorInput && constructorInput.length > 0 && (
               <div>
@@ -280,8 +292,8 @@ const ContractDeploy = (props: IProps) => {
                 className="input custom_input_css"
                 value={gasSupply}
                 id="deployGas"
+                ref={registerDeploy}
                 name="gasSupply"
-                onChange={(e) => handleChange(e)}
               />
             ) : (
               <input
@@ -290,8 +302,8 @@ const ContractDeploy = (props: IProps) => {
                 className="input custom_input_css"
                 value=""
                 id="deployGas"
+                ref={registerDeploy}
                 name="gasSupply"
-                onChange={(e) => handleChange(e)}
               />
             )}
           </div>
@@ -311,21 +323,22 @@ const ContractDeploy = (props: IProps) => {
           </form>
         </div>
         <div>
-          <form onSubmit={handleCall} className="form_align">
+          <form onSubmit={handleContractSubmit(handleCall)} className="form_align">
             <input
               type="text"
               className="custom_input_css"
               placeholder="Enter contract address"
               style={{ marginRight: "5px" }}
               name="contractAddress"
-              value={deployedAddress}
-              onChange={handleContractAddrInput}
+              defaultValue={deployedAddress}
+              ref={registerContract}
             />
             <input
               type="text"
               className="custom_input_css"
               placeholder="Enter contract function name"
               name="methodName"
+              ref={registerContract}
               onChange={handleMethodnameInput}
             />
             {methodName !== "" && methodInputs !== "" && methodInputs !== "[]" && (
@@ -340,8 +353,8 @@ const ContractDeploy = (props: IProps) => {
                 placeholder="Enter payable amount"
                 style={{ margin: "5px" }}
                 name="payableAmount"
-                value={payableAmount}
-                onChange={(e) => handleChange(e)}
+                ref={registerContract}
+                defaultValue={payableAmount}
               />
             )}
             <Button ButtonType="input" disabled={callFunctionToggle} value="Call function" />
