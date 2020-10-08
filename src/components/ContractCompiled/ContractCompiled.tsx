@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { ABIDescription, BytecodeObject } from "types";
 import "./ContractCompiled.css";
 
 interface IProps {
   contractName: string;
-  bytecode: any;
-  abi: any;
+  bytecode: BytecodeObject;
+  abi: ABIDescription;
 }
 
 const ContractCompiled = (props: IProps) => {

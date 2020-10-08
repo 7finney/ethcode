@@ -56,10 +56,6 @@ const DebugDisplay = (props: IProps) => {
     setTestNetId(props.testNetId);
   }, [props.testNetId]);
 
-  // const handleChange = (event: any) => {
-  //   setTxHash(event.target.value);
-  // };
-
   const stopDebug = () => {
     setDisable(false);
     setIndx(-1);

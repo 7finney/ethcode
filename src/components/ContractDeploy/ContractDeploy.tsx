@@ -2,24 +2,24 @@ import React, { useEffect, useState } from "react";
 import "./ContractDeploy.css";
 import JSONPretty from "react-json-pretty";
 import { connect } from "react-redux";
-import { IAccount } from "types";
+import { ABIDescription, BytecodeObject, CompilationResult, IAccount } from "types";
 import { setCallResult } from "../../actions";
 import { Button } from "../common/ui";
 import { useForm } from "react-hook-form";
 
 interface IProps {
-  bytecode: any;
-  abi: any;
+  bytecode: BytecodeObject;
+  abi: Array<ABIDescription>;
   vscode: any;
   gasEstimate: number;
   deployedResult: string;
-  compiledResult: any;
+  compiledResult: CompilationResult;
   callResult: any;
   currAccount: IAccount;
   testNetId: string;
   openAdvanceDeploy: any;
   // eslint-disable-next-line no-unused-vars
-  setCallResult: (result: any) => void;
+  setCallResult: (result: CompilationResult) => void;
 }
 
 type FormDeploy = {
@@ -72,7 +72,7 @@ const ContractDeploy = (props: IProps) => {
 
     // eslint-disable-next-line no-restricted-syntax
     for (const i in abi) {
-      if (abi[i].type === "constructor" && abi[i].inputs.length > 0) {
+      if (abi[i].type === "constructor" && abi[i].inputs!.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
         // eslint-disable-next-line no-restricted-syntax, guard-for-in
         for (const j in constructorInput) {
@@ -81,7 +81,7 @@ const ContractDeploy = (props: IProps) => {
         setConstructorInput(constructorInput);
       } else if (abi[i].type !== "constructor") {
         // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = abi[i].name ? abi[i].name : "fallback";
+        const methodname: string = abi[i].name! ? abi[i].name! : "fallback";
 
         // if we have inputs
         // @ts-ignore
@@ -205,13 +205,17 @@ const ContractDeploy = (props: IProps) => {
   //   }
   // };
 
-  const handleConstructorInputChange = (event: any) => {
+  const handleConstructorInputChange = (
+    event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     if (constructorInput.length > 3) {
       setConstructorInput(JSON.parse(event.target.value));
     } else {
+      // @ts-ignore
       const item = constructorInput[event.target.id];
       // @ts-ignore
       item.value = event.target.value;
+      // @ts-ignore
       constructorInput[event.target.id] = item;
       setConstructorInput(constructorInput);
     }
