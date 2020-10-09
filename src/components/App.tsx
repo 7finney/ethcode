@@ -418,7 +418,6 @@ const App = (props: IProps) => {
               vscode={vscode}
               accounts={selctorAccounts}
               getSelectedAccount={getSelectedAccount}
-              accountBalance={balance}
               appRegistered={appRegistered}
               handleAppRegister={handleAppRegister}
             />

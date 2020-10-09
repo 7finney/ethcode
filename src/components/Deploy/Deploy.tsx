@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import JSONPretty from "react-json-pretty";
 import "./deploy.css";
 import { connect } from "react-redux";
-import { IAccount } from "types";
+import { ABIDescription, CompilationResult, IAccount } from "types";
 import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { Button } from "../common/ui";
+import { useForm } from "react-hook-form";
 
 export interface IProps {
   // eslint-disable-next-line no-unused-vars
@@ -12,22 +13,29 @@ export interface IProps {
   // eslint-disable-next-line no-unused-vars
   setTestnetCallResult: (result: any) => void;
   contractName: string;
-  bytecode: any;
-  abi: any;
+  bytecode: string;
+  abi: Array<ABIDescription>;
   vscode: any;
-  errors: any;
-  compiledResult: any;
+  errors: Error;
+  compiledResult: CompilationResult;
   testNetId: string;
   currAccount: IAccount;
   unsignedTx: any;
   testNetCallResult: any;
 }
 
+type FormInputs = {
+  contractAddress: string;
+  methodName: string;
+  amount: number;
+  methodInputs: string;
+};
+
 const Deploy = (props: IProps) => {
   const [constructorInput, setConstructorInput] = useState([]);
   const [error, setError] = useState(null);
   const [gasEstimate, setGasEstimate] = useState(0);
-  const [byteCode, setByteCode] = useState<string>("");
+  const [byteCode, setByteCode] = useState<string>();
   const [abi, setAbi] = useState({});
   const [methodName, setMethodName] = useState<string>("");
   const [methodArray, setMethodArray] = useState({});
@@ -38,10 +46,12 @@ const Deploy = (props: IProps) => {
   const [, setMsg] = useState("initial");
   const [processMessage, setProcessMessage] = useState("");
   const [isPayable, setIsPayable] = useState(false);
-  const [payableAmount] = useState<number>(0);
+  const [payableAmount, setPayableAmount] = useState<number>(0);
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [buildTxToggle, setBuildTxToggle] = useState(true);
   const [callFunToggle, setCallFunToggle] = useState(true);
+
+  const { register, handleSubmit } = useForm<FormInputs>();
 
   useEffect(() => {
     setAbi(props.abi);
@@ -96,7 +106,7 @@ const Deploy = (props: IProps) => {
     const methodArray: any = {};
     // eslint-disable-next-line no-restricted-syntax
     for (const i in props.abi) {
-      if (props.abi[i].type === "constructor" && props.abi[i].inputs.length > 0) {
+      if (props.abi[i].type === "constructor" && props.abi[i].inputs!.length > 0) {
         const constructorInput = JSON.parse(JSON.stringify(props.abi[i].inputs));
         // eslint-disable-next-line guard-for-in, no-restricted-syntax
         for (const j in constructorInput) {
@@ -105,7 +115,7 @@ const Deploy = (props: IProps) => {
         setConstructorInput(constructorInput);
       } else if (props.abi[i].type !== "constructor") {
         // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = props.abi[i].name;
+        const methodname: string = props.abi[i].name!;
         // if we have inputs
         // @ts-ignore
         methodArray[methodname] = {};
@@ -184,8 +194,12 @@ const Deploy = (props: IProps) => {
     }
   };
 
-  const handleCall = () => {
+  const handleCall = (formData: FormInputs) => {
     const { vscode, abi, currAccount, testNetId } = props;
+    setPayableAmount(formData.amount);
+    setContractAddress(formData.contractAddress);
+    setMethodName(formData.methodName);
+    setMethodInputs(formData.methodInputs);
     const publicKey = currAccount.value;
     setCallFunToggle(true);
     vscode.postMessage({
@@ -221,11 +235,6 @@ const Deploy = (props: IProps) => {
     }
   };
 
-  const handleMethodInputs = (event: any) => {
-    setMethodInputs(event.target.value);
-    setCallFunToggle(false);
-  };
-
   const signAndDeploy = () => {
     const { vscode, unsignedTx, testNetId } = props;
     try {
@@ -242,12 +251,8 @@ const Deploy = (props: IProps) => {
     }
   };
 
-  const handleChange = (event: any) => {
-    const {
-      target: { name, value },
-    } = event;
-    // @ts-ignore
-    this.setState({ [name]: value });
+  const handleGasEstimateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setGasEstimate(parseInt(event.target.value, 10));
     if (gasEstimate > 0) {
       setBuildTxToggle(false);
     }
@@ -332,26 +337,26 @@ const Deploy = (props: IProps) => {
 
         {/* Call Function */}
         <div className="tag">
-          <form onSubmit={handleCall} className="form_align">
+          <form onSubmit={handleSubmit(handleCall)} className="form_align">
             <input
               type="text"
               className="custom_input_css"
               placeholder="Enter contract address"
               style={{ marginRight: "5px" }}
               name="contractAddress"
-              value={contractAddress}
-              onChange={(e) => setContractAddress(e.target.value)}
+              ref={register}
             />
             <input
               type="text"
               className="custom_input_css"
               placeholder="Enter contract function name"
               name="methodName"
+              ref={register}
               onChange={handleMethodnameInput}
             />
             {methodName !== "" && methodInputs !== "" && methodInputs !== "[]" && (
               <div className="json_input_container" style={{ margin: "10px 0" }}>
-                <textarea className="json_input custom_input_css" value={methodInputs} onChange={handleMethodInputs} />
+                <textarea name="methodInputs" className="json_input custom_input_css" ref={register} />
               </div>
             )}
             {isPayable && (
@@ -361,8 +366,6 @@ const Deploy = (props: IProps) => {
                 placeholder="Enter payable amount"
                 style={{ margin: "5px" }}
                 name="payableAmount"
-                value={payableAmount}
-                onChange={(e) => handleChange(e)}
               />
             )}
             {/* <input type="submit" style={{ margin: '10px' }} className="custom_button_css" value="Call function" /> */}
@@ -398,7 +401,7 @@ const Deploy = (props: IProps) => {
           <input
             className="input custom_input_css"
             name="gasEstimate"
-            onChange={(e) => handleChange(e)}
+            onChange={(e) => handleGasEstimateChange(e)}
             type="text"
             placeholder="gas supply"
             value={gasEstimate}

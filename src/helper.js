@@ -54,7 +54,7 @@ export function solidityVersion(versions, latestRelease) {
   const options = [];
   let vs = Object.keys(versions);
   vs = vs[0] === latestRelease ? vs : vs.reverse();
-  vs.map((v, i) => {
+  vs.map((v) => {
     const optItm = {
       value: versions[v].split("soljson-")[1].split(".js")[0],
       label: v,

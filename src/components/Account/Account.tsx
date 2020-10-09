@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { Selector, Button } from "../common/ui";
 import "./Account.css";
 import { addNewAcc } from "../../actions";
-import { CompilationResult, IAccount } from "../../types";
+import { IAccount } from "../../types";
 import { useForm } from "react-hook-form";
 
 interface IProps {
@@ -16,7 +16,7 @@ interface IProps {
   testNetId: string;
   appRegistered: boolean;
   // eslint-disable-next-line no-unused-vars
-  addNewAcc: (result: CompilationResult) => void;
+  addNewAcc: (result: IAccount) => void;
   handleAppRegister: () => void;
 }
 

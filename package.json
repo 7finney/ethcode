@@ -206,6 +206,7 @@
     "react-tabs": "^3.0.0",
     "react-tiny-virtual-list": "^2.2.0",
     "redux": "^4.0.4",
+    "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "remix-url-resolver": "^0.0.12",
     "resolve": "1.10.0",
@@ -248,7 +249,6 @@
     "eslint-plugin-react-hooks": "^4.1.2",
     "pre-commit": "^1.2.2",
     "prettier": "^2.1.2",
-    "redux-logger": "^3.0.6",
     "vscode": "^1.1.37"
   },
   "scripts": {

@@ -1,9 +1,4 @@
-import {
-  SET_DEPLOYED_RESULT,
-  CLEAR_DEPLOYED_RESULT,
-  SET_CALL_RESULT,
-  SET_TESTNET_CALL_RESULT,
-} from "../actions/types";
+import { SET_DEPLOYED_RESULT, CLEAR_DEPLOYED_RESULT, SET_CALL_RESULT, SET_TESTNET_CALL_RESULT } from "../actions/types";
 
 const initialState = {
   compiledresult: {},
