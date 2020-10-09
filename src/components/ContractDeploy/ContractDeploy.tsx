@@ -187,7 +187,7 @@ const ContractDeploy = (props: IProps) => {
         },
         testNetId,
       });
-    } catch (err) {
+    } catch (error) {
       setError(error);
     }
   };
@@ -221,7 +221,9 @@ const ContractDeploy = (props: IProps) => {
     }
   };
 
-  const handleMethodnameInput = (event: any) => {
+  const handleMethodnameInput = (
+    event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
     setCallFunctionToggle(false);
     const methodName: string = event.target.value;
     // eslint-disable-next-line no-prototype-builtins
@@ -238,7 +240,7 @@ const ContractDeploy = (props: IProps) => {
     }
   };
 
-  const handleMethodInputs = (event: any) => {
+  const handleMethodInputs = (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
     setMethodInputs(event.target.value);
   };
 
