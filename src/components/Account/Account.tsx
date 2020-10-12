@@ -59,13 +59,15 @@ const Account = (props: IProps) => {
         setSendBtnDisable(false);
       }
     });
-  }, [addNewAcc, pvtKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (accountBalance !== balance) {
       setBalance(accountBalance);
     }
-  }, [accountBalance, balance]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountBalance]);
 
   useEffect(() => {
     vscode.postMessage({

@@ -31,6 +31,7 @@ module.exports = {
     project: ["./tsconfig.json", "./tsconfig.extension.json"],
   },
   rules: {
+    "no-plusplus": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "linebreak-style": "off",
     "@typescript-eslint/ban-ts-ignore": "off",

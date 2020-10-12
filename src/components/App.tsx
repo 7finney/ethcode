@@ -130,6 +130,7 @@ const App = (props: IProps) => {
   };
 
   useEffect(() => {
+    console.log("Running on init");
     window.addEventListener("message", async (event) => {
       const { data } = event;
 
@@ -244,7 +245,7 @@ const App = (props: IProps) => {
     vscode.postMessage({ command: "run-getAccounts" });
     vscode.postMessage({ command: "get-localAccounts" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   useState(() => {
     if (props.accounts !== accounts) {

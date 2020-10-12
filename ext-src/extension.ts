@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
 import * as uuid from "uuid/v4";
 import axios from "axios";
-import { ISources, IAccount, TokenData } from "./types";
+import { ISources, IAccount } from "./types";
 
 import { Logger } from "./logger";
 
@@ -13,11 +13,11 @@ const jwtToken = "TO BE REMOVED";
 // Create logger
 const logger = new Logger();
 
-function updateUserSession(valueToAssign: any, keys: string[]) {
-  return new Promise(async (resolve, reject) => {
+function updateUserSession(valueToAssign: any, keys: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
     try {
       // @ts-ignore
-      const config = await vscode.workspace.getConfiguration("ethcode", vscode.workspace.workspaceFolders[0].uri);
+      const config = vscode.workspace.getConfiguration("ethcode", vscode.workspace.workspaceFolders[0].uri);
       if (keys.length === 2) {
         const userSession = `${keys[0]}.${keys[1]}`;
         config.update(userSession, valueToAssign);
@@ -69,7 +69,7 @@ async function registerAppToToken() {
   try {
     const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId");
     const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email");
-    if (appId === "" || email == "") {
+    if (appId === "" || email === "") {
       logger.log("App Not Registered");
       return false;
     }
@@ -87,68 +87,13 @@ async function registerAppToToken() {
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
-export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.versionSelector", async () => {
-      try {
-        if (ReactPanel.currentPanel) {
-          ReactPanel.currentPanel
-            .getCompilerVersion()
-            .then((versions) => {
-              // @ts-ignore
-              logger.log(JSON.stringify(Object.keys(versions.releases)));
-              // @ts-ignore
-              vscode.window.showQuickPick(Object.keys(versions.releases)).then((selected) => {
-                if (selected) {
-                  // @ts-ignore
-                  ReactPanel.currentPanel.setSolidityVersion(selected);
-                }
-              });
-            })
-            .catch((err: any) => {
-              logger.error(err);
-            });
-        }
-      } catch (error) {
-        logger.error(error);
-      }
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.activate", async () => {
-      logger.log("Activating ethcode...");
-      try {
-      } catch (error) {
-        logger.error(error);
-      } finally {
-        ReactPanel.createOrShow(context.extensionPath);
-        logger.success("Welcome to Ethcode!");
-      }
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.compile", () => {
-      if (!ReactPanel.currentPanel) {
-        return;
-      }
-      const fileName = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : undefined;
-      const editorContent = vscode.window.activeTextEditor
-        ? vscode.window.activeTextEditor.document.getText()
-        : undefined;
-      ReactPanel.currentPanel.compileContract(context, editorContent, fileName);
-    }),
-    vscode.commands.registerCommand("ethcode.runTest", () => {
-      if (!ReactPanel.currentPanel) {
-        return;
-      }
-      const fileName = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : undefined;
-      const editorContent = vscode.window.activeTextEditor
-        ? vscode.window.activeTextEditor.document.getText()
-        : undefined;
-      ReactPanel.currentPanel.sendTestContract(editorContent, fileName);
-    })
-  );
+function getNonce() {
+  let text = "";
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let i = 0; i < 32; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
 }
 
 /**
@@ -240,7 +185,7 @@ class ReactPanel {
         } else if (message.command === "app-register") {
           this.getTokens()
             .then((r) => this._panel.webview.postMessage({ registered: r }))
-            .catch((e) => this._panel.webview.postMessage({ registered: false }));
+            .catch(() => this._panel.webview.postMessage({ registered: false }));
         }
       },
       null,
@@ -285,8 +230,8 @@ class ReactPanel {
       // @ts-ignore
       const panelName = changeEvent && changeEvent._documentData ? changeEvent._documentData._uri.fsPath : undefined;
 
-      const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
-      const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
+      const regexVyp = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.vy|.v.py|.vyper.py)$/g;
+      const regexSol = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.sol|.solidity)$/g;
 
       if (this._disposed) {
         // @ts-ignore
@@ -303,40 +248,40 @@ class ReactPanel {
     });
   }
 
-  private createWorker(): ChildProcess {
+  private createWorker = (): ChildProcess => {
     // enable --inspect for debug
     // return fork(path.join(__dirname, "worker.js"), [], {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
     return fork(path.join(__dirname, "worker.js"));
-  }
+  };
 
-  private createSolidityWorker(): ChildProcess {
+  private createSolidityWorker = (): ChildProcess => {
     // enable --inspect for debug
     // return fork(path.join(__dirname, "solc-worker.js"), [], {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
     return fork(path.join(__dirname, "solc-worker.js"));
-  }
+  };
 
-  private createVyperWorker(): ChildProcess {
+  private createVyperWorker = (): ChildProcess => {
     // enable --inspect for debug
     // return fork(path.join(__dirname, "vyp-worker.js"), [], {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
     return fork(path.join(__dirname, "vyp-worker.js"));
-  }
+  };
 
-  private createAccWorker(): ChildProcess {
+  private createAccWorker = (): ChildProcess => {
     return fork(path.join(__dirname, "accWorker.js"));
-  }
+  };
 
-  public async checkAppRegistration() {
+  public async checkAppRegistration(): Promise<void> {
     const registered = await registerAppToToken();
     this._panel.webview.postMessage({ registered });
   }
 
-  public async getTokens(): Promise<boolean> {
+  public getTokens = async (): Promise<boolean> => {
     try {
       const token = await vscode.window.showInputBox({
         ignoreFocusOut: true,
@@ -369,7 +314,7 @@ class ReactPanel {
       logger.error(error);
       return false;
     }
-  }
+  };
 
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources, rootPath: vscode.Uri): void {
     // solidity compiler code goes bellow
@@ -403,6 +348,7 @@ class ReactPanel {
         logger.error(m.error);
       } else if (m.command === "import") {
         if (!sources[m.path]) {
+          // eslint-disable-next-line no-param-reassign
           sources[m.path] = {
             content: undefined,
           };
@@ -416,6 +362,7 @@ class ReactPanel {
         }
       } else if (m.command === "re-compile") {
         if (m.path) {
+          // eslint-disable-next-line no-param-reassign
           sources[m.path] = {
             content: m.data.content,
           };
@@ -479,9 +426,6 @@ class ReactPanel {
 
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         vyperWorker.kill();
-        const fileName = Object.keys(m.compiled.sources)[0];
-        const contractName = Object.keys(m.compiled.contracts[fileName])[0];
-        // @ts-ignore
         updateUserSession(
           {
             lang: "vyper",
@@ -537,8 +481,13 @@ class ReactPanel {
 
     accWorker.on("message", (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
-      m.resp ? logger.success(m.resp) : logger.error(m.error);
-      m.resp ? this._panel.webview.postMessage({ resp: m.resp }) : null;
+      if (m.resp) {
+        logger.success(m.resp);
+        this._panel.webview.postMessage({ resp: m.resp });
+      } else {
+        logger.error(m.error);
+      }
+
       if (m.localAddresses) {
         this._panel.webview.postMessage({ localAccounts: m.localAddresses });
       }
@@ -780,9 +729,8 @@ class ReactPanel {
         content: editorContent,
       };
       context.workspaceState.update("sources", JSON.stringify(sources));
-      const re = /(?:\.([^.]+))?$/;
-      const regexVyp = /([a-zA-Z0-9\s_\\.\-\(\):])+(.vy|.v.py|.vyper.py)$/g;
-      const regexSol = /([a-zA-Z0-9\s_\\.\-\(\):])+(.sol|.solidity)$/g;
+      const regexVyp = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.vy|.v.py|.vyper.py)$/g;
+      const regexSol = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.sol|.solidity)$/g;
       // @ts-ignore
       if (fn.match(regexVyp) && fn.match(regexVyp).length > 0) {
         // invoke vyper compiler
@@ -862,6 +810,7 @@ class ReactPanel {
           resolve(versions);
           versionWorker.kill();
         } else {
+          // eslint-disable-next-line prefer-promise-reject-errors
           reject([]);
           versionWorker.kill();
         }
@@ -876,7 +825,7 @@ class ReactPanel {
         this._panel.webview.postMessage({
           message: `Error code ${code} : Error signal ${signal}`,
         });
-        reject(`Error code ${code} : Error signal ${signal}`);
+        reject(new Error(`Error code ${code} : Error signal ${signal}`));
       });
     });
   }
@@ -900,6 +849,7 @@ class ReactPanel {
   }
 
   private _getHtmlForWebview() {
+    // eslint-disable-next-line global-require, import/no-dynamic-require,  @typescript-eslint/no-var-requires
     const manifest = require(path.join(this._extensionPath, "build", "asset-manifest.json")).files;
     const mainScript = manifest["main.js"];
     const mainStyle = manifest["main.css"];
@@ -931,11 +881,61 @@ class ReactPanel {
   }
 }
 
-function getNonce() {
-  let text = "";
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
+// eslint-disable-next-line import/prefer-default-export
+export function activate(context: vscode.ExtensionContext) {
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ethcode.versionSelector", async () => {
+      try {
+        if (ReactPanel.currentPanel) {
+          ReactPanel.currentPanel
+            .getCompilerVersion()
+            .then((versions) => {
+              // @ts-ignore
+              logger.log(JSON.stringify(Object.keys(versions.releases)));
+              // @ts-ignore
+              vscode.window.showQuickPick(Object.keys(versions.releases)).then((selected) => {
+                if (selected) {
+                  // @ts-ignore
+                  ReactPanel.currentPanel.setSolidityVersion(selected);
+                }
+              });
+            })
+            .catch((err: any) => {
+              logger.error(err);
+            });
+        }
+      } catch (error) {
+        logger.error(error);
+      }
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ethcode.activate", async () => {
+      logger.log("Activating ethcode...");
+      ReactPanel.createOrShow(context.extensionPath);
+      logger.success("Welcome to Ethcode!");
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("ethcode.compile", () => {
+      if (!ReactPanel.currentPanel) {
+        return;
+      }
+      const fileName = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : undefined;
+      const editorContent = vscode.window.activeTextEditor
+        ? vscode.window.activeTextEditor.document.getText()
+        : undefined;
+      ReactPanel.currentPanel.compileContract(context, editorContent, fileName);
+    }),
+    vscode.commands.registerCommand("ethcode.runTest", () => {
+      if (!ReactPanel.currentPanel) {
+        return;
+      }
+      const fileName = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : undefined;
+      const editorContent = vscode.window.activeTextEditor
+        ? vscode.window.activeTextEditor.document.getText()
+        : undefined;
+      ReactPanel.currentPanel.sendTestContract(editorContent, fileName);
+    })
+  );
 }
