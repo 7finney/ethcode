@@ -429,7 +429,7 @@ const App = (props: IProps) => {
                 bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
                 abi={compiled.contracts[fileName][contractName].abi}
                 vscode={vscode}
-                errors={error}
+                errors={error!}
               />
             )}
           </TabPanel>
