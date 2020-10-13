@@ -32,7 +32,7 @@ import DebugDisplay from "./DebugDisplay";
 import Deploy from "./Deploy/Deploy";
 import "react-tabs/style/react-tabs.css";
 import Account from "./Account/Account";
-import { IAccount } from "../types";
+import { IAccount, SolcVersionType } from "../types";
 
 interface IProps {
   // eslint-disable-next-line no-unused-vars
@@ -50,7 +50,7 @@ interface IProps {
   accounts: string[];
   currAccount: IAccount;
   testNetId: string;
-  test: any;
+  // test: any;
 }
 
 interface IOpt {
@@ -66,7 +66,7 @@ const App = (props: IProps) => {
   const [fileName, setFileName] = useState<any>("");
   const [contractName, setContractName] = useState<any>("");
   const [processMessage, setProcessMessage] = useState("");
-  const [availableVersions, setAvailableVersions] = useState<any[]>([]);
+  const [availableVersions, setAvailableVersions] = useState<SolcVersionType[]>([]);
   const [gasEstimate, setGasEstimate] = useState(0);
   const [deployedResult, setDeployedResult] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
@@ -130,7 +130,6 @@ const App = (props: IProps) => {
   };
 
   useEffect(() => {
-    console.log("Running on init");
     window.addEventListener("message", async (event) => {
       const { data } = event;
 
@@ -245,7 +244,7 @@ const App = (props: IProps) => {
     vscode.postMessage({ command: "run-getAccounts" });
     vscode.postMessage({ command: "get-localAccounts" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  });
+  }, []);
 
   useState(() => {
     if (props.accounts !== accounts) {

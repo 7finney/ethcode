@@ -6,6 +6,11 @@ export type IAccount = {
   checksumAddr?: string;
 };
 
+export type SolcVersionType = {
+  value: string;
+  label: string;
+};
+
 export type ABIDescription = FunctionDescription | EventDescription;
 
 export type FunctionDescription = {

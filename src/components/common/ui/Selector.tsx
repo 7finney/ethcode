@@ -41,12 +41,14 @@ const customStyles = {
 const Selector = (props: IProps) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [options, setOptions] = useState([]);
+
   const { placeholder, defaultValue } = props;
 
   useEffect(() => {
     setSelectedOption(defaultValue);
     setOptions(props.options);
-  }, [defaultValue, props.options]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.options]);
 
   useEffect(() => {
     return () => {
