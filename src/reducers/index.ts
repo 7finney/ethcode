@@ -10,5 +10,5 @@ export default combineReducers({
   compiledStore: compiledReducer,
   accountStore: accountReducer,
   debugStore: debugReducer,
-  txStore: txReducer
+  txStore: txReducer,
 });

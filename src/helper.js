@@ -1,9 +1,9 @@
 export function setSelectorOption(optionsArray) {
-  var options = [];
-  optionsArray.map(obj => {
+  const options = [];
+  optionsArray.map((obj) => {
     const optItm = {
       value: obj,
-      label: obj
+      label: obj,
     };
     return options.push(optItm);
   });
@@ -11,12 +11,12 @@ export function setSelectorOption(optionsArray) {
 }
 
 export function setGanacheAccountsOption(optionsArray) {
-  var options = [];
-  optionsArray.map(obj => {
+  const options = [];
+  optionsArray.map((obj) => {
     const optItm = {
       value: obj,
       label: obj,
-      type: 'Ganache'
+      type: "Ganache",
     };
     return options.push(optItm);
   });
@@ -24,14 +24,14 @@ export function setGanacheAccountsOption(optionsArray) {
 }
 
 export function setLocalAccountOption(optionsArray) {
-  var options = [];
-  optionsArray.map(obj => {
+  const options = [];
+  optionsArray.map((obj) => {
     const optItm = {
       value: obj.checksumAddress,
       label: obj.pubAddress,
-      type: 'Local',
+      type: "Local",
       pubAddress: obj.pubAddress,
-      checksumAddress: obj.checksumAddress
+      checksumAddress: obj.checksumAddress,
     };
     return options.push(optItm);
   });
@@ -39,11 +39,11 @@ export function setLocalAccountOption(optionsArray) {
 }
 
 export function setFileSelectorOptions(optionsArray) {
-  var options = [];
-  optionsArray.map(file => {
+  const options = [];
+  optionsArray.map((file) => {
     const optItm = {
       value: file,
-      label: file.substring(file.lastIndexOf("/") + 1)
+      label: file.substring(file.lastIndexOf("/") + 1),
     };
     return options.push(optItm);
   });
@@ -51,13 +51,13 @@ export function setFileSelectorOptions(optionsArray) {
 }
 
 export function solidityVersion(versions, latestRelease) {
-  var options = [];
-  var vs = Object.keys(versions);
+  const options = [];
+  let vs = Object.keys(versions);
   vs = vs[0] === latestRelease ? vs : vs.reverse();
   vs.map((v) => {
     const optItm = {
       value: versions[v].split("soljson-")[1].split(".js")[0],
-      label: v
+      label: v,
     };
     return options.push(optItm);
   });

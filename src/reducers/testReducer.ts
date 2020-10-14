@@ -1,16 +1,8 @@
-<<<<<<< HEAD
 import { ADD_TEST_RESULTS, ADD_FINAL_RESULT_CALLBACK, CLEAR_FINAL_RESULT } from "../actions/types";
-=======
-import {
-  ADD_TEST_RESULTS,
-  ADD_FINAL_RESULT_CALLBACK,
-  CLEAR_FINAL_RESULT
-} from "../actions/types";
->>>>>>> 4eecdbc36a335125837993094b02c8601bf73af9
 
 const initialState = {
   testResults: [],
-  testResult: {}
+  testResult: {},
 };
 
 export default (state: any = initialState, action: any) => {

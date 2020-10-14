@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./ContractDeploy.css";
-import JSONPretty from 'react-json-pretty';
+import JSONPretty from "react-json-pretty";
 import { connect } from "react-redux";
 import { ABIDescription, BytecodeObject, CompilationResult, IAccount } from "types";
 import { setCallResult } from "../../actions";
@@ -87,21 +87,21 @@ const ContractDeploy = (props: IProps) => {
         // @ts-ignore
         methodArray[methodname] = {};
         // @ts-ignore
-        if(abi[i].inputs && abi[i].inputs.length > 0) {
+        if (abi[i].inputs && abi[i].inputs.length > 0) {
           // @ts-ignore
-          methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(abi[i]['inputs']));
+          methodArray[methodname].inputs = JSON.parse(JSON.stringify(abi[i].inputs));
           // @ts-ignore
           // eslint-disable-next-line no-restricted-syntax, guard-for-in
           for (const i in methodArray[methodname].inputs) {
             // @ts-ignore
-            methodArray[methodname]['inputs'][i]['value'] = "";
+            methodArray[methodname].inputs[i].value = "";
           }
         } else {
           // @ts-ignore
-          methodArray[methodname]['inputs'] = [];
+          methodArray[methodname].inputs = [];
         }
         // @ts-ignore
-        methodArray[methodname]['stateMutability'] = abi[i]['stateMutability'];
+        methodArray[methodname].stateMutability = abi[i].stateMutability;
       }
     }
     setmethodArray(methodArray);
@@ -146,9 +146,9 @@ const ContractDeploy = (props: IProps) => {
         bytecode,
         params: constructorInput,
         gasSupply,
-        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
+        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
       },
-      testNetId
+      testNetId,
     });
   };
 
@@ -162,14 +162,14 @@ const ContractDeploy = (props: IProps) => {
       payload: {
         abi,
         address: deployedAddress,
-        methodName: methodName,
+        methodName,
         params: JSON.parse(methodInputs),
         gasSupply,
         // TODO: add value supply in case of payable functions
         value: payableAmount,
-        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
+        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
       },
-      testNetId
+      testNetId,
     });
   };
 
@@ -183,9 +183,9 @@ const ContractDeploy = (props: IProps) => {
           abi,
           bytecode,
           params: constructorInput,
-          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value
+          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
         },
-        testNetId
+        testNetId,
       });
     } catch (error) {
       setError(error);
@@ -413,10 +413,10 @@ function mapStateToProps({ debugStore, compiledStore, accountStore }: any) {
     testNetId,
     compiledResult: compiledresult,
     callResult,
-    currAccount
+    currAccount,
   };
 }
 
 export default connect(mapStateToProps, {
-  setCallResult
+  setCallResult,
 })(ContractDeploy);

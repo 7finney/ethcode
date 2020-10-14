@@ -28,7 +28,7 @@ module.exports = {
     },
     ecmaVersion: 2018,
     sourceType: "module",
-    project: ["./tsconfig.json", "./tsconfig.extension.json"],
+    project: "./tsconfig.json",
   },
   rules: {
     "no-plusplus": "off",

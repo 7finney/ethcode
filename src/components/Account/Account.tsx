@@ -84,7 +84,7 @@ const Account = (props: IProps) => {
     try {
       vscode.postMessage({
         command: "gen-keypair",
-        payload: password
+        payload: password,
       });
       setShowButton(true);
     } catch (err) {
@@ -99,7 +99,7 @@ const Account = (props: IProps) => {
     try {
       vscode.postMessage({
         command: "delete-keyPair",
-        payload: currAccount.value
+        payload: currAccount.value,
       });
     } catch (err) {
       setError(err);
@@ -120,7 +120,7 @@ const Account = (props: IProps) => {
         vscode.postMessage({
           command: "send-ether",
           payload: transactionInfo,
-          testNetId
+          testNetId,
         });
       } else {
         // Build unsigned transaction
@@ -132,7 +132,7 @@ const Account = (props: IProps) => {
         vscode.postMessage({
           command: "send-ether-signed",
           payload: { transactionInfo, pvtKey },
-          testNetId
+          testNetId,
         });
       }
     } catch (err) {
@@ -244,7 +244,7 @@ const Account = (props: IProps) => {
         </div>
 
         <div className="account_row">
-          <div className="label-container"></div>
+          <div className="label-container" />
           <div className="input-container">
             <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: "10px" }} value="Send" />
           </div>
