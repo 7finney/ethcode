@@ -55,7 +55,7 @@ const Selector = (props: IProps) => {
       setOptions([]);
       setSelectedOption(null);
     };
-  });
+  }, []);
 
   const handleChange = (s: any) => {
     setSelectedOption(s);

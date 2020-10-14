@@ -50,7 +50,7 @@ interface IProps {
   accounts: string[];
   currAccount: IAccount;
   testNetId: string;
-  // test: any;
+  test: any;
 }
 
 interface IOpt {
