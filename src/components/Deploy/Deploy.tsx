@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from "react";
 import JSONPretty from "react-json-pretty";
 import "./deploy.css";
@@ -6,6 +7,15 @@ import { ABIDescription, CompilationResult, IAccount } from "types";
 import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { Button } from "../common/ui";
 import { useForm } from "react-hook-form";
+=======
+import React, { Component } from 'react';
+import JSONPretty from 'react-json-pretty';
+import "./deploy.css";
+import { connect } from "react-redux";
+import { setUnsgTxn, setTestnetCallResult } from "../../actions";
+import { IAccount } from 'types';
+import { Button } from '../common/ui';
+>>>>>>> 4eecdbc36a335125837993094b02c8601bf73af9
 
 export interface IProps {
   // eslint-disable-next-line no-unused-vars
@@ -57,7 +67,7 @@ const Deploy = (props: IProps) => {
     setAbi(props.abi);
     setByteCode(props.bytecode);
 
-    window.addEventListener("message", (event) => {
+    window.addEventListener("message", event => {
       const { data } = event;
 
       if (data.deployedResult) {
@@ -127,11 +137,11 @@ const Deploy = (props: IProps) => {
           // eslint-disable-next-line guard-for-in, no-restricted-syntax
           for (const i in methodArray[methodname].inputs) {
             // @ts-ignore
-            methodArray[methodname].inputs[i].value = "";
+            methodArray[methodname]['inputs'][i]['value'] = "";
           }
         } else {
           // @ts-ignore
-          methodArray[methodname].inputs = [];
+          methodArray[methodname]['inputs'] = [];
         }
         // @ts-ignore
         methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
@@ -146,11 +156,11 @@ const Deploy = (props: IProps) => {
     } else {
       const item = constructorInput[event.target.id];
       // @ts-ignore
-      item.value = event.target.value;
+      item['value'] = event.target.value;
       constructorInput[event.target.id] = item;
       setConstructorInput(constructorInput);
     }
-  };
+  }
 
   const handleBuildTxn = () => {
     const { vscode, bytecode, abi, currAccount, testNetId } = props;
@@ -164,10 +174,10 @@ const Deploy = (props: IProps) => {
           from: publicKey,
           abi,
           bytecode,
-          params: constructorInput || [],
-          gasSupply: gasEstimate || 0,
+          params: constructorInput ? constructorInput : [],
+          gasSupply: gasEstimate ? gasEstimate : 0
         },
-        testNetId,
+        testNetId
       });
     } catch (error) {
       setError(error);
@@ -185,9 +195,9 @@ const Deploy = (props: IProps) => {
           from: publicKey,
           abi,
           bytecode,
-          params: constructorInput,
+          params: constructorInput
         },
-        testNetId,
+        testNetId
       });
     } catch (err) {
       setError(err);
@@ -208,14 +218,14 @@ const Deploy = (props: IProps) => {
         from: publicKey,
         abi,
         address: contractAddress,
-        methodName,
+        methodName: methodName,
         params: JSON.parse(methodInputs),
         gasSupply: gasEstimate,
-        value: payableAmount,
+        value: payableAmount
       },
-      testNetId,
+      testNetId
     });
-  };
+  }
 
   const handleMethodnameInput = (event: any) => {
     const methodName: string = event.target.value;
@@ -242,9 +252,9 @@ const Deploy = (props: IProps) => {
         command: "sign-deploy-tx",
         payload: {
           unsignedTx,
-          pvtKey,
+          pvtKey
         },
-        testNetId,
+        testNetId
       });
     } catch (error) {
       setError(error);
@@ -256,7 +266,7 @@ const Deploy = (props: IProps) => {
     if (gasEstimate > 0) {
       setBuildTxToggle(false);
     }
-  };
+  }
 
   const { contractName, currAccount, unsignedTx, testNetCallResult } = props;
 
@@ -505,11 +515,11 @@ function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: a
     testNetCallResult,
     testNetId,
     currAccount,
-    unsignedTx,
+    unsignedTx
   };
 }
 
 export default connect(mapStateToProps, {
   setUnsgTxn,
-  setTestnetCallResult,
+  setTestnetCallResult
 })(Deploy);

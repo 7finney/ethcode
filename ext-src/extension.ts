@@ -2,13 +2,16 @@ import * as path from "path";
 // @ts-ignore
 import * as vscode from "vscode";
 import { fork, ChildProcess } from "child_process";
+import { ISources } from "./types";
 import * as uuid from "uuid/v4";
 import axios from "axios";
-import { ISources, IAccount } from "./types";
-
+import { IAccount, TokenData } from "./types";
 import { Logger } from "./logger";
 
-const jwtToken = "TO BE REMOVED";
+let authToken: TokenData = {
+  token: retrieveUserSettings("ethcode.userConfig.appRegistration", "token"),
+  appId: retrieveUserSettings("ethcode.userConfig.appRegistration", "appId")
+}
 
 // Create logger
 const logger = new Logger();
@@ -19,12 +22,12 @@ function updateUserSession(valueToAssign: any, keys: string[]): Promise<string> 
       // @ts-ignore
       const config = vscode.workspace.getConfiguration("ethcode", vscode.workspace.workspaceFolders[0].uri);
       if (keys.length === 2) {
-        const userSession = `${keys[0]}.${keys[1]}`;
+        let userSession = keys[0] + "." + keys[1];
         config.update(userSession, valueToAssign);
         resolve(userSession);
         // @ts-ignore
       } else if (keys.length === 3) {
-        const userSession = `${keys[0]}.${keys[1]}.${keys[2]}`;
+        let userSession = keys[0] + "." + keys[1] + "." + keys[2];
         // @ts-ignore
         config.update(userSession, valueToAssign);
         resolve(userSession);
@@ -37,28 +40,29 @@ function updateUserSession(valueToAssign: any, keys: string[]): Promise<string> 
 
 async function updateUserSettings(accessScope: string, valueToAdd: string): Promise<boolean> {
   try {
-    await vscode.workspace
-      .getConfiguration("ethcode")
-      .update(accessScope, valueToAdd, vscode.ConfigurationTarget.Global);
-    return true;
+    await vscode.workspace.getConfiguration("ethcode").update(accessScope, valueToAdd, vscode.ConfigurationTarget.Global)
+    return true
   } catch (e) {
-    logger.log("Error updating: ", e);
-    return false;
+    logger.log("Error updating: ", e)
+    return false
   }
 }
 
 function retrieveUserSettings(accessScope: string, valueToRetreive: string): string | undefined {
-  return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive);
+  return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive)
 }
 
-async function verifyUserToken(token: string, email: string): Promise<boolean> {
+async function verifyUserToken(appId: string, email: string): Promise<boolean> {
   try {
-    const r = await axios.post("https://newauth.ethco.de/user/token/app/verify", {
+    const r = await axios.post("https://auth.ethco.de/user/token/app/verify", {
       email,
-      app_id: token,
+      app_id: appId,
     });
     logger.success(r.data.Status);
-    return true;
+    if (r.status === 200) {
+      return true;
+    }
+    return false
   } catch (error) {
     logger.log(error.response.data.Error);
     return false;
@@ -67,23 +71,27 @@ async function verifyUserToken(token: string, email: string): Promise<boolean> {
 
 async function registerAppToToken() {
   try {
-    const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId");
-    const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email");
+    const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId")
+    const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email")
+    const token = retrieveUserSettings("ethcode.userConfig.appRegistration", "token")
     if (appId === "" || email === "") {
-      logger.log("App Not Registered");
-      return false;
+      logger.log("App Not Registered")
+      return false
+    } else {
+      const verified = await verifyUserToken(appId!, email!)
+      if (!verified) {
+        logger.error(new Error("App token tampered with or revoked"))
+        return false
+      }
+      authToken.appId = appId!
+      authToken.token = token!
+      return true
     }
-    const verified = await verifyUserToken(appId!, email!);
-    if (!verified) {
-      logger.error(new Error("App token tampered with or revoked"));
-      return false;
-    }
-    return true;
   } catch (e) {
     if (e.code === "FileNotFound") {
-      logger.log("Configuration file doesn't exists");
+      logger.log("Configuration file doesn't exists")
     }
-    return false;
+    return false
   }
 }
 
@@ -108,13 +116,9 @@ class ReactPanel {
   private static readonly viewType = "ethcode";
 
   private readonly _panel: vscode.WebviewPanel;
-
   private readonly _extensionPath: string;
-
   private _disposables: vscode.Disposable[] = [];
-
-  private _disposed = false;
-
+  private _disposed: boolean = false;
   // @ts-ignore
   private version: string;
 
@@ -184,8 +188,8 @@ class ReactPanel {
           this.getPvtKey(message.payload, this._extensionPath);
         } else if (message.command === "app-register") {
           this.getTokens()
-            .then((r) => this._panel.webview.postMessage({ registered: r }))
-            .catch(() => this._panel.webview.postMessage({ registered: false }));
+            .then(r => this._panel.webview.postMessage({ registered: r }))
+            .catch(e => this._panel.webview.postMessage({ registered: false }))
         }
       },
       null,
@@ -204,7 +208,7 @@ class ReactPanel {
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel._panel.reveal(column);
         ReactPanel.currentPanel.checkFileName();
-        ReactPanel.currentPanel.checkAppRegistration();
+        ReactPanel.currentPanel.checkAppRegistration()
       } catch (error) {
         logger.error(error);
       }
@@ -214,7 +218,7 @@ class ReactPanel {
         ReactPanel.currentPanel.version = "latest";
         ReactPanel.currentPanel.getCompilerVersion();
         ReactPanel.currentPanel.checkFileName();
-        ReactPanel.currentPanel.checkAppRegistration();
+        ReactPanel.currentPanel.checkAppRegistration()
       } catch (error) {
         logger.error(error);
       }
@@ -234,6 +238,7 @@ class ReactPanel {
       const regexSol = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.sol|.solidity)$/g;
 
       if (this._disposed) {
+        return;
         // @ts-ignore
       } else if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
         // @ts-ignore
@@ -285,40 +290,40 @@ class ReactPanel {
     try {
       const token = await vscode.window.showInputBox({
         ignoreFocusOut: true,
-        placeHolder: "Enter App Token from dApp Auth",
-      });
-
+        placeHolder: "Enter App Token from dApp Auth"
+      })
       const email = await vscode.window.showInputBox({
         ignoreFocusOut: true,
-        placeHolder: "Enter email regitered from dApp Auth",
-      });
+        placeHolder: "Enter email regitered from dApp Auth"
+      })
       if (token || email) {
         const appId = uuid();
-        await axios.post("https://newauth.ethco.de/user/token/app/add", {
+        await axios.post('https://auth.ethco.de/user/token/app/add', {
           email,
           app_id: appId,
-          token,
-        });
+          token
+        })
         const settingsData = {
-          appId,
+          appId: appId,
           email,
-          token,
-        };
-        await updateUserSettings("userConfig.appRegistration.token", settingsData.token!);
-        await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId!);
-        await updateUserSettings("userConfig.appRegistration.email", settingsData.email!);
-        return true;
+          token
+        }
+        await updateUserSettings("userConfig.appRegistration.token", settingsData.token!)
+        await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId!)
+        await updateUserSettings("userConfig.appRegistration.email", settingsData.email!)
+        return true
+      } else {
+        return false
       }
-      return false;
     } catch (error) {
-      logger.error(error);
-      return false;
+      logger.log(error)
+      return false
     }
   };
 
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources, rootPath: vscode.Uri): void {
     // solidity compiler code goes bellow
-    const input = {
+    var input = {
       language: "Solidity",
       sources,
       settings: {
@@ -350,14 +355,14 @@ class ReactPanel {
         if (!sources[m.path]) {
           // eslint-disable-next-line no-param-reassign
           sources[m.path] = {
-            content: undefined,
+            content: undefined
           };
           solcWorker.send({
             command: "import",
             payload: {
               path: m.path,
-              rootPath,
-            },
+              rootPath
+            }
           });
         }
       } else if (m.command === "re-compile") {
@@ -367,7 +372,7 @@ class ReactPanel {
             content: m.data.content,
           };
           input.sources = sources;
-          const noContent = Object.values(input.sources).filter((source) => source.content === undefined);
+          const noContent = Object.values(input.sources).filter(source => source.content === undefined);
           if (noContent.length < 1) {
             solcWorker.send({
               command: "compile",
@@ -378,11 +383,7 @@ class ReactPanel {
         }
       } else if (m.command === "compiled") {
         context.workspaceState.update("sources", JSON.stringify(sources));
-        this._panel.webview.postMessage({
-          compiled: m.output,
-          sources,
-          testPanel: "main",
-        });
+        this._panel.webview.postMessage({ compiled: m.output, sources, testPanel: "main" });
         updateUserSession(
           {
             lang: "solidity",
@@ -405,7 +406,6 @@ class ReactPanel {
       this._panel.webview.postMessage({ processMessage: "" });
     });
   }
-
   private invokeVyperCompiler(context: vscode.ExtensionContext, sources: ISources): void {
     const vyperWorker = this.createVyperWorker();
     logger.log(`Vyper compiler invoked with WorkerID: ${vyperWorker.pid}`);
@@ -439,7 +439,6 @@ class ReactPanel {
       }
     });
   }
-
   private genKeyPair(password: string, ksPath: string): void {
     const accWorker = this.createAccWorker();
     logger.log(`Account worker invoked with WorkerID : ${accWorker.pid}.`);
@@ -457,7 +456,6 @@ class ReactPanel {
     });
     accWorker.send({ command: "create-account", pswd: password, ksPath });
   }
-
   // get private key for given public key
   private getPvtKey(pubKey: string, keyStorePath: string) {
     const accWorker = this.createAccWorker();
@@ -468,12 +466,7 @@ class ReactPanel {
         this._panel.webview.postMessage({ pvtKey: m.privateKey });
       }
     });
-    accWorker.send({
-      command: "extract-privateKey",
-      address: pubKey,
-      keyStorePath,
-      pswd: "",
-    });
+    accWorker.send({ command: "extract-privateKey", address: pubKey, keyStorePath, pswd: "" });
   }
 
   private deleteKeyPair(publicKey: string, keyStorePath: string) {
@@ -492,11 +485,7 @@ class ReactPanel {
         this._panel.webview.postMessage({ localAccounts: m.localAddresses });
       }
     });
-    accWorker.send({
-      command: "delete-keyPair",
-      address: publicKey,
-      keyStorePath,
-    });
+    accWorker.send({ command: "delete-keyPair", address: publicKey, keyStorePath });
   }
 
   private debug(txHash: string, testNetId: string): void {
@@ -510,13 +499,8 @@ class ReactPanel {
         this._panel.webview.postMessage({ traceError: m.debugResp });
       }
     });
-    debugWorker.send({
-      command: "debug-transaction",
-      payload: txHash,
-      testnetId: testNetId,
-    });
+    debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
   }
-
   // create unsigned transactions
   private buildRawTx(payload: any, testNetId: string) {
     const txWorker = this.createWorker();
@@ -528,14 +512,12 @@ class ReactPanel {
         this._panel.webview.postMessage({ buildTxResult: m.buildTxResult });
       }
     });
-    txWorker.send({
-      command: "build-rawtx",
-      payload,
-      jwtToken,
-      testnetId: testNetId,
-    });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    txWorker.send({ command: "build-rawtx", payload, authToken, testnetId: testNetId });
   }
-
   // Deploy contracts for ganache
   private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
@@ -547,14 +529,12 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    deployWorker.send({
-      command: "deploy-contract",
-      payload,
-      jwtToken,
-      testnetId: testNetId,
-    });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"));
+      return;
+    }
+    deployWorker.send({ command: "deploy-contract", payload, authToken, testnetId: testNetId });
   }
-
   // sign & deploy unsigned contract transactions
   private signDeployTx(payload: any, testNetId: string) {
     const signedDeployWorker = this.createWorker();
@@ -563,23 +543,17 @@ class ReactPanel {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       } else if (m.transactionResult) {
-        this._panel.webview.postMessage({
-          deployedResult: m.transactionResult,
-        });
-        this._panel.webview.postMessage({
-          transactionResult: m.transactionResult,
-        });
+        this._panel.webview.postMessage({ deployedResult: m.transactionResult });
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         logger.success("Contract transaction submitted!");
       }
     });
-    signedDeployWorker.send({
-      command: "sign-deploy",
-      payload,
-      jwtToken,
-      testnetId: testNetId,
-    });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    signedDeployWorker.send({ command: "sign-deploy", payload, authToken, testnetId: testNetId });
   }
-
   // get accounts
   public getAccounts() {
     const accountsWorker = this.createWorker();
@@ -590,9 +564,16 @@ class ReactPanel {
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
     });
-    accountsWorker.send({ command: "get-accounts", jwtToken });
+    const authToken = {
+      appId: retrieveUserSettings("ethcode.userConfig.appRegistration", "appId"),
+      token: retrieveUserSettings("ethcode.userConfig.appRegistration", "token")
+    };
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"));
+      return;
+    }
+    accountsWorker.send({ command: "get-accounts", authToken });
   }
-
   // get local accounts
   private getLocalAccounts(keyStorePath: string) {
     const accWorker = this.createAccWorker();
@@ -605,7 +586,6 @@ class ReactPanel {
     });
     accWorker.send({ command: "get-localAccounts", keyStorePath });
   }
-
   // get balance of given account
   private getBalance(account: IAccount, testNetId: string) {
     const balanceWorker = this.createWorker();
@@ -613,14 +593,12 @@ class ReactPanel {
       logger.log(`Balance worker message: ${JSON.stringify(m)}`);
       this._panel.webview.postMessage({ balance: m.balance, account });
     });
-    balanceWorker.send({
-      command: "get-balance",
-      account,
-      jwtToken,
-      testnetId: testNetId,
-    });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    balanceWorker.send({ command: "get-balance", account, authToken, testnetId: testNetId });
   }
-
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
     logger.log("Running contract call...");
@@ -636,25 +614,18 @@ class ReactPanel {
         this._panel.webview.postMessage({ ganacheCallResult: m.callResult });
       }
     });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
     if (testNetId === "ganache") {
-      logger.log(`testnet Id: ${testNetId}`);
-      callWorker.send({
-        command: "ganache-contract-method-call",
-        payload,
-        jwtToken,
-        testnetId: testNetId,
-      });
+      logger.log("testnet Id: " + testNetId);
+      callWorker.send({ command: "ganache-contract-method-call", payload, authToken, testnetId: testNetId });
     } else {
-      logger.log(`testnet Id: ${testNetId}`);
-      callWorker.send({
-        command: "contract-method-call",
-        payload,
-        jwtToken,
-        testnetId: testNetId,
-      });
+      logger.log("testnet Id: " + testNetId);
+      callWorker.send({ command: "contract-method-call", payload, authToken, testnetId: testNetId });
     }
   }
-
   // Get gas estimates
   private runGetGasEstimate(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
@@ -667,14 +638,12 @@ class ReactPanel {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       }
     });
-    deployWorker.send({
-      command: "get-gas-estimate",
-      payload,
-      jwtToken,
-      testnetId: testNetId,
-    });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    deployWorker.send({ command: "get-gas-estimate", payload, authToken, testnetId: testNetId });
   }
-
   // Send ether on ganache
   private sendEther(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
@@ -683,20 +652,16 @@ class ReactPanel {
       if (m.transactionResult) {
         updateUserSession(m.transactionResult, ["userConfig", "txHashOfLastSendEther"]);
         updateUserSession(testNetId, ["userConfig", "networkId"]);
-        this._panel.webview.postMessage({
-          transactionResult: m.transactionResult,
-        });
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         logger.success("Successfully sent Ether");
       }
     });
-    sendEtherWorker.send({
-      command: "send-ether",
-      transactionInfo: payload,
-      jwtToken,
-      testnetId: testNetId,
-    });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, authToken, testnetId: testNetId });
   }
-
   // Send ether using ethereum client
   private sendEtherSigned(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
@@ -707,21 +672,21 @@ class ReactPanel {
       } else if (m.transactionResult) {
         updateUserSession(m.transactionResult, ["userConfig", "txHashOfLastSendEther"]);
         updateUserSession(testNetId, ["userConfig", "networkId"]);
-        this._panel.webview.postMessage({
-          transactionResult: m.transactionResult,
-        });
+        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
         logger.success("Successfully sent Ether");
       }
     });
-    sendEtherWorker.send({
-      command: "send-ether-signed",
-      payload,
-      jwtToken,
-      testnetId: testNetId,
-    });
+    if (authToken.appId === "" && authToken.token === "") {
+      logger.error(new Error("App Not registered"))
+      return
+    }
+    sendEtherWorker.send({ command: "send-ether-signed", payload, authToken, testnetId: testNetId });
   }
-
-  public compileContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
+  public compileContract(
+    context: vscode.ExtensionContext,
+    editorContent: string | undefined,
+    fn: string | undefined
+  ) {
     // send JSON serializable compiled data
     const sources: ISources = {};
     if (fn) {
@@ -776,15 +741,9 @@ class ReactPanel {
       if (m.utResp) {
         const res = JSON.parse(m.utResp.result);
         if (res.type) {
-          this._panel.webview.postMessage({
-            _testCallback: res,
-            testPanel: "test",
-          });
+          this._panel.webview.postMessage({ _testCallback: res, testPanel: "test" });
         } else {
-          this._panel.webview.postMessage({
-            _finalCallback: res,
-            testPanel: "test",
-          });
+          this._panel.webview.postMessage({ _finalCallback: res, testPanel: "test" });
           solcWorker.kill();
         }
       }

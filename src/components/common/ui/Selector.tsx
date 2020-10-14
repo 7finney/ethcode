@@ -14,28 +14,28 @@ const customStyles = {
     backgroundColor: "#000",
     color: "#fff",
     menu: "20px",
-    borderColor: "#38ffAf",
+    borderColor: '#38ffAf'
   }),
 
   menu: (base: any) => ({
     ...base,
     color: "#fff",
-    background: "#000",
+    background: "#000"
   }),
   menuList: (base: any) => ({
     ...base,
     color: "#fff",
-    background: "#000",
+    background: "#000"
   }),
   singleValue: (base: any) => ({
     ...base,
-    color: "#fff",
+    color: "#fff"
   }),
   option: (base: any, { isFocused }: any) => ({
     ...base,
     color: "#fff",
-    backgroundColor: isFocused ? "#aaa" : null,
-  }),
+    backgroundColor: isFocused ? "#aaa" : null
+  })
 };
 
 const Selector = (props: IProps) => {

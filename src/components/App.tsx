@@ -2,7 +2,6 @@
 // @ts-ignore
 import React, { Component, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import {
   addTestResults,
   addFinalResultCallback,
@@ -12,7 +11,7 @@ import {
   setCallResult,
   setAccountBalance,
   setCurrAccChange,
-  setTestNetId,
+  setTestNetId
 } from "../actions";
 import "./App.css";
 
@@ -21,8 +20,8 @@ import {
   setSelectorOption,
   setFileSelectorOptions,
   setGanacheAccountsOption,
-  setLocalAccountOption,
-} from "../helper";
+  setLocalAccountOption
+} from '../helper';
 
 import ContractCompiled from "./ContractCompiled";
 import ContractDeploy from "./ContractDeploy";
@@ -30,7 +29,8 @@ import { Selector } from "./common/ui";
 import TestDisplay from "./TestDisplay";
 import DebugDisplay from "./DebugDisplay";
 import Deploy from "./Deploy/Deploy";
-import "react-tabs/style/react-tabs.css";
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
 import Account from "./Account/Account";
 import { IAccount, SolcVersionType } from "../types";
 
@@ -241,7 +241,6 @@ const App = (props: IProps) => {
       }
     });
     // Component mounted start getting gRPC things
-    vscode.postMessage({ command: "run-getAccounts" });
     vscode.postMessage({ command: "get-localAccounts" });
   }, []);
 
@@ -271,7 +270,7 @@ const App = (props: IProps) => {
   const getSelectedVersion = (version: any) => {
     vscode.postMessage({
       command: "version",
-      version: version.value,
+      version: version.value
     });
   };
 
@@ -303,8 +302,8 @@ const App = (props: IProps) => {
 
   const handleAppRegister = () => {
     vscode.postMessage({
-      command: "app-register",
-    });
+      command: 'app-register',
+    })
   };
 
   const openAdvanceDeploy = () => {
@@ -467,7 +466,7 @@ function mapStateToProps({ test, accountStore, debugStore }: any) {
     accounts,
     currAccount,
     test,
-    testNetId,
+    testNetId
   };
 }
 
@@ -480,5 +479,5 @@ export default connect(mapStateToProps, {
   setTestNetId,
   setCurrAccChange,
   clearDeployedResult,
-  setCallResult,
+  setCallResult
 })(App);

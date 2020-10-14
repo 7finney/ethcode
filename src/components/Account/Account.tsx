@@ -42,10 +42,7 @@ const Account = (props: IProps) => {
       const { data } = event;
       if (data.newAccount) {
         // TODO: Update account into redux
-        const account: IAccount = {
-          label: data.newAccount.pubAddr,
-          value: data.newAccount.checksumAddr,
-        };
+        const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr };
         addNewAcc(account);
         setShowButton(false);
         setPublicAddress(account.label);
@@ -80,7 +77,6 @@ const Account = (props: IProps) => {
   const getSelectedAccount = (account: IAccount) => {
     props.getSelectedAccount(account);
   };
-
   // generate keypair
   const handleGenKeyPair = () => {
     const { vscode } = props;
@@ -88,7 +84,7 @@ const Account = (props: IProps) => {
     try {
       vscode.postMessage({
         command: "gen-keypair",
-        payload: password,
+        payload: password
       });
       setShowButton(true);
     } catch (err) {
@@ -103,7 +99,7 @@ const Account = (props: IProps) => {
     try {
       vscode.postMessage({
         command: "delete-keyPair",
-        payload: currAccount.value,
+        payload: currAccount.value
       });
     } catch (err) {
       setError(err);
@@ -124,7 +120,7 @@ const Account = (props: IProps) => {
         vscode.postMessage({
           command: "send-ether",
           payload: transactionInfo,
-          testNetId,
+          testNetId
         });
       } else {
         // Build unsigned transaction
@@ -136,7 +132,7 @@ const Account = (props: IProps) => {
         vscode.postMessage({
           command: "send-ether-signed",
           payload: { transactionInfo, pvtKey },
-          testNetId,
+          testNetId
         });
       }
     } catch (err) {
@@ -248,7 +244,7 @@ const Account = (props: IProps) => {
         </div>
 
         <div className="account_row">
-          <div className="label-container" />
+          <div className="label-container"></div>
           <div className="input-container">
             <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: "10px" }} value="Send" />
           </div>

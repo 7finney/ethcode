@@ -13,8 +13,12 @@ const TestDisplay = ({ test }: IProps) => {
     <div id="remix-tests">
       {test.testResult && test.testResults.length > 0 && (
         <div className="test-result">
-          <span className="text-error">Total failing: {test.testResult.totalFailing} </span>
-          <span className="text-success">Total passing: {test.testResult.totalPassing} </span>
+          <span className="text-error">
+            Total failing: {test.testResult.totalFailing}{" "}
+          </span>
+          <span className="text-success">
+            Total passing: {test.testResult.totalPassing}{" "}
+          </span>
           <span className="text-info">Time: {test.testResult.totalTime}</span>
         </div>
       )}
@@ -41,7 +45,9 @@ const TestDisplay = ({ test }: IProps) => {
                 <Octicon icon={X} />
               </span>
             )}
-            <span className="padded text-warning">{test.testResults[index].value}</span>
+            <span className="padded text-warning">
+              {test.testResults[index].value}
+            </span>
           </div>
         )}
       />
@@ -54,7 +60,7 @@ const TestDisplay = ({ test }: IProps) => {
 
 function mapStateToProps({ test }: any) {
   return {
-    test,
+    test
   };
 }
 
