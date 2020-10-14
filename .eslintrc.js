@@ -49,6 +49,7 @@ module.exports = {
     "react/button-has-type": "off",
     "jsx-a11y/label-has-associated-control": "off",
     "no-nested-ternary": "off",
+    "react-hooks/exhaustive-deps": "off",
     "prettier/prettier": [
       "error",
       {

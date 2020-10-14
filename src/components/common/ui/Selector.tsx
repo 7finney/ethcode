@@ -47,7 +47,6 @@ const Selector = (props: IProps) => {
   useEffect(() => {
     setSelectedOption(defaultValue);
     setOptions(props.options);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.options]);
 
   useEffect(() => {

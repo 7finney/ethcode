@@ -243,10 +243,9 @@ const App = (props: IProps) => {
     // Component mounted start getting gRPC things
     vscode.postMessage({ command: "run-getAccounts" });
     vscode.postMessage({ command: "get-localAccounts" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useState(() => {
+  useEffect(() => {
     if (props.accounts !== accounts) {
       setAccounts(props.accounts);
     }
@@ -254,7 +253,7 @@ const App = (props: IProps) => {
     if (props.testNetId !== testNetId) {
       setTestNetId(props.testNetId);
     }
-  });
+  }, [props.accounts]);
 
   const changeContract = (selectedOpt: IOpt) => {
     setContractName(selectedOpt.value);
@@ -333,9 +332,9 @@ const App = (props: IProps) => {
           placeholder="Select Network"
           defaultValue={testNets[0]}
         />
-        {compiled && Object.keys(compiled.sources).length > 0 && (
+        {/* {compiled && Object.keys(compiled.sources).length > 0 && (
           <Selector options={files} getSelectedOption={changeFile} placeholder="Select Files" defaultValue={files[0]} />
-        )}
+        )} */}
       </div>
       {transactionResult && (
         <div className="tx-info">
@@ -360,20 +359,18 @@ const App = (props: IProps) => {
           </TabList>
           {/* Main panel */}
           <TabPanel className="react-tab-panel">
-            {!compiled ? (
-              <div className="instructions">
-                <p>
-                  <pre className="hot-keys">
-                    <b>ctrl+alt+c</b> - Compile contracts
-                  </pre>
-                </p>
-                <p>
-                  <pre className="hot-keys">
-                    <b>ctrl+alt+t</b> - Run unit tests
-                  </pre>
-                </p>
-              </div>
-            ) : null}
+            <div className="instructions">
+              <p>
+                <pre className="hot-keys">
+                  <b>ctrl+alt+c</b> - Compile contracts
+                </pre>
+              </p>
+              <p>
+                <pre className="hot-keys">
+                  <b>ctrl+alt+t</b> - Run unit tests
+                </pre>
+              </p>
+            </div>
             {accounts.length > 0 && (
               <div className="account-brief">
                 <b>Account: </b>
