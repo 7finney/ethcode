@@ -6,7 +6,7 @@ import { ISources, IAccount, TokenData } from "./types";
 import * as uuid from "uuid/v4";
 import axios from "axios";
 
-import { Logger } from "./logger";
+import Logger from "./logger";
 
 function retrieveUserSettings(accessScope: string, valueToRetreive: string): string | undefined {
   return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive);
@@ -320,6 +320,7 @@ class ReactPanel {
       return false;
     } catch (error) {
       logger.log(error);
+      logger.log(error.response.data.Error);
       return false;
     }
   };

@@ -6,56 +6,48 @@ import { RemixURLResolver } from "remix-url-resolver";
 import { Uri } from "vscode";
 import { SolcError } from "./types";
 
+function handleNodeModulesImport(pathString: string, fileName: string, fileRoot: Uri) {
+  const o = { encoding: "UTF-8" };
+  const modulesDir = fileRoot.path;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const p = path.join(modulesDir, "/node_modules", pathString, fileName);
+    const content = fs.readFileSync(p, o);
+    return content;
+  }
+}
+
 function handleLocal(pathString: string, fileName: any, rootPath: Uri) {
   // if no relative/absolute path given then search in node_modules folder
   if (pathString && pathString.indexOf(".") !== 0 && pathString.indexOf("/") !== 0) {
     // console.error("Error: Node Modules Import is not implemented yet!");
     // throw Error("Node Modules Import is not implemented yet!");
     return handleNodeModulesImport(pathString, fileName, rootPath);
-  } else {
-    try {
-      const o = { encoding: "UTF-8" };
-      // hack for compiler imports to work (do not change)
-      const p = pathString ? path.resolve(pathString, fileName) : path.resolve(pathString, fileName);
-      const content = fs.readFileSync(p, o);
-      return content;
-    } catch (err) {
-      throw err;
-    }
   }
-}
-
-function handleNodeModulesImport(pathString: string, fileName: string, fileRoot: Uri) {
-  const o = { encoding: 'UTF-8' };
-  var modulesDir = fileRoot.path;
-
-  while (true) {
-    try {
-      const p = path.join(modulesDir, '/node_modules', pathString, fileName);
-      const content = fs.readFileSync(p, o);
-      return content;
-    } catch (err) {
-      throw err;
-    }
-  }
+  const o = { encoding: "UTF-8" };
+  // hack for compiler imports to work (do not change)
+  const p = pathString ? path.resolve(pathString, fileName) : path.resolve(pathString, fileName);
+  const content = fs.readFileSync(p, o);
+  return content;
 }
 
 function findImports(path: any) {
   // TODO: We need current solc file path here for relative local import
   // @ts-ignore
-  process.send({ command: "process", processMessage: "importing file: " + path });
+  process.send({ command: "process", processMessage: `importing file: ${path}` });
   // @ts-ignore
   process.send({ command: "import", path });
-  return { 'error': 'Deferred import' };
+  return { error: "Deferred import" };
 }
 
 function compile(m: any) {
   const vnReg = /(^[0-9].[0-9].[0-9]\+commit\..*?)+(\.)/g;
   const vnRegArr = vnReg.exec(solc.version());
   // @ts-ignore
-  const vn = 'v' + (vnRegArr ? vnRegArr[1] : '');
+  const vn = `v${vnRegArr ? vnRegArr[1] : ""}`;
   const input = m.payload;
-  if (m.version === vn || m.version === 'latest') {
+  if (m.version === vn || m.version === "latest") {
     try {
       console.log("compiling on solc-worker with local version: ", solc.version());
       const output = solc.compile(JSON.stringify(input), { import: findImports });
@@ -84,7 +76,7 @@ function compile(m: any) {
     }
   } else if (m.version !== vn) {
     // @ts-ignore
-    process.send({ command: "process", processMessage: "loading remote version " + m.version + "..." });
+    process.send({ command: "process", processMessage: `loading remote version ${m.version}...` });
     solc.loadRemoteVersion(m.version, async (err: Error, newSolc: any) => {
       if (err) {
         // @ts-ignore
@@ -120,13 +112,14 @@ function importFiles(m: any) {
       },
       handle: (match: Array<string>) => {
         return handleLocal(match[2], match[3], rootPath);
-      }
-    }
+      },
+    },
   ];
   // @ts-ignore
   const urlResolver = new RemixURLResolver();
   // this section usually executes after solc returns error file not found
-  urlResolver.resolve(path, FSHandler)
+  urlResolver
+    .resolve(path, FSHandler)
     .then((data: any) => {
       // @ts-ignore
       process.send({ command: "re-compile", data, path });
@@ -137,8 +130,7 @@ function importFiles(m: any) {
     });
 }
 
-
-process.on("message", async m => {
+process.on("message", async (m) => {
   if (m.command === "compile") {
     compile(m);
   } else if (m.command === "import") {

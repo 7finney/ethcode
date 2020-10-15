@@ -72,7 +72,7 @@ const App = (props: IProps) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
   const [accounts, setAccounts] = useState<any[]>([]);
-  const [selctorAccounts, setSelctorAccounts] = useState<IAccount[]>([]);
+  const [selectorAccounts, setSelectorAccounts] = useState<IAccount[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   const [files, setFiles] = useState<any[]>([]);
   const [currAccount, setCurrAccount] = useState<IAccount>();
@@ -100,7 +100,7 @@ const App = (props: IProps) => {
     // TODO: update reducer
     // merge local accounts and test net accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
-      setSelctorAccounts([
+      setSelectorAccounts([
         {
           label: "Ganache",
           value: testNetAcc,
@@ -111,22 +111,23 @@ const App = (props: IProps) => {
         },
       ]);
     } else if (localAcc.length > 0) {
-      setSelctorAccounts([
+      setSelectorAccounts([
         {
           label: "Local Accounts",
           value: localAcc,
         },
       ]);
     } else if (testNetAcc.length > 0) {
-      setSelctorAccounts([
+      setSelectorAccounts([
         {
           label: "Ganache",
           value: testNetAcc,
         },
       ]);
     } else {
-      setSelctorAccounts([]);
+      setSelectorAccounts([]);
     }
+    console.log("Accounts: ", localAcc, testNetAcc);
   };
 
   useEffect(() => {
@@ -331,9 +332,9 @@ const App = (props: IProps) => {
           placeholder="Select Network"
           defaultValue={testNets[0]}
         />
-        {/* {compiled && Object.keys(compiled.sources).length > 0 && (
+        {compiled && compiled.sources && Object.keys(compiled.sources).length > 0 && (
           <Selector options={files} getSelectedOption={changeFile} placeholder="Select Files" defaultValue={files[0]} />
-        )} */}
+        )}
       </div>
       {transactionResult && (
         <div className="tx-info">
@@ -412,7 +413,7 @@ const App = (props: IProps) => {
           <TabPanel>
             <Account
               vscode={vscode}
-              accounts={selctorAccounts}
+              accounts={selectorAccounts}
               getSelectedAccount={getSelectedAccount}
               appRegistered={appRegistered}
               handleAppRegister={handleAppRegister}

@@ -1,4 +1,5 @@
-import {window} from 'vscode';
+import { window } from "vscode";
+
 export function successToast(msg: string) {
   window.showInformationMessage(msg, "Dismiss");
 }

@@ -56,14 +56,12 @@ const Account = (props: IProps) => {
         setSendBtnDisable(false);
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (accountBalance !== balance) {
       setBalance(accountBalance);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountBalance]);
 
   useEffect(() => {
@@ -71,7 +69,6 @@ const Account = (props: IProps) => {
       command: "get-pvt-key",
       payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currAccount]);
 
   const getSelectedAccount = (account: IAccount) => {
