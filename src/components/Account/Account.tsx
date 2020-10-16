@@ -137,6 +137,8 @@ const Account = (props: IProps) => {
     }
   };
 
+  console.log("accounts.tsx: ", JSON.stringify(accounts));
+
   return (
     <div className="account_container">
       <div className="account_row">

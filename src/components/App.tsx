@@ -127,8 +127,11 @@ const App = (props: IProps) => {
     } else {
       setSelectorAccounts([]);
     }
-    console.log("Accounts: ", localAcc, testNetAcc);
   };
+
+  useEffect(() => {
+    mergeAccount();
+  }, [localAcc, testNetAcc]);
 
   useEffect(() => {
     window.addEventListener("message", async (event) => {
@@ -139,7 +142,6 @@ const App = (props: IProps) => {
       }
       if (data.localAccounts) {
         setLocalAcc(setLocalAccountOption(data.localAccounts));
-        mergeAccount();
       }
       if (data.compiled) {
         const compiled = JSON.parse(data.compiled);
@@ -218,7 +220,6 @@ const App = (props: IProps) => {
         const { balance } = data.fetchAccounts;
         const { accounts } = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
-        mergeAccount();
         const accData = {
           balance,
           currAccount: testNetAcc[0],
@@ -255,16 +256,28 @@ const App = (props: IProps) => {
     }
   }, [props.accounts]);
 
+  useEffect(() => {
+    props.setTestNetId(testNetId);
+    vscode.postMessage({
+      command: "get-balance",
+      account: currAccount,
+      testNetId,
+    });
+  }, [accountName, testNetId]);
+
   const changeContract = (selectedOpt: IOpt) => {
     setContractName(selectedOpt.value);
   };
 
-  const changeFile = (selectedOpt: IOpt) => {
-    setFileName(selectedOpt.value);
+  useEffect(() => {
     changeContract({
       value: `${Object.keys(compiled.contracts[fileName])[0]}`,
       label: `${Object.keys(compiled.contracts[fileName])[0]}`,
     });
+  }, [fileName]);
+
+  const changeFile = (selectedOpt: IOpt) => {
+    setFileName(selectedOpt.value);
     setContracts(setSelectorOption(Object.keys(compiled.contracts[fileName])));
   };
 
@@ -277,24 +290,11 @@ const App = (props: IProps) => {
 
   const getSelectedNetwork = (testNet: any) => {
     setTestNetId(testNet.value);
-
-    props.setTestNetId(testNetId);
-    // TODO: Fetch Account Balance
-    vscode.postMessage({
-      command: "get-balance",
-      account: currAccount,
-      testNetId,
-    });
   };
 
   const getSelectedAccount = (account: IAccount) => {
     setCurrAccount(account);
     setAccountName(account);
-    vscode.postMessage({
-      command: "get-balance",
-      account,
-      testNetId,
-    });
   };
 
   const handelChangeFromAddress = (event: any) => {
