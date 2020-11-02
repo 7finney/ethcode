@@ -90,7 +90,7 @@ process.on("message", (m) => {
   if (m.command === "create-account") {
     createKeyPair(m.ksPath, m.pswd);
   }
-  if (m.command === "extract-privateKey") {
+  if (m.command === "extract-privateKey" && m.address && m.pswd && m.keyStorePath) {
     extractPvtKey(m.keyStorePath, m.address, m.pswd);
   }
   if (m.command === "delete-keyPair") {

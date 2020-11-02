@@ -387,7 +387,11 @@ class ReactPanel {
         }
       } else if (m.command === "compiled") {
         context.workspaceState.update("sources", JSON.stringify(sources));
-        this._panel.webview.postMessage({ compiled: m.output, sources, testPanel: "main" });
+        this._panel.webview.postMessage({
+          compiled: m.output,
+          sources,
+          testPanel: "main",
+        });
         updateUserSession(
           {
             lang: "solidity",
@@ -473,7 +477,12 @@ class ReactPanel {
         this._panel.webview.postMessage({ pvtKey: m.privateKey });
       }
     });
-    accWorker.send({ command: "extract-privateKey", address: pubKey, keyStorePath, pswd: "" });
+    accWorker.send({
+      command: "extract-privateKey",
+      address: pubKey,
+      keyStorePath,
+      pswd: "",
+    });
   }
 
   private deleteKeyPair(publicKey: string, keyStorePath: string) {
@@ -492,7 +501,11 @@ class ReactPanel {
         this._panel.webview.postMessage({ localAccounts: m.localAddresses });
       }
     });
-    accWorker.send({ command: "delete-keyPair", address: publicKey, keyStorePath });
+    accWorker.send({
+      command: "delete-keyPair",
+      address: publicKey,
+      keyStorePath,
+    });
   }
 
   private debug(txHash: string, testNetId: string): void {
@@ -506,7 +519,11 @@ class ReactPanel {
         this._panel.webview.postMessage({ traceError: m.debugResp });
       }
     });
-    debugWorker.send({ command: "debug-transaction", payload: txHash, testnetId: testNetId });
+    debugWorker.send({
+      command: "debug-transaction",
+      payload: txHash,
+      testnetId: testNetId,
+    });
   }
 
   // create unsigned transactions
@@ -524,7 +541,12 @@ class ReactPanel {
       logger.error(new Error("App Not registered"));
       return;
     }
-    txWorker.send({ command: "build-rawtx", payload, authToken, testnetId: testNetId });
+    txWorker.send({
+      command: "build-rawtx",
+      payload,
+      authToken,
+      testnetId: testNetId,
+    });
   }
 
   // Deploy contracts for ganache
@@ -542,7 +564,12 @@ class ReactPanel {
       logger.error(new Error("App Not registered"));
       return;
     }
-    deployWorker.send({ command: "deploy-contract", payload, authToken, testnetId: testNetId });
+    deployWorker.send({
+      command: "deploy-contract",
+      payload,
+      authToken,
+      testnetId: testNetId,
+    });
   }
 
   // sign & deploy unsigned contract transactions
@@ -553,8 +580,12 @@ class ReactPanel {
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
       } else if (m.transactionResult) {
-        this._panel.webview.postMessage({ deployedResult: m.transactionResult });
-        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        this._panel.webview.postMessage({
+          deployedResult: m.transactionResult,
+        });
+        this._panel.webview.postMessage({
+          transactionResult: m.transactionResult,
+        });
         logger.success("Contract transaction submitted!");
       }
     });
@@ -562,7 +593,12 @@ class ReactPanel {
       logger.error(new Error("App Not registered"));
       return;
     }
-    signedDeployWorker.send({ command: "sign-deploy", payload, authToken, testnetId: testNetId });
+    signedDeployWorker.send({
+      command: "sign-deploy",
+      payload,
+      authToken,
+      testnetId: testNetId,
+    });
   }
 
   // get accounts
@@ -610,7 +646,13 @@ class ReactPanel {
       logger.error(new Error("App Not registered"));
       return;
     }
-    balanceWorker.send({ command: "get-balance", account, authToken, testnetId: testNetId });
+    if (account && account.checksumAddr)
+      balanceWorker.send({
+        command: "get-balance",
+        account,
+        authToken,
+        testnetId: testNetId,
+      });
   }
 
   // call contract method
@@ -634,10 +676,20 @@ class ReactPanel {
     }
     if (testNetId === "ganache") {
       logger.log(`testnet Id: ${testNetId}`);
-      callWorker.send({ command: "ganache-contract-method-call", payload, authToken, testnetId: testNetId });
+      callWorker.send({
+        command: "ganache-contract-method-call",
+        payload,
+        authToken,
+        testnetId: testNetId,
+      });
     } else {
       logger.log(`testnet Id: ${testNetId}`);
-      callWorker.send({ command: "contract-method-call", payload, authToken, testnetId: testNetId });
+      callWorker.send({
+        command: "contract-method-call",
+        payload,
+        authToken,
+        testnetId: testNetId,
+      });
     }
   }
 
@@ -657,7 +709,12 @@ class ReactPanel {
       logger.error(new Error("App Not registered"));
       return;
     }
-    deployWorker.send({ command: "get-gas-estimate", payload, authToken, testnetId: testNetId });
+    deployWorker.send({
+      command: "get-gas-estimate",
+      payload,
+      authToken,
+      testnetId: testNetId,
+    });
   }
 
   // Send ether on ganache
@@ -668,7 +725,9 @@ class ReactPanel {
       if (m.transactionResult) {
         updateUserSession(m.transactionResult, ["userConfig", "txHashOfLastSendEther"]);
         updateUserSession(testNetId, ["userConfig", "networkId"]);
-        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        this._panel.webview.postMessage({
+          transactionResult: m.transactionResult,
+        });
         logger.success("Successfully sent Ether");
       }
     });
@@ -676,7 +735,12 @@ class ReactPanel {
       logger.error(new Error("App Not registered"));
       return;
     }
-    sendEtherWorker.send({ command: "send-ether", transactionInfo: payload, authToken, testnetId: testNetId });
+    sendEtherWorker.send({
+      command: "send-ether",
+      transactionInfo: payload,
+      authToken,
+      testnetId: testNetId,
+    });
   }
 
   // Send ether using ethereum client
@@ -689,7 +753,9 @@ class ReactPanel {
       } else if (m.transactionResult) {
         updateUserSession(m.transactionResult, ["userConfig", "txHashOfLastSendEther"]);
         updateUserSession(testNetId, ["userConfig", "networkId"]);
-        this._panel.webview.postMessage({ transactionResult: m.transactionResult });
+        this._panel.webview.postMessage({
+          transactionResult: m.transactionResult,
+        });
         logger.success("Successfully sent Ether");
       }
     });
@@ -697,7 +763,12 @@ class ReactPanel {
       logger.error(new Error("App Not registered"));
       return;
     }
-    sendEtherWorker.send({ command: "send-ether-signed", payload, authToken, testnetId: testNetId });
+    sendEtherWorker.send({
+      command: "send-ether-signed",
+      payload,
+      authToken,
+      testnetId: testNetId,
+    });
   }
 
   public compileContract(context: vscode.ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
@@ -755,9 +826,15 @@ class ReactPanel {
       if (m.utResp) {
         const res = JSON.parse(m.utResp.result);
         if (res.type) {
-          this._panel.webview.postMessage({ _testCallback: res, testPanel: "test" });
+          this._panel.webview.postMessage({
+            _testCallback: res,
+            testPanel: "test",
+          });
         } else {
-          this._panel.webview.postMessage({ _finalCallback: res, testPanel: "test" });
+          this._panel.webview.postMessage({
+            _finalCallback: res,
+            testPanel: "test",
+          });
           solcWorker.kill();
         }
       }

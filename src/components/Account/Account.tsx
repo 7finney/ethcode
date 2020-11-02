@@ -33,6 +33,7 @@ const Account = (props: IProps) => {
   const [showButton, setShowButton] = useState(false);
   const [error, setError] = useState("");
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
+  const [, setMsg] = useState("");
 
   const { register, handleSubmit } = useForm<FormInputs>();
   const { addNewAcc, accountBalance, vscode, currAccount, accounts, appRegistered } = props;
@@ -42,7 +43,10 @@ const Account = (props: IProps) => {
       const { data } = event;
       if (data.newAccount) {
         // TODO: Update account into redux
-        const account: IAccount = { label: data.newAccount.pubAddr, value: data.newAccount.checksumAddr };
+        const account: IAccount = {
+          label: data.newAccount.pubAddr,
+          value: data.newAccount.checksumAddr,
+        };
         addNewAcc(account);
         setShowButton(false);
         setPublicAddress(account.label);
@@ -56,7 +60,11 @@ const Account = (props: IProps) => {
         setSendBtnDisable(false);
       }
     });
-  }, []);
+  });
+
+  useEffect(() => {
+    setMsg("process finished");
+  }, [pvtKey]);
 
   useEffect(() => {
     if (accountBalance !== balance) {
@@ -136,8 +144,6 @@ const Account = (props: IProps) => {
       setError(err);
     }
   };
-
-  console.log("accounts.tsx: ", JSON.stringify(accounts));
 
   return (
     <div className="account_container">

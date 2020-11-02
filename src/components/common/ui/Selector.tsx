@@ -56,9 +56,12 @@ const Selector = (props: IProps) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (selectedOption) props.getSelectedOption(selectedOption);
+  }, [setSelectedOption]);
+
   const handleChange = (s: any) => {
     setSelectedOption(s);
-    props.getSelectedOption(s);
   };
 
   return (

@@ -270,10 +270,12 @@ const App = (props: IProps) => {
   };
 
   useEffect(() => {
-    changeContract({
-      value: `${Object.keys(compiled.contracts[fileName])[0]}`,
-      label: `${Object.keys(compiled.contracts[fileName])[0]}`,
-    });
+    if (compiled && compiled.contracts) {
+      changeContract({
+        value: `${Object.keys(compiled.contracts[fileName])[0]}`,
+        label: `${Object.keys(compiled.contracts[fileName])[0]}`,
+      });
+    }
   }, [fileName]);
 
   const changeFile = (selectedOpt: IOpt) => {
