@@ -41,7 +41,7 @@ const customStyles = {
 };
 
 const Selector: React.FC<IProps> = (props: IProps) => {
-  const [selectedOption, setSelectedOption] = useState<IAccount|null>(null);
+  const [selectedOption, setSelectedOption] = useState<any>(null);
   const [options, setOptions] = useState([]);
 
   useEffect(() => {
@@ -60,15 +60,15 @@ const Selector: React.FC<IProps> = (props: IProps) => {
     if (selectedOption) props.getSelectedOption(selectedOption);
   }, [selectedOption]);
 
-  const handleChange = (selectedAcc: IAccount) => {
-    setSelectedOption(selectedAcc);
+  const handleChange = (selected: any) => {
+    setSelectedOption(selected);
   };
 
   return (
     <Select
       placeholder={props.placeholder}
       value={selectedOption}
-      onChange={(option: ValueType<IAccount>) => handleChange(option as IAccount)}
+      onChange={(option: ValueType<any>) => handleChange(option as any)}
       options={options}
       formatGroupLabel={props.formatGroupLabel}
       className="select-width"
