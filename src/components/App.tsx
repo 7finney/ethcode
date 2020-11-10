@@ -70,7 +70,7 @@ const App = (props: IProps) => {
   const [gasEstimate, setGasEstimate] = useState(0);
   const [deployedResult, setDeployedResult] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
-  const [txTrace, setTxTrace] = useState({});
+  const [txTrace, setTxTrace] = useState([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [selectorAccounts, setSelectorAccounts] = useState<IAccount[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);

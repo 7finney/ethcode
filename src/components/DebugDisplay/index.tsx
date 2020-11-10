@@ -84,6 +84,8 @@ const DebugDisplay = (props: IProps) => {
 
   const { txTrace } = props;
 
+  console.log("TxtRace:", JSON.stringify(txTrace))
+
   return (
     <div className="container">
       <div>
@@ -100,13 +102,13 @@ const DebugDisplay = (props: IProps) => {
           </button>
         </p>
       </div>
-      {indx >= 0 && (
+      {indx >= 0 && txTrace.length > 0 && (
         <div>
           <div>
             <p>OPCodes:</p>
             <div>
               <ul className="opDiv" style={{ paddingLeft: 0 }}>
-                {txTrace.map((obj: any, index: any) => {
+                {txTrace && txTrace.length > 0 && txTrace.map((obj: any, index: any) => {
                   return (
                     // eslint-disable-next-line react/no-array-index-key
                     <li className={index === indx ? "selected" : ""} key={index} id={index}>
