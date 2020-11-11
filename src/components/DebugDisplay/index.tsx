@@ -84,8 +84,6 @@ const DebugDisplay = (props: IProps) => {
 
   const { txTrace } = props;
 
-  console.log("TxtRace:", JSON.stringify(txTrace))
-
   return (
     <div className="container">
       <div>
