@@ -646,7 +646,7 @@ class ReactPanel {
       logger.error(new Error("App Not registered"));
       return;
     }
-    if (account && account.checksumAddr)
+    if(account && Object.keys(account).length > 0)
       balanceWorker.send({
         command: "get-balance",
         account,

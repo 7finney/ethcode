@@ -3,19 +3,17 @@ import { connect } from "react-redux";
 import { Selector, Button } from "../common/ui";
 import "./Account.css";
 import { addNewAcc } from "../../actions";
-import { IAccount } from "../../types";
+import { IAccount, GroupedSelectorAccounts } from "../../types";
 import { useForm } from "react-hook-form";
 
 interface IProps {
-  accounts: IAccount[];
+  accounts: Array<GroupedSelectorAccounts>;
   accountBalance: number;
-  // eslint-disable-next-line no-unused-vars
   getSelectedAccount: (account: IAccount) => void;
   vscode: any;
   currAccount: IAccount;
   testNetId: string;
   appRegistered: boolean;
-  // eslint-disable-next-line no-unused-vars
   addNewAcc: (result: IAccount) => void;
   handleAppRegister: () => void;
 }
@@ -26,7 +24,7 @@ type FormInputs = {
   amount: number;
 };
 
-const Account = (props: IProps) => {
+const Account: React.FC<IProps> = ({ testNetId, addNewAcc, accountBalance, vscode, currAccount, accounts, appRegistered, getSelectedAccount, handleAppRegister }: IProps) => {
   const [balance, setBalance] = useState(0);
   const [publicAddress, setPublicAddress] = useState("");
   const [pvtKey, setPvtKey] = useState("");
@@ -34,9 +32,7 @@ const Account = (props: IProps) => {
   const [error, setError] = useState("");
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
   const [, setMsg] = useState("");
-
   const { register, handleSubmit } = useForm<FormInputs>();
-  const { addNewAcc, accountBalance, vscode, currAccount, accounts, appRegistered } = props;
 
   useEffect(() => {
     window.addEventListener("message", async (event) => {
@@ -60,10 +56,10 @@ const Account = (props: IProps) => {
         setSendBtnDisable(false);
       }
     });
-  });
+  }, []);
 
   useEffect(() => {
-    setMsg("process finished");
+    setMsg("Success! Read privatekey.");
   }, [pvtKey]);
 
   useEffect(() => {
@@ -75,16 +71,12 @@ const Account = (props: IProps) => {
   useEffect(() => {
     vscode.postMessage({
       command: "get-pvt-key",
-      payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value,
+      payload: currAccount ? currAccount.pubAddr ? currAccount.pubAddr : currAccount.value : null,
     });
   }, [currAccount]);
 
-  const getSelectedAccount = (account: IAccount) => {
-    props.getSelectedAccount(account);
-  };
   // generate keypair
   const handleGenKeyPair = () => {
-    const { vscode } = props;
     const password = "";
     try {
       vscode.postMessage({
@@ -99,8 +91,6 @@ const Account = (props: IProps) => {
 
   // delete keypair
   const deleteAccount = () => {
-    const { vscode, currAccount } = props;
-
     try {
       vscode.postMessage({
         command: "delete-keyPair",
@@ -113,7 +103,6 @@ const Account = (props: IProps) => {
 
   // handle send ether
   const handleTransactionSubmit = (formData: FormInputs) => {
-    const { vscode, currAccount, testNetId } = props;
     setSendBtnDisable(true);
     try {
       if (testNetId === "ganache") {
@@ -145,6 +134,13 @@ const Account = (props: IProps) => {
     }
   };
 
+  const formatGroupLabel = (data: any) => (
+    <div style={groupStyles}>
+      <span>{data.label}</span>
+      <span style={groupBadgeStyles}>{data.options.length}</span>
+    </div>
+  );
+
   return (
     <div className="account_container">
       <div className="account_row">
@@ -152,7 +148,7 @@ const Account = (props: IProps) => {
           <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified"}</label>
         </div>
         <div className="input-container">
-          <Button disabled={appRegistered} onClick={props.handleAppRegister}>
+          <Button disabled={appRegistered} onClick={handleAppRegister}>
             Register App
           </Button>
         </div>
@@ -168,6 +164,7 @@ const Account = (props: IProps) => {
             options={accounts}
             getSelectedOption={getSelectedAccount}
             defaultValue={currAccount}
+            formatGroupLabel={formatGroupLabel}
             placeholder="Select Accounts"
           />
         </div>
@@ -203,7 +200,7 @@ const Account = (props: IProps) => {
       {/* Transfer Section */}
       <div className="account_row">
         <div className="label-container">
-          <label className="header">Transfer Ether </label>
+          <label className="header">Transfer Ether</label>
         </div>
       </div>
 
@@ -216,7 +213,7 @@ const Account = (props: IProps) => {
             <input
               name="accountFromAddress"
               className="input custom_input_css"
-              value={currAccount.label}
+              value={currAccount ? currAccount.value : "0x"}
               type="text"
               placeholder="from"
               ref={register}
@@ -297,6 +294,22 @@ const Account = (props: IProps) => {
       </div>
     </div>
   );
+};
+
+const groupStyles = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+};
+const groupBadgeStyles = {
+  backgroundColor: '#EBECF0',
+  borderRadius: '2em',
+  color: '#172B4D',
+  display: 'inline-block',
+  fontSize: 12,
+  lineHeight: '1',
+  minWidth: 1,
+  padding: '0.16666666666667em 0.5em',
 };
 
 function mapStateToProps({ debugStore, accountStore }: any) {

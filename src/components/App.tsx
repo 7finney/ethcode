@@ -32,7 +32,7 @@ import Deploy from "./Deploy/Deploy";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import Account from "./Account/Account";
-import { IAccount, SolcVersionType } from "../types";
+import { IAccount, SolcVersionType, GroupedSelectorAccounts } from "../types";
 
 interface IProps {
   // eslint-disable-next-line no-unused-vars
@@ -57,6 +57,7 @@ interface IOpt {
   value: string;
   label: string;
 }
+
 // @ts-ignore
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 const App = (props: IProps) => {
@@ -66,13 +67,13 @@ const App = (props: IProps) => {
   const [fileName, setFileName] = useState<any>("");
   const [contractName, setContractName] = useState<any>("");
   const [processMessage, setProcessMessage] = useState("");
-  const [availableVersions, setAvailableVersions] = useState<SolcVersionType[]>([]);
+  const [availableVersions, setAvailableVersions] = useState<Array<SolcVersionType>>([]);
   const [gasEstimate, setGasEstimate] = useState(0);
   const [deployedResult, setDeployedResult] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
   const [accounts, setAccounts] = useState<any[]>([]);
-  const [selectorAccounts, setSelectorAccounts] = useState<IAccount[]>([]);
+  const [selectorAccounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>([]);
   const [contracts, setContracts] = useState<any[]>([]);
   const [files, setFiles] = useState<any[]>([]);
   const [currAccount, setCurrAccount] = useState<IAccount>();
@@ -96,32 +97,26 @@ const App = (props: IProps) => {
   const [appRegistered, setAppRegistered] = useState(false);
 
   const mergeAccount = () => {
-    // merge and set accounts store
     // TODO: update reducer
-    // merge local accounts and test net accounts
+    // merge local accounts and testnet accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       setSelectorAccounts([
         {
           label: "Ganache",
-          value: testNetAcc,
+          options: testNetAcc,
         },
         {
           label: "Local Accounts",
-          value: localAcc,
+          options: localAcc,
         },
       ]);
     } else if (localAcc.length > 0) {
-      setSelectorAccounts([
-        {
-          label: "Local Accounts",
-          value: localAcc,
-        },
-      ]);
+      setSelectorAccounts([...localAcc]);
     } else if (testNetAcc.length > 0) {
       setSelectorAccounts([
         {
           label: "Ganache",
-          value: testNetAcc,
+          options: testNetAcc,
         },
       ]);
     } else {
@@ -130,6 +125,7 @@ const App = (props: IProps) => {
   };
 
   useEffect(() => {
+
     mergeAccount();
   }, [localAcc, testNetAcc]);
 
@@ -244,6 +240,7 @@ const App = (props: IProps) => {
     });
     // Component mounted start getting gRPC things
     vscode.postMessage({ command: "get-localAccounts" });
+    vscode.postMessage({ command: "run-getAccounts" });
   }, []);
 
   useEffect(() => {

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import Select from "react-select";
+import Select, {ValueType} from "react-select";
+import { IAccount } from "types";
 
 interface IProps {
   options: any;
-  getSelectedOption: any;
+  getSelectedOption: (value: any) => void;
   placeholder: string;
   defaultValue?: any | undefined;
+  formatGroupLabel?: any;
 }
 
 const customStyles = {
@@ -35,17 +37,15 @@ const customStyles = {
     ...base,
     color: "#fff",
     backgroundColor: isFocused ? "#aaa" : null,
-  }),
+  })
 };
 
-const Selector = (props: IProps) => {
-  const [selectedOption, setSelectedOption] = useState(null);
+const Selector: React.FC<IProps> = (props: IProps) => {
+  const [selectedOption, setSelectedOption] = useState<any>(null);
   const [options, setOptions] = useState([]);
 
-  const { placeholder, defaultValue } = props;
-
   useEffect(() => {
-    setSelectedOption(defaultValue);
+    setSelectedOption(props.defaultValue);
     setOptions(props.options);
   }, [props.options]);
 
@@ -58,18 +58,19 @@ const Selector = (props: IProps) => {
 
   useEffect(() => {
     if (selectedOption) props.getSelectedOption(selectedOption);
-  }, [setSelectedOption]);
+  }, [selectedOption]);
 
-  const handleChange = (s: any) => {
-    setSelectedOption(s);
+  const handleChange = (selected: any) => {
+    setSelectedOption(selected);
   };
 
   return (
     <Select
-      placeholder={placeholder}
+      placeholder={props.placeholder}
       value={selectedOption}
-      onChange={handleChange}
+      onChange={(option: ValueType<any>) => handleChange(option as any)}
       options={options}
+      formatGroupLabel={props.formatGroupLabel}
       className="select-width"
       styles={customStyles}
     />
