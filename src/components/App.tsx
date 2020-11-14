@@ -77,7 +77,7 @@ const App = (props: IProps) => {
   const [contracts, setContracts] = useState<any[]>([]);
   const [files, setFiles] = useState<any[]>([]);
   const [currAccount, setCurrAccount] = useState<IAccount>();
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState<number>(props.accountBalance);
   const [transactionResult, setTransactionResult] = useState("");
   const [testNetId, setTestNetId] = useState("");
   const [fileType, setFileType] = useState("");
@@ -213,26 +213,25 @@ const App = (props: IProps) => {
         props.setCallResult(result);
       }
       if (data.fetchAccounts) {
-        const { balance } = data.fetchAccounts;
-        const { accounts } = data.fetchAccounts;
+        const { balance, accounts } = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
         const accData = {
-          balance,
+          balance: balance,
           currAccount: testNetAcc[0],
           accounts,
         };
+        setBalance(balance);
         await props.setAccountBalance(accData);
         setAccounts(props.accounts);
         setCurrAccount(props.currAccount);
-        setBalance(props.accountBalance);
       }
       if (data.transactionResult) {
         setTransactionResult(data.transactionResult);
       }
       if (data.balance) {
         const { balance, account } = data;
+        setBalance(balance);
         props.setCurrAccChange({ balance, currAccount: account });
-        setBalance(props.accountBalance);
       }
       if (data.registered) {
         setAppRegistered(data.registered);
