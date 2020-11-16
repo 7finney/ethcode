@@ -56,6 +56,11 @@ module.exports = {
         endOfLine: "auto",
         printWidth: 120,
       },
+      {
+        singleQuote: false
+      }
     ],
+    "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
+    "react/require-default-props": [false, { forbidDefaultForRequired: false, ignoreFunctionalComponents: true }]
   },
 };

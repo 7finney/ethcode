@@ -24,14 +24,24 @@ type FormInputs = {
   amount: number;
 };
 
-const Account: React.FC<IProps> = ({ testNetId, addNewAcc, accountBalance, vscode, currAccount, accounts, appRegistered, getSelectedAccount, handleAppRegister }: IProps) => {
+const Account: React.FC<IProps> = ({
+  testNetId,
+  addNewAcc,
+  accountBalance,
+  vscode,
+  currAccount,
+  accounts,
+  appRegistered,
+  getSelectedAccount,
+  handleAppRegister,
+}: IProps) => {
   const [balance, setBalance] = useState(0);
   const [publicAddress, setPublicAddress] = useState("");
   const [pvtKey, setPvtKey] = useState("");
   const [showButton, setShowButton] = useState(false);
   const [error, setError] = useState("");
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
-  const [, setMsg] = useState("");
+  const [msg, setMsg] = useState("");
   const { register, handleSubmit } = useForm<FormInputs>();
 
   useEffect(() => {
@@ -71,7 +81,7 @@ const Account: React.FC<IProps> = ({ testNetId, addNewAcc, accountBalance, vscod
   useEffect(() => {
     vscode.postMessage({
       command: "get-pvt-key",
-      payload: currAccount ? currAccount.pubAddr ? currAccount.pubAddr : currAccount.value : null,
+      // payload: currAccount ? currAccount.pubAddr ? currAccount.pubAddr : currAccount.value : null,
     });
   }, [currAccount]);
 
@@ -135,9 +145,9 @@ const Account: React.FC<IProps> = ({ testNetId, addNewAcc, accountBalance, vscod
   };
 
   const formatGroupLabel = (data: any) => (
-    <div style={groupStyles}>
+    <div className="group-styles">
       <span>{data.label}</span>
-      <span style={groupBadgeStyles}>{data.options.length}</span>
+      <span className="group-badge-style">{data.options.length}</span>
     </div>
   );
 
@@ -294,22 +304,6 @@ const Account: React.FC<IProps> = ({ testNetId, addNewAcc, accountBalance, vscod
       </div>
     </div>
   );
-};
-
-const groupStyles = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-};
-const groupBadgeStyles = {
-  backgroundColor: '#EBECF0',
-  borderRadius: '2em',
-  color: '#172B4D',
-  display: 'inline-block',
-  fontSize: 12,
-  lineHeight: '1',
-  minWidth: 1,
-  padding: '0.16666666666667em 0.5em',
 };
 
 function mapStateToProps({ debugStore, accountStore }: any) {
