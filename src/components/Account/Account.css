@@ -40,3 +40,20 @@
 .input {
   width: 41vw;
 }
+
+.group-badge-style {
+  background-color: '#EBECF0';
+  border-radius: '2em';
+  color: '#172B4D';
+  display: 'inline-block';
+  font-size: 12;
+  line-height: '1';
+  min-width: 1;
+  padding: '0.16666666666667em 0.5em';
+}
+
+.group-styles {
+  display: 'flex';
+  align-items: 'center';
+  justify-content: 'space-between';
+}

@@ -125,7 +125,6 @@ const App = (props: IProps) => {
   };
 
   useEffect(() => {
-
     mergeAccount();
   }, [localAcc, testNetAcc]);
 
@@ -216,7 +215,7 @@ const App = (props: IProps) => {
         const { balance, accounts } = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
         const accData = {
-          balance: balance,
+          balance,
           currAccount: testNetAcc[0],
           accounts,
         };

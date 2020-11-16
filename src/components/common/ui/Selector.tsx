@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Select, {ValueType} from "react-select";
+import Select, { ValueType } from "react-select";
 import { IAccount } from "types";
 
 interface IProps {
@@ -37,7 +37,7 @@ const customStyles = {
     ...base,
     color: "#fff",
     backgroundColor: isFocused ? "#aaa" : null,
-  })
+  }),
 };
 
 const Selector: React.FC<IProps> = (props: IProps) => {
