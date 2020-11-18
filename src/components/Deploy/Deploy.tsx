@@ -33,7 +33,7 @@ type FormInputs = {
 
 const Deploy = (props: IProps) => {
   const [constructorInput, setConstructorInput] = useState([]);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [gasEstimate, setGasEstimate] = useState(0);
   const [byteCode, setByteCode] = useState<string>();
   const [abi, setAbi] = useState({});
@@ -94,8 +94,8 @@ const Deploy = (props: IProps) => {
 
     // get private key for corresponding public key
     if (props.currAccount.type === "Local") {
+      console.log("jhvhj", props.currAccount);
       setProcessMessage("Fetching private key...");
-      // this.setState({ processMessage: "Fetching private key..." });
       props.vscode.postMessage({
         command: "get-pvt-key",
         payload: props.currAccount.pubAddr ? props.currAccount.pubAddr : props.currAccount.value,
@@ -107,38 +107,46 @@ const Deploy = (props: IProps) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const i in props.abi) {
       if (props.abi[i].type === "constructor" && props.abi[i].inputs!.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(props.abi[i].inputs));
-        // eslint-disable-next-line guard-for-in, no-restricted-syntax
-        for (const j in constructorInput) {
-          constructorInput[j].value = "";
-        }
-        setConstructorInput(constructorInput);
-      } else if (props.abi[i].type !== "constructor") {
-        // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = props.abi[i].name!;
-        // if we have inputs
-        // @ts-ignore
-        methodArray[methodname] = {};
-        // @ts-ignore
-        if (props.abi[i].inputs && props.abi[i].inputs.length > 0) {
-          // @ts-ignore
-          methodArray[methodname].inputs = JSON.parse(JSON.stringify(props.abi[i].inputs));
-          // @ts-ignore
+        try {
+          const constructorInput = JSON.parse(JSON.stringify(props.abi[i].inputs));
           // eslint-disable-next-line guard-for-in, no-restricted-syntax
-          for (const i in methodArray[methodname].inputs) {
-            // @ts-ignore
-            methodArray[methodname].inputs[i].value = "";
+          for (const j in constructorInput) {
+            constructorInput[j].value = "";
           }
-        } else {
-          // @ts-ignore
-          methodArray[methodname].inputs = [];
+          setConstructorInput(constructorInput);
+        } catch (error) {
+          setError("Error Setting/Parsing ABI type constructor");
         }
-        // @ts-ignore
-        methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
+      } else if (props.abi[i].type !== "constructor") {
+        try {
+          // TODO: bellow strategy to extract method names and inputs should be improved
+          const methodname: string = props.abi[i].name!;
+          // if we have inputs
+          // @ts-ignore
+          methodArray[methodname] = {};
+          // @ts-ignore
+          if (props.abi[i].inputs && props.abi[i].inputs.length > 0) {
+            // @ts-ignore
+            methodArray[methodname].inputs = JSON.parse(JSON.stringify(props.abi[i].inputs));
+            // @ts-ignore
+            // eslint-disable-next-line guard-for-in, no-restricted-syntax
+            for (const i in methodArray[methodname].inputs) {
+              // @ts-ignore
+              methodArray[methodname].inputs[i].value = "";
+            }
+          } else {
+            // @ts-ignore
+            methodArray[methodname].inputs = [];
+          }
+          // @ts-ignore
+          methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
+        } catch (error) {
+          setError("Error Setting/Parsing ABI");
+        }
       }
     }
     setMethodArray(methodArray);
-  }, [props]);
+  }, []);
 
   const handleConstructorInputChange = (event: any) => {
     if (constructorInput.length > 3) {
@@ -260,7 +268,7 @@ const Deploy = (props: IProps) => {
 
   const { contractName, currAccount, unsignedTx, testNetCallResult } = props;
 
-  const publicKey = currAccount.value;
+  // const publicKey = currAccount.value;
   return (
     <div className="deploy_container">
       {/* Bytecode and Abi */}
@@ -309,14 +317,14 @@ const Deploy = (props: IProps) => {
                         <label className="tag label_name">{x.name}:</label>
                         {/* 
                                 // @ts-ignore */}
-                        <input
+                        {/* <input
                           className="custom_input_css"
                           type={x.type}
                           placeholder={`${x.name} arguments (${x.type})`}
                           id={index.toString()}
                           name={x.name}
                           onChange={(e) => handleConstructorInputChange(e)}
-                        />
+                        /> */}
                       </div>
                     );
                   })}
@@ -438,7 +446,7 @@ const Deploy = (props: IProps) => {
           <h4>Public key</h4>
         </div>
         <div className="input-container">
-          <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" />
+          {/* <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" /> */}
         </div>
       </div>
 
