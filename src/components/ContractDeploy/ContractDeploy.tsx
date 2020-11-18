@@ -75,20 +75,18 @@ const ContractDeploy = (props: IProps) => {
       if (abi[i].type === "constructor" && abi[i].inputs!.length > 0) {
         try {
           const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-          console.log("construcvtorINPUT:", constructorInput);
           // eslint-disable-next-line no-restricted-syntax, guard-for-in
           for (const j in constructorInput) {
             constructorInput[j].value = "";
           }
           setConstructorInput(constructorInput);
         } catch (error) {
-          console.error("Error In PARSE:", error);
+          console.error("Error In abi constructor parsing: ", error);
         }
       } else if (abi[i].type !== "constructor") {
         try {
           // TODO: bellow strategy to extract method names and inputs should be improved
           const methodname: string = abi[i].name! ? abi[i].name! : "fallback";
-
           // if we have inputs
           // @ts-ignore
           methodArray[methodname] = {};
@@ -99,7 +97,6 @@ const ContractDeploy = (props: IProps) => {
             // @ts-ignore
             // eslint-disable-next-line no-restricted-syntax, guard-for-in
             for (const i in methodArray[methodname].inputs) {
-              // @ts-ignore
               methodArray[methodname].inputs[i].value = "";
             }
           } else {
@@ -109,7 +106,7 @@ const ContractDeploy = (props: IProps) => {
           // @ts-ignore
           methodArray[methodname].stateMutability = abi[i].stateMutability;
         } catch (error) {
-          console.error("Error In PARSE2:", error);
+          console.error("Error In abi parsing: ", error);
         }
       }
     }
@@ -130,10 +127,12 @@ const ContractDeploy = (props: IProps) => {
   }, [props.testNetId, testNetId]);
 
   useEffect(() => {
-    // const deployedObj = JSON.parse(props.deployedResult);
-    // setDeployed(deployedObj);
-    // setDeployedAddress(deployedObj.contractAddress);
-    // setDisable(false);
+    if (props.deployedResult !== "") {
+      const deployedObj = JSON.parse(props.deployedResult);
+      setDeployed(deployedObj);
+      setDeployedAddress(deployedObj.contractAddress);
+      setDisable(false);
+    }
   }, [props.deployedResult]);
 
   useEffect(() => {
@@ -202,19 +201,6 @@ const ContractDeploy = (props: IProps) => {
       setError(error);
     }
   };
-
-  // const handleChange = (event: any) => {
-  //   // const {
-  //   //   target: { name, value },
-  //   // } = event;
-  //   console.log(event);
-  //   // @ts-ignore
-  //   // this.setState({ [name]: value });
-
-  //   if (gasSupply > 0) {
-  //     setDisable(false);
-  //   }
-  // };
 
   const handleConstructorInputChange = (
     event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>

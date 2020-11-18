@@ -140,7 +140,6 @@ const App = (props: IProps) => {
       }
       if (data.compiled) {
         try {
-          console.log("Json COmpiled: \n", JSON.parse(data.compiled));
           const compiled = JSON.parse(data.compiled);
           if (compiled.errors && compiled.errors.length > 0) {
             setMessage(compiled.errors);
