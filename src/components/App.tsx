@@ -139,22 +139,28 @@ const App = (props: IProps) => {
         setLocalAcc(setLocalAccountOption(data.localAccounts));
       }
       if (data.compiled) {
-        const compiled = JSON.parse(data.compiled);
-        if (compiled.errors && compiled.errors.length > 0) {
-          setMessage(compiled.errors);
-        } else if (!compiled.errors) {
-          setMessage([]);
+        try {
+          console.log("Json COmpiled: \n", JSON.parse(data.compiled));
+          const compiled = JSON.parse(data.compiled);
+          if (compiled.errors && compiled.errors.length > 0) {
+            setMessage(compiled.errors);
+          } else if (!compiled.errors) {
+            setMessage([]);
+            setProcessMessage("");
+          }
+          const fileName = Object.keys(compiled.sources)[0];
+          const contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
+          const files = setFileSelectorOptions(Object.keys(compiled.sources));
+          setCompiled(compiled);
+          setFileName(fileName);
           setProcessMessage("");
+          // setContractName(Object.keys(compiled.contracts[fileName])[0]);
+          setContracts(contractsArray);
+          setFiles(files);
+        } catch (error) {
+          console.error(error);
+          setProcessMessage("Error Parsing Compilation result");
         }
-        const fileName = Object.keys(compiled.sources)[0];
-        const contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
-        const files = setFileSelectorOptions(Object.keys(compiled.sources));
-        setCompiled(compiled);
-        setFileName(fileName);
-        setProcessMessage("");
-        setContractName(Object.keys(compiled.contracts[fileName])[0]);
-        setContracts(contractsArray);
-        setFiles(files);
       }
       if (data.processMessage) {
         const { processMessage } = data;

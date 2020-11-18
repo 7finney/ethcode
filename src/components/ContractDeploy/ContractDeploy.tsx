@@ -73,39 +73,48 @@ const ContractDeploy = (props: IProps) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const i in abi) {
       if (abi[i].type === "constructor" && abi[i].inputs!.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-        // eslint-disable-next-line no-restricted-syntax, guard-for-in
-        for (const j in constructorInput) {
-          constructorInput[j].value = "";
-        }
-        setConstructorInput(constructorInput);
-      } else if (abi[i].type !== "constructor") {
-        // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = abi[i].name! ? abi[i].name! : "fallback";
-
-        // if we have inputs
-        // @ts-ignore
-        methodArray[methodname] = {};
-        // @ts-ignore
-        if (abi[i].inputs && abi[i].inputs.length > 0) {
-          // @ts-ignore
-          methodArray[methodname].inputs = JSON.parse(JSON.stringify(abi[i].inputs));
-          // @ts-ignore
+        try {
+          const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
+          console.log("construcvtorINPUT:", constructorInput);
           // eslint-disable-next-line no-restricted-syntax, guard-for-in
-          for (const i in methodArray[methodname].inputs) {
-            // @ts-ignore
-            methodArray[methodname].inputs[i].value = "";
+          for (const j in constructorInput) {
+            constructorInput[j].value = "";
           }
-        } else {
-          // @ts-ignore
-          methodArray[methodname].inputs = [];
+          setConstructorInput(constructorInput);
+        } catch (error) {
+          console.error("Error In PARSE:", error);
         }
-        // @ts-ignore
-        methodArray[methodname].stateMutability = abi[i].stateMutability;
+      } else if (abi[i].type !== "constructor") {
+        try {
+          // TODO: bellow strategy to extract method names and inputs should be improved
+          const methodname: string = abi[i].name! ? abi[i].name! : "fallback";
+
+          // if we have inputs
+          // @ts-ignore
+          methodArray[methodname] = {};
+          // @ts-ignore
+          if (abi[i].inputs && abi[i].inputs.length > 0) {
+            // @ts-ignore
+            // methodArray[methodname].inputs = JSON.parse(JSON.stringify(abi[i].inputs));
+            // @ts-ignore
+            // eslint-disable-next-line no-restricted-syntax, guard-for-in
+            for (const i in methodArray[methodname].inputs) {
+              // @ts-ignore
+              methodArray[methodname].inputs[i].value = "";
+            }
+          } else {
+            // @ts-ignore
+            methodArray[methodname].inputs = [];
+          }
+          // @ts-ignore
+          methodArray[methodname].stateMutability = abi[i].stateMutability;
+        } catch (error) {
+          console.error("Error In PARSE2:", error);
+        }
       }
     }
     setmethodArray(methodArray);
-  }, [props]);
+  }, []);
 
   useEffect(() => {
     setError(error);
@@ -116,22 +125,24 @@ const ContractDeploy = (props: IProps) => {
       setDisable(true);
     } else if (props.testNetId !== testNetId) {
       setDisable(disable);
-    }
-
-    if (props.testNetId !== testNetId) {
       setTestNetId(props.testNetId);
     }
-    const deployedObj = JSON.parse(props.deployedResult);
-    setDeployed(deployedObj);
-    setDeployedAddress(deployedObj.contractAddress);
-    setDisable(false);
+  }, [props.testNetId, testNetId]);
 
+  useEffect(() => {
+    // const deployedObj = JSON.parse(props.deployedResult);
+    // setDeployed(deployedObj);
+    // setDeployedAddress(deployedObj.contractAddress);
+    // setDisable(false);
+  }, [props.deployedResult]);
+
+  useEffect(() => {
     if (gasSupply === 0 && props.gasEstimate !== gasSupply) {
       setGasSupply(props.gasEstimate);
       setDisable(false);
       setGasEstimateToggle(false);
     }
-  }, [disable, gasSupply, props.deployedResult, props.gasEstimate, props.testNetId, testNetId]);
+  }, [props.gasEstimate]);
 
   const handleDeploy = (formDeployData: FormDeploy) => {
     setGasSupply(formDeployData.gasSupply);
@@ -383,7 +394,7 @@ const ContractDeploy = (props: IProps) => {
           <span>
             {/* 
               // @ts-ignore */}
-            {callResult || (callResult && callResult.callResult) ? "Call result:" : "Call error:"}
+            {props.callResult || (props.callResult && props.callResult.callResult) ? "Call result:" : "Call error:"}
           </span>
           <div>
             {/* TODO: add better way to show result and error */}
