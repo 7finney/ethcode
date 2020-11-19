@@ -153,7 +153,7 @@ const App = (props: IProps) => {
           setCompiled(compiled);
           setFileName(fileName);
           setProcessMessage("");
-          // setContractName(Object.keys(compiled.contracts[fileName])[0]);
+          setContractName(Object.keys(compiled.contracts[fileName])[0]);
           setContracts(contractsArray);
           setFiles(files);
         } catch (error) {
