@@ -93,8 +93,7 @@ const Deploy = (props: IProps) => {
     });
 
     // get private key for corresponding public key
-    if (props.currAccount.type === "Local") {
-      console.log("jhvhj", props.currAccount);
+    if (props.currAccount && props.currAccount.type === "Local") {
       setProcessMessage("Fetching private key...");
       props.vscode.postMessage({
         command: "get-pvt-key",
@@ -141,7 +140,7 @@ const Deploy = (props: IProps) => {
           // @ts-ignore
           methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
         } catch (error) {
-          setError("Error Setting/Parsing ABI");
+          setError(`Error Setting/Parsing ABI ${error}`);
         }
       }
     }
@@ -268,7 +267,7 @@ const Deploy = (props: IProps) => {
 
   const { contractName, currAccount, unsignedTx, testNetCallResult } = props;
 
-  // const publicKey = currAccount.value;
+  const publicKey = currAccount && currAccount.value ? currAccount.value : "";
   return (
     <div className="deploy_container">
       {/* Bytecode and Abi */}
@@ -306,39 +305,16 @@ const Deploy = (props: IProps) => {
         <div className="tag form-container">
           {constructorInput && constructorInput.length > 0 && (
             <div>
-              {constructorInput.length <= 3 ? (
-                <div>
-                  <h4 className="tag contract-name inline-block highlight-success">Constructor:</h4>
-                  {constructorInput.map((x: any, index) => {
-                    return (
-                      <div className="constructorInput input-flex" style={{ marginTop: "10px", marginBottom: "10px" }}>
-                        {/* 
-                                // @ts-ignore */}
-                        <label className="tag label_name">{x.name}:</label>
-                        {/* 
-                                // @ts-ignore */}
-                        {/* <input
-                          className="custom_input_css"
-                          type={x.type}
-                          placeholder={`${x.name} arguments (${x.type})`}
-                          id={index.toString()}
-                          name={x.name}
-                          onChange={(e) => handleConstructorInputChange(e)}
-                        /> */}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="json_input_container">
-                  <textarea
-                    className="tag json_input custom_input_css"
-                    style={{ margin: "10px 0" }}
-                    value={JSON.stringify(constructorInput, null, "\t")}
-                    onChange={(e) => handleConstructorInputChange(e)}
-                  />
-                </div>
-              )}
+              (
+              <div className="json_input_container">
+                <textarea
+                  className="tag json_input custom_input_css"
+                  style={{ margin: "10px 0" }}
+                  value={JSON.stringify(constructorInput, null, "\t")}
+                  onChange={(e) => handleConstructorInputChange(e)}
+                />
+              </div>
+              )
             </div>
           )}
         </div>
@@ -436,7 +412,6 @@ const Deploy = (props: IProps) => {
             <pre className="large-code">
               <JSONPretty id="json-pretty" data={unsignedTx} />
             </pre>
-            {/* <textarea className="json_input custom_input_css">{unsignedTx}</textarea> */}
           </div>
         </div>
       )}
@@ -446,7 +421,7 @@ const Deploy = (props: IProps) => {
           <h4>Public key</h4>
         </div>
         <div className="input-container">
-          {/* <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" /> */}
+          <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" />
         </div>
       </div>
 

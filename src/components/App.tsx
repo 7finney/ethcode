@@ -225,7 +225,7 @@ const App = (props: IProps) => {
           accounts,
         };
         setBalance(balance);
-        await props.setAccountBalance(accData);
+        props.setAccountBalance(accData);
         setAccounts(props.accounts);
         setCurrAccount(props.currAccount);
       }
@@ -236,6 +236,7 @@ const App = (props: IProps) => {
         const { balance, account } = data;
         setBalance(balance);
         props.setCurrAccChange({ balance, currAccount: account });
+        setCurrAccount(account);
       }
       if (data.registered) {
         setAppRegistered(data.registered);
