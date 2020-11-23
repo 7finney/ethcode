@@ -32,7 +32,7 @@ type FormInputs = {
 };
 
 const Deploy = (props: IProps) => {
-  const [constructorInput, setConstructorInput] = useState([]);
+  const [constructorInput, setConstructorInput] = useState<any>([]);
   const [error, setError] = useState("");
   const [gasEstimate, setGasEstimate] = useState(0);
   const [byteCode, setByteCode] = useState<string>();
@@ -110,7 +110,8 @@ const Deploy = (props: IProps) => {
           const constructorInput = JSON.parse(JSON.stringify(props.abi[i].inputs));
           // eslint-disable-next-line guard-for-in, no-restricted-syntax
           for (const j in constructorInput) {
-            constructorInput[j].value = "";
+            // eslint-disable-next-line @typescript-eslint/dot-notation
+            constructorInput[j]["value"] = "";
           }
           setConstructorInput(constructorInput);
         } catch (error) {
@@ -119,19 +120,22 @@ const Deploy = (props: IProps) => {
       } else if (props.abi[i].type !== "constructor") {
         try {
           // TODO: bellow strategy to extract method names and inputs should be improved
-          const methodname: string = props.abi[i].name!;
+          // eslint-disable-next-line @typescript-eslint/dot-notation
+          const methodname: string | undefined = props.abi[i]["name"];
           // if we have inputs
           // @ts-ignore
           methodArray[methodname] = {};
           // @ts-ignore
           if (props.abi[i].inputs && props.abi[i].inputs.length > 0) {
             // @ts-ignore
-            methodArray[methodname].inputs = JSON.parse(JSON.stringify(props.abi[i].inputs));
+            // eslint-disable-next-line @typescript-eslint/dot-notation
+            methodArray[methodname]["inputs"] = JSON.parse(JSON.stringify(props.abi[i]["inputs"]));
             // @ts-ignore
             // eslint-disable-next-line guard-for-in, no-restricted-syntax
             for (const i in methodArray[methodname].inputs) {
               // @ts-ignore
-              methodArray[methodname].inputs[i].value = "";
+              // eslint-disable-next-line @typescript-eslint/dot-notation
+              methodArray[methodname]["inputs"][i].value = "";
             }
           } else {
             // @ts-ignore
@@ -305,16 +309,39 @@ const Deploy = (props: IProps) => {
         <div className="tag form-container">
           {constructorInput && constructorInput.length > 0 && (
             <div>
-              (
-              <div className="json_input_container">
-                <textarea
-                  className="tag json_input custom_input_css"
-                  style={{ margin: "10px 0" }}
-                  value={JSON.stringify(constructorInput, null, "\t")}
-                  onChange={(e) => handleConstructorInputChange(e)}
-                />
-              </div>
-              )
+              {constructorInput.length <= 3 ? (
+                <div>
+                  <h4 className="tag contract-name inline-block highlight-success">Constructor:</h4>
+                  {constructorInput.map((x: any, index: number) => {
+                    return (
+                      <div className="constructorInput input-flex" style={{ marginTop: "10px", marginBottom: "10px" }}>
+                        {/* 
+                                // @ts-ignore */}
+                        <label className="tag label_name">{x.name}:</label>
+                        {/* 
+                                // @ts-ignore */}
+                        <input
+                          className="custom_input_css"
+                          type={x.type}
+                          placeholder={`${x.name} arguments (${x.type})`}
+                          id={index.toString()}
+                          name={x.name}
+                          onChange={(e) => handleConstructorInputChange(e)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="json_input_container">
+                  <textarea
+                    className="tag json_input custom_input_css"
+                    style={{ margin: "10px 0" }}
+                    value={JSON.stringify(constructorInput, null, "\t")}
+                    onChange={(e) => handleConstructorInputChange(e)}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
