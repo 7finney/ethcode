@@ -110,7 +110,7 @@ const Deploy = (props: IProps) => {
           const constructorInput: ConstructorInput[] = JSON.parse(JSON.stringify(props.abi[i].inputs));
           // eslint-disable-next-line guard-for-in, no-restricted-syntax
           for (const j in constructorInput) {
-            j.value = "";
+            constructorInput[j].value = "";
           }
           setConstructorInput(constructorInput);
         } catch (error) {

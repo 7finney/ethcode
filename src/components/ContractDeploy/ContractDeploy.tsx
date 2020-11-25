@@ -74,7 +74,7 @@ const ContractDeploy = (props: IProps) => {
     for (const i in abi) {
       if (abi[i].type === "constructor" && abi[i].inputs!.length > 0) {
         try {
-          const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
+          const constructorInput: ConstructorInput[] = JSON.parse(JSON.stringify(abi[i].inputs));
           // eslint-disable-next-line no-restricted-syntax, guard-for-in
           for (const j in constructorInput) {
             constructorInput[j].value = "";
@@ -234,7 +234,7 @@ const ContractDeploy = (props: IProps) => {
       <div>
         <form onSubmit={handleDeploySubmit(handleDeploy)}>
           <div className="form-container">
-            {constructorInput && constructorInput.length > 0 && (
+            {constructorInput && (
               <div className="json_input_container" style={{ marginLeft: "-10px" }}>
                 <textarea
                   className="json_input custom_input_css"
