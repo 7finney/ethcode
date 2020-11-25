@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./ContractDeploy.css";
 import JSONPretty from "react-json-pretty";
 import { connect } from "react-redux";
-import { ABIDescription, CompilationResult, ConstructorInputs, IAccount } from "types";
+import { ABIDescription, CompilationResult, ConstructorInput, IAccount } from "types";
 import { setCallResult } from "../../actions";
 import { Button } from "../common/ui";
 import { useForm } from "react-hook-form";
@@ -33,7 +33,7 @@ type FormContract = {
 };
 
 const ContractDeploy = (props: IProps) => {
-  const [constructorInput, setConstructorInput] = useState<ConstructorInputs[]>([]);
+  const [constructorInput, setConstructorInput] = useState<ConstructorInput | ConstructorInput[]>([]);
   const [gasSupply, setGasSupply] = useState(0);
   const [error, setError] = useState(null);
   const [deployed, setDeployed] = useState({});

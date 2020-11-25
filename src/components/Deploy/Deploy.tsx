@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import JSONPretty from "react-json-pretty";
 import "./deploy.css";
 import { connect } from "react-redux";
-import { ABIDescription, CompilationResult, ConstructorInputs, IAccount } from "types";
+import { ABIDescription, CompilationResult, ConstructorInput, IAccount } from "types";
 import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { Button } from "../common/ui";
 import { useForm } from "react-hook-form";
@@ -32,7 +32,7 @@ type FormInputs = {
 };
 
 const Deploy = (props: IProps) => {
-  const [constructorInput, setConstructorInput] = useState<ConstructorInputs[]>([]);
+  const [constructorInput, setConstructorInput] = useState<ConstructorInput | ConstructorInput[]>();
   const [error, setError] = useState<Error | string>();
   const [gasEstimate, setGasEstimate] = useState(0);
   const [byteCode, setByteCode] = useState<string>();
@@ -107,11 +107,10 @@ const Deploy = (props: IProps) => {
     for (const i in props.abi) {
       if (props.abi[i].type === "constructor" && props.abi[i].inputs!.length > 0) {
         try {
-          const constructorInput = JSON.parse(JSON.stringify(props.abi[i].inputs));
+          const constructorInput: ConstructorInput[] = JSON.parse(JSON.stringify(props.abi[i].inputs));
           // eslint-disable-next-line guard-for-in, no-restricted-syntax
           for (const j in constructorInput) {
-            // eslint-disable-next-line @typescript-eslint/dot-notation
-            constructorInput[j]["value"] = "";
+            j.value = "";
           }
           setConstructorInput(constructorInput);
         } catch (error) {
@@ -151,7 +150,7 @@ const Deploy = (props: IProps) => {
     setMethodArray(methodArray);
   }, []);
 
-  const handleConstructorInputChange = (event: any) => {
+  const handleConstructorInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setConstructorInput(JSON.parse(event.target.value));
   };
 
@@ -299,7 +298,7 @@ const Deploy = (props: IProps) => {
       {/* Constructor */}
       <div>
         <div className="tag form-container">
-          {constructorInput && constructorInput.length > 0 && (
+          {constructorInput && (
             <div className="json_input_container">
               <textarea
                 className="tag json_input custom_input_css"
