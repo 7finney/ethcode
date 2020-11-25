@@ -32,7 +32,7 @@ import Deploy from "./Deploy/Deploy";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import Account from "./Account/Account";
-import { IAccount, SolcVersionType, GroupedSelectorAccounts } from "../types";
+import { IAccount, SolcVersionType, GroupedSelectorAccounts, CompilationResult } from "../types";
 
 interface IProps {
   // eslint-disable-next-line no-unused-vars
@@ -62,7 +62,7 @@ interface IOpt {
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 const App = (props: IProps) => {
   const [message, setMessage] = useState<any[]>([]);
-  const [compiled, setCompiled] = useState<any>({});
+  const [compiled, setCompiled] = useState<CompilationResult>();
   const [error, setError] = useState<Error | null>(null);
   const [fileName, setFileName] = useState<any>("");
   const [contractName, setContractName] = useState<any>("");
@@ -140,16 +140,16 @@ const App = (props: IProps) => {
       }
       if (data.compiled) {
         try {
-          const compiled = JSON.parse(data.compiled);
+          const compiled: CompilationResult = JSON.parse(data.compiled);
           if (compiled.errors && compiled.errors.length > 0) {
             setMessage(compiled.errors);
           } else if (!compiled.errors) {
             setMessage([]);
             setProcessMessage("");
           }
-          const fileName = Object.keys(compiled.sources)[0];
-          const contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
-          const files = setFileSelectorOptions(Object.keys(compiled.sources));
+          const fileName: string = Object.keys(compiled.sources)[0];
+          const contractsArray: string[] = setSelectorOption(Object.keys(compiled.contracts[fileName]));
+          const files: string[] = setFileSelectorOptions(Object.keys(compiled.sources));
           setCompiled(compiled);
           setFileName(fileName);
           setProcessMessage("");
@@ -281,7 +281,7 @@ const App = (props: IProps) => {
 
   const changeFile = (selectedOpt: IOpt) => {
     setFileName(selectedOpt.value);
-    setContracts(setSelectorOption(Object.keys(compiled.contracts[fileName])));
+    setContracts(setSelectorOption(Object.keys(compiled!.contracts[fileName])));
   };
 
   const getSelectedVersion = (version: any) => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import JSONPretty from "react-json-pretty";
 import "./deploy.css";
 import { connect } from "react-redux";
-import { ABIDescription, CompilationResult, IAccount } from "types";
+import { ABIDescription, CompilationResult, ConstructorInputs, IAccount } from "types";
 import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { Button } from "../common/ui";
 import { useForm } from "react-hook-form";
@@ -32,8 +32,8 @@ type FormInputs = {
 };
 
 const Deploy = (props: IProps) => {
-  const [constructorInput, setConstructorInput] = useState<any>([]);
-  const [error, setError] = useState("");
+  const [constructorInput, setConstructorInput] = useState<ConstructorInputs[]>([]);
+  const [error, setError] = useState<Error | string>();
   const [gasEstimate, setGasEstimate] = useState(0);
   const [byteCode, setByteCode] = useState<string>();
   const [abi, setAbi] = useState({});

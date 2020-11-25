@@ -4,8 +4,8 @@ import "./ContractCompiled.css";
 
 interface IProps {
   contractName: string;
-  bytecode: BytecodeObject;
-  abi: ABIDescription;
+  bytecode: string;
+  abi: ABIDescription[];
 }
 
 const ContractCompiled = (props: IProps) => {
