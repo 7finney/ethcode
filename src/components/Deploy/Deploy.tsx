@@ -152,15 +152,7 @@ const Deploy = (props: IProps) => {
   }, []);
 
   const handleConstructorInputChange = (event: any) => {
-    if (constructorInput.length > 3) {
-      setConstructorInput(JSON.parse(event.target.value));
-    } else {
-      const item = constructorInput[event.target.id];
-      // @ts-ignore
-      item.value = event.target.value;
-      constructorInput[event.target.id] = item;
-      setConstructorInput(constructorInput);
-    }
+    setConstructorInput(JSON.parse(event.target.value));
   };
 
   const handleBuildTxn = () => {
@@ -308,40 +300,13 @@ const Deploy = (props: IProps) => {
       <div>
         <div className="tag form-container">
           {constructorInput && constructorInput.length > 0 && (
-            <div>
-              {constructorInput.length <= 3 ? (
-                <div>
-                  <h4 className="tag contract-name inline-block highlight-success">Constructor:</h4>
-                  {constructorInput.map((x: any, index: number) => {
-                    return (
-                      <div className="constructorInput input-flex" style={{ marginTop: "10px", marginBottom: "10px" }}>
-                        {/* 
-                                // @ts-ignore */}
-                        <label className="tag label_name">{x.name}:</label>
-                        {/* 
-                                // @ts-ignore */}
-                        <input
-                          className="custom_input_css"
-                          type={x.type}
-                          placeholder={`${x.name} arguments (${x.type})`}
-                          id={index.toString()}
-                          name={x.name}
-                          onChange={(e) => handleConstructorInputChange(e)}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="json_input_container">
-                  <textarea
-                    className="tag json_input custom_input_css"
-                    style={{ margin: "10px 0" }}
-                    value={JSON.stringify(constructorInput, null, "\t")}
-                    onChange={(e) => handleConstructorInputChange(e)}
-                  />
-                </div>
-              )}
+            <div className="json_input_container">
+              <textarea
+                className="tag json_input custom_input_css"
+                style={{ margin: "10px 0" }}
+                value={JSON.stringify(constructorInput, null, "\t")}
+                onChange={(e) => handleConstructorInputChange(e)}
+              />
             </div>
           )}
         </div>
