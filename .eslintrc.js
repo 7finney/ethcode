@@ -2,10 +2,8 @@ module.exports = {
   extends: [
     "airbnb-typescript",
     "airbnb/hooks",
-    "plugin:@typescript-eslint/recommended",
     "plugin:jest/recommended",
     "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
     "prettier",
     "prettier/react",
     "prettier/@typescript-eslint",
@@ -57,10 +55,10 @@ module.exports = {
         printWidth: 120,
       },
       {
-        singleQuote: false
-      }
+        singleQuote: false,
+      },
     ],
-    "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
-    "react/require-default-props": [false, { forbidDefaultForRequired: false, ignoreFunctionalComponents: true }]
+    "no-unused-vars": ["warn", { vars: "all", args: "after-used", ignoreRestSiblings: false }],
+    "react/require-default-props": 0,
   },
 };

@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import "./ContractDeploy.css";
 import JSONPretty from "react-json-pretty";
 import { connect } from "react-redux";
-import { ABIDescription, BytecodeObject, CompilationResult, IAccount } from "types";
+import { ABIDescription, CompilationResult, ConstructorInputs, IAccount } from "types";
 import { setCallResult } from "../../actions";
 import { Button } from "../common/ui";
 import { useForm } from "react-hook-form";
 
 interface IProps {
-  bytecode: BytecodeObject;
+  bytecode: string;
   abi: Array<ABIDescription>;
   vscode: any;
   gasEstimate: number;
@@ -33,7 +33,7 @@ type FormContract = {
 };
 
 const ContractDeploy = (props: IProps) => {
-  const [constructorInput, setConstructorInput] = useState([]);
+  const [constructorInput, setConstructorInput] = useState<ConstructorInputs[]>([]);
   const [gasSupply, setGasSupply] = useState(0);
   const [error, setError] = useState(null);
   const [deployed, setDeployed] = useState({});
@@ -73,39 +73,45 @@ const ContractDeploy = (props: IProps) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const i in abi) {
       if (abi[i].type === "constructor" && abi[i].inputs!.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
-        // eslint-disable-next-line no-restricted-syntax, guard-for-in
-        for (const j in constructorInput) {
-          constructorInput[j].value = "";
-        }
-        setConstructorInput(constructorInput);
-      } else if (abi[i].type !== "constructor") {
-        // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = abi[i].name! ? abi[i].name! : "fallback";
-
-        // if we have inputs
-        // @ts-ignore
-        methodArray[methodname] = {};
-        // @ts-ignore
-        if (abi[i].inputs && abi[i].inputs.length > 0) {
-          // @ts-ignore
-          methodArray[methodname].inputs = JSON.parse(JSON.stringify(abi[i].inputs));
-          // @ts-ignore
+        try {
+          const constructorInput = JSON.parse(JSON.stringify(abi[i].inputs));
           // eslint-disable-next-line no-restricted-syntax, guard-for-in
-          for (const i in methodArray[methodname].inputs) {
-            // @ts-ignore
-            methodArray[methodname].inputs[i].value = "";
+          for (const j in constructorInput) {
+            constructorInput[j].value = "";
           }
-        } else {
-          // @ts-ignore
-          methodArray[methodname].inputs = [];
+          setConstructorInput(constructorInput);
+        } catch (error) {
+          console.error("Error In abi constructor parsing: ", error);
         }
-        // @ts-ignore
-        methodArray[methodname].stateMutability = abi[i].stateMutability;
+      } else if (abi[i].type !== "constructor") {
+        try {
+          // TODO: bellow strategy to extract method names and inputs should be improved
+          const methodname: string = abi[i].name! ? abi[i].name! : "fallback";
+          // if we have inputs
+          // @ts-ignore
+          methodArray[methodname] = {};
+          // @ts-ignore
+          if (abi[i].inputs && abi[i].inputs.length > 0) {
+            // @ts-ignore
+            // methodArray[methodname].inputs = JSON.parse(JSON.stringify(abi[i].inputs));
+            // @ts-ignore
+            // eslint-disable-next-line no-restricted-syntax, guard-for-in
+            for (const i in methodArray[methodname].inputs) {
+              methodArray[methodname].inputs[i].value = "";
+            }
+          } else {
+            // @ts-ignore
+            methodArray[methodname].inputs = [];
+          }
+          // @ts-ignore
+          methodArray[methodname].stateMutability = abi[i].stateMutability;
+        } catch (error) {
+          console.error("Error In abi parsing: ", error);
+        }
       }
     }
     setmethodArray(methodArray);
-  }, [props]);
+  }, []);
 
   useEffect(() => {
     setError(error);
@@ -116,22 +122,26 @@ const ContractDeploy = (props: IProps) => {
       setDisable(true);
     } else if (props.testNetId !== testNetId) {
       setDisable(disable);
-    }
-
-    if (props.testNetId !== testNetId) {
       setTestNetId(props.testNetId);
     }
-    const deployedObj = JSON.parse(props.deployedResult);
-    setDeployed(deployedObj);
-    setDeployedAddress(deployedObj.contractAddress);
-    setDisable(false);
+  }, [props.testNetId, testNetId]);
 
+  useEffect(() => {
+    if (props.deployedResult !== "") {
+      const deployedObj = JSON.parse(props.deployedResult);
+      setDeployed(deployedObj);
+      setDeployedAddress(deployedObj.contractAddress);
+      setDisable(false);
+    }
+  }, [props.deployedResult]);
+
+  useEffect(() => {
     if (gasSupply === 0 && props.gasEstimate !== gasSupply) {
       setGasSupply(props.gasEstimate);
       setDisable(false);
       setGasEstimateToggle(false);
     }
-  }, [disable, gasSupply, props.deployedResult, props.gasEstimate, props.testNetId, testNetId]);
+  }, [props.gasEstimate]);
 
   const handleDeploy = (formDeployData: FormDeploy) => {
     setGasSupply(formDeployData.gasSupply);
@@ -192,33 +202,8 @@ const ContractDeploy = (props: IProps) => {
     }
   };
 
-  // const handleChange = (event: any) => {
-  //   // const {
-  //   //   target: { name, value },
-  //   // } = event;
-  //   console.log(event);
-  //   // @ts-ignore
-  //   // this.setState({ [name]: value });
-
-  //   if (gasSupply > 0) {
-  //     setDisable(false);
-  //   }
-  // };
-
-  const handleConstructorInputChange = (
-    event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    if (constructorInput.length > 3) {
-      setConstructorInput(JSON.parse(event.target.value));
-    } else {
-      // @ts-ignore
-      const item = constructorInput[event.target.id];
-      // @ts-ignore
-      item.value = event.target.value;
-      // @ts-ignore
-      constructorInput[event.target.id] = item;
-      setConstructorInput(constructorInput);
-    }
+  const handleConstructorInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setConstructorInput(JSON.parse(event.target.value));
   };
 
   const handleMethodnameInput = (
@@ -250,41 +235,12 @@ const ContractDeploy = (props: IProps) => {
         <form onSubmit={handleDeploySubmit(handleDeploy)}>
           <div className="form-container">
             {constructorInput && constructorInput.length > 0 && (
-              <div>
-                {constructorInput.length <= 3 ? (
-                  <div>
-                    {constructorInput.map((x: any, index) => {
-                      return (
-                        <div
-                          className="constructorInput input-flex"
-                          style={{ marginTop: "10px", marginBottom: "10px" }}
-                        >
-                          {/* 
-                                // @ts-ignore */}
-                          <label className="label_name">{x.name}:</label>
-                          {/* 
-                                // @ts-ignore */}
-                          <input
-                            className="custom_input_css"
-                            type={x.type}
-                            placeholder={`${x.name} arguments (${x.type})`}
-                            id={index.toString()}
-                            name={x.name}
-                            onChange={(e) => handleConstructorInputChange(e)}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="json_input_container" style={{ marginLeft: "-10px" }}>
-                    <textarea
-                      className="json_input custom_input_css"
-                      value={JSON.stringify(constructorInput, null, "\t")}
-                      onChange={(e) => handleConstructorInputChange(e)}
-                    />
-                  </div>
-                )}
+              <div className="json_input_container" style={{ marginLeft: "-10px" }}>
+                <textarea
+                  className="json_input custom_input_css"
+                  value={JSON.stringify(constructorInput, null, "\t")}
+                  onChange={(e) => handleConstructorInputChange(e)}
+                />
               </div>
             )}
           </div>
@@ -383,7 +339,7 @@ const ContractDeploy = (props: IProps) => {
           <span>
             {/* 
               // @ts-ignore */}
-            {callResult || (callResult && callResult.callResult) ? "Call result:" : "Call error:"}
+            {props.callResult || (props.callResult && props.callResult.callResult) ? "Call result:" : "Call error:"}
           </span>
           <div>
             {/* TODO: add better way to show result and error */}

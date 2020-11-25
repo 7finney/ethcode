@@ -32,7 +32,7 @@ import Deploy from "./Deploy/Deploy";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import Account from "./Account/Account";
-import { IAccount, SolcVersionType, GroupedSelectorAccounts } from "../types";
+import { IAccount, SolcVersionType, GroupedSelectorAccounts, CompilationResult } from "../types";
 
 interface IProps {
   // eslint-disable-next-line no-unused-vars
@@ -62,7 +62,7 @@ interface IOpt {
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 const App = (props: IProps) => {
   const [message, setMessage] = useState<any[]>([]);
-  const [compiled, setCompiled] = useState<any>({});
+  const [compiled, setCompiled] = useState<CompilationResult>();
   const [error, setError] = useState<Error | null>(null);
   const [fileName, setFileName] = useState<any>("");
   const [contractName, setContractName] = useState<any>("");
@@ -139,22 +139,27 @@ const App = (props: IProps) => {
         setLocalAcc(setLocalAccountOption(data.localAccounts));
       }
       if (data.compiled) {
-        const compiled = JSON.parse(data.compiled);
-        if (compiled.errors && compiled.errors.length > 0) {
-          setMessage(compiled.errors);
-        } else if (!compiled.errors) {
-          setMessage([]);
+        try {
+          const compiled: CompilationResult = JSON.parse(data.compiled);
+          if (compiled.errors && compiled.errors.length > 0) {
+            setMessage(compiled.errors);
+          } else if (!compiled.errors) {
+            setMessage([]);
+            setProcessMessage("");
+          }
+          const fileName: string = Object.keys(compiled.sources)[0];
+          const contractsArray: string[] = setSelectorOption(Object.keys(compiled.contracts[fileName]));
+          const files: string[] = setFileSelectorOptions(Object.keys(compiled.sources));
+          setCompiled(compiled);
+          setFileName(fileName);
           setProcessMessage("");
+          setContractName(Object.keys(compiled.contracts[fileName])[0]);
+          setContracts(contractsArray);
+          setFiles(files);
+        } catch (error) {
+          console.error(error);
+          setProcessMessage("Error Parsing Compilation result");
         }
-        const fileName = Object.keys(compiled.sources)[0];
-        const contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
-        const files = setFileSelectorOptions(Object.keys(compiled.sources));
-        setCompiled(compiled);
-        setFileName(fileName);
-        setProcessMessage("");
-        setContractName(Object.keys(compiled.contracts[fileName])[0]);
-        setContracts(contractsArray);
-        setFiles(files);
       }
       if (data.processMessage) {
         const { processMessage } = data;
@@ -220,7 +225,7 @@ const App = (props: IProps) => {
           accounts,
         };
         setBalance(balance);
-        await props.setAccountBalance(accData);
+        props.setAccountBalance(accData);
         setAccounts(props.accounts);
         setCurrAccount(props.currAccount);
       }
@@ -231,6 +236,7 @@ const App = (props: IProps) => {
         const { balance, account } = data;
         setBalance(balance);
         props.setCurrAccChange({ balance, currAccount: account });
+        setCurrAccount(account);
       }
       if (data.registered) {
         setAppRegistered(data.registered);
@@ -275,7 +281,7 @@ const App = (props: IProps) => {
 
   const changeFile = (selectedOpt: IOpt) => {
     setFileName(selectedOpt.value);
-    setContracts(setSelectorOption(Object.keys(compiled.contracts[fileName])));
+    setContracts(setSelectorOption(Object.keys(compiled!.contracts[fileName])));
   };
 
   const getSelectedVersion = (version: any) => {

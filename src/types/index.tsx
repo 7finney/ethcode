@@ -14,7 +14,7 @@ export type SolcVersionType = {
 export interface GroupedSelectorAccounts {
   label: string;
   options: IAccount[];
-};
+}
 
 export type ABIDescription = FunctionDescription | EventDescription;
 
@@ -273,4 +273,11 @@ export type UserMethodList = {
 };
 export type UserMethodDoc = {
   notice: string;
+};
+
+export type ConstructorInputs = {
+  internalType: string;
+  name: string;
+  type: string;
+  value?: string;
 };

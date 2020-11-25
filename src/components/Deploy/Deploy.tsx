@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import JSONPretty from "react-json-pretty";
 import "./deploy.css";
 import { connect } from "react-redux";
-import { ABIDescription, CompilationResult, IAccount } from "types";
+import { ABIDescription, CompilationResult, ConstructorInputs, IAccount } from "types";
 import { setUnsgTxn, setTestnetCallResult } from "../../actions";
 import { Button } from "../common/ui";
 import { useForm } from "react-hook-form";
@@ -32,8 +32,8 @@ type FormInputs = {
 };
 
 const Deploy = (props: IProps) => {
-  const [constructorInput, setConstructorInput] = useState([]);
-  const [error, setError] = useState(null);
+  const [constructorInput, setConstructorInput] = useState<ConstructorInputs[]>([]);
+  const [error, setError] = useState<Error | string>();
   const [gasEstimate, setGasEstimate] = useState(0);
   const [byteCode, setByteCode] = useState<string>();
   const [abi, setAbi] = useState({});
@@ -93,9 +93,8 @@ const Deploy = (props: IProps) => {
     });
 
     // get private key for corresponding public key
-    if (props.currAccount.type === "Local") {
+    if (props.currAccount && props.currAccount.type === "Local") {
       setProcessMessage("Fetching private key...");
-      // this.setState({ processMessage: "Fetching private key..." });
       props.vscode.postMessage({
         command: "get-pvt-key",
         payload: props.currAccount.pubAddr ? props.currAccount.pubAddr : props.currAccount.value,
@@ -107,49 +106,53 @@ const Deploy = (props: IProps) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const i in props.abi) {
       if (props.abi[i].type === "constructor" && props.abi[i].inputs!.length > 0) {
-        const constructorInput = JSON.parse(JSON.stringify(props.abi[i].inputs));
-        // eslint-disable-next-line guard-for-in, no-restricted-syntax
-        for (const j in constructorInput) {
-          constructorInput[j].value = "";
-        }
-        setConstructorInput(constructorInput);
-      } else if (props.abi[i].type !== "constructor") {
-        // TODO: bellow strategy to extract method names and inputs should be improved
-        const methodname: string = props.abi[i].name!;
-        // if we have inputs
-        // @ts-ignore
-        methodArray[methodname] = {};
-        // @ts-ignore
-        if (props.abi[i].inputs && props.abi[i].inputs.length > 0) {
-          // @ts-ignore
-          methodArray[methodname].inputs = JSON.parse(JSON.stringify(props.abi[i].inputs));
-          // @ts-ignore
+        try {
+          const constructorInput = JSON.parse(JSON.stringify(props.abi[i].inputs));
           // eslint-disable-next-line guard-for-in, no-restricted-syntax
-          for (const i in methodArray[methodname].inputs) {
-            // @ts-ignore
-            methodArray[methodname].inputs[i].value = "";
+          for (const j in constructorInput) {
+            // eslint-disable-next-line @typescript-eslint/dot-notation
+            constructorInput[j]["value"] = "";
           }
-        } else {
-          // @ts-ignore
-          methodArray[methodname].inputs = [];
+          setConstructorInput(constructorInput);
+        } catch (error) {
+          setError("Error Setting/Parsing ABI type constructor");
         }
-        // @ts-ignore
-        methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
+      } else if (props.abi[i].type !== "constructor") {
+        try {
+          // TODO: bellow strategy to extract method names and inputs should be improved
+          // eslint-disable-next-line @typescript-eslint/dot-notation
+          const methodname: string | undefined = props.abi[i]["name"];
+          // if we have inputs
+          // @ts-ignore
+          methodArray[methodname] = {};
+          // @ts-ignore
+          if (props.abi[i].inputs && props.abi[i].inputs.length > 0) {
+            // @ts-ignore
+            // eslint-disable-next-line @typescript-eslint/dot-notation
+            methodArray[methodname]["inputs"] = JSON.parse(JSON.stringify(props.abi[i]["inputs"]));
+            // @ts-ignore
+            // eslint-disable-next-line guard-for-in, no-restricted-syntax
+            for (const i in methodArray[methodname].inputs) {
+              // @ts-ignore
+              // eslint-disable-next-line @typescript-eslint/dot-notation
+              methodArray[methodname]["inputs"][i].value = "";
+            }
+          } else {
+            // @ts-ignore
+            methodArray[methodname].inputs = [];
+          }
+          // @ts-ignore
+          methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
+        } catch (error) {
+          setError(`Error Setting/Parsing ABI ${error}`);
+        }
       }
     }
     setMethodArray(methodArray);
-  }, [props]);
+  }, []);
 
   const handleConstructorInputChange = (event: any) => {
-    if (constructorInput.length > 3) {
-      setConstructorInput(JSON.parse(event.target.value));
-    } else {
-      const item = constructorInput[event.target.id];
-      // @ts-ignore
-      item.value = event.target.value;
-      constructorInput[event.target.id] = item;
-      setConstructorInput(constructorInput);
-    }
+    setConstructorInput(JSON.parse(event.target.value));
   };
 
   const handleBuildTxn = () => {
@@ -260,7 +263,7 @@ const Deploy = (props: IProps) => {
 
   const { contractName, currAccount, unsignedTx, testNetCallResult } = props;
 
-  const publicKey = currAccount.value;
+  const publicKey = currAccount && currAccount.value ? currAccount.value : "";
   return (
     <div className="deploy_container">
       {/* Bytecode and Abi */}
@@ -297,40 +300,13 @@ const Deploy = (props: IProps) => {
       <div>
         <div className="tag form-container">
           {constructorInput && constructorInput.length > 0 && (
-            <div>
-              {constructorInput.length <= 3 ? (
-                <div>
-                  <h4 className="tag contract-name inline-block highlight-success">Constructor:</h4>
-                  {constructorInput.map((x: any, index) => {
-                    return (
-                      <div className="constructorInput input-flex" style={{ marginTop: "10px", marginBottom: "10px" }}>
-                        {/* 
-                                // @ts-ignore */}
-                        <label className="tag label_name">{x.name}:</label>
-                        {/* 
-                                // @ts-ignore */}
-                        <input
-                          className="custom_input_css"
-                          type={x.type}
-                          placeholder={`${x.name} arguments (${x.type})`}
-                          id={index.toString()}
-                          name={x.name}
-                          onChange={(e) => handleConstructorInputChange(e)}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="json_input_container">
-                  <textarea
-                    className="tag json_input custom_input_css"
-                    style={{ margin: "10px 0" }}
-                    value={JSON.stringify(constructorInput, null, "\t")}
-                    onChange={(e) => handleConstructorInputChange(e)}
-                  />
-                </div>
-              )}
+            <div className="json_input_container">
+              <textarea
+                className="tag json_input custom_input_css"
+                style={{ margin: "10px 0" }}
+                value={JSON.stringify(constructorInput, null, "\t")}
+                onChange={(e) => handleConstructorInputChange(e)}
+              />
             </div>
           )}
         </div>
@@ -428,7 +404,6 @@ const Deploy = (props: IProps) => {
             <pre className="large-code">
               <JSONPretty id="json-pretty" data={unsignedTx} />
             </pre>
-            {/* <textarea className="json_input custom_input_css">{unsignedTx}</textarea> */}
           </div>
         </div>
       )}
