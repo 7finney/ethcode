@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 // @ts-ignore
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import {
   addTestResults,
@@ -32,8 +32,13 @@ import Deploy from "./Deploy/Deploy";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
 import Account from "./Account/Account";
-import { IAccount, SolcVersionType } from "../types";
+import { IAccount, SolcVersionType, GroupedSelectorAccounts, CompilationResult } from "../types";
 
+interface IAccData {
+  currAccount: IAccount;
+  balance: Number;
+  accounts: IAccount[];
+}
 interface IProps {
   // eslint-disable-next-line no-unused-vars
   addTestResults: (result: any) => void;
@@ -43,12 +48,12 @@ interface IProps {
   // eslint-disable-next-line no-unused-vars
   setDeployedResult: (result: any) => void;
   setCallResult: (result: any) => void;
-  setAccountBalance: (accData: any) => void;
+  setAccountBalance: (accData: IAccData) => void;
   setCurrAccChange: (accData: any) => void;
   setTestNetId: (testNetId: any) => void;
   accountBalance: number;
   accounts: string[];
-  currAccount: IAccount;
+  // currAccount: IAccount;
   testNetId: string;
   test: any;
 }
@@ -57,26 +62,27 @@ interface IOpt {
   value: string;
   label: string;
 }
+
 // @ts-ignore
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 const App = (props: IProps) => {
   const [message, setMessage] = useState<any[]>([]);
-  const [compiled, setCompiled] = useState<any>({});
+  const [compiled, setCompiled] = useState<CompilationResult>();
   const [error, setError] = useState<Error | null>(null);
-  const [fileName, setFileName] = useState<any>("");
-  const [contractName, setContractName] = useState<any>("");
+  const [fileName, setFileName] = useState<string>("");
+  const [contractName, setContractName] = useState<string>("");
   const [processMessage, setProcessMessage] = useState("");
-  const [availableVersions, setAvailableVersions] = useState<SolcVersionType[]>([]);
+  const [availableVersions, setAvailableVersions] = useState<Array<SolcVersionType>>([]);
   const [gasEstimate, setGasEstimate] = useState(0);
   const [deployedResult, setDeployedResult] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
-  const [txTrace, setTxTrace] = useState([]);
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [selectorAccounts, setSelectorAccounts] = useState<IAccount[]>([]);
-  const [contracts, setContracts] = useState<any[]>([]);
-  const [files, setFiles] = useState<any[]>([]);
+  const [txTrace, setTxTrace] = useState({});
+  const [accounts, setAccounts] = useState<string[]>([]);
+  const [selectorAccounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>([]);
+  const [contracts, setContracts] = useState<string[]>([]);
+  const [files, setFiles] = useState<string[]>([]);
   const [currAccount, setCurrAccount] = useState<IAccount>();
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState<number>(props.accountBalance);
   const [transactionResult, setTransactionResult] = useState("");
   const [testNetId, setTestNetId] = useState("");
   const [fileType, setFileType] = useState("");
@@ -96,32 +102,26 @@ const App = (props: IProps) => {
   const [appRegistered, setAppRegistered] = useState(false);
 
   const mergeAccount = () => {
-    // merge and set accounts store
     // TODO: update reducer
-    // merge local accounts and test net accounts
+    // merge local accounts and testnet accounts
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       setSelectorAccounts([
         {
           label: "Ganache",
-          value: testNetAcc,
+          options: testNetAcc,
         },
         {
           label: "Local Accounts",
-          value: localAcc,
+          options: localAcc,
         },
       ]);
     } else if (localAcc.length > 0) {
-      setSelectorAccounts([
-        {
-          label: "Local Accounts",
-          value: localAcc,
-        },
-      ]);
+      setSelectorAccounts([...localAcc]);
     } else if (testNetAcc.length > 0) {
       setSelectorAccounts([
         {
           label: "Ganache",
-          value: testNetAcc,
+          options: testNetAcc,
         },
       ]);
     } else {
@@ -140,26 +140,58 @@ const App = (props: IProps) => {
       if (data.fileType) {
         setFileType(data.fileType);
       }
+      // accounts
       if (data.localAccounts) {
         setLocalAcc(setLocalAccountOption(data.localAccounts));
       }
+      if (data.fetchAccounts) {
+        const { balance, accounts } = data.fetchAccounts;
+        setTestNetAcc(setGanacheAccountsOption(accounts));
+        const accData: IAccData = {
+          balance,
+          currAccount: {
+            label: accounts[0],
+            value: accounts[0], // TODO: use toChecksumAddress to create checksum address of the given
+          },
+          accounts,
+        };
+        setAccounts(accounts);
+        setCurrAccount(accounts[0]);
+        setAccountName(accounts[0]);
+        setBalance(balance);
+        props.setAccountBalance(accData);
+      }
+      if (data.balance) {
+        const { balance, account } = data;
+        setBalance(balance);
+        props.setCurrAccChange({ balance, currAccount: account });
+        setCurrAccount(account);
+      }
+      if (data.registered) {
+        setAppRegistered(data.registered);
+      }
+      // compiled
       if (data.compiled) {
-        const compiled = JSON.parse(data.compiled);
-        if (compiled.errors && compiled.errors.length > 0) {
-          setMessage(compiled.errors);
-        } else if (!compiled.errors) {
-          setMessage([]);
+        try {
+          const compiled: CompilationResult = JSON.parse(data.compiled);
+          if (compiled.errors && compiled.errors.length > 0) {
+            setMessage(compiled.errors);
+          } else if (!compiled.errors) {
+            setMessage([]);
+            setProcessMessage("");
+          }
+          const fileName: string = Object.keys(compiled.sources)[0];
+          const contractsArray: string[] = setSelectorOption(Object.keys(compiled.contracts[fileName]));
+          const files: string[] = setFileSelectorOptions(Object.keys(compiled.sources));
+          setCompiled(compiled);
+          setFileName(fileName);
           setProcessMessage("");
+          setContractName(Object.keys(compiled.contracts[fileName])[0]);
+          setContracts(contractsArray);
+          setFiles(files);
+        } catch (error) {
+          setProcessMessage("Error Parsing Compilation result");
         }
-        const fileName = Object.keys(compiled.sources)[0];
-        const contractsArray = setSelectorOption(Object.keys(compiled.contracts[fileName]));
-        const files = setFileSelectorOptions(Object.keys(compiled.sources));
-        setCompiled(compiled);
-        setFileName(fileName);
-        setProcessMessage("");
-        setContractName(Object.keys(compiled.contracts[fileName])[0]);
-        setContracts(contractsArray);
-        setFiles(files);
       }
       if (data.processMessage) {
         const { processMessage } = data;
@@ -216,34 +248,13 @@ const App = (props: IProps) => {
         const result = data.callResult;
         props.setCallResult(result);
       }
-      if (data.fetchAccounts) {
-        const { balance } = data.fetchAccounts;
-        const { accounts } = data.fetchAccounts;
-        setTestNetAcc(setGanacheAccountsOption(accounts));
-        const accData = {
-          balance,
-          currAccount: testNetAcc[0],
-          accounts,
-        };
-        await props.setAccountBalance(accData);
-        setAccounts(props.accounts);
-        setCurrAccount(props.currAccount);
-        setBalance(props.accountBalance);
-      }
       if (data.transactionResult) {
         setTransactionResult(data.transactionResult);
-      }
-      if (data.balance) {
-        const { balance, account } = data;
-        props.setCurrAccChange({ balance, currAccount: account });
-        setBalance(props.accountBalance);
-      }
-      if (data.registered) {
-        setAppRegistered(data.registered);
       }
     });
     // Component mounted start getting gRPC things
     vscode.postMessage({ command: "get-localAccounts" });
+    vscode.postMessage({ command: "run-getAccounts" });
   }, []);
 
   useEffect(() => {
@@ -280,21 +291,21 @@ const App = (props: IProps) => {
 
   const changeFile = (selectedOpt: IOpt) => {
     setFileName(selectedOpt.value);
-    setContracts(setSelectorOption(Object.keys(compiled.contracts[fileName])));
+    setContracts(setSelectorOption(Object.keys(compiled!.contracts[fileName])));
   };
 
-  const getSelectedVersion = (version: any) => {
+  const setSelectedVersion = (version: any) => {
     vscode.postMessage({
       command: "version",
       version: version.value,
     });
   };
 
-  const getSelectedNetwork = (testNet: any) => {
+  const setSelectedNetwork = (testNet: any) => {
     setTestNetId(testNet.value);
   };
 
-  const getSelectedAccount = (account: IAccount) => {
+  const setSelectedAccount = (account: IAccount) => {
     setCurrAccount(account);
     setAccountName(account);
   };
@@ -322,20 +333,20 @@ const App = (props: IProps) => {
         {/* quick fix solidity version selector bug */}
         {availableVersions && fileType !== "vyper" && (
           <Selector
-            getSelectedOption={getSelectedVersion}
+            onSelect={setSelectedVersion}
             options={availableVersions}
             placeholder="Select Compiler Version"
             defaultValue={availableVersions[0]}
           />
         )}
         <Selector
-          getSelectedOption={getSelectedNetwork}
+          onSelect={setSelectedNetwork}
           options={testNets}
           placeholder="Select Network"
           defaultValue={testNets[0]}
         />
         {compiled && compiled.sources && Object.keys(compiled.sources).length > 0 && (
-          <Selector options={files} getSelectedOption={changeFile} placeholder="Select Files" defaultValue={files[0]} />
+          <Selector options={files} onSelect={changeFile} placeholder="Select Files" defaultValue={files[0]} />
         )}
       </div>
       {transactionResult && (
@@ -385,7 +396,7 @@ const App = (props: IProps) => {
             {compiled && fileName && (
               <div className="container-margin">
                 <div className="contractSelect_container">
-                  <Selector options={contracts} getSelectedOption={changeContract} placeholder="Select Contract" />
+                  <Selector options={contracts} onSelect={changeContract} placeholder="Select Contract" />
                 </div>
               </div>
             )}
@@ -416,7 +427,8 @@ const App = (props: IProps) => {
             <Account
               vscode={vscode}
               accounts={selectorAccounts}
-              getSelectedAccount={getSelectedAccount}
+              selectedAccount={setSelectedAccount}
+              // getSelectedAccount={getSelectedAccount}
               appRegistered={appRegistered}
               handleAppRegister={handleAppRegister}
             />

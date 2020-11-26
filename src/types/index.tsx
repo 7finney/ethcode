@@ -11,6 +11,11 @@ export type SolcVersionType = {
   label: string;
 };
 
+export interface GroupedSelectorAccounts {
+  label: string;
+  options: IAccount[];
+}
+
 export type ABIDescription = FunctionDescription | EventDescription;
 
 export type FunctionDescription = {
@@ -172,7 +177,7 @@ export type AstNodeAtt = {
   [x: string]: any;
 };
 
-/// //////////
+// Compiled contract output type
 export type CompiledContract = {
   /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
   abi: ABIDescription[];
@@ -268,4 +273,12 @@ export type UserMethodList = {
 };
 export type UserMethodDoc = {
   notice: string;
+};
+
+// TODO Add proper types from solidity documentation
+export type ConstructorInput = {
+  internalType: string;
+  name: string;
+  type: string;
+  value?: string;
 };

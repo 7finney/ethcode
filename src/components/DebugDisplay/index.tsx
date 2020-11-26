@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ReactDiffViewer from "react-diff-viewer";
 import "./DebugDisplay.css";
-import { Button } from "../common/ui";
+import { Button, ButtonType } from "../common/ui";
 import { useForm } from "react-hook-form";
 
 interface IProps {
@@ -92,12 +92,14 @@ const DebugDisplay = (props: IProps) => {
             <span style={{ marginRight: "5px" }}>Transaction hash:</span>
             <input name="txHash" type="text" className="custom_input_css" ref={register} />
           </label>
-          <Button ButtonType="input" disabled={disable} style={{ marginLeft: "10px" }} value="Debug" />
+          <Button buttonType={ButtonType.Input} disabled={disable} style={{ marginLeft: "10px" }}>
+            Debug
+          </Button>
         </form>
         <p>
-          <button className="text-subtle custom_button_css" onClick={stopDebug}>
+          <Button buttonType={ButtonType.Input} onClick={stopDebug}>
             Stop
-          </button>
+          </Button>
         </p>
       </div>
       {indx >= 0 && txTrace.length > 0 && (
@@ -118,12 +120,12 @@ const DebugDisplay = (props: IProps) => {
             </div>
             <div>
               <p>
-                <button className="custom_button_css" style={{ marginRight: "20px" }} onClick={debugBack}>
+                <Button buttonType={ButtonType.Button} style={{ marginRight: "20px" }} onClick={debugBack}>
                   Step Back
-                </button>
-                <button className="custom_button_css" onClick={debugInto}>
+                </Button>
+                <Button buttonType={ButtonType.Button} onClick={debugInto}>
                   Step Into
-                </button>
+                </Button>
               </p>
             </div>
           </div>

@@ -52,7 +52,7 @@ const clientCallPB = protoDescriptor.eth_client_call;
 let clientCallClient: any;
 try {
   clientCallClient = new clientCallPB.ClientCallService("cc.ethco.de:50053", grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('192.168.0.9:50053', grpc.credentials.createInsecure());
+  // clientCallClient = new clientCallPB.ClientCallService('192.168.0.9:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -278,7 +278,6 @@ process.on("message", async (m) => {
     };
     const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.error("error", err);
         // @ts-ignore
         process.send({ error: err });
         // @ts-ignore

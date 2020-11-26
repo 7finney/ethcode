@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Selector, Button } from "../common/ui";
+import { Selector, Button, ButtonType } from "../common/ui";
 import "./Account.css";
 import { addNewAcc } from "../../actions";
-import { IAccount } from "../../types";
+import { IAccount, GroupedSelectorAccounts } from "../../types";
 import { useForm } from "react-hook-form";
 
 interface IProps {
-  accounts: IAccount[];
+  accounts: Array<GroupedSelectorAccounts>;
   accountBalance: number;
-  // eslint-disable-next-line no-unused-vars
-  getSelectedAccount: (account: IAccount) => void;
+  selectedAccount: (account: IAccount) => void;
   vscode: any;
   currAccount: IAccount;
   testNetId: string;
   appRegistered: boolean;
-  // eslint-disable-next-line no-unused-vars
   addNewAcc: (result: IAccount) => void;
   handleAppRegister: () => void;
 }
@@ -26,17 +24,25 @@ type FormInputs = {
   amount: number;
 };
 
-const Account = (props: IProps) => {
+const Account: React.FC<IProps> = ({
+  testNetId,
+  addNewAcc,
+  accountBalance,
+  vscode,
+  currAccount,
+  accounts,
+  appRegistered,
+  selectedAccount,
+  handleAppRegister,
+}: IProps) => {
   const [balance, setBalance] = useState(0);
   const [publicAddress, setPublicAddress] = useState("");
   const [pvtKey, setPvtKey] = useState("");
   const [showButton, setShowButton] = useState(false);
   const [error, setError] = useState("");
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
-  const [, setMsg] = useState("");
-
+  const [msg, setMsg] = useState("");
   const { register, handleSubmit } = useForm<FormInputs>();
-  const { addNewAcc, accountBalance, vscode, currAccount, accounts, appRegistered } = props;
 
   useEffect(() => {
     window.addEventListener("message", async (event) => {
@@ -60,10 +66,10 @@ const Account = (props: IProps) => {
         setSendBtnDisable(false);
       }
     });
-  });
+  }, []);
 
   useEffect(() => {
-    setMsg("process finished");
+    setMsg("Success! Read privatekey.");
   }, [pvtKey]);
 
   useEffect(() => {
@@ -75,16 +81,12 @@ const Account = (props: IProps) => {
   useEffect(() => {
     vscode.postMessage({
       command: "get-pvt-key",
-      payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value,
+      // payload: currAccount ? currAccount.pubAddr ? currAccount.pubAddr : currAccount.value : null,
     });
   }, [currAccount]);
 
-  const getSelectedAccount = (account: IAccount) => {
-    props.getSelectedAccount(account);
-  };
   // generate keypair
   const handleGenKeyPair = () => {
-    const { vscode } = props;
     const password = "";
     try {
       vscode.postMessage({
@@ -99,8 +101,6 @@ const Account = (props: IProps) => {
 
   // delete keypair
   const deleteAccount = () => {
-    const { vscode, currAccount } = props;
-
     try {
       vscode.postMessage({
         command: "delete-keyPair",
@@ -113,7 +113,6 @@ const Account = (props: IProps) => {
 
   // handle send ether
   const handleTransactionSubmit = (formData: FormInputs) => {
-    const { vscode, currAccount, testNetId } = props;
     setSendBtnDisable(true);
     try {
       if (testNetId === "ganache") {
@@ -145,6 +144,13 @@ const Account = (props: IProps) => {
     }
   };
 
+  const formatGroupLabel = (data: any) => (
+    <div className="group-styles">
+      <span>{data.label}</span>
+      <span className="group-badge-style">{data.options.length}</span>
+    </div>
+  );
+
   return (
     <div className="account_container">
       <div className="account_row">
@@ -152,7 +158,7 @@ const Account = (props: IProps) => {
           <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified"}</label>
         </div>
         <div className="input-container">
-          <Button disabled={appRegistered} onClick={props.handleAppRegister}>
+          <Button buttonType={ButtonType.Input} disabled={appRegistered} onClick={handleAppRegister}>
             Register App
           </Button>
         </div>
@@ -166,8 +172,9 @@ const Account = (props: IProps) => {
         <div className="select-container">
           <Selector
             options={accounts}
-            getSelectedOption={getSelectedAccount}
+            onSelect={selectedAccount}
             defaultValue={currAccount}
+            formatGroupLabel={formatGroupLabel}
             placeholder="Select Accounts"
           />
         </div>
@@ -186,8 +193,8 @@ const Account = (props: IProps) => {
       <div className="account_row">
         <div className="label-container" />
         <div className="input-container">
-          <button
-            className="acc-button custom_button_css"
+          <Button
+            buttonType={ButtonType.Input}
             style={{
               background: "#fa4138",
               color: "white",
@@ -196,14 +203,14 @@ const Account = (props: IProps) => {
             onClick={deleteAccount}
           >
             Delete Account
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Transfer Section */}
       <div className="account_row">
         <div className="label-container">
-          <label className="header">Transfer Ether </label>
+          <label className="header">Transfer Ether</label>
         </div>
       </div>
 
@@ -216,7 +223,7 @@ const Account = (props: IProps) => {
             <input
               name="accountFromAddress"
               className="input custom_input_css"
-              value={currAccount.label}
+              value={currAccount ? currAccount.value : "0x"}
               type="text"
               placeholder="from"
               ref={register}
@@ -251,7 +258,9 @@ const Account = (props: IProps) => {
         <div className="account_row">
           <div className="label-container" />
           <div className="input-container">
-            <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: "10px" }} value="Send" />
+            <Button buttonType={ButtonType.Input} disabled={sendBtnDisable} style={{ marginLeft: "10px" }}>
+              Send
+            </Button>
           </div>
         </div>
       </form>
@@ -269,7 +278,7 @@ const Account = (props: IProps) => {
         </div>
         <div className="input-container">
           {/* todo */}
-          <Button disabled={showButton} onClick={handleGenKeyPair}>
+          <Button buttonType={ButtonType.Input} disabled={showButton} onClick={handleGenKeyPair}>
             Genarate key pair
           </Button>
         </div>
