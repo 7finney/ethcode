@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 interface IProps {
   accounts: Array<GroupedSelectorAccounts>;
   accountBalance: number;
-  getSelectedAccount: (account: IAccount) => void;
+  selectedAccount: (account: IAccount) => void;
   vscode: any;
   currAccount: IAccount;
   testNetId: string;
@@ -32,7 +32,7 @@ const Account: React.FC<IProps> = ({
   currAccount,
   accounts,
   appRegistered,
-  getSelectedAccount,
+  selectedAccount,
   handleAppRegister,
 }: IProps) => {
   const [balance, setBalance] = useState(0);
@@ -172,7 +172,7 @@ const Account: React.FC<IProps> = ({
         <div className="select-container">
           <Selector
             options={accounts}
-            getSelectedOption={getSelectedAccount}
+            onSelect={selectedAccount}
             defaultValue={currAccount}
             formatGroupLabel={formatGroupLabel}
             placeholder="Select Accounts"

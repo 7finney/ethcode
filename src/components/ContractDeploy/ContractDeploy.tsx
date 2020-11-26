@@ -185,6 +185,8 @@ const ContractDeploy = (props: IProps) => {
 
   const handleGetGasEstimate = () => {
     const { vscode, bytecode, abi, currAccount } = props;
+    console.log("get gas estimate");
+    console.log(currAccount);
     setGasEstimateToggle(true);
     try {
       vscode.postMessage({
@@ -248,27 +250,15 @@ const ContractDeploy = (props: IProps) => {
             <label className="label_name" style={{ marginRight: "10px" }}>
               Gas Supply:
             </label>
-            {gasSupply > 0 ? (
-              <input
-                type="number"
-                placeholder='click on "get gas estimate" '
-                className="input custom_input_css"
-                value={gasSupply}
-                id="deployGas"
-                ref={registerDeploy}
-                name="gasSupply"
-              />
-            ) : (
-              <input
-                type="number"
-                placeholder='click on "get gas estimate" '
-                className="input custom_input_css"
-                value=""
-                id="deployGas"
-                ref={registerDeploy}
-                name="gasSupply"
-              />
-            )}
+            <input
+              type="number"
+              placeholder='click on "get gas estimate" '
+              className="input custom_input_css"
+              value={gasSupply > 0 ? gasSupply : ""}
+              id="deployGas"
+              ref={registerDeploy}
+              name="gasSupply"
+            />
           </div>
           <div style={{ marginBottom: "5px" }}>
             {testNetId !== "ganache" ? (

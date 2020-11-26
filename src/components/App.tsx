@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 // @ts-ignore
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import {
   addTestResults,
@@ -34,6 +34,11 @@ import "react-tabs/style/react-tabs.css";
 import Account from "./Account/Account";
 import { IAccount, SolcVersionType, GroupedSelectorAccounts, CompilationResult } from "../types";
 
+interface IAccData {
+  currAccount: IAccount;
+  balance: Number;
+  accounts: IAccount[];
+}
 interface IProps {
   // eslint-disable-next-line no-unused-vars
   addTestResults: (result: any) => void;
@@ -43,12 +48,12 @@ interface IProps {
   // eslint-disable-next-line no-unused-vars
   setDeployedResult: (result: any) => void;
   setCallResult: (result: any) => void;
-  setAccountBalance: (accData: any) => void;
+  setAccountBalance: (accData: IAccData) => void;
   setCurrAccChange: (accData: any) => void;
   setTestNetId: (testNetId: any) => void;
   accountBalance: number;
   accounts: string[];
-  currAccount: IAccount;
+  // currAccount: IAccount;
   testNetId: string;
   test: any;
 }
@@ -135,9 +140,39 @@ const App = (props: IProps) => {
       if (data.fileType) {
         setFileType(data.fileType);
       }
+      // accounts
       if (data.localAccounts) {
         setLocalAcc(setLocalAccountOption(data.localAccounts));
       }
+      if (data.fetchAccounts) {
+        console.log("-----fetchAccounts-----");
+        const { balance, accounts } = data.fetchAccounts;
+        setTestNetAcc(setGanacheAccountsOption(accounts));
+        const accData: IAccData = {
+          balance,
+          currAccount: {
+            label: accounts[0],
+            value: accounts[0], // TODO: use toChecksumAddress to create checksum address of the given
+          },
+          accounts,
+        };
+        setAccounts(accounts);
+        setCurrAccount(accounts[0]);
+        setAccountName(accounts[0]);
+        setBalance(balance);
+        console.log(JSON.stringify(accData));
+        props.setAccountBalance(accData);
+      }
+      if (data.balance) {
+        const { balance, account } = data;
+        setBalance(balance);
+        props.setCurrAccChange({ balance, currAccount: account });
+        setCurrAccount(account);
+      }
+      if (data.registered) {
+        setAppRegistered(data.registered);
+      }
+      // compiled
       if (data.compiled) {
         try {
           const compiled: CompilationResult = JSON.parse(data.compiled);
@@ -216,30 +251,8 @@ const App = (props: IProps) => {
         const result = data.callResult;
         props.setCallResult(result);
       }
-      if (data.fetchAccounts) {
-        const { balance, accounts } = data.fetchAccounts;
-        setTestNetAcc(setGanacheAccountsOption(accounts));
-        const accData = {
-          balance,
-          currAccount: testNetAcc[0],
-          accounts,
-        };
-        setBalance(balance);
-        props.setAccountBalance(accData);
-        setAccounts(props.accounts);
-        setCurrAccount(props.currAccount);
-      }
       if (data.transactionResult) {
         setTransactionResult(data.transactionResult);
-      }
-      if (data.balance) {
-        const { balance, account } = data;
-        setBalance(balance);
-        props.setCurrAccChange({ balance, currAccount: account });
-        setCurrAccount(account);
-      }
-      if (data.registered) {
-        setAppRegistered(data.registered);
       }
     });
     // Component mounted start getting gRPC things
@@ -284,18 +297,18 @@ const App = (props: IProps) => {
     setContracts(setSelectorOption(Object.keys(compiled!.contracts[fileName])));
   };
 
-  const getSelectedVersion = (version: any) => {
+  const setSelectedVersion = (version: any) => {
     vscode.postMessage({
       command: "version",
       version: version.value,
     });
   };
 
-  const getSelectedNetwork = (testNet: any) => {
+  const setSelectedNetwork = (testNet: any) => {
     setTestNetId(testNet.value);
   };
 
-  const getSelectedAccount = (account: IAccount) => {
+  const setSelectedAccount = (account: IAccount) => {
     setCurrAccount(account);
     setAccountName(account);
   };
@@ -323,20 +336,20 @@ const App = (props: IProps) => {
         {/* quick fix solidity version selector bug */}
         {availableVersions && fileType !== "vyper" && (
           <Selector
-            getSelectedOption={getSelectedVersion}
+            onSelect={setSelectedVersion}
             options={availableVersions}
             placeholder="Select Compiler Version"
             defaultValue={availableVersions[0]}
           />
         )}
         <Selector
-          getSelectedOption={getSelectedNetwork}
+          onSelect={setSelectedNetwork}
           options={testNets}
           placeholder="Select Network"
           defaultValue={testNets[0]}
         />
         {compiled && compiled.sources && Object.keys(compiled.sources).length > 0 && (
-          <Selector options={files} getSelectedOption={changeFile} placeholder="Select Files" defaultValue={files[0]} />
+          <Selector options={files} onSelect={changeFile} placeholder="Select Files" defaultValue={files[0]} />
         )}
       </div>
       {transactionResult && (
@@ -386,7 +399,7 @@ const App = (props: IProps) => {
             {compiled && fileName && (
               <div className="container-margin">
                 <div className="contractSelect_container">
-                  <Selector options={contracts} getSelectedOption={changeContract} placeholder="Select Contract" />
+                  <Selector options={contracts} onSelect={changeContract} placeholder="Select Contract" />
                 </div>
               </div>
             )}
@@ -417,7 +430,8 @@ const App = (props: IProps) => {
             <Account
               vscode={vscode}
               accounts={selectorAccounts}
-              getSelectedAccount={getSelectedAccount}
+              selectedAccount={setSelectedAccount}
+              // getSelectedAccount={getSelectedAccount}
               appRegistered={appRegistered}
               handleAppRegister={handleAppRegister}
             />
