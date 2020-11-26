@@ -278,7 +278,6 @@ process.on("message", async (m) => {
     };
     const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.error("error", err);
         // @ts-ignore
         process.send({ error: err });
         // @ts-ignore

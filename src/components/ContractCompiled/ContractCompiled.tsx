@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ABIDescription, BytecodeObject } from "types";
+import { ABIDescription } from "types";
 import "./ContractCompiled.css";
 
 interface IProps {

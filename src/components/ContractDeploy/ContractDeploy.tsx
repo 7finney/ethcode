@@ -4,7 +4,7 @@ import JSONPretty from "react-json-pretty";
 import { connect } from "react-redux";
 import { ABIDescription, CompilationResult, ConstructorInput, IAccount } from "types";
 import { setCallResult } from "../../actions";
-import { Button } from "../common/ui";
+import { Button, ButtonType } from "../common/ui";
 import { useForm } from "react-hook-form";
 
 interface IProps {
@@ -248,41 +248,33 @@ const ContractDeploy = (props: IProps) => {
             <label className="label_name" style={{ marginRight: "10px" }}>
               Gas Supply:
             </label>
-            {gasSupply > 0 ? (
-              <input
-                type="number"
-                placeholder='click on "get gas estimate" '
-                className="input custom_input_css"
-                value={gasSupply}
-                id="deployGas"
-                ref={registerDeploy}
-                name="gasSupply"
-              />
-            ) : (
-              <input
-                type="number"
-                placeholder='click on "get gas estimate" '
-                className="input custom_input_css"
-                value=""
-                id="deployGas"
-                ref={registerDeploy}
-                name="gasSupply"
-              />
-            )}
+            <input
+              type="number"
+              placeholder='click on "get gas estimate" '
+              className="input custom_input_css"
+              value={gasSupply > 0 ? gasSupply : ""}
+              id="deployGas"
+              ref={registerDeploy}
+              name="gasSupply"
+            />
           </div>
           <div style={{ marginBottom: "5px" }}>
             {testNetId !== "ganache" ? (
-              <Button onClick={props.openAdvanceDeploy}>Advance Deploy</Button>
-            ) : gasSupply > 0 ? (
-              <Button ButtonType="input" disabled={disable} value="Deploy" />
+              <Button buttonType={ButtonType.Input} onClick={props.openAdvanceDeploy}>
+                Advance Deploy
+              </Button>
             ) : (
-              <Button ButtonType="input" disabled value="Deploy" />
+              <Button buttonType={ButtonType.Input} disabled={gasSupply > 0 ? disable : true}>
+                Deploy
+              </Button>
             )}
           </div>
         </form>
         <div>
           <form onSubmit={handleGetGasEstimate}>
-            <Button ButtonType="input" disabled={gasEstimateToggle} value="Get gas estimate" />
+            <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
+              Get gas estimate
+            </Button>
           </form>
         </div>
         <div>
@@ -320,7 +312,9 @@ const ContractDeploy = (props: IProps) => {
                 defaultValue={payableAmount}
               />
             )}
-            <Button ButtonType="input" disabled={callFunctionToggle} value="Call function" />
+            <Button buttonType={ButtonType.Input} disabled={callFunctionToggle}>
+              Call function
+            </Button>
           </form>
         </div>
       </div>
