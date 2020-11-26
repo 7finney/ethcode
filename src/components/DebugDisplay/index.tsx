@@ -108,14 +108,16 @@ const DebugDisplay = (props: IProps) => {
             <p>OPCodes:</p>
             <div>
               <ul className="opDiv" style={{ paddingLeft: 0 }}>
-                {txTrace && txTrace.length > 0 && txTrace.map((obj: any, index: any) => {
-                  return (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <li className={index === indx ? "selected" : ""} key={index} id={index}>
-                      {obj.op}
-                    </li>
-                  );
-                })}
+                {txTrace &&
+                  txTrace.length > 0 &&
+                  txTrace.map((obj: any, index: any) => {
+                    return (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <li className={index === indx ? "selected" : ""} key={index} id={index}>
+                        {obj.op}
+                      </li>
+                    );
+                  })}
               </ul>
             </div>
             <div>
