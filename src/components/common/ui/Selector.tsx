@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Select, { ValueType } from "react-select";
-// import { IAccount } from "types";
 
 interface IProps {
   options: any;
   onSelect: (selectedOption: any) => void;
-  // onSelect: () => void;
   placeholder: string;
   defaultValue?: any | undefined;
   formatGroupLabel?: any;
