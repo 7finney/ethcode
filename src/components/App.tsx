@@ -145,7 +145,6 @@ const App = (props: IProps) => {
         setLocalAcc(setLocalAccountOption(data.localAccounts));
       }
       if (data.fetchAccounts) {
-        console.log("-----fetchAccounts-----");
         const { balance, accounts } = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
         const accData: IAccData = {
@@ -160,7 +159,6 @@ const App = (props: IProps) => {
         setCurrAccount(accounts[0]);
         setAccountName(accounts[0]);
         setBalance(balance);
-        console.log(JSON.stringify(accData));
         props.setAccountBalance(accData);
       }
       if (data.balance) {
@@ -192,7 +190,6 @@ const App = (props: IProps) => {
           setContracts(contractsArray);
           setFiles(files);
         } catch (error) {
-          console.error(error);
           setProcessMessage("Error Parsing Compilation result");
         }
       }

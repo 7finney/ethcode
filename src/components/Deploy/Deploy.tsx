@@ -4,7 +4,7 @@ import "./deploy.css";
 import { connect } from "react-redux";
 import { ABIDescription, CompilationResult, ConstructorInputs, IAccount } from "types";
 import { setUnsgTxn, setTestnetCallResult } from "../../actions";
-import { Button } from "../common/ui";
+import { Button, ButtonType } from "../common/ui";
 import { useForm } from "react-hook-form";
 
 export interface IProps {
@@ -344,8 +344,9 @@ const Deploy = (props: IProps) => {
                 name="payableAmount"
               />
             )}
-            {/* <input type="submit" style={{ margin: '10px' }} className="custom_button_css" value="Call function" /> */}
-            <Button ButtonType="input" disabled={callFunToggle} value="Call function" />
+            <Button buttonType={ButtonType.Input} disabled={callFunToggle}>
+              Call function
+            </Button>
           </form>
         </div>
       </div>
@@ -369,7 +370,7 @@ const Deploy = (props: IProps) => {
       {/* Get gas estimate */}
       <div className="account_row">
         <div className="input-container">
-          <Button disabled={gasEstimateToggle} onClick={getGasEstimate}>
+          <Button buttonType={ButtonType.Button} disabled={gasEstimateToggle} onClick={getGasEstimate}>
             Get gas estimate
           </Button>
         </div>
@@ -387,11 +388,11 @@ const Deploy = (props: IProps) => {
 
       <div className="input-container">
         {gasEstimate > 0 ? (
-          <Button disabled={buildTxToggle} onClick={handleBuildTxn}>
+          <Button buttonType={ButtonType.Button} disabled={buildTxToggle} onClick={handleBuildTxn}>
             Build transaction
           </Button>
         ) : (
-          <Button disabled onClick={handleBuildTxn}>
+          <Button buttonType={ButtonType.Button} disabled onClick={handleBuildTxn}>
             Build transaction
           </Button>
         )}

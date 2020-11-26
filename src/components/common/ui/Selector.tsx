@@ -57,10 +57,6 @@ const Selector: React.FC<IProps> = (props: IProps) => {
     setOptions(props.options);
   }, [props.options]);
 
-  // useEffect(() => {
-  //   if (selectedOption) props.getSelectedOption(selectedOption);
-  // }, [selectedOption]);
-
   const handleChange = (selected: any) => {
     setSelectedOption(selected);
     props.onSelect(selected);

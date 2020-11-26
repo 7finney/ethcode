@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Selector, Button } from "../common/ui";
+import { Selector, Button, ButtonType } from "../common/ui";
 import "./Account.css";
 import { addNewAcc } from "../../actions";
 import { IAccount, GroupedSelectorAccounts } from "../../types";
@@ -158,7 +158,7 @@ const Account: React.FC<IProps> = ({
           <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified"}</label>
         </div>
         <div className="input-container">
-          <Button disabled={appRegistered} onClick={handleAppRegister}>
+          <Button buttonType={ButtonType.Input} disabled={appRegistered} onClick={handleAppRegister}>
             Register App
           </Button>
         </div>
@@ -193,8 +193,8 @@ const Account: React.FC<IProps> = ({
       <div className="account_row">
         <div className="label-container" />
         <div className="input-container">
-          <button
-            className="acc-button custom_button_css"
+          <Button
+            buttonType={ButtonType.Input}
             style={{
               background: "#fa4138",
               color: "white",
@@ -203,7 +203,7 @@ const Account: React.FC<IProps> = ({
             onClick={deleteAccount}
           >
             Delete Account
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -258,7 +258,9 @@ const Account: React.FC<IProps> = ({
         <div className="account_row">
           <div className="label-container" />
           <div className="input-container">
-            <Button ButtonType="input" disabled={sendBtnDisable} style={{ marginLeft: "10px" }} value="Send" />
+            <Button buttonType={ButtonType.Input} disabled={sendBtnDisable} style={{ marginLeft: "10px" }}>
+              Send
+            </Button>
           </div>
         </div>
       </form>
@@ -276,7 +278,7 @@ const Account: React.FC<IProps> = ({
         </div>
         <div className="input-container">
           {/* todo */}
-          <Button disabled={showButton} onClick={handleGenKeyPair}>
+          <Button buttonType={ButtonType.Input} disabled={showButton} onClick={handleGenKeyPair}>
             Genarate key pair
           </Button>
         </div>
