@@ -1,9 +1,9 @@
-import React, { CSSProperties } from "react";
-import "./button.css";
+import React, { CSSProperties } from 'react';
+import './button.css';
 
 export enum ButtonType {
-  Input = "input",
-  Button = "button",
+  Input = 'input',
+  Button = 'button',
 }
 
 interface IProps {
@@ -19,14 +19,14 @@ const Button: React.FC<IProps> = (props, { buttonType, disabled }) => {
       return (
         <input
           type="submit"
-          className={disabled ? "custom_button_css button_disable" : "custom_button_css"}
+          className={disabled ? 'custom_button_css button_disable' : 'custom_button_css'}
           {...props}
         />
       );
     case ButtonType.Button:
-      return <button className={disabled ? "custom_button_css button_disable" : "custom_button_css"} {...props} />;
+      return <button className={disabled ? 'custom_button_css button_disable' : 'custom_button_css'} {...props} />;
     default:
-      return <button className={disabled ? "custom_button_css button_disable" : "custom_button_css"} {...props} />;
+      return <button className={disabled ? 'custom_button_css button_disable' : 'custom_button_css'} {...props} />;
   }
 };
 

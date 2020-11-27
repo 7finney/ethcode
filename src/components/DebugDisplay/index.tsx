@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import ReactDiffViewer from "react-diff-viewer";
-import "./DebugDisplay.css";
-import { Button, ButtonType } from "../common/ui";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useState } from 'react';
+import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
+import './DebugDisplay.css';
+import { Button, ButtonType } from '../common/ui';
+import { useForm } from 'react-hook-form';
 
 interface IProps {
   vscode: any;
@@ -16,24 +16,23 @@ type FormInputs = {
 };
 
 const DebugDisplay = (props: IProps) => {
-  // const [txHash, setTxHash] = useState("");
-  const [oldDebugObj, setOldDebugObj] = useState({});
-  const [newDebugObj, setNewDebugObj] = useState({});
-  const [indx, setIndx] = useState(-1);
-  const [testNetId, setTestNetId] = useState("");
+  const [oldDebugObj, setOldDebugObj] = useState<string>();
+  const [newDebugObj, setNewDebugObj] = useState<string>();
+  const [opIndex, setOpIndex] = useState(-1);
+  const [testNetId, setTestNetId] = useState('');
   const [disable, setDisable] = useState(false);
-  const [traceError, setTraceError] = useState("");
+  const [traceError, setTraceError] = useState('');
 
   const { register, handleSubmit } = useForm<FormInputs>();
 
   const onSubmit = ({ txHash }: FormInputs) => {
-    setIndx(-1);
+    setOpIndex(-1);
     setDisable(true);
-    setNewDebugObj({});
-    setOldDebugObj({});
-    setTraceError("");
+    setNewDebugObj('');
+    setOldDebugObj('');
+    setTraceError('');
     props.vscode.postMessage({
-      command: "debugTransaction",
+      command: 'debugTransaction',
       txHash,
       testNetId,
     });
@@ -45,12 +44,21 @@ const DebugDisplay = (props: IProps) => {
   }, [props.traceError]);
 
   useEffect(() => {
-    setIndx(0);
-    setOldDebugObj(newDebugObj);
-    setNewDebugObj(props.txTrace[0]);
-    setDisable(false);
-    setTraceError("");
-  }, [newDebugObj, props.txTrace]);
+    const { txTrace } = props;
+    if (txTrace.length > 0) {
+      const idx = 0;
+      setOpIndex(idx);
+      // setOldDebugObj(JSON.stringify(props.txTrace[idx], null, '\t'));
+      // setNewDebugObj(JSON.stringify(props.txTrace[idx + 1], null, '\t'));
+      setDisable(false);
+      setTraceError('');
+    }
+  }, [props.txTrace]);
+
+  useEffect(() => {
+    setOldDebugObj(JSON.stringify(props.txTrace[opIndex], null, '\t'));
+    setNewDebugObj(JSON.stringify(props.txTrace[opIndex + 1], null, '\t'));
+  }, [opIndex]);
 
   useEffect(() => {
     setTestNetId(props.testNetId);
@@ -58,27 +66,28 @@ const DebugDisplay = (props: IProps) => {
 
   const stopDebug = () => {
     setDisable(false);
-    setIndx(-1);
-    setTraceError("");
+    setOpIndex(-1);
+    setTraceError('');
   };
 
   const debugInto = () => {
     const { txTrace } = props;
-    const index = indx < txTrace.length - 1 ? indx + 1 : txTrace.length - 1;
+    // const idx = index < txTrace.length - 1 ? index + 1 : txTrace.length - 1;
+    const idx = Math.min(opIndex + 1, txTrace.length - 1);
     if (txTrace.length > 0) {
-      setIndx(index);
-      setNewDebugObj(txTrace[index]);
-      setOldDebugObj(newDebugObj);
+      setOpIndex(idx);
+      // setNewDebugObj(JSON.stringify(txTrace[idx], null, '\t'));
+      // setOldDebugObj(JSON.stringify(txTrace[idx - 1], null, '\t'));
     }
   };
 
   const debugBack = () => {
     const { txTrace } = props;
-    const index = indx > 0 ? indx - 1 : 0;
+    const idx = Math.max(opIndex - 1, 0);
     if (txTrace.length > 0) {
-      setIndx(index);
-      setNewDebugObj(txTrace[index]);
-      setOldDebugObj(txTrace[index - 1]);
+      setOpIndex(idx);
+      // setNewDebugObj(JSON.stringify(txTrace[idx + 1], null, '\t'));
+      // setOldDebugObj(JSON.stringify(txTrace[idx], null, '\t'));
     }
   };
 
@@ -89,10 +98,10 @@ const DebugDisplay = (props: IProps) => {
       <div>
         <form onSubmit={handleSubmit(onSubmit)}>
           <label>
-            <span style={{ marginRight: "5px" }}>Transaction hash:</span>
+            <span style={{ marginRight: '5px' }}>Transaction hash:</span>
             <input name="txHash" type="text" className="custom_input_css" ref={register} />
           </label>
-          <Button buttonType={ButtonType.Input} disabled={disable} style={{ marginLeft: "10px" }}>
+          <Button buttonType={ButtonType.Input} disabled={disable} style={{ marginLeft: '10px' }}>
             Debug
           </Button>
         </form>
@@ -102,7 +111,7 @@ const DebugDisplay = (props: IProps) => {
           </Button>
         </p>
       </div>
-      {indx >= 0 && txTrace.length > 0 && (
+      {opIndex >= 0 && txTrace.length > 0 && (
         <div>
           <div>
             <p>OPCodes:</p>
@@ -113,7 +122,7 @@ const DebugDisplay = (props: IProps) => {
                   txTrace.map((obj: any, index: any) => {
                     return (
                       // eslint-disable-next-line react/no-array-index-key
-                      <li className={index === indx ? "selected" : ""} key={index} id={index}>
+                      <li className={index === opIndex ? 'selected' : ''} key={index} id={index}>
                         {obj.op}
                       </li>
                     );
@@ -122,7 +131,7 @@ const DebugDisplay = (props: IProps) => {
             </div>
             <div>
               <p>
-                <Button buttonType={ButtonType.Button} style={{ marginRight: "20px" }} onClick={debugBack}>
+                <Button buttonType={ButtonType.Button} style={{ marginRight: '20px' }} onClick={debugBack}>
                   Step Back
                 </Button>
                 <Button buttonType={ButtonType.Button} onClick={debugInto}>
@@ -134,16 +143,17 @@ const DebugDisplay = (props: IProps) => {
           {/* TODO */}
           <div
             style={{
-              width: "100%",
-              overflowX: "scroll",
-              overflowY: "hidden",
+              width: '100%',
+              overflowX: 'scroll',
+              overflowY: 'hidden',
             }}
           >
             <ReactDiffViewer
-              oldValue={JSON.stringify(oldDebugObj, null, "\t")}
-              newValue={JSON.stringify(newDebugObj, null, "\t")}
-              disableWordDiff
+              oldValue={oldDebugObj}
+              newValue={newDebugObj}
+              compareMethod={DiffMethod.WORDS}
               hideLineNumbers
+              useDarkTheme
             />
           </div>
         </div>

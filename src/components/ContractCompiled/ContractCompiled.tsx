@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { ABIDescription } from "types";
-import "./ContractCompiled.css";
+import React, { useState } from 'react';
+import { ABIDescription } from 'types';
+import './ContractCompiled.css';
 
 interface IProps {
   contractName: string;

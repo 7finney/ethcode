@@ -9679,10 +9679,10 @@ react-dev-utils@^9.0.1:
     strip-ansi "5.2.0"
     text-table "0.2.0"
 
-react-diff-viewer@^2.0.6:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/react-diff-viewer/-/react-diff-viewer-2.0.6.tgz#e094ae5524c79cf81d1529f3d777c333a740bdb3"
-  integrity sha512-jS5yXgxbNvacb3Mgb+tq2ZKIS0K0pV1nPxYPtBSxxi4fAT9mU3NUjIeOBGE30Wjv9D7iTb5Qm9yy8Ih5R8ml+Q==
+react-diff-viewer@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/react-diff-viewer/-/react-diff-viewer-3.1.1.tgz#21ac9c891193d05a3734bfd6bd54b107ee6d46cc"
+  integrity sha512-rmvwNdcClp6ZWdS11m1m01UnBA4OwYaLG/li0dB781e/bQEzsGyj+qewVd6W5ztBwseQ72pO7nwaCcq5jnlzcw==
   dependencies:
     classnames "^2.2.6"
     create-emotion "^10.0.14"
