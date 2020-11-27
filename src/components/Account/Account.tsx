@@ -81,7 +81,7 @@ const Account: React.FC<IProps> = ({
   useEffect(() => {
     vscode.postMessage({
       command: 'get-pvt-key',
-      // payload: currAccount ? currAccount.pubAddr ? currAccount.pubAddr : currAccount.value : null,
+      payload: currAccount ? (currAccount.pubAddr ? currAccount.pubAddr : currAccount.value) : null,
     });
   }, [currAccount]);
 
