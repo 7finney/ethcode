@@ -48,8 +48,6 @@ const DebugDisplay = (props: IProps) => {
     if (txTrace.length > 0) {
       const idx = 0;
       setOpIndex(idx);
-      // setOldDebugObj(JSON.stringify(props.txTrace[idx], null, '\t'));
-      // setNewDebugObj(JSON.stringify(props.txTrace[idx + 1], null, '\t'));
       setDisable(false);
       setTraceError('');
     }
@@ -72,12 +70,9 @@ const DebugDisplay = (props: IProps) => {
 
   const debugInto = () => {
     const { txTrace } = props;
-    // const idx = index < txTrace.length - 1 ? index + 1 : txTrace.length - 1;
     const idx = Math.min(opIndex + 1, txTrace.length - 1);
     if (txTrace.length > 0) {
       setOpIndex(idx);
-      // setNewDebugObj(JSON.stringify(txTrace[idx], null, '\t'));
-      // setOldDebugObj(JSON.stringify(txTrace[idx - 1], null, '\t'));
     }
   };
 
@@ -86,8 +81,6 @@ const DebugDisplay = (props: IProps) => {
     const idx = Math.max(opIndex - 1, 0);
     if (txTrace.length > 0) {
       setOpIndex(idx);
-      // setNewDebugObj(JSON.stringify(txTrace[idx + 1], null, '\t'));
-      // setOldDebugObj(JSON.stringify(txTrace[idx], null, '\t'));
     }
   };
 
