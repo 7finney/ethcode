@@ -1,22 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
+import { connect, useSelector, useDispatch } from "react-redux";
 import { Selector, Button, ButtonType } from "../common/ui";
 import "./Account.css";
 import { addNewAcc } from "../../actions";
-import { IAccount, GroupedSelectorAccounts } from "../../types";
+import { IAccount, GroupedSelectorAccounts, GlobalStore } from "../../types";
 import { useForm } from "react-hook-form";
 
-interface IProps {
+type IProps = {
   accounts: Array<GroupedSelectorAccounts>;
-  accountBalance: number;
   selectedAccount: (account: IAccount) => void;
   vscode: any;
-  currAccount: IAccount;
-  testNetId: string;
   appRegistered: boolean;
-  addNewAcc: (result: IAccount) => void;
   handleAppRegister: () => void;
-}
+};
 
 type FormInputs = {
   accountFromAddress: string;
@@ -24,17 +20,7 @@ type FormInputs = {
   amount: number;
 };
 
-const Account: React.FC<IProps> = ({
-  testNetId,
-  addNewAcc,
-  accountBalance,
-  vscode,
-  currAccount,
-  accounts,
-  appRegistered,
-  selectedAccount,
-  handleAppRegister,
-}: IProps) => {
+const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAccount, handleAppRegister }: IProps) => {
   const [balance, setBalance] = useState(0);
   const [publicAddress, setPublicAddress] = useState("");
   const [pvtKey, setPvtKey] = useState("");
@@ -43,6 +29,16 @@ const Account: React.FC<IProps> = ({
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
   const [msg, setMsg] = useState("");
   const { register, handleSubmit } = useForm<FormInputs>();
+
+  // UseSelector to extract state elements.
+  const { testNetId, currAccount, accountBalance } = useSelector((state: GlobalStore) => ({
+    testNetId: state.debugStore.testNetId,
+    currAccount: state.accountStore.currAccount,
+    accountBalance: state.accountStore.accountBalance,
+  }));
+
+  // dispatch function to be called with the action
+  const dispatch = useDispatch();
 
   useEffect(() => {
     window.addEventListener("message", async (event) => {
@@ -53,7 +49,8 @@ const Account: React.FC<IProps> = ({
           label: data.newAccount.pubAddr,
           value: data.newAccount.checksumAddr,
         };
-        addNewAcc(account);
+        // calling addNewAcc inside dispatch
+        dispatch(addNewAcc(account));
         setShowButton(false);
         setPublicAddress(account.label);
       } else if (data.pvtKey && data.pvtKey !== pvtKey) {
@@ -308,10 +305,10 @@ const Account: React.FC<IProps> = ({
   );
 };
 
-function mapStateToProps({ debugStore, accountStore }: any) {
-  const { testNetId } = debugStore;
-  const { currAccount, accountBalance } = accountStore;
-  return { testNetId, currAccount, accountBalance };
-}
+// function mapStateToProps({ debugStore, accountStore }: any) {
+//   const { testNetId } = debugStore;
+//   const { currAccount, accountBalance } = accountStore;
+//   return { testNetId, currAccount, accountBalance };
+// }
 
-export default connect(mapStateToProps, { addNewAcc })(Account);
+export default Account;
