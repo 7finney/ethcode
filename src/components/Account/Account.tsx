@@ -78,7 +78,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
   useEffect(() => {
     vscode.postMessage({
       command: "get-pvt-key",
-      // payload: currAccount ? currAccount.pubAddr ? currAccount.pubAddr : currAccount.value : null,
+      payload: currAccount ? (currAccount.pubAddr ? currAccount.pubAddr : currAccount.value) : null,
     });
   }, [currAccount]);
 
@@ -304,11 +304,5 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
     </div>
   );
 };
-
-// function mapStateToProps({ debugStore, accountStore }: any) {
-//   const { testNetId } = debugStore;
-//   const { currAccount, accountBalance } = accountStore;
-//   return { testNetId, currAccount, accountBalance };
-// }
 
 export default Account;
