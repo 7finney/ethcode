@@ -30,11 +30,12 @@ type FormContract = {
   contractAddress: string;
   methodName: string;
   payableAmount: number;
+  gasSupply: number;
 };
 
 const ContractDeploy = (props: IProps) => {
   const [constructorInput, setConstructorInput] = useState<ConstructorInput | ConstructorInput[]>([]);
-  const [gasSupply, setGasSupply] = useState(0);
+  // const [gasSupply, setGasSupply] = useState(0);
   const [error, setError] = useState(null);
   const [deployed, setDeployed] = useState({});
   const [methodName, setMethodName] = useState<string>('');
@@ -50,7 +51,7 @@ const ContractDeploy = (props: IProps) => {
 
   // TODO WIll refactor this with proper types
   const { register: registerDeploy, handleSubmit: handleDeploySubmit } = useForm<FormDeploy>();
-  const { register: registerContract, handleSubmit: handleContractSubmit } = useForm<FormContract>();
+  const { register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<FormContract>();
 
   useEffect(() => {
     setTestNetId(props.testNetId);
@@ -136,15 +137,12 @@ const ContractDeploy = (props: IProps) => {
   }, [props.deployedResult]);
 
   useEffect(() => {
-    if (gasSupply === 0 && props.gasEstimate !== gasSupply) {
-      setGasSupply(props.gasEstimate);
-      setDisable(false);
-      setGasEstimateToggle(false);
-    }
+    setValue('gasSupply', props.gasEstimate);
+    setDisable(false);
+    setGasEstimateToggle(false);
   }, [props.gasEstimate]);
 
-  const handleDeploy = (formDeployData: FormDeploy) => {
-    setGasSupply(formDeployData.gasSupply);
+  const handleDeploy = () => {
     const { vscode, bytecode, abi, currAccount } = props;
     setError(null);
     setDeployed({});
@@ -155,15 +153,15 @@ const ContractDeploy = (props: IProps) => {
         abi,
         bytecode,
         params: constructorInput,
-        gasSupply,
+        gasSupply: getValues('gasSupply'),
         from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
       },
       testNetId,
     });
   };
 
-  const handleCall = (FormContractData: FormContract) => {
-    setDeployedAddress(FormContractData.contractAddress);
+  const handleCall = () => {
+    setDeployedAddress(getValues('contractAddress'));
     const { vscode, abi, currAccount } = props;
     setError(null);
     setCallFunctionToggle(true);
@@ -174,7 +172,7 @@ const ContractDeploy = (props: IProps) => {
         address: deployedAddress,
         methodName,
         params: JSON.parse(methodInputs),
-        gasSupply,
+        gasSupply: getValues('gasSupply'),
         // TODO: add value supply in case of payable functions
         value: payableAmount,
         from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
@@ -252,9 +250,9 @@ const ContractDeploy = (props: IProps) => {
               type="number"
               placeholder='click on "get gas estimate" '
               className="input custom_input_css"
-              value={gasSupply > 0 ? gasSupply : ''}
+              // value={getValues('gasSupply') > 0 ? getValues('gasSupply') : ''}
               id="deployGas"
-              ref={registerDeploy}
+              ref={contractReg}
               name="gasSupply"
             />
           </div>
@@ -264,7 +262,7 @@ const ContractDeploy = (props: IProps) => {
                 Advance Deploy
               </Button>
             ) : (
-              <Button buttonType={ButtonType.Input} disabled={gasSupply > 0 ? disable : true}>
+              <Button buttonType={ButtonType.Input} disabled={getValues('gasSupply') > 0 ? disable : true}>
                 Deploy
               </Button>
             )}
@@ -286,14 +284,14 @@ const ContractDeploy = (props: IProps) => {
               style={{ marginRight: '5px' }}
               name="contractAddress"
               defaultValue={deployedAddress}
-              ref={registerContract}
+              ref={contractReg}
             />
             <input
               type="text"
               className="custom_input_css"
               placeholder="Enter contract function name"
               name="methodName"
-              ref={registerContract}
+              ref={contractReg}
               onChange={handleMethodnameInput}
             />
             {methodName !== '' && methodInputs !== '' && methodInputs !== '[]' && (
@@ -308,7 +306,7 @@ const ContractDeploy = (props: IProps) => {
                 placeholder="Enter payable amount"
                 style={{ margin: '5px' }}
                 name="payableAmount"
-                ref={registerContract}
+                ref={contractReg}
                 defaultValue={payableAmount}
               />
             )}
