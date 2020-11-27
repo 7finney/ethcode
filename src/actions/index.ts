@@ -11,10 +11,10 @@ import {
   SET_UNSG_TX,
   APPND_NEW_ACC,
   SET_TESTNET_CALL_RESULT,
-} from "./types";
+} from './types';
 
-import { IAccount } from "../types";
-import { Dispatch } from "react";
+import { IAccount } from '../types';
+import { Dispatch } from 'react';
 
 export const addTestResults = (data: any) => {
   return (dispatch: Dispatch<any>) => {

@@ -1,3 +1,3 @@
-import ContractCompiled from "./ContractCompiled";
+import ContractCompiled from './ContractCompiled';
 
 export default ContractCompiled;
