@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './ContractDeploy.css';
 import JSONPretty from 'react-json-pretty';
 import { connect } from 'react-redux';
 import { ABIDescription, CompilationResult, ConstructorInput, IAccount } from 'types';
 import { setCallResult } from '../../actions';
 import { Button, ButtonType } from '../common/ui';
+import CallForm from './CallForm';
+import DeployForm from './DeployForm';
 import { useForm } from 'react-hook-form';
 
 interface IProps {
@@ -17,14 +19,10 @@ interface IProps {
   callResult: any;
   currAccount: IAccount;
   testNetId: string;
-  openAdvanceDeploy: any;
+  openAdvanceDeploy: () => void;
   // eslint-disable-next-line no-unused-vars
   setCallResult: (result: CompilationResult) => void;
 }
-
-type FormDeploy = {
-  gasSupply: number;
-};
 
 type FormContract = {
   contractAddress: string;
@@ -33,10 +31,9 @@ type FormContract = {
   gasSupply: number;
 };
 
-const ContractDeploy = (props: IProps) => {
+const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   const [constructorInput, setConstructorInput] = useState<ConstructorInput | ConstructorInput[]>([]);
-  // const [gasSupply, setGasSupply] = useState(0);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const [deployed, setDeployed] = useState({});
   const [methodName, setMethodName] = useState<string>('');
   const [deployedAddress, setDeployedAddress] = useState('');
@@ -48,9 +45,10 @@ const ContractDeploy = (props: IProps) => {
   const [disable, setDisable] = useState(true);
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [callFunctionToggle, setCallFunctionToggle] = useState(true);
+  const constructorInputRef = useRef<ConstructorInput | ConstructorInput[] | null>(null);
 
   // TODO WIll refactor this with proper types
-  const { register: registerDeploy, handleSubmit: handleDeploySubmit } = useForm<FormDeploy>();
+  // const { register: registerDeploy, handleSubmit: handleDeploySubmit } = useForm<FormDeploy>();
   const { register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<FormContract>();
 
   useEffect(() => {
@@ -108,6 +106,7 @@ const ContractDeploy = (props: IProps) => {
           methodArray[methodname].stateMutability = abi[i].stateMutability;
         } catch (error) {
           console.error('Error In abi parsing: ', error);
+          setError(error);
         }
       }
     }
@@ -142,23 +141,23 @@ const ContractDeploy = (props: IProps) => {
     setGasEstimateToggle(false);
   }, [props.gasEstimate]);
 
-  const handleDeploy = () => {
-    const { vscode, bytecode, abi, currAccount } = props;
-    setError(null);
-    setDeployed({});
-    setDisable(true);
-    vscode.postMessage({
-      command: 'run-deploy',
-      payload: {
-        abi,
-        bytecode,
-        params: constructorInput,
-        gasSupply: getValues('gasSupply'),
-        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
-      },
-      testNetId,
-    });
-  };
+  // const handleDeploy = () => {
+  //   const { vscode, bytecode, abi, currAccount } = props;
+  //   setError(null);
+  //   setDeployed({});
+  //   setDisable(true);
+  //   vscode.postMessage({
+  //     command: 'run-deploy',
+  //     payload: {
+  //       abi,
+  //       bytecode,
+  //       params: constructorInput,
+  //       gasSupply: getValues('gasSupply'),
+  //       from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+  //     },
+  //     testNetId,
+  //   });
+  // };
 
   const handleCall = () => {
     setDeployedAddress(getValues('contractAddress'));
@@ -190,7 +189,7 @@ const ContractDeploy = (props: IProps) => {
         payload: {
           abi,
           bytecode,
-          params: constructorInput,
+          params: constructorInputRef.current,
           from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
         },
         testNetId,
@@ -198,10 +197,6 @@ const ContractDeploy = (props: IProps) => {
     } catch (error) {
       setError(error);
     }
-  };
-
-  const handleConstructorInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setConstructorInput(JSON.parse(event.target.value));
   };
 
   const handleMethodnameInput = (
@@ -230,45 +225,18 @@ const ContractDeploy = (props: IProps) => {
   return (
     <div>
       <div>
-        <form onSubmit={handleDeploySubmit(handleDeploy)}>
-          <div className="form-container">
-            {constructorInput && (
-              <div className="json_input_container" style={{ marginLeft: '-10px' }}>
-                <textarea
-                  className="json_input custom_input_css"
-                  value={JSON.stringify(constructorInput, null, '\t')}
-                  onChange={(e) => handleConstructorInputChange(e)}
-                />
-              </div>
-            )}
-          </div>
-          <div className="gas_supply">
-            <label className="label_name" style={{ marginRight: '10px' }}>
-              Gas Supply:
-            </label>
-            <input
-              type="number"
-              placeholder='click on "get gas estimate" '
-              className="input custom_input_css"
-              // value={getValues('gasSupply') > 0 ? getValues('gasSupply') : ''}
-              id="deployGas"
-              ref={contractReg}
-              name="gasSupply"
-            />
-          </div>
-          <div style={{ marginBottom: '5px' }}>
-            {testNetId !== 'ganache' ? (
-              <Button buttonType={ButtonType.Input} onClick={props.openAdvanceDeploy}>
-                Advance Deploy
-              </Button>
-            ) : (
-              <Button buttonType={ButtonType.Input} disabled={getValues('gasSupply') > 0 ? disable : true}>
-                Deploy
-              </Button>
-            )}
-          </div>
-        </form>
         <div>
+          <DeployForm
+            bytecode={props.bytecode}
+            abi={props.abi}
+            gasEstimate={props.gasEstimate}
+            vscode={props.vscode}
+            currAccount={props.currAccount}
+            testNetId={props.testNetId}
+            constructorInput={constructorInput}
+            constructorInputRef={constructorInputRef}
+            openAdvanceDeploy={props.openAdvanceDeploy}
+          />
           <form onSubmit={handleGetGasEstimate}>
             <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
               Get gas estimate
