@@ -1,3 +1,3 @@
-import ContractDeploy from "./ContractDeploy";
+import ContractDeploy from './ContractDeploy';
 
 export default ContractDeploy;

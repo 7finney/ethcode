@@ -20,7 +20,7 @@ export type ABIDescription = FunctionDescription | EventDescription;
 
 export type FunctionDescription = {
   /** Type of the method. default is 'function' */
-  type?: "function" | "constructor" | "fallback";
+  type?: 'function' | 'constructor' | 'fallback';
   /** The name of the function. Constructor and fallback function never have name */
   name?: string;
   /** List of parameters of the method. Fallback function doesn’t have inputs. */
@@ -28,7 +28,7 @@ export type FunctionDescription = {
   /** List of the outputs parameters for the method, if any */
   outputs?: Array<ABIParameter>;
   /** State mutability of the method */
-  stateMutability: "pure" | "view" | "nonpayable" | "payable";
+  stateMutability: 'pure' | 'view' | 'nonpayable' | 'payable';
   /** true if function accepts Ether, false otherwise. Default is false */
   payable?: boolean;
   /** true if function is either pure or view, false otherwise. Default is false  */
@@ -36,7 +36,7 @@ export type FunctionDescription = {
 };
 
 export type EventDescription = {
-  type: "event";
+  type: 'event';
   name: string;
   inputs: ABIParameter &
     {
@@ -57,24 +57,24 @@ export type ABIParameter = {
 };
 
 export type ABITypeParameter =
-  | "uint"
-  | "uint[]" // TODO : add <M>
-  | "int"
-  | "int[]" // TODO : add <M>
-  | "address"
-  | "address[]"
-  | "bool"
-  | "bool[]"
-  | "fixed"
-  | "fixed[]" // TODO : add <M>
-  | "ufixed"
-  | "ufixed[]" // TODO : add <M>
-  | "bytes"
-  | "bytes[]" // TODO : add <M>
-  | "function"
-  | "function[]"
-  | "tuple"
-  | "tuple[]"
+  | 'uint'
+  | 'uint[]' // TODO : add <M>
+  | 'int'
+  | 'int[]' // TODO : add <M>
+  | 'address'
+  | 'address[]'
+  | 'bool'
+  | 'bool[]'
+  | 'fixed'
+  | 'fixed[]' // TODO : add <M>
+  | 'ufixed'
+  | 'ufixed[]' // TODO : add <M>
+  | 'bytes'
+  | 'bytes[]' // TODO : add <M>
+  | 'function'
+  | 'function[]'
+  | 'tuple'
+  | 'tuple[]'
   | string; // Fallback
 
 // COMPILATION RESULT
@@ -109,27 +109,27 @@ export type CompilationError = {
   /** Error type */
   type: CompilationErrorType;
   /** Component where the error originated, such as "general", "ewasm", etc. */
-  component: "general" | "ewasm" | string;
-  severity: "error" | "warning";
+  component: 'general' | 'ewasm' | string;
+  severity: 'error' | 'warning';
   message: string;
   /** the message formatted with source location */
   formattedMessage?: string;
 };
 
 type CompilationErrorType =
-  | "JSONError"
-  | "IOError"
-  | "ParserError"
-  | "DocstringParsingError"
-  | "SyntaxError"
-  | "DeclarationError"
-  | "TypeError"
-  | "UnimplementedFeatureError"
-  | "InternalCompilerError"
-  | "Exception"
-  | "CompilerError"
-  | "FatalError"
-  | "Warning";
+  | 'JSONError'
+  | 'IOError'
+  | 'ParserError'
+  | 'DocstringParsingError'
+  | 'SyntaxError'
+  | 'DeclarationError'
+  | 'TypeError'
+  | 'UnimplementedFeatureError'
+  | 'InternalCompilerError'
+  | 'Exception'
+  | 'CompilerError'
+  | 'FatalError'
+  | 'Warning';
 
 export type CompilationSource = {
   /** Identifier of the source (used in source maps) */
@@ -204,14 +204,14 @@ export type CompiledContract = {
     gasEstimates: {
       creation: {
         codeDepositCost: string;
-        executionCost: "infinite" | string;
-        totalCost: "infinite" | string;
+        executionCost: 'infinite' | string;
+        totalCost: 'infinite' | string;
       };
       external: {
         [functionIdentifier: string]: string;
       };
       internal: {
-        [functionIdentifier: string]: "infinite" | string;
+        [functionIdentifier: string]: 'infinite' | string;
       };
     };
   };

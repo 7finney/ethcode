@@ -1,7 +1,7 @@
-import { SET_UNSG_TX } from "../actions/types";
+import { SET_UNSG_TX } from '../actions/types';
 
 const initialState = {
-  unsignedTx: "",
+  unsignedTx: '',
 };
 
 export default (state: any = initialState, action: any) => {

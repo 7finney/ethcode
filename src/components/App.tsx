@@ -1,7 +1,5 @@
-/* eslint-disable no-unused-vars */
-// @ts-ignore
-import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import {
   addTestResults,
   addFinalResultCallback,
@@ -12,8 +10,8 @@ import {
   setAccountBalance,
   setCurrAccChange,
   setTestNetId,
-} from "../actions";
-import "./App.css";
+} from '../actions';
+import './App.css';
 
 import {
   solidityVersion,
@@ -21,18 +19,18 @@ import {
   setFileSelectorOptions,
   setGanacheAccountsOption,
   setLocalAccountOption,
-} from "../helper";
+} from '../helper';
 
-import ContractCompiled from "./ContractCompiled";
-import ContractDeploy from "./ContractDeploy";
-import { Selector } from "./common/ui";
-import TestDisplay from "./TestDisplay";
-import DebugDisplay from "./DebugDisplay";
-import Deploy from "./Deploy/Deploy";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import "react-tabs/style/react-tabs.css";
-import Account from "./Account/Account";
-import { IAccount, SolcVersionType, GroupedSelectorAccounts, CompilationResult } from "../types";
+import ContractCompiled from './ContractCompiled';
+import ContractDeploy from './ContractDeploy';
+import { Selector } from './common/ui';
+import TestDisplay from './TestDisplay';
+import DebugDisplay from './DebugDisplay';
+import Deploy from './Deploy/Deploy';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+import Account from './Account/Account';
+import { IAccount, SolcVersionType, GroupedSelectorAccounts, CompilationResult } from '../types';
 
 interface IAccData {
   currAccount: IAccount;
@@ -69,12 +67,12 @@ const App = (props: IProps) => {
   const [message, setMessage] = useState<any[]>([]);
   const [compiled, setCompiled] = useState<CompilationResult>();
   const [error, setError] = useState<Error | null>(null);
-  const [fileName, setFileName] = useState<string>("");
-  const [contractName, setContractName] = useState<string>("");
-  const [processMessage, setProcessMessage] = useState("");
+  const [fileName, setFileName] = useState<string>('');
+  const [contractName, setContractName] = useState<string>('');
+  const [processMessage, setProcessMessage] = useState('');
   const [availableVersions, setAvailableVersions] = useState<Array<SolcVersionType>>([]);
   const [gasEstimate, setGasEstimate] = useState(0);
-  const [deployedResult, setDeployedResult] = useState("");
+  const [deployedResult, setDeployedResult] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
   const [accounts, setAccounts] = useState<string[]>([]);
@@ -83,21 +81,21 @@ const App = (props: IProps) => {
   const [files, setFiles] = useState<string[]>([]);
   const [currAccount, setCurrAccount] = useState<IAccount>();
   const [balance, setBalance] = useState<number>(props.accountBalance);
-  const [transactionResult, setTransactionResult] = useState("");
-  const [testNetId, setTestNetId] = useState("");
-  const [fileType, setFileType] = useState("");
-  const [traceError, setTraceError] = useState("");
+  const [transactionResult, setTransactionResult] = useState('');
+  const [testNetId, setTestNetId] = useState('');
+  const [fileType, setFileType] = useState('');
+  const [traceError, setTraceError] = useState('');
   const [accountName, setAccountName] = useState<IAccount>({
-    label: "",
-    value: [""],
+    label: '',
+    value: [''],
   });
   const [localAcc, setLocalAcc] = useState<any[]>([]);
   const [testNetAcc, setTestNetAcc] = useState<any[]>([]);
-  const [testNets, setTestNets] = useState([
-    { value: "ganache", label: "Ganache" },
+  const [testNets] = useState([
+    { value: 'ganache', label: 'Ganache' },
     // { value: '3', label: 'Ropsten' },
     // { value: '4', label: 'Rinkeby' },
-    { value: "5", label: "Görli" },
+    { value: '5', label: 'Görli' },
   ]);
   const [appRegistered, setAppRegistered] = useState(false);
 
@@ -107,11 +105,11 @@ const App = (props: IProps) => {
     if (localAcc.length > 0 && testNetAcc.length > 0) {
       setSelectorAccounts([
         {
-          label: "Ganache",
+          label: 'Ganache',
           options: testNetAcc,
         },
         {
-          label: "Local Accounts",
+          label: 'Local Accounts',
           options: localAcc,
         },
       ]);
@@ -120,7 +118,7 @@ const App = (props: IProps) => {
     } else if (testNetAcc.length > 0) {
       setSelectorAccounts([
         {
-          label: "Ganache",
+          label: 'Ganache',
           options: testNetAcc,
         },
       ]);
@@ -134,7 +132,7 @@ const App = (props: IProps) => {
   }, [localAcc, testNetAcc]);
 
   useEffect(() => {
-    window.addEventListener("message", async (event) => {
+    window.addEventListener('message', async (event) => {
       const { data } = event;
 
       if (data.fileType) {
@@ -178,19 +176,19 @@ const App = (props: IProps) => {
             setMessage(compiled.errors);
           } else if (!compiled.errors) {
             setMessage([]);
-            setProcessMessage("");
+            setProcessMessage('');
           }
           const fileName: string = Object.keys(compiled.sources)[0];
           const contractsArray: string[] = setSelectorOption(Object.keys(compiled.contracts[fileName]));
           const files: string[] = setFileSelectorOptions(Object.keys(compiled.sources));
           setCompiled(compiled);
           setFileName(fileName);
-          setProcessMessage("");
+          setProcessMessage('');
           setContractName(Object.keys(compiled.contracts[fileName])[0]);
           setContracts(contractsArray);
           setFiles(files);
         } catch (error) {
-          setProcessMessage("Error Parsing Compilation result");
+          setProcessMessage('Error Parsing Compilation result');
         }
       }
       if (data.processMessage) {
@@ -200,18 +198,18 @@ const App = (props: IProps) => {
       if (data.versions) {
         const options = solidityVersion(data.versions.releases, data.versions.latestRelease);
         setAvailableVersions(options);
-        setProcessMessage("");
+        setProcessMessage('');
       }
 
-      if (data.resetTestState === "resetTestState") {
+      if (data.resetTestState === 'resetTestState') {
         props.clearFinalResult();
       }
 
-      if (data.testPanel === "test") {
+      if (data.testPanel === 'test') {
         setTabIndex(4);
       }
 
-      if (data.testPanel === "main") {
+      if (data.testPanel === 'main') {
         setTabIndex(0);
       }
 
@@ -222,7 +220,7 @@ const App = (props: IProps) => {
       if (data._finalCallback) {
         const result = data._finalCallback;
         props.addFinalResultCallback(result);
-        setProcessMessage("");
+        setProcessMessage('');
       }
       if (data._importFileCb) {
         return;
@@ -253,8 +251,8 @@ const App = (props: IProps) => {
       }
     });
     // Component mounted start getting gRPC things
-    vscode.postMessage({ command: "get-localAccounts" });
-    vscode.postMessage({ command: "run-getAccounts" });
+    vscode.postMessage({ command: 'get-localAccounts' });
+    vscode.postMessage({ command: 'run-getAccounts' });
   }, []);
 
   useEffect(() => {
@@ -270,7 +268,7 @@ const App = (props: IProps) => {
   useEffect(() => {
     props.setTestNetId(testNetId);
     vscode.postMessage({
-      command: "get-balance",
+      command: 'get-balance',
       account: currAccount,
       testNetId,
     });
@@ -296,7 +294,7 @@ const App = (props: IProps) => {
 
   const setSelectedVersion = (version: any) => {
     vscode.postMessage({
-      command: "version",
+      command: 'version',
       version: version.value,
     });
   };
@@ -316,11 +314,11 @@ const App = (props: IProps) => {
 
   const handleAppRegister = () => {
     vscode.postMessage({
-      command: "app-register",
+      command: 'app-register',
     });
   };
 
-  const openAdvanceDeploy = () => {
+  const openAdvanceDeploy = (): void => {
     setTabIndex(2);
   };
 
@@ -331,7 +329,7 @@ const App = (props: IProps) => {
       </header>
       <div className="selectors">
         {/* quick fix solidity version selector bug */}
-        {availableVersions && fileType !== "vyper" && (
+        {availableVersions && fileType !== 'vyper' && (
           <Selector
             onSelect={setSelectedVersion}
             options={availableVersions}
@@ -450,7 +448,7 @@ const App = (props: IProps) => {
           </TabPanel>
           {/* Test panel */}
           <TabPanel className="react-tab-panel">
-            {props.test.testResults.length > 0 ? <TestDisplay /> : "No contracts to test"}
+            {props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
           </TabPanel>
         </Tabs>
         <div className="err_warning_container">
@@ -458,8 +456,8 @@ const App = (props: IProps) => {
             return (
               // eslint-disable-next-line react/no-array-index-key
               <div key={i}>
-                {m.severity === "warning" && <pre className="error-message yellow-text">{m.formattedMessage}</pre>}
-                {m.severity === "error" && <pre className="error-message red-text">{m.formattedMessage}</pre>}
+                {m.severity === 'warning' && <pre className="error-message yellow-text">{m.formattedMessage}</pre>}
+                {m.severity === 'error' && <pre className="error-message red-text">{m.formattedMessage}</pre>}
                 {!m.severity && <pre className="error-message">{m.formattedMessage}</pre>}
               </div>
             );

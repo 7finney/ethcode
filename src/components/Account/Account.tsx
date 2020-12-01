@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { connect, useSelector, useDispatch } from "react-redux";
-import { Selector, Button, ButtonType } from "../common/ui";
-import "./Account.css";
-import { addNewAcc } from "../../actions";
-import { IAccount, GroupedSelectorAccounts, GlobalStore } from "../../types";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Selector, Button, ButtonType } from '../common/ui';
+import './Account.css';
+import { addNewAcc } from '../../actions';
+import { IAccount, GroupedSelectorAccounts, GlobalStore } from '../../types';
+import { useForm } from 'react-hook-form';
 
 type IProps = {
   accounts: Array<GroupedSelectorAccounts>;
@@ -22,12 +22,12 @@ type FormInputs = {
 
 const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAccount, handleAppRegister }: IProps) => {
   const [balance, setBalance] = useState(0);
-  const [publicAddress, setPublicAddress] = useState("");
-  const [pvtKey, setPvtKey] = useState("");
+  const [publicAddress, setPublicAddress] = useState('');
+  const [pvtKey, setPvtKey] = useState('');
   const [showButton, setShowButton] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [msg, setMsg] = useState('');
   const { register, handleSubmit } = useForm<FormInputs>();
 
   // UseSelector to extract state elements.
@@ -41,7 +41,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
   const dispatch = useDispatch();
 
   useEffect(() => {
-    window.addEventListener("message", async (event) => {
+    window.addEventListener('message', async (event) => {
       const { data } = event;
       if (data.newAccount) {
         // TODO: Update account into redux
@@ -66,7 +66,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
   }, []);
 
   useEffect(() => {
-    setMsg("Success! Read privatekey.");
+    setMsg('Success! Read privatekey.');
   }, [pvtKey]);
 
   useEffect(() => {
@@ -77,17 +77,17 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
 
   useEffect(() => {
     vscode.postMessage({
-      command: "get-pvt-key",
+      command: 'get-pvt-key',
       payload: currAccount ? (currAccount.pubAddr ? currAccount.pubAddr : currAccount.value) : null,
     });
   }, [currAccount]);
 
   // generate keypair
   const handleGenKeyPair = () => {
-    const password = "";
+    const password = '';
     try {
       vscode.postMessage({
-        command: "gen-keypair",
+        command: 'gen-keypair',
         payload: password,
       });
       setShowButton(true);
@@ -100,7 +100,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
   const deleteAccount = () => {
     try {
       vscode.postMessage({
-        command: "delete-keyPair",
+        command: 'delete-keyPair',
         payload: currAccount.value,
       });
     } catch (err) {
@@ -112,14 +112,14 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
   const handleTransactionSubmit = (formData: FormInputs) => {
     setSendBtnDisable(true);
     try {
-      if (testNetId === "ganache") {
+      if (testNetId === 'ganache') {
         const transactionInfo = {
           fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
           toAddress: formData.accountToAddress,
           amount: formData.amount,
         };
         vscode.postMessage({
-          command: "send-ether",
+          command: 'send-ether',
           payload: transactionInfo,
           testNetId,
         });
@@ -131,7 +131,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
           value: formData.amount,
         };
         vscode.postMessage({
-          command: "send-ether-signed",
+          command: 'send-ether-signed',
           payload: { transactionInfo, pvtKey },
           testNetId,
         });
@@ -152,7 +152,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
     <div className="account_container">
       <div className="account_row">
         <div className="label-container">
-          <label className="label">App Status: {appRegistered ? "Verified" : "Not Verified"}</label>
+          <label className="label">App Status: {appRegistered ? 'Verified' : 'Not Verified'}</label>
         </div>
         <div className="input-container">
           <Button buttonType={ButtonType.Input} disabled={appRegistered} onClick={handleAppRegister}>
@@ -193,9 +193,9 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
           <Button
             buttonType={ButtonType.Input}
             style={{
-              background: "#fa4138",
-              color: "white",
-              border: "1px solid #fa4138",
+              background: '#fa4138',
+              color: 'white',
+              border: '1px solid #fa4138',
             }}
             onClick={deleteAccount}
           >
@@ -220,7 +220,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
             <input
               name="accountFromAddress"
               className="input custom_input_css"
-              value={currAccount ? currAccount.value : "0x"}
+              value={currAccount ? currAccount.value : '0x'}
               type="text"
               placeholder="from"
               ref={register}
@@ -255,7 +255,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
         <div className="account_row">
           <div className="label-container" />
           <div className="input-container">
-            <Button buttonType={ButtonType.Input} disabled={sendBtnDisable} style={{ marginLeft: "10px" }}>
+            <Button buttonType={ButtonType.Input} disabled={sendBtnDisable} style={{ marginLeft: '10px' }}>
               Send
             </Button>
           </div>
@@ -286,14 +286,14 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
           <label className="label">Public key </label>
         </div>
         <div className="input-container">
-          <input className="input custom_input_css" value={publicAddress || ""} type="text" placeholder="public key" />
+          <input className="input custom_input_css" value={publicAddress || ''} type="text" placeholder="public key" />
         </div>
       </div>
 
       {/* Error Handle */}
       <div>
         {error && (
-          <pre className="large-code" style={{ color: "red" }}>
+          <pre className="large-code" style={{ color: 'red' }}>
             {
               // @ts-ignore
               JSON.stringify(error)

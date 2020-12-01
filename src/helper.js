@@ -16,7 +16,7 @@ export function setGanacheAccountsOption(optionsArray) {
     const optItm = {
       value: obj,
       label: obj,
-      type: "Ganache",
+      type: 'Ganache',
     };
     return options.push(optItm);
   });
@@ -29,7 +29,7 @@ export function setLocalAccountOption(optionsArray) {
     const optItm = {
       value: obj.checksumAddress,
       label: obj.pubAddress,
-      type: "Local",
+      type: 'Local',
       pubAddress: obj.pubAddress,
       checksumAddress: obj.checksumAddress,
     };
@@ -43,7 +43,7 @@ export function setFileSelectorOptions(optionsArray) {
   optionsArray.map((file) => {
     const optItm = {
       value: file,
-      label: file.substring(file.lastIndexOf("/") + 1),
+      label: file.substring(file.lastIndexOf('/') + 1),
     };
     return options.push(optItm);
   });
@@ -56,7 +56,7 @@ export function solidityVersion(versions, latestRelease) {
   vs = vs[0] === latestRelease ? vs : vs.reverse();
   vs.map((v) => {
     const optItm = {
-      value: versions[v].split("soljson-")[1].split(".js")[0],
+      value: versions[v].split('soljson-')[1].split('.js')[0],
       label: v,
     };
     return options.push(optItm);
