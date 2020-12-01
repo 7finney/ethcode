@@ -282,3 +282,21 @@ export type ConstructorInput = {
   type: string;
   value?: string;
 };
+
+export type TransactionResult = {
+  transactionHash: string;
+  transactionIndex: number;
+  blockHash: string;
+  blockNumber: number;
+  from: string;
+  to: string | null;
+  gasUsed: number;
+  cumulativeGasUsed: number;
+  contractAddress: string;
+  logs: Array<string>;
+  status: number;
+  logsBloom: string;
+  v: string;
+  r: string;
+  s: string;
+};

@@ -1,23 +1,40 @@
-import { SET_DEPLOYED_RESULT, CLEAR_DEPLOYED_RESULT, SET_CALL_RESULT, SET_TESTNET_CALL_RESULT } from '../actions/types';
+import { CompilationResult, TransactionResult } from 'types/solidityTypes';
+import {
+  SET_DEPLOYED_RESULT,
+  CLEAR_DEPLOYED_RESULT,
+  SET_CALL_RESULT,
+  SET_TESTNET_CALL_RESULT,
+  SET_COMPILED_RESULT,
+} from '../actions/types';
 
-const initialState = {
-  compiledresult: {},
+interface IState {
+  compiledresult: Array<CompilationResult>;
+  callResult: { [key: string]: string };
+  testNetCallResult: { [key: string]: string };
+  deployedResult: TransactionResult | null;
+}
+const initialState: IState = {
+  compiledresult: [],
   callResult: {},
   testNetCallResult: {},
+  deployedResult: null,
 };
 
-export default (state: any = initialState, action: any) => {
+export default (state: any = initialState, action: any): IState => {
   switch (action.type) {
     case SET_DEPLOYED_RESULT:
+      console.log('... setting deployed result....');
+      console.log(JSON.stringify(action.payload));
       return {
         ...state,
-        compiledresult: action.payload,
+        deployedResult: action.payload,
       };
     case CLEAR_DEPLOYED_RESULT:
       return {
         ...state,
         compiledresult: {},
         callResult: {},
+        deployedResult: null,
       };
     case SET_CALL_RESULT:
       return {
@@ -28,6 +45,13 @@ export default (state: any = initialState, action: any) => {
       return {
         ...state,
         testNetCallResult: action.payload,
+      };
+    case SET_COMPILED_RESULT:
+      console.log('... setting compiled result....');
+      console.log(JSON.parse(action.payload));
+      return {
+        ...state,
+        compiledResult: JSON.parse(action.payload),
       };
     default:
       return state;

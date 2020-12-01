@@ -1,20 +1,20 @@
-import * as path from "path";
+import * as path from 'path';
 // @ts-ignore
-import * as vscode from "vscode";
-import { fork, ChildProcess } from "child_process";
-import { ISources, IAccount, TokenData } from "./types";
-import * as uuid from "uuid/v4";
-import axios from "axios";
+import * as vscode from 'vscode';
+import { fork, ChildProcess } from 'child_process';
+import { ISources, IAccount, TokenData } from './types';
+import * as uuid from 'uuid/v4';
+import axios from 'axios';
 
-import Logger from "./logger";
+import Logger from './logger';
 
 function retrieveUserSettings(accessScope: string, valueToRetreive: string): string | undefined {
   return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive);
 }
 
 const authToken: TokenData = {
-  token: retrieveUserSettings("ethcode.userConfig.appRegistration", "token"),
-  appId: retrieveUserSettings("ethcode.userConfig.appRegistration", "appId"),
+  token: retrieveUserSettings('ethcode.userConfig.appRegistration', 'token'),
+  appId: retrieveUserSettings('ethcode.userConfig.appRegistration', 'appId'),
 };
 
 // Create logger
@@ -24,7 +24,7 @@ function updateUserSession(valueToAssign: any, keys: string[]): Promise<string> 
   return new Promise((resolve, reject) => {
     try {
       // @ts-ignore
-      const config = vscode.workspace.getConfiguration("ethcode", vscode.workspace.workspaceFolders[0].uri);
+      const config = vscode.workspace.getConfiguration('ethcode', vscode.workspace.workspaceFolders[0].uri);
       if (keys.length === 2) {
         const userSession = `${keys[0]}.${keys[1]}`;
         config.update(userSession, valueToAssign);
@@ -45,18 +45,18 @@ function updateUserSession(valueToAssign: any, keys: string[]): Promise<string> 
 async function updateUserSettings(accessScope: string, valueToAdd: string): Promise<boolean> {
   try {
     await vscode.workspace
-      .getConfiguration("ethcode")
+      .getConfiguration('ethcode')
       .update(accessScope, valueToAdd, vscode.ConfigurationTarget.Global);
     return true;
   } catch (e) {
-    logger.log("Error updating: ", e);
+    logger.log('Error updating: ', e);
     return false;
   }
 }
 
 async function verifyUserToken(appId: string, email: string): Promise<boolean> {
   try {
-    const r = await axios.post("https://auth.ethco.de/user/token/app/verify", {
+    const r = await axios.post('https://auth.ethco.de/user/token/app/verify', {
       email,
       app_id: appId,
     });
@@ -73,23 +73,23 @@ async function verifyUserToken(appId: string, email: string): Promise<boolean> {
 
 async function registerAppToToken() {
   try {
-    const appId = retrieveUserSettings("ethcode.userConfig.appRegistration", "appId");
-    const email = retrieveUserSettings("ethcode.userConfig.appRegistration", "email");
-    const token = retrieveUserSettings("ethcode.userConfig.appRegistration", "token");
-    if (appId === "" || email === "") {
-      logger.log("App Not Registered");
+    const appId = retrieveUserSettings('ethcode.userConfig.appRegistration', 'appId');
+    const email = retrieveUserSettings('ethcode.userConfig.appRegistration', 'email');
+    const token = retrieveUserSettings('ethcode.userConfig.appRegistration', 'token');
+    if (appId === '' || email === '') {
+      logger.log('App Not Registered');
       return false;
     }
     const verified = await verifyUserToken(appId!, email!);
     if (!verified) {
-      logger.error(new Error("App token tampered with or revoked"));
+      logger.error(new Error('App token tampered with or revoked'));
       return false;
     }
     authToken.appId = appId!;
     authToken.token = token!;
     return true;
   } catch (e) {
-    if (e.code === "FileNotFound") {
+    if (e.code === 'FileNotFound') {
       logger.log("Configuration file doesn't exists");
     }
     return false;
@@ -97,8 +97,8 @@ async function registerAppToToken() {
 }
 
 function getNonce() {
-  let text = "";
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < 32; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
@@ -114,7 +114,7 @@ class ReactPanel {
    */
   public static currentPanel: ReactPanel | undefined;
 
-  private static readonly viewType = "ethcode";
+  private static readonly viewType = 'ethcode';
 
   private readonly _panel: vscode.WebviewPanel;
 
@@ -131,12 +131,12 @@ class ReactPanel {
     this._extensionPath = extensionPath;
 
     // Create and show a new webview panel
-    this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, "ETHcode", column, {
+    this._panel = vscode.window.createWebviewPanel(ReactPanel.viewType, 'ETHcode', column, {
       // Enable javascript in the webview
       enableScripts: true,
 
       // And restric the webview to only loading content from our extension's `media` directory.
-      localResourceRoots: [vscode.Uri.file(path.join(this._extensionPath, "build"))],
+      localResourceRoots: [vscode.Uri.file(path.join(this._extensionPath, 'build'))],
     });
 
     // Set the webview's initial html content
@@ -150,24 +150,24 @@ class ReactPanel {
     this._panel.webview.onDidReceiveMessage(
       (message: any) => {
         logger.log(`Worker message: ${JSON.stringify(message)}`);
-        if (message.command === "version") {
+        if (message.command === 'version') {
           this.version = message.version;
-        } else if (message.command === "run-deploy") {
+        } else if (message.command === 'run-deploy') {
           this.runDeploy(message.payload, message.testNetId);
-        } else if (message.command.endsWith("contract-method-call")) {
+        } else if (message.command.endsWith('contract-method-call')) {
           this.runContractCall(message.payload, message.testNetId);
-        } else if (message.command === "run-get-gas-estimate") {
+        } else if (message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload, message.testNetId);
-        } else if (message.command === "debugTransaction") {
+        } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
-        } else if (message.command === "get-balance") {
-          updateUserSession(message.account, ["userConfig", "defaultAccount"]);
+        } else if (message.command === 'get-balance') {
+          updateUserSession(message.account, ['userConfig', 'defaultAccount']);
           this.getBalance(message.account, message.testNetId);
-        } else if (message.command === "build-rawtx") {
+        } else if (message.command === 'build-rawtx') {
           this.buildRawTx(message.payload, message.testNetId);
-        } else if (message.command === "sign-deploy-tx") {
+        } else if (message.command === 'sign-deploy-tx') {
           this.signDeployTx(message.payload, message.testNetId);
-        } else if (message.command === "run-getAccounts") {
+        } else if (message.command === 'run-getAccounts') {
           if (ReactPanel.currentPanel) {
             ReactPanel.currentPanel.getAccounts();
           } else {
@@ -178,20 +178,20 @@ class ReactPanel {
               logger.error(error);
             }
           }
-        } else if (message.command === "gen-keypair") {
+        } else if (message.command === 'gen-keypair') {
           this.genKeyPair(message.payload, this._extensionPath);
-        } else if (message.command === "delete-keyPair") {
+        } else if (message.command === 'delete-keyPair') {
           this.deleteKeyPair(message.payload, this._extensionPath);
-        } else if (message.command === "get-localAccounts") {
-          updateUserSession(this._extensionPath, ["keystore", "keyStorePath"]);
+        } else if (message.command === 'get-localAccounts') {
+          updateUserSession(this._extensionPath, ['keystore', 'keyStorePath']);
           this.getLocalAccounts(this._extensionPath);
-        } else if (message.command === "send-ether") {
+        } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
-        } else if (message.command === "send-ether-signed") {
+        } else if (message.command === 'send-ether-signed') {
           this.sendEtherSigned(message.payload, message.testNetId);
-        } else if (message.command === "get-pvt-key") {
+        } else if (message.command === 'get-pvt-key') {
           this.getPvtKey(message.payload, this._extensionPath);
-        } else if (message.command === "app-register") {
+        } else if (message.command === 'app-register') {
           this.getTokens()
             .then((r) => this._panel.webview.postMessage({ registered: r }))
             .catch(() => this._panel.webview.postMessage({ registered: false }));
@@ -210,7 +210,7 @@ class ReactPanel {
     if (ReactPanel.currentPanel) {
       try {
         ReactPanel.currentPanel.getCompilerVersion();
-        ReactPanel.currentPanel.version = "latest";
+        ReactPanel.currentPanel.version = 'latest';
         ReactPanel.currentPanel._panel.reveal(column);
         ReactPanel.currentPanel.checkFileName();
         ReactPanel.currentPanel.checkAppRegistration();
@@ -220,7 +220,7 @@ class ReactPanel {
     } else {
       try {
         ReactPanel.currentPanel = new ReactPanel(extensionPath, column || vscode.ViewColumn.One);
-        ReactPanel.currentPanel.version = "latest";
+        ReactPanel.currentPanel.version = 'latest';
         ReactPanel.currentPanel.getCompilerVersion();
         ReactPanel.currentPanel.checkFileName();
         ReactPanel.currentPanel.checkAppRegistration();
@@ -246,13 +246,13 @@ class ReactPanel {
         // @ts-ignore
       } else if (panelName && panelName.match(regexVyp) && panelName.match(regexVyp).length > 0) {
         // @ts-ignore
-        this._panel.webview.postMessage({ fileType: "vyper" });
+        this._panel.webview.postMessage({ fileType: 'vyper' });
         // @ts-ignore
       } else if (panelName && panelName.match(regexSol) && panelName.match(regexSol).length > 0) {
         // @ts-ignore
-        this._panel.webview.postMessage({ fileType: "solidity" });
+        this._panel.webview.postMessage({ fileType: 'solidity' });
       } else {
-        this._panel.webview.postMessage({ fileType: "none" });
+        this._panel.webview.postMessage({ fileType: 'none' });
       }
     });
   }
@@ -262,7 +262,7 @@ class ReactPanel {
     // return fork(path.join(__dirname, "worker.js"), [], {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
-    return fork(path.join(__dirname, "worker.js"));
+    return fork(path.join(__dirname, 'worker.js'));
   };
 
   private createSolidityWorker = (): ChildProcess => {
@@ -270,7 +270,7 @@ class ReactPanel {
     // return fork(path.join(__dirname, "solc-worker.js"), [], {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
-    return fork(path.join(__dirname, "solc-worker.js"));
+    return fork(path.join(__dirname, 'solc-worker.js'));
   };
 
   private createVyperWorker = (): ChildProcess => {
@@ -278,11 +278,11 @@ class ReactPanel {
     // return fork(path.join(__dirname, "vyp-worker.js"), [], {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
-    return fork(path.join(__dirname, "vyp-worker.js"));
+    return fork(path.join(__dirname, 'vyp-worker.js'));
   };
 
   private createAccWorker = (): ChildProcess => {
-    return fork(path.join(__dirname, "accWorker.js"));
+    return fork(path.join(__dirname, 'accWorker.js'));
   };
 
   public async checkAppRegistration(): Promise<void> {
@@ -294,15 +294,15 @@ class ReactPanel {
     try {
       const token = await vscode.window.showInputBox({
         ignoreFocusOut: true,
-        placeHolder: "Enter App Token from dApp Auth",
+        placeHolder: 'Enter App Token from dApp Auth',
       });
       const email = await vscode.window.showInputBox({
         ignoreFocusOut: true,
-        placeHolder: "Enter email regitered from dApp Auth",
+        placeHolder: 'Enter email regitered from dApp Auth',
       });
       if (token || email) {
         const appId = uuid();
-        await axios.post("https://auth.ethco.de/user/token/app/add", {
+        await axios.post('https://auth.ethco.de/user/token/app/add', {
           email,
           app_id: appId,
           token,
@@ -312,9 +312,9 @@ class ReactPanel {
           email,
           token,
         };
-        await updateUserSettings("userConfig.appRegistration.token", settingsData.token!);
-        await updateUserSettings("userConfig.appRegistration.appId", settingsData.appId!);
-        await updateUserSettings("userConfig.appRegistration.email", settingsData.email!);
+        await updateUserSettings('userConfig.appRegistration.token', settingsData.token!);
+        await updateUserSettings('userConfig.appRegistration.appId', settingsData.appId!);
+        await updateUserSettings('userConfig.appRegistration.email', settingsData.email!);
         return true;
       }
       return false;
@@ -328,12 +328,12 @@ class ReactPanel {
   private invokeSolidityCompiler(context: vscode.ExtensionContext, sources: ISources, rootPath: vscode.Uri): void {
     // solidity compiler code goes bellow
     const input = {
-      language: "Solidity",
+      language: 'Solidity',
       sources,
       settings: {
         outputSelection: {
-          "*": {
-            "*": ["*"],
+          '*': {
+            '*': ['*'],
           },
         },
       },
@@ -345,31 +345,31 @@ class ReactPanel {
     logger.log(`Solidity compiler invoked with WorkerID: ${solcWorker.pid}`);
     logger.log(`Compiling with solidity version ${this.version}`);
     // Reset Components State before compilation
-    this._panel.webview.postMessage({ processMessage: "Compiling..." });
+    this._panel.webview.postMessage({ processMessage: 'Compiling...' });
     solcWorker.send({
-      command: "compile",
+      command: 'compile',
       payload: input,
       version: this.version,
     });
-    solcWorker.on("message", (m: any) => {
+    solcWorker.on('message', (m: any) => {
       logger.log(`Solidity worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
-      } else if (m.command === "import") {
+      } else if (m.command === 'import') {
         if (!sources[m.path]) {
           // eslint-disable-next-line no-param-reassign
           sources[m.path] = {
             content: undefined,
           };
           solcWorker.send({
-            command: "import",
+            command: 'import',
             payload: {
               path: m.path,
               rootPath,
             },
           });
         }
-      } else if (m.command === "re-compile") {
+      } else if (m.command === 're-compile') {
         if (m.path) {
           // eslint-disable-next-line no-param-reassign
           sources[m.path] = {
@@ -379,39 +379,39 @@ class ReactPanel {
           const noContent = Object.values(input.sources).filter((source) => source.content === undefined);
           if (noContent.length < 1) {
             solcWorker.send({
-              command: "compile",
+              command: 'compile',
               payload: input,
               version: this.version,
             });
           }
         }
-      } else if (m.command === "compiled") {
-        context.workspaceState.update("sources", JSON.stringify(sources));
+      } else if (m.command === 'compiled') {
+        context.workspaceState.update('sources', JSON.stringify(sources));
         this._panel.webview.postMessage({
           compiled: m.output,
           sources,
-          testPanel: "main",
+          testPanel: 'main',
         });
         updateUserSession(
           {
-            lang: "solidity",
+            lang: 'solidity',
             solidityCompilerVersion: this.version,
           },
-          ["userConfig", "compiler"]
+          ['userConfig', 'compiler']
         );
-      } else if (m.command === "process") {
+      } else if (m.command === 'process') {
         this._panel.webview.postMessage({ processMessage: m.processMessage });
-      } else if (m.command === "compile-ok") {
-        solcWorker.send({ command: "exit" });
+      } else if (m.command === 'compile-ok') {
+        solcWorker.send({ command: 'exit' });
       }
     });
-    solcWorker.on("error", (error: Error) => {
+    solcWorker.on('error', (error: Error) => {
       logger.log(`Compile worker process exited with error ${error.message}`);
       solcWorker.kill();
     });
-    solcWorker.on("exit", (code: number, signal: string) => {
+    solcWorker.on('exit', (code: number, signal: string) => {
       logger.log(`Compile worker process exited with code ${code} and signal ${signal}`);
-      this._panel.webview.postMessage({ processMessage: "" });
+      this._panel.webview.postMessage({ processMessage: '' });
     });
   }
 
@@ -419,28 +419,28 @@ class ReactPanel {
     const vyperWorker = this.createVyperWorker();
     logger.log(`Vyper compiler invoked with WorkerID: ${vyperWorker.pid}`);
     logger.log(`Compiling with vyper compiler version: ${this.version}`);
-    this._panel.webview.postMessage({ processMessage: "Compiling..." });
+    this._panel.webview.postMessage({ processMessage: 'Compiling...' });
     vyperWorker.send({
-      command: "compile",
+      command: 'compile',
       source: sources,
       version: this.version,
     });
-    vyperWorker.on("message", (m: any) => {
+    vyperWorker.on('message', (m: any) => {
       logger.log(`Vyper worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
       }
       if (m.compiled) {
-        context.workspaceState.update("sources", JSON.stringify(sources));
+        context.workspaceState.update('sources', JSON.stringify(sources));
 
         this._panel.webview.postMessage({ compiled: m.compiled, sources });
         vyperWorker.kill();
         updateUserSession(
           {
-            lang: "vyper",
-            solidityCompilerVersion: "",
+            lang: 'vyper',
+            solidityCompilerVersion: '',
           },
-          ["userConfig", "compile"]
+          ['userConfig', 'compile']
         );
       }
       if (m.processMessage) {
@@ -453,7 +453,7 @@ class ReactPanel {
     const accWorker = this.createAccWorker();
     logger.log(`Account worker invoked with WorkerID : ${accWorker.pid}.`);
     // TODO: implementation according to the acc_system frontend
-    accWorker.on("message", (m: any) => {
+    accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.account) {
         this._panel.webview.postMessage({ newAccount: m.account });
@@ -464,13 +464,13 @@ class ReactPanel {
         this._panel.webview.postMessage({ error: m.error });
       }
     });
-    accWorker.send({ command: "create-account", pswd: password, ksPath });
+    accWorker.send({ command: 'create-account', pswd: password, ksPath });
   }
 
   // get private key for given public key
   private getPvtKey(pubKey: string, keyStorePath: string) {
     const accWorker = this.createAccWorker();
-    accWorker.on("message", (m: any) => {
+    accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       // TODO: handle private key not found errors
       if (m.privateKey) {
@@ -478,17 +478,17 @@ class ReactPanel {
       }
     });
     accWorker.send({
-      command: "extract-privateKey",
+      command: 'extract-privateKey',
       address: pubKey,
       keyStorePath,
-      pswd: "",
+      pswd: '',
     });
   }
 
   private deleteKeyPair(publicKey: string, keyStorePath: string) {
     const accWorker = this.createAccWorker();
 
-    accWorker.on("message", (m: any) => {
+    accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.resp) {
         logger.success(m.resp);
@@ -502,7 +502,7 @@ class ReactPanel {
       }
     });
     accWorker.send({
-      command: "delete-keyPair",
+      command: 'delete-keyPair',
       address: publicKey,
       keyStorePath,
     });
@@ -511,7 +511,7 @@ class ReactPanel {
   private debug(txHash: string, testNetId: string): void {
     const debugWorker = this.createWorker();
     logger.log(`Debug worker invoked with WorkerID: ${debugWorker.pid}`);
-    debugWorker.on("message", (m: any) => {
+    debugWorker.on('message', (m: any) => {
       logger.log(`Debug worker message: ${JSON.stringify(m)}`);
       try {
         this._panel.webview.postMessage({ txTrace: JSON.parse(m.debugResp) });
@@ -520,7 +520,7 @@ class ReactPanel {
       }
     });
     debugWorker.send({
-      command: "debug-transaction",
+      command: 'debug-transaction',
       payload: txHash,
       testnetId: testNetId,
     });
@@ -529,7 +529,7 @@ class ReactPanel {
   // create unsigned transactions
   private buildRawTx(payload: any, testNetId: string) {
     const txWorker = this.createWorker();
-    txWorker.on("message", (m: any) => {
+    txWorker.on('message', (m: any) => {
       logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
@@ -537,12 +537,12 @@ class ReactPanel {
         this._panel.webview.postMessage({ buildTxResult: m.buildTxResult });
       }
     });
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
     txWorker.send({
-      command: "build-rawtx",
+      command: 'build-rawtx',
       payload,
       authToken,
       testnetId: testNetId,
@@ -552,7 +552,7 @@ class ReactPanel {
   // Deploy contracts for ganache
   private runDeploy(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
-    deployWorker.on("message", (m: any) => {
+    deployWorker.on('message', (m: any) => {
       logger.log(`Deploy worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
@@ -560,12 +560,12 @@ class ReactPanel {
         this._panel.webview.postMessage({ deployedResult: m });
       }
     });
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
     deployWorker.send({
-      command: "deploy-contract",
+      command: 'deploy-contract',
       payload,
       authToken,
       testnetId: testNetId,
@@ -575,7 +575,7 @@ class ReactPanel {
   // sign & deploy unsigned contract transactions
   private signDeployTx(payload: any, testNetId: string) {
     const signedDeployWorker = this.createWorker();
-    signedDeployWorker.on("message", (m: any) => {
+    signedDeployWorker.on('message', (m: any) => {
       logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         this._panel.webview.postMessage({ errors: m.error });
@@ -586,15 +586,15 @@ class ReactPanel {
         this._panel.webview.postMessage({
           transactionResult: m.transactionResult,
         });
-        logger.success("Contract transaction submitted!");
+        logger.success('Contract transaction submitted!');
       }
     });
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
     signedDeployWorker.send({
-      command: "sign-deploy",
+      command: 'sign-deploy',
       payload,
       authToken,
       testnetId: testNetId,
@@ -604,7 +604,7 @@ class ReactPanel {
   // get accounts
   public getAccounts() {
     const accountsWorker = this.createWorker();
-    accountsWorker.on("message", (m: any) => {
+    accountsWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error.details);
@@ -612,43 +612,43 @@ class ReactPanel {
       this._panel.webview.postMessage({ fetchAccounts: m });
     });
     const authToken = {
-      appId: retrieveUserSettings("ethcode.userConfig.appRegistration", "appId"),
-      token: retrieveUserSettings("ethcode.userConfig.appRegistration", "token"),
+      appId: retrieveUserSettings('ethcode.userConfig.appRegistration', 'appId'),
+      token: retrieveUserSettings('ethcode.userConfig.appRegistration', 'token'),
     };
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
-    accountsWorker.send({ command: "get-accounts", authToken });
+    accountsWorker.send({ command: 'get-accounts', authToken });
   }
 
   // get local accounts
   private getLocalAccounts(keyStorePath: string) {
     const accWorker = this.createAccWorker();
 
-    accWorker.on("message", (m: any) => {
+    accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.localAddresses) {
         this._panel.webview.postMessage({ localAccounts: m.localAddresses });
       }
     });
-    accWorker.send({ command: "get-localAccounts", keyStorePath });
+    accWorker.send({ command: 'get-localAccounts', keyStorePath });
   }
 
   // get balance of given account
   private getBalance(account: IAccount, testNetId: string) {
     const balanceWorker = this.createWorker();
-    balanceWorker.on("message", (m: any) => {
+    balanceWorker.on('message', (m: any) => {
       logger.log(`Balance worker message: ${JSON.stringify(m)}`);
       this._panel.webview.postMessage({ balance: m.balance, account });
     });
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
     if (account && Object.keys(account).length > 0)
       balanceWorker.send({
-        command: "get-balance",
+        command: 'get-balance',
         account,
         authToken,
         testnetId: testNetId,
@@ -657,9 +657,9 @@ class ReactPanel {
 
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
-    logger.log("Running contract call...");
+    logger.log('Running contract call...');
     const callWorker = this.createWorker();
-    callWorker.on("message", (m: any) => {
+    callWorker.on('message', (m: any) => {
       logger.log(`Call worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
@@ -670,14 +670,14 @@ class ReactPanel {
         this._panel.webview.postMessage({ ganacheCallResult: m.callResult });
       }
     });
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
-    if (testNetId === "ganache") {
+    if (testNetId === 'ganache') {
       logger.log(`testnet Id: ${testNetId}`);
       callWorker.send({
-        command: "ganache-contract-method-call",
+        command: 'ganache-contract-method-call',
         payload,
         authToken,
         testnetId: testNetId,
@@ -685,7 +685,7 @@ class ReactPanel {
     } else {
       logger.log(`testnet Id: ${testNetId}`);
       callWorker.send({
-        command: "contract-method-call",
+        command: 'contract-method-call',
         payload,
         authToken,
         testnetId: testNetId,
@@ -696,7 +696,7 @@ class ReactPanel {
   // Get gas estimates
   private runGetGasEstimate(payload: any, testNetId: string) {
     const deployWorker = this.createWorker();
-    deployWorker.on("message", (m: any) => {
+    deployWorker.on('message', (m: any) => {
       logger.log(`Gas worker message: ${JSON.stringify(m)}`);
       if (m.error) {
         logger.error(m.error);
@@ -705,12 +705,12 @@ class ReactPanel {
         this._panel.webview.postMessage({ gasEstimate: m.gasEstimate });
       }
     });
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
     deployWorker.send({
-      command: "get-gas-estimate",
+      command: 'get-gas-estimate',
       payload,
       authToken,
       testnetId: testNetId,
@@ -720,23 +720,23 @@ class ReactPanel {
   // Send ether on ganache
   private sendEther(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
-    sendEtherWorker.on("message", (m: any) => {
+    sendEtherWorker.on('message', (m: any) => {
       logger.log(`Ether worker message: ${JSON.stringify(m)}`);
       if (m.transactionResult) {
-        updateUserSession(m.transactionResult, ["userConfig", "txHashOfLastSendEther"]);
-        updateUserSession(testNetId, ["userConfig", "networkId"]);
+        updateUserSession(m.transactionResult, ['userConfig', 'txHashOfLastSendEther']);
+        updateUserSession(testNetId, ['userConfig', 'networkId']);
         this._panel.webview.postMessage({
           transactionResult: m.transactionResult,
         });
-        logger.success("Successfully sent Ether");
+        logger.success('Successfully sent Ether');
       }
     });
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
     sendEtherWorker.send({
-      command: "send-ether",
+      command: 'send-ether',
       transactionInfo: payload,
       authToken,
       testnetId: testNetId,
@@ -746,25 +746,25 @@ class ReactPanel {
   // Send ether using ethereum client
   private sendEtherSigned(payload: any, testNetId: string) {
     const sendEtherWorker = this.createWorker();
-    sendEtherWorker.on("message", (m: any) => {
+    sendEtherWorker.on('message', (m: any) => {
       logger.log(`Ether worker message: ${JSON.stringify(m)}`);
       if (m.unsignedTx) {
         this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
-        updateUserSession(m.transactionResult, ["userConfig", "txHashOfLastSendEther"]);
-        updateUserSession(testNetId, ["userConfig", "networkId"]);
+        updateUserSession(m.transactionResult, ['userConfig', 'txHashOfLastSendEther']);
+        updateUserSession(testNetId, ['userConfig', 'networkId']);
         this._panel.webview.postMessage({
           transactionResult: m.transactionResult,
         });
-        logger.success("Successfully sent Ether");
+        logger.success('Successfully sent Ether');
       }
     });
-    if (authToken.appId === "" && authToken.token === "") {
-      logger.error(new Error("App Not registered"));
+    if (authToken.appId === '' && authToken.token === '') {
+      logger.error(new Error('App Not registered'));
       return;
     }
     sendEtherWorker.send({
-      command: "send-ether-signed",
+      command: 'send-ether-signed',
       payload,
       authToken,
       testnetId: testNetId,
@@ -778,7 +778,7 @@ class ReactPanel {
       sources[fn] = {
         content: editorContent,
       };
-      context.workspaceState.update("sources", JSON.stringify(sources));
+      context.workspaceState.update('sources', JSON.stringify(sources));
       const regexVyp = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.vy|.v.py|.vyper.py)$/g;
       const regexSol = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.sol|.solidity)$/g;
       // @ts-ignore
@@ -792,7 +792,7 @@ class ReactPanel {
         // invoke solidity compiler
         this.invokeSolidityCompiler(context, sources, rootPath.uri);
       } else {
-        const error = new Error("No matching file found!");
+        const error = new Error('No matching file found!');
         logger.error(error);
         throw error;
       }
@@ -807,19 +807,19 @@ class ReactPanel {
       };
     }
     const solcWorker = this.createWorker();
-    this._panel.webview.postMessage({ resetTestState: "resetTestState" });
+    this._panel.webview.postMessage({ resetTestState: 'resetTestState' });
     this._panel.webview.postMessage({
-      processMessage: "Running unit tests...",
+      processMessage: 'Running unit tests...',
     });
-    solcWorker.send({ command: "run-test", payload: JSON.stringify(sources) });
-    solcWorker.on("message", (m: any) => {
+    solcWorker.send({ command: 'run-test', payload: JSON.stringify(sources) });
+    solcWorker.on('message', (m: any) => {
       logger.log(`Remix-tests worker message: ${JSON.stringify(m)}`);
       if (m.data && m.path) {
         sources[m.path] = {
           content: m.data.content,
         };
         solcWorker.send({
-          command: "run-test",
+          command: 'run-test',
           payload: JSON.stringify(sources),
         });
       }
@@ -828,35 +828,35 @@ class ReactPanel {
         if (res.type) {
           this._panel.webview.postMessage({
             _testCallback: res,
-            testPanel: "test",
+            testPanel: 'test',
           });
         } else {
           this._panel.webview.postMessage({
             _finalCallback: res,
-            testPanel: "test",
+            testPanel: 'test',
           });
           solcWorker.kill();
         }
       }
     });
-    solcWorker.on("exit", () => {
-      logger.log("Remix-tests worker exited!");
+    solcWorker.on('exit', () => {
+      logger.log('Remix-tests worker exited!');
     });
   }
 
   public getCompilerVersion() {
     return new Promise((resolve, reject) => {
       const versionWorker = this.createWorker();
-      versionWorker.send({ command: "fetch_compiler_version" });
+      versionWorker.send({ command: 'fetch_compiler_version' });
       this._panel.webview.postMessage({
-        processMessage: "Fetching Compiler Versions...",
+        processMessage: 'Fetching Compiler Versions...',
       });
-      versionWorker.on("message", (m: any) => {
+      versionWorker.on('message', (m: any) => {
         logger.log(`Solidity worker message: ${JSON.stringify(m)}`);
         const { versions } = m;
         if (versions) {
           this._panel.webview.postMessage({ versions });
-          this._panel.webview.postMessage({ processMessage: "" });
+          this._panel.webview.postMessage({ processMessage: '' });
           resolve(versions);
           versionWorker.kill();
         } else {
@@ -865,11 +865,11 @@ class ReactPanel {
           versionWorker.kill();
         }
       });
-      versionWorker.on("error", (error: Error) => {
+      versionWorker.on('error', (error: Error) => {
         logger.error(error);
         reject(error);
       });
-      versionWorker.on("exit", (code: number, signal: string) => {
+      versionWorker.on('exit', (code: number, signal: string) => {
         const em = `getVersion worker process exited with code ${code} and signal ${signal}`;
         logger.log(em);
         this._panel.webview.postMessage({
@@ -900,13 +900,13 @@ class ReactPanel {
 
   private _getHtmlForWebview() {
     // eslint-disable-next-line global-require, import/no-dynamic-require,  @typescript-eslint/no-var-requires
-    const manifest = require(path.join(this._extensionPath, "build", "asset-manifest.json")).files;
-    const mainScript = manifest["main.js"];
-    const mainStyle = manifest["main.css"];
-    const scriptPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, "build", mainScript));
-    const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
-    const stylePathOnDisk = vscode.Uri.file(path.join(this._extensionPath, "build", mainStyle));
-    const styleUri = stylePathOnDisk.with({ scheme: "vscode-resource" });
+    const manifest = require(path.join(this._extensionPath, 'build', 'asset-manifest.json')).files;
+    const mainScript = manifest['main.js'];
+    const mainStyle = manifest['main.css'];
+    const scriptPathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', mainScript));
+    const scriptUri = scriptPathOnDisk.with({ scheme: 'vscode-resource' });
+    const stylePathOnDisk = vscode.Uri.file(path.join(this._extensionPath, 'build', mainStyle));
+    const styleUri = stylePathOnDisk.with({ scheme: 'vscode-resource' });
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
 
@@ -919,7 +919,7 @@ class ReactPanel {
         <title>ETH code</title>
         <link rel="stylesheet" type="text/css" href="${styleUri}">
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src vscode-resource: https:; script-src 'nonce-${nonce}';style-src vscode-resource: 'unsafe-inline' http: https: data:;">
-        <base href="${vscode.Uri.file(path.join(this._extensionPath, "build")).with({ scheme: "vscode-resource" })}/">
+        <base href="${vscode.Uri.file(path.join(this._extensionPath, 'build')).with({ scheme: 'vscode-resource' })}/">
       </head>
 
       <body>
@@ -934,7 +934,7 @@ class ReactPanel {
 // eslint-disable-next-line import/prefer-default-export
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.versionSelector", async () => {
+    vscode.commands.registerCommand('ethcode.versionSelector', async () => {
       try {
         if (ReactPanel.currentPanel) {
           ReactPanel.currentPanel
@@ -960,14 +960,14 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.activate", async () => {
-      logger.log("Activating ethcode...");
+    vscode.commands.registerCommand('ethcode.activate', async () => {
+      logger.log('Activating ethcode...');
       ReactPanel.createOrShow(context.extensionPath);
-      logger.success("Welcome to Ethcode!");
+      logger.success('Welcome to Ethcode!');
     })
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("ethcode.compile", () => {
+    vscode.commands.registerCommand('ethcode.compile', () => {
       if (!ReactPanel.currentPanel) {
         return;
       }
@@ -977,7 +977,7 @@ export function activate(context: vscode.ExtensionContext) {
         : undefined;
       ReactPanel.currentPanel.compileContract(context, editorContent, fileName);
     }),
-    vscode.commands.registerCommand("ethcode.runTest", () => {
+    vscode.commands.registerCommand('ethcode.runTest', () => {
       if (!ReactPanel.currentPanel) {
         return;
       }

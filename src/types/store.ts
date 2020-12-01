@@ -1,4 +1,4 @@
-import { CompilationResult, IAccount } from "./solidityTypes";
+import { CompilationResult, IAccount, TransactionResult } from './solidityTypes';
 
 export type GlobalStore = {
   test: {
@@ -9,11 +9,12 @@ export type GlobalStore = {
     compiledResult: Array<CompilationResult>;
     callResult: { [key: string]: string };
     testNetCallResult: { [key: string]: string };
+    deployedResult: TransactionResult;
   };
   accountStore: {
     accountBalance: number;
     accounts: Array<IAccount>;
-    currAccount: { [key: string]: string };
+    currAccount: IAccount;
   };
   debugStore: {
     testNetId: string;

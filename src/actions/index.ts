@@ -36,7 +36,7 @@ export const clearFinalResult = () => {
 
 export const setDeployedResult = (data: any) => {
   return (dispatch: Dispatch<any>) => {
-    dispatch({ type: SET_DEPLOYED_RESULT, payload: JSON.parse(data) });
+    dispatch({ type: SET_DEPLOYED_RESULT, payload: data });
   };
 };
 

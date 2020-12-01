@@ -1,2 +1,2 @@
-export * from "./solidityTypes";
-export * from "./store";
+export * from './solidityTypes';
+export * from './store';
