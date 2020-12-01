@@ -318,7 +318,7 @@ const App = (props: IProps) => {
     });
   };
 
-  const openAdvanceDeploy = () => {
+  const openAdvanceDeploy = (): void => {
     setTabIndex(2);
   };
 
