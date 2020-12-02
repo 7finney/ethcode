@@ -56,17 +56,12 @@ const App = () => {
   const [gasEstimate, setGasEstimate] = useState(0);
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
-  const [accounts, setAccounts] = useState<string[]>([]);
   const [selectorAccounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>([]);
   const [contracts, setContracts] = useState<string[]>([]);
   const [files, setFiles] = useState<string[]>([]);
   const [transactionResult, setTransactionResult] = useState('');
   const [fileType, setFileType] = useState('');
   const [traceError, setTraceError] = useState('');
-  const [accountName, setAccountName] = useState<IAccount>({
-    label: '',
-    value: [''],
-  });
   const [localAcc, setLocalAcc] = useState<any[]>([]);
   const [testNetAcc, setTestNetAcc] = useState<any[]>([]);
   const [testNets] = useState([
@@ -79,8 +74,9 @@ const App = () => {
 
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, accountBalance, testResults } = useSelector((state: GlobalStore) => ({
+  const { testNetId, accounts, currAccount, accountBalance, testResults } = useSelector((state: GlobalStore) => ({
     testNetId: state.debugStore.testNetId,
+    accounts: state.accountStore.accounts,
     currAccount: state.accountStore.currAccount,
     accountBalance: state.accountStore.accountBalance,
     testResults: state.test.testResults,
@@ -243,7 +239,7 @@ const App = () => {
       account: currAccount,
       testNetId,
     });
-  }, [accountName, testNetId]);
+  }, [testNetId]);
 
   const changeContract = (selectedOpt: IOpt) => {
     setContractName(selectedOpt.value);
@@ -272,15 +268,6 @@ const App = () => {
 
   const setSelectedNetwork = (testNet: any) => {
     setTestNetId(testNet.value);
-  };
-
-  const setSelectedAccount = (account: IAccount) => {
-    // setCurrAccount(account);
-    // setAccountName(account);
-  };
-
-  const handelChangeFromAddress = (event: any) => {
-    // setCurrAccount(event.target.value);
   };
 
   const handleAppRegister = () => {
@@ -356,7 +343,7 @@ const App = () => {
             {accounts.length > 0 && (
               <div className="account-brief">
                 <b>Account: </b>
-                <span>{accountName && accountName.label ? accountName.label : accounts[0]}</span>
+                <span>{currAccount.checksumAddr || currAccount.pubAddr || currAccount.value}</span>
                 <br />
                 <b>Balance: </b>
                 <span>{accountBalance}</span>
@@ -383,7 +370,6 @@ const App = () => {
                       abi={compiled.contracts[fileName][contractName].abi}
                       vscode={vscode}
                       gasEstimate={gasEstimate}
-                      // deployedResult={deployedResult}
                       openAdvanceDeploy={openAdvanceDeploy}
                     />
                   )}
@@ -396,8 +382,6 @@ const App = () => {
             <Account
               vscode={vscode}
               accounts={selectorAccounts}
-              selectedAccount={setSelectedAccount}
-              // getSelectedAccount={getSelectedAccount}
               appRegistered={appRegistered}
               handleAppRegister={handleAppRegister}
             />

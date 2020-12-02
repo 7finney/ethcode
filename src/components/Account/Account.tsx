@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Selector, Button, ButtonType } from '../common/ui';
 import './Account.css';
-import { addNewAcc } from '../../actions';
+import { addNewAcc, setCurrAccChange } from '../../actions';
 import { IAccount, GroupedSelectorAccounts, GlobalStore } from '../../types';
 import { useForm } from 'react-hook-form';
 
 type IProps = {
   accounts: Array<GroupedSelectorAccounts>;
-  selectedAccount: (account: IAccount) => void;
   vscode: any;
   appRegistered: boolean;
   handleAppRegister: () => void;
@@ -20,8 +19,7 @@ type FormInputs = {
   amount: number;
 };
 
-const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAccount, handleAppRegister }: IProps) => {
-  const [balance, setBalance] = useState(0);
+const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppRegister }: IProps) => {
   const [publicAddress, setPublicAddress] = useState('');
   const [pvtKey, setPvtKey] = useState('');
   const [showButton, setShowButton] = useState(false);
@@ -62,18 +60,16 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
       if (data.transactionResult) {
         setSendBtnDisable(false);
       }
+      if (data.balance) {
+        const { balance, account } = data;
+        dispatch(setCurrAccChange({ balance, currAccount: account }));
+      }
     });
   }, []);
 
   useEffect(() => {
     setMsg('Success! Read privatekey.');
   }, [pvtKey]);
-
-  useEffect(() => {
-    if (accountBalance !== balance) {
-      setBalance(accountBalance);
-    }
-  }, [accountBalance]);
 
   useEffect(() => {
     vscode.postMessage({
@@ -141,6 +137,14 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
     }
   };
 
+  const handleSelect = (account: IAccount) => {
+    vscode.postMessage({
+      command: 'get-balance',
+      account,
+      testNetId,
+    });
+  };
+
   const formatGroupLabel = (data: any) => (
     <div className="group-styles">
       <span>{data.label}</span>
@@ -169,7 +173,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
         <div className="select-container">
           <Selector
             options={accounts}
-            onSelect={selectedAccount}
+            onSelect={handleSelect}
             defaultValue={currAccount}
             formatGroupLabel={formatGroupLabel}
             placeholder="Select Accounts"
@@ -182,7 +186,13 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, selectedAc
           <label className="label">Account Balance </label>
         </div>
         <div className="input-container">
-          <input className="input custom_input_css" value={balance} type="text" placeholder="account balance" />
+          <input
+            className="input custom_input_css"
+            value={accountBalance}
+            type="text"
+            placeholder="account balance"
+            disabled
+          />
         </div>
       </div>
 

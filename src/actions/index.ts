@@ -5,12 +5,14 @@ import {
   SET_DEPLOYED_RESULT,
   CLEAR_DEPLOYED_RESULT,
   SET_CALL_RESULT,
-  SET_ACC_BALANCE,
+  SET_ACC_DATA,
   SET_UPDATE_BALANCE,
   SET_TESTNET_ID,
   SET_UNSG_TX,
   APPND_NEW_ACC,
   SET_TESTNET_CALL_RESULT,
+  SET_PROCESS_MSG,
+  SET_ERR_MSG,
 } from './types';
 
 import { IAccount } from '../types';
@@ -60,7 +62,7 @@ export const setTestnetCallResult = (data: any) => {
 
 export const setAccountBalance = (data: any) => {
   return (dispatch: Dispatch<any>) => {
-    dispatch({ type: SET_ACC_BALANCE, payload: data });
+    dispatch({ type: SET_ACC_DATA, payload: data });
   };
 };
 
@@ -85,5 +87,17 @@ export const setUnsgTxn = (unsgTxn: any) => {
 export const addNewAcc = (account: IAccount) => {
   return (dispatch: Dispatch<any>) => {
     dispatch({ type: APPND_NEW_ACC, payload: account });
+  };
+};
+
+export const setProcessMsg = (msg: string) => {
+  return (dispatch: Dispatch<any>) => {
+    dispatch({ type: SET_PROCESS_MSG, payload: msg });
+  };
+};
+
+export const setErrMsg = (error: Error) => {
+  return (dispatch: Dispatch<any>) => {
+    dispatch({ type: SET_ERR_MSG, payload: error });
   };
 };
