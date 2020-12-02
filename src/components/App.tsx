@@ -5,11 +5,11 @@ import {
   addFinalResultCallback,
   clearFinalResult,
   setDeployedResult,
-  clearDeployedResult,
   setCallResult,
   setAccountBalance,
   setCurrAccChange,
   setTestNetId,
+  setErrMsg,
 } from '../actions';
 import './App.css';
 
@@ -48,7 +48,7 @@ const vscode = acquireVsCodeApi(); // eslint-disable-line
 const App = () => {
   const [message, setMessage] = useState<any[]>([]);
   const [compiled, setCompiled] = useState<CompilationResult>();
-  const [error, setError] = useState<Error | null>(null);
+  // const [error, setError] = useState<Error | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [contractName, setContractName] = useState<string>('');
   const [processMessage, setProcessMessage] = useState('');
@@ -74,13 +74,16 @@ const App = () => {
 
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, accounts, currAccount, accountBalance, testResults } = useSelector((state: GlobalStore) => ({
-    testNetId: state.debugStore.testNetId,
-    accounts: state.accountStore.accounts,
-    currAccount: state.accountStore.currAccount,
-    accountBalance: state.accountStore.accountBalance,
-    testResults: state.test.testResults,
-  }));
+  const { testNetId, accounts, currAccount, accountBalance, testResults, error } = useSelector(
+    (state: GlobalStore) => ({
+      testNetId: state.debugStore.testNetId,
+      accounts: state.accountStore.accounts,
+      currAccount: state.accountStore.currAccount,
+      accountBalance: state.accountStore.accountBalance,
+      testResults: state.test.testResults,
+      error: state.debugStore.error,
+    })
+  );
   const dispatch = useDispatch();
 
   const mergeAccount = () => {
@@ -204,7 +207,7 @@ const App = () => {
         return;
       }
       if (data.errors) {
-        setError(data.errors);
+        setErrMsg(data.errors);
       }
       if (data.gasEstimate) {
         setGasEstimate(data.gasEstimate);
@@ -232,15 +235,6 @@ const App = () => {
     vscode.postMessage({ command: 'run-getAccounts' });
   }, []);
 
-  useEffect(() => {
-    dispatch(setTestNetId(testNetId));
-    vscode.postMessage({
-      command: 'get-balance',
-      account: currAccount,
-      testNetId,
-    });
-  }, [testNetId]);
-
   const changeContract = (selectedOpt: IOpt) => {
     setContractName(selectedOpt.value);
   };
@@ -267,7 +261,13 @@ const App = () => {
   };
 
   const setSelectedNetwork = (testNet: any) => {
-    setTestNetId(testNet.value);
+    const testNetId = testNet.value;
+    dispatch(setTestNetId(testNetId));
+    vscode.postMessage({
+      command: 'get-balance',
+      account: currAccount,
+      testNetId,
+    });
   };
 
   const handleAppRegister = () => {
@@ -422,6 +422,7 @@ const App = () => {
       <div className="process-msg-container">
         {processMessage && <pre className="processMessage">{processMessage}</pre>}
       </div>
+      <div className="error-msg">{error && <pre>{error.message}</pre>}</div>
     </div>
   );
 };

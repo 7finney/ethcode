@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Selector, Button, ButtonType } from '../common/ui';
 import './Account.css';
-import { addNewAcc, setCurrAccChange } from '../../actions';
+import { addNewAcc, setCurrAccChange, setErrMsg } from '../../actions';
 import { IAccount, GroupedSelectorAccounts, GlobalStore } from '../../types';
 import { useForm } from 'react-hook-form';
 
@@ -23,16 +23,17 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
   const [publicAddress, setPublicAddress] = useState('');
   const [pvtKey, setPvtKey] = useState('');
   const [showButton, setShowButton] = useState(false);
-  const [error, setError] = useState('');
+  // const [error, setError] = useState('');
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
   const [msg, setMsg] = useState('');
   const { register, handleSubmit } = useForm<FormInputs>();
 
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, accountBalance } = useSelector((state: GlobalStore) => ({
+  const { testNetId, currAccount, accountBalance, error } = useSelector((state: GlobalStore) => ({
     testNetId: state.debugStore.testNetId,
     currAccount: state.accountStore.currAccount,
     accountBalance: state.accountStore.accountBalance,
+    error: state.debugStore.error,
   }));
 
   // dispatch function to be called with the action
@@ -55,7 +56,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
         // TODO: handle pvt key not found errors
         setPvtKey(data.pvtKey);
       } else if (data.error) {
-        setError(data.error);
+        dispatch(setErrMsg(data.error));
       }
       if (data.transactionResult) {
         setSendBtnDisable(false);
@@ -100,7 +101,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
         payload: currAccount.value,
       });
     } catch (err) {
-      setError(err);
+      dispatch(setErrMsg(err));
     }
   };
 
@@ -133,7 +134,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
         });
       }
     } catch (err) {
-      setError(err);
+      dispatch(setErrMsg(err));
     }
   };
 
