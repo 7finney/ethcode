@@ -27,9 +27,9 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   // UseSelector to extract state elements.
   const { testNetId, compiledResult, callResult, deployedResult, currAccount } = useSelector((state: GlobalStore) => ({
     testNetId: state.debugStore.testNetId,
-    compiledResult: state.compiledStore.compiledResult,
-    deployedResult: state.compiledStore.deployedResult,
-    callResult: state.compiledStore.callResult,
+    compiledResult: state.contractsStore.compiledResult,
+    deployedResult: state.txStore.deployedResult,
+    callResult: state.contractsStore.callResult,
     currAccount: state.accountStore.currAccount,
   }));
   const dispatch = useDispatch();
@@ -76,7 +76,7 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   };
 
   return (
-    <div>
+    <div className="deploy_container">
       <div>
         <div>
           <DeployForm
