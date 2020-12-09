@@ -1,10 +1,11 @@
+import { ITxStore } from 'types';
 import { SET_UNSG_TX } from '../actions/types';
 
-const initialState = {
+const initialState: ITxStore = {
   unsignedTx: '',
 };
 
-export default (state: any = initialState, action: any) => {
+export default (state: ITxStore = initialState, action: any) => {
   switch (action.type) {
     case SET_UNSG_TX:
       return {

@@ -25,7 +25,7 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   // UseSelector to extract state elements.
   const { testNetId, callResult, deployedResult, currAccount } = useSelector((state: GlobalStore) => ({
     testNetId: state.debugStore.testNetId,
-    deployedResult: state.txStore.deployedResult,
+    deployedResult: state.contractsStore.deployedResult,
     callResult: state.contractsStore.callResult,
     currAccount: state.accountStore.currAccount,
   }));
@@ -73,63 +73,65 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   };
 
   return (
-    <div className="deploy_container">
-      <div>
+    <div>
+      <div className="deploy_container">
         <div>
-          {currAccount && (
-            <DeployForm
-              vscode={props.vscode}
-              abi={props.abi}
-              bytecode={props.bytecode}
-              gasEstimate={props.gasEstimate}
-              currAccount={currAccount}
-              testNetId={testNetId}
-              constructorInputRef={constructorInputRef}
-              openAdvanceDeploy={props.openAdvanceDeploy}
-            />
-          )}
-          <form onSubmit={handleGetGasEstimate}>
-            <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
-              Get gas estimate
-            </Button>
-          </form>
-        </div>
-        <div>
-          {deployedResult && currAccount && (
-            <CallForm
-              vscode={props.vscode}
-              abi={props.abi}
-              currAccount={currAccount}
-              testNetId={testNetId}
-              constructorInputRef={constructorInputRef}
-              deployedResult={deployedResult}
-            />
-          )}
-        </div>
-      </div>
-      <div className="error_message">
-        {error && (
           <div>
-            <span className="contract-name inline-block highlight-success">Error Message:</span>
+            {currAccount && (
+              <DeployForm
+                vscode={props.vscode}
+                abi={props.abi}
+                bytecode={props.bytecode}
+                gasEstimate={props.gasEstimate}
+                currAccount={currAccount}
+                testNetId={testNetId}
+                constructorInputRef={constructorInputRef}
+                openAdvanceDeploy={props.openAdvanceDeploy}
+              />
+            )}
+            <form onSubmit={handleGetGasEstimate}>
+              <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
+                Get gas estimate
+              </Button>
+            </form>
+          </div>
+          <div>
+            {deployedResult && currAccount && (
+              <CallForm
+                vscode={props.vscode}
+                abi={props.abi}
+                currAccount={currAccount}
+                testNetId={testNetId}
+                constructorInputRef={constructorInputRef}
+                deployedResult={deployedResult}
+              />
+            )}
+          </div>
+        </div>
+        <div className="error_message">
+          {error && (
             <div>
-              <pre className="large-code-error">{JSON.stringify(error)}</pre>
+              <span className="contract-name inline-block highlight-success">Error Message:</span>
+              <div>
+                <pre className="large-code-error">{JSON.stringify(error)}</pre>
+              </div>
+            </div>
+          )}
+        </div>
+        {callResult && Object.entries(callResult).length > 0 && (
+          <div className="call-result">
+            <span>
+              {/* 
+              // @ts-ignore */}
+              {callResult || (callResult && callResult.callResult) ? 'Call result:' : 'Call error:'}
+            </span>
+            <div>
+              {/* TODO: add better way to show result and error */}
+              {callResult && <pre className="large-code">{callResult}</pre>}
             </div>
           </div>
         )}
       </div>
-      {callResult && Object.entries(callResult).length > 0 && (
-        <div className="call-result">
-          <span>
-            {/* 
-              // @ts-ignore */}
-            {callResult || (callResult && callResult.callResult) ? 'Call result:' : 'Call error:'}
-          </span>
-          <div>
-            {/* TODO: add better way to show result and error */}
-            {callResult && <pre className="large-code">{callResult}</pre>}
-          </div>
-        </div>
-      )}
       {deployedResult && Object.entries(deployedResult).length > 0 && (
         <div className="transaction_receipt">
           <span className="contract-name inline-block highlight-success">Transaction Receipt:</span>

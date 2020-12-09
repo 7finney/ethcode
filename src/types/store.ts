@@ -12,6 +12,11 @@ export interface IDebugStore {
   error: Error | null;
 }
 
+export interface ITxStore {
+  unsignedTx: string;
+  // deployedResult: TransactionResult;
+}
+
 export interface IContractStore {
   compiledResult: CompilationResult | null;
   callResult: { [key: string]: string };
@@ -27,8 +32,5 @@ export type GlobalStore = {
   contractsStore: IContractStore;
   accountStore: IAccStore;
   debugStore: IDebugStore;
-  txStore: {
-    unsignedTx: string;
-    deployedResult: TransactionResult;
-  };
+  txStore: ITxStore;
 };
