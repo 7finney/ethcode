@@ -1,10 +1,11 @@
-import { IAccStore } from 'types';
-import { SET_ACC_DATA, SET_UPDATE_BALANCE, APPND_NEW_ACC } from '../actions/types';
+import { IAccount, IAccStore } from 'types';
+import { SET_ACC_DATA, SET_UPDATE_BALANCE, APPND_NEW_ACC, SET_PVT_KEY } from '../actions/types';
 
 const initialState: IAccStore = {
   balance: 0,
   accounts: [],
   currAccount: null,
+  privateKey: null,
 };
 
 interface IAction {
@@ -31,6 +32,11 @@ export default (state: IAccStore = initialState, action: IAction): IAccStore => 
       return {
         ...state,
         accounts: [...state.accounts, ...action.payload.accounts],
+      };
+    case SET_PVT_KEY:
+      return {
+        ...state,
+        privateKey: action.payload.privateKey,
       };
     default:
       return state;

@@ -10,7 +10,6 @@ interface IProps {
   abi: Array<ABIDescription>;
   vscode: any;
   gasEstimate: number;
-  pvtKey: string;
   constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
 }
 
@@ -51,11 +50,12 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
   const { control, register, getValues, setValue } = useForm<TDeployForm>();
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, unsignedTx } = useSelector((state: GlobalStore) => ({
+  const { testNetId, currAccount, unsignedTx, pvtKey } = useSelector((state: GlobalStore) => ({
     testNetId: state.debugStore.testNetId,
     currAccount: state.accountStore.currAccount,
     testNetCallResult: state.contractsStore.testNetCallResult,
     unsignedTx: state.txStore.unsignedTx,
+    pvtKey: state.accountStore.privateKey,
   }));
   const dispatch = useDispatch();
   useEffect(() => {
@@ -105,7 +105,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
   };
 
   const signAndDeploy = () => {
-    const { vscode, pvtKey } = props;
+    const { vscode } = props;
     try {
       vscode.postMessage({
         command: 'sign-deploy-tx',
@@ -120,7 +120,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
     }
   };
 
-  const { pvtKey, gasEstimate } = props;
+  const { gasEstimate } = props;
   return (
     <form>
       <div className="form-container">
@@ -162,13 +162,9 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
         >
           Build transaction
         </Button>
-      </div>
-      <div className="account_row">
-        <div className="tag">
-          <Button buttonType={ButtonType.Input} disabled={!!(pvtKey && unsignedTx)} onClick={signAndDeploy}>
-            Sign & Deploy
-          </Button>
-        </div>
+        <Button buttonType={ButtonType.Input} onClick={signAndDeploy}>
+          Sign & Deploy
+        </Button>
       </div>
     </form>
   );

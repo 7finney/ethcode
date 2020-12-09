@@ -4,6 +4,7 @@ export interface IAccStore {
   currAccount: IAccount | null;
   balance: number;
   accounts: IAccount[];
+  privateKey?: string | null;
 }
 
 export interface IDebugStore {

@@ -14,6 +14,7 @@ import {
   SET_PROCESS_MSG,
   SET_ERR_MSG,
   SET_COMPILED_RESULT,
+  SET_PVT_KEY,
 } from './types';
 
 import { CompilationResult, IAccount, IAccStore } from '../types';
@@ -105,6 +106,12 @@ export const addNewAcc = (account: IAccount) => {
 export const setProcessMsg = (msg: string) => {
   return (dispatch: Dispatch<IDispatch>) => {
     dispatch({ type: SET_PROCESS_MSG, payload: msg });
+  };
+};
+
+export const setPvtKey = (data: IAccStore) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_PVT_KEY, payload: data });
   };
 };
 

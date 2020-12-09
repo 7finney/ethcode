@@ -282,7 +282,10 @@ class ReactPanel {
   };
 
   private createAccWorker = (): ChildProcess => {
-    return fork(path.join(__dirname, 'accWorker.js'));
+    return fork(path.join(__dirname, 'accWorker.js'), [], {
+      execArgv: [`--inspect=${process.debugPort + 1}`],
+    });
+    // return fork(path.join(__dirname, 'accWorker.js'));
   };
 
   public async checkAppRegistration(): Promise<void> {
@@ -452,7 +455,6 @@ class ReactPanel {
   private genKeyPair(password: string, ksPath: string): void {
     const accWorker = this.createAccWorker();
     logger.log(`Account worker invoked with WorkerID : ${accWorker.pid}.`);
-    // TODO: implementation according to the acc_system frontend
     accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.account) {
@@ -487,7 +489,6 @@ class ReactPanel {
 
   private deleteKeyPair(publicKey: string, keyStorePath: string) {
     const accWorker = this.createAccWorker();
-
     accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.resp) {
@@ -625,7 +626,6 @@ class ReactPanel {
   // get local accounts
   private getLocalAccounts(keyStorePath: string) {
     const accWorker = this.createAccWorker();
-
     accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.localAddresses) {

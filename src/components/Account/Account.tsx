@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Selector, Button, ButtonType } from '../common/ui';
 import './Account.css';
-import { addNewAcc, setCurrAccChange, setErrMsg } from '../../actions';
+import { addNewAcc, setCurrAccChange, setPvtKey, setErrMsg } from '../../actions';
 import { IAccount, GroupedSelectorAccounts, GlobalStore } from '../../types';
 import { useForm } from 'react-hook-form';
 
@@ -21,19 +21,23 @@ type FormInputs = {
 
 const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppRegister }: IProps) => {
   const [publicAddress, setPublicAddress] = useState('');
-  const [pvtKey, setPvtKey] = useState('');
+  // const [pvtKey, setPvtKey] = useState('');
   const [showButton, setShowButton] = useState(false);
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
   const [msg, setMsg] = useState('');
   const { register, handleSubmit } = useForm<FormInputs>();
 
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, accountBalance, error } = useSelector((state: GlobalStore) => ({
-    testNetId: state.debugStore.testNetId,
-    currAccount: state.accountStore.currAccount,
-    accountBalance: state.accountStore.balance,
-    error: state.debugStore.error,
-  }));
+  const { testNetId, currAccount, accountBalance, defaultAccounts, pvtKey, error } = useSelector(
+    (state: GlobalStore) => ({
+      testNetId: state.debugStore.testNetId,
+      currAccount: state.accountStore.currAccount,
+      accountBalance: state.accountStore.balance,
+      defaultAccounts: state.accountStore.accounts,
+      pvtKey: state.accountStore.privateKey,
+      error: state.debugStore.error,
+    })
+  );
 
   // dispatch function to be called with the action
   const dispatch = useDispatch();
@@ -51,10 +55,15 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
         dispatch(addNewAcc(account));
         setShowButton(false);
         setPublicAddress(account.label);
-      } else if (data.pvtKey && data.pvtKey !== pvtKey) {
+      }
+      if (data.pvtKey) {
         // TODO: handle pvt key not found errors
-        setPvtKey(data.pvtKey);
-      } else if (data.error) {
+        // setPvtKey(data.pvtKey);
+        dispatch(
+          setPvtKey({ currAccount, balance: accountBalance, accounts: defaultAccounts, privateKey: data.pvtKey })
+        );
+      }
+      if (data.error) {
         dispatch(setErrMsg(data.error));
       }
       if (data.transactionResult) {
@@ -297,6 +306,18 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
         </div>
         <div className="input-container">
           <input className="input custom_input_css" value={publicAddress || ''} type="text" placeholder="public key" />
+        </div>
+        <div className="label-container">
+          <label className="label">Private key </label>
+        </div>
+        <div className="input-container">
+          <input
+            className="input custom_input_css"
+            value={pvtKey || ''}
+            type="text"
+            placeholder="private key"
+            disabled
+          />
         </div>
       </div>
 

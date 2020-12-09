@@ -24,17 +24,12 @@ type FormInputs = {
 };
 
 const Deploy: React.FC<IProps> = (props: IProps) => {
-  // const [constructorInput, setConstructorInput] = useState<ConstructorInput | ConstructorInput[]>();
   const [gasEstimate, setGasEstimate] = useState(0);
-  // const [byteCode, setByteCode] = useState<string>();
-  // const [abi, setAbi] = useState<Array<ABIDescription>>([]);
   const [methodName, setMethodName] = useState<string>('');
   const [methodArray, setMethodArray] = useState({});
   const [methodInputs, setMethodInputs] = useState('');
   const [contractAddress, setContractAddress] = useState('');
   const [txtHash, setTxtHash] = useState('');
-  const [pvtKey, setPvtKey] = useState('');
-  const [, setMsg] = useState('initial');
   const [processMessage, setProcessMessage] = useState('');
   const [isPayable, setIsPayable] = useState(false);
   const [payableAmount, setPayableAmount] = useState<number>(0);
@@ -46,13 +41,16 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
 
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, unsignedTx, testNetCallResult, error } = useSelector((state: GlobalStore) => ({
-    testNetId: state.debugStore.testNetId,
-    currAccount: state.accountStore.currAccount,
-    testNetCallResult: state.contractsStore.testNetCallResult,
-    unsignedTx: state.txStore.unsignedTx,
-    error: state.debugStore.error,
-  }));
+  const { testNetId, currAccount, unsignedTx, testNetCallResult, pvtKey, error } = useSelector(
+    (state: GlobalStore) => ({
+      testNetId: state.debugStore.testNetId,
+      currAccount: state.accountStore.currAccount,
+      testNetCallResult: state.contractsStore.testNetCallResult,
+      unsignedTx: state.txStore.unsignedTx,
+      pvtKey: state.accountStore.privateKey,
+      error: state.debugStore.error,
+    })
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -72,12 +70,12 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
       if (data.unsignedTx) {
         dispatch(setUnsgTxn(data.unsignedTx));
       }
-      if (data.pvtKey) {
-        // TODO: fetching private key process needs fix
-        setPvtKey(data.pvtKey);
-        setProcessMessage('');
-        setMsg('process Finished');
-      }
+      // if (data.pvtKey) {
+      //   // TODO: fetching private key process needs fix
+      //   setPvtKey(data.pvtKey);
+      //   setProcessMessage('');
+      //   setMsg('process Finished');
+      // }
       if (data.TestnetCallResult) {
         dispatch(setTestnetCallResult(data.TestnetCallResult));
         setCallFunToggle(true);
@@ -154,62 +152,56 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
     <div>
       <div className="deploy_container">
         <div>
-          <div>
-            <DeployForm
-              vscode={vscode}
-              bytecode={bytecode}
-              abi={abi}
-              gasEstimate={gasEstimate}
-              pvtKey={pvtKey}
-              constructorInputRef={constructorInputRef}
-            />
-            <form onSubmit={getGasEstimate}>
-              <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
-                Get gas estimate
-              </Button>
-            </form>
-          </div>
+          <DeployForm
+            vscode={vscode}
+            bytecode={bytecode}
+            abi={abi}
+            gasEstimate={gasEstimate}
+            constructorInputRef={constructorInputRef}
+          />
+          <form onSubmit={getGasEstimate}>
+            <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
+              Get gas estimate
+            </Button>
+          </form>
         </div>
-        {/* Constructor */}
-        <div>
-          {/* Call Function */}
-          <div className="tag">
-            <form onSubmit={handleSubmit(handleCall)} className="form_align">
+        {/* Call Function */}
+        <div className="tag">
+          <form onSubmit={handleSubmit(handleCall)} className="form_align">
+            <input
+              type="text"
+              className="custom_input_css"
+              placeholder="Enter contract address"
+              style={{ marginRight: '5px' }}
+              name="contractAddress"
+              ref={register}
+            />
+            <input
+              type="text"
+              className="custom_input_css"
+              placeholder="Enter contract function name"
+              name="methodName"
+              ref={register}
+              onChange={handleMethodnameInput}
+            />
+            {methodName !== '' && methodInputs !== '' && methodInputs !== '[]' && (
+              <div className="json_input_container" style={{ margin: '10px 0' }}>
+                <textarea name="methodInputs" className="json_input custom_input_css" ref={register} />
+              </div>
+            )}
+            {isPayable && (
               <input
-                type="text"
+                type="number"
                 className="custom_input_css"
-                placeholder="Enter contract address"
-                style={{ marginRight: '5px' }}
-                name="contractAddress"
-                ref={register}
+                placeholder="Enter payable amount"
+                style={{ margin: '5px' }}
+                name="payableAmount"
               />
-              <input
-                type="text"
-                className="custom_input_css"
-                placeholder="Enter contract function name"
-                name="methodName"
-                ref={register}
-                onChange={handleMethodnameInput}
-              />
-              {methodName !== '' && methodInputs !== '' && methodInputs !== '[]' && (
-                <div className="json_input_container" style={{ margin: '10px 0' }}>
-                  <textarea name="methodInputs" className="json_input custom_input_css" ref={register} />
-                </div>
-              )}
-              {isPayable && (
-                <input
-                  type="number"
-                  className="custom_input_css"
-                  placeholder="Enter payable amount"
-                  style={{ margin: '5px' }}
-                  name="payableAmount"
-                />
-              )}
-              <Button buttonType={ButtonType.Input} disabled={callFunToggle}>
-                Call function
-              </Button>
-            </form>
-          </div>
+            )}
+            <Button buttonType={ButtonType.Input} disabled={callFunToggle}>
+              Call function
+            </Button>
+          </form>
         </div>
 
         {/* Call function Result */}
@@ -253,7 +245,13 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
             <h4>Private key</h4>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
+            <input
+              className="input custom_input_css"
+              type="text"
+              disabled
+              placeholder="private key"
+              value={pvtKey || ''}
+            />
           </div>
         </div>
         {/* Notification */}
