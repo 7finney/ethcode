@@ -386,16 +386,26 @@ const App = () => {
               handleAppRegister={handleAppRegister}
             />
           </TabPanel>
+          {/* Advanced Deploy panel */}
           <TabPanel>
-            {compiled && contractName && compiled.contracts[fileName][contractName] && (
-              <Deploy
-                contractName={contractName}
-                bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                abi={compiled.contracts[fileName][contractName].abi}
-                vscode={vscode}
-                errors={error!}
-              />
-            )}
+            <div className="compiledOutput">
+              {compiled && contractName && compiled.contracts[fileName][contractName] && (
+                <div id={contractName} className="contract-container">
+                  <ContractCompiled
+                    contractName={contractName}
+                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                    abi={compiled.contracts[fileName][contractName].abi}
+                  />
+                  <Deploy
+                    contractName={contractName}
+                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                    abi={compiled.contracts[fileName][contractName].abi}
+                    vscode={vscode}
+                    errors={error!}
+                  />
+                </div>
+              )}
+            </div>
           </TabPanel>
           {/* Debug panel */}
           <TabPanel className="react-tab-panel">

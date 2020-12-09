@@ -32,6 +32,10 @@ code {
   color: var(--vscode-input-foreground);
 }
 
+.json_input {
+  width: 60vw;
+}
+
 .custom_button_css {
   border: 1px solid #38ffAf;
   background: #38ffAf;

@@ -42,7 +42,7 @@ const ParseTextarea: React.FC<IPropsTextArea> = ({ value, onChange, constructorI
     onChange(JSON.parse(value));
   };
 
-  return <textarea className="json_input custom_input_css" onChange={handleChange} value={text} />;
+  return <textarea className="custom_input_css json_input" onChange={handleChange} value={text} />;
 };
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {

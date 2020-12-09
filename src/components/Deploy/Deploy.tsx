@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import JSONPretty from 'react-json-pretty';
-import './deploy.css';
+import './Deploy.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
 import { setUnsgTxn, setTestnetCallResult, setErrMsg } from '../../actions';
@@ -100,60 +100,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
     //   });
     // }
   }, []);
-
-  // useEffect(() => {
-  //   console.log('abi updated');
-  //   console.log(JSON.stringify(abi));
-  //   // Extract constructor input from abi and make array of all the methods input field.
-  //   const methodArray: any = {};
-  //   // eslint-disable-next-line no-restricted-syntax
-  //   for (const i in abi) {
-  //     if (abi[i].type === 'constructor' && props.abi[i].inputs!.length > 0) {
-  //       try {
-  //         const constructorInput: ConstructorInput[] = JSON.parse(JSON.stringify(props.abi[i].inputs));
-  //         // eslint-disable-next-line guard-for-in, no-restricted-syntax
-  //         for (const j in constructorInput) {
-  //           constructorInput[j].value = '';
-  //         }
-  //         setConstructorInput(constructorInput);
-  //       } catch (error) {
-  //         const err = new Error(`Error Setting/Parsing ABI type constructor. ${error}`);
-  //         dispatch(setErrMsg(err));
-  //       }
-  //     } else if (props.abi[i].type !== 'constructor') {
-  //       try {
-  //         // TODO: bellow strategy to extract method names and inputs should be improved
-  //         // eslint-disable-next-line @typescript-eslint/dot-notation
-  //         const methodname: string | undefined = props.abi[i]['name'];
-  //         // if we have inputs
-  //         // @ts-ignore
-  //         methodArray[methodname] = {};
-  //         // @ts-ignore
-  //         if (props.abi[i].inputs && props.abi[i].inputs.length > 0) {
-  //           // @ts-ignore
-  //           // eslint-disable-next-line @typescript-eslint/dot-notation
-  //           methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(props.abi[i]['inputs']));
-  //           // @ts-ignore
-  //           // eslint-disable-next-line guard-for-in, no-restricted-syntax
-  //           for (const i in methodArray[methodname].inputs) {
-  //             // @ts-ignore
-  //             // eslint-disable-next-line @typescript-eslint/dot-notation
-  //             methodArray[methodname]['inputs'][i].value = '';
-  //           }
-  //         } else {
-  //           // @ts-ignore
-  //           methodArray[methodname].inputs = [];
-  //         }
-  //         // @ts-ignore
-  //         methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
-  //       } catch (error) {
-  //         const err = new Error(`Error Setting/Parsing ABI ${error}`);
-  //         dispatch(setErrMsg(err));
-  //       }
-  //     }
-  //   }
-  //   setMethodArray(methodArray);
-  // }, [abi]);
 
   const handleConstructorInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setConstructorInput(JSON.parse(event.target.value));
@@ -256,47 +202,10 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
     }
   };
 
-  const handleGasEstimateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setGasEstimate(parseInt(event.target.value, 10));
-    // if (gasEstimate > 0) {
-    //   setBuildTxToggle(false);
-    // }
-  };
-
-  const { contractName } = props;
-
   const publicKey = currAccount && currAccount.value ? currAccount.value : '';
   return (
     <div className="deploy_container">
-      {/* Bytecode and Abi */}
       <div>
-        <h4 className="tag contract-name inline-block highlight-success">
-          Contract Name: <span>{contractName}</span>
-        </h4>
-        <div className="byte-code" style={{ marginBottom: '15px' }}>
-          <input
-            className="input custom_input_css"
-            style={{ width: '80vw' }}
-            type="text"
-            name="bytecode"
-            onChange={(e) => setByteCode(e.target.value)}
-            value={byteCode}
-            placeholder="byte code"
-            disabled
-          />
-        </div>
-        <div className="abi-definition">
-          <input
-            className="input custom_input_css"
-            style={{ width: '80vw' }}
-            type="text"
-            name="abi"
-            onChange={(e) => setAbi(JSON.parse(e.target.value))}
-            value={JSON.stringify(abi)}
-            placeholder="abi"
-            disabled
-          />
-        </div>
         <div>
           <DeployForm
             abi={abi}
@@ -316,19 +225,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
       </div>
       {/* Constructor */}
       <div>
-        <div className="tag form-container">
-          {constructorInput && (
-            <div className="json_input_container">
-              <textarea
-                className="tag json_input custom_input_css"
-                style={{ margin: '10px 0' }}
-                value={JSON.stringify(constructorInput, null, '\t')}
-                onChange={(e) => handleConstructorInputChange(e)}
-              />
-            </div>
-          )}
-        </div>
-
         {/* Call Function */}
         <div className="tag">
           <form onSubmit={handleSubmit(handleCall)} className="form_align">

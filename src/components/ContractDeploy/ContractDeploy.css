@@ -6,10 +6,15 @@
   width: 100%;
 }
 
+.deploy_container {
+  margin: 20px 15px;
+  padding: 20px;
+  border: 1px solid #38ffAf;
+}
+
 .json_input_container, .json_input {
-  max-height: 25vh;
+  max-height: 35vh;
   min-height: 15vh;
-  width: 80vw;
 }
 
 .transaction_receipt {

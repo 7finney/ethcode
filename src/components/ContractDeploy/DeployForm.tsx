@@ -44,7 +44,7 @@ const ParseTextarea: React.FC<IPropsTextArea> = ({ value, onChange, constructorI
     onChange(JSON.parse(value));
   };
 
-  return <textarea className="json_input custom_input_css" onChange={handleChange} value={text} />;
+  return <textarea wrap="off" className="custom_input_css json_input" onChange={handleChange} value={text} />;
 };
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {
@@ -95,17 +95,14 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
   return (
     <form onSubmit={handleSubmit(handleDeploy)}>
       <div className="form-container">
-        <div className="json_input_container" style={{ marginLeft: '-10px' }}>
+        <div className="json_input_container">
           <Controller
             name="constructorInput"
             render={() => (
               <ParseTextarea
                 value={getValues('constructorInput')}
                 constructorInputRef={props.constructorInputRef}
-                onChange={(input: ConstructorInput[]) => {
-                  setValue('constructorInput', input);
-                  // props.onChange(input);
-                }}
+                onChange={(input: ConstructorInput[]) => setValue('constructorInput', input)}
               />
             )}
             control={control}
