@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Selector, Button, ButtonType } from '../common/ui';
 import './Account.css';
-import { addNewAcc } from '../../actions';
-import { IAccount, GroupedSelectorAccounts } from '../../types';
+import { addNewAcc, setCurrAccChange, setErrMsg } from '../../actions';
+import { IAccount, GroupedSelectorAccounts, GlobalStore } from '../../types';
 import { useForm } from 'react-hook-form';
 
-interface IProps {
+type IProps = {
   accounts: Array<GroupedSelectorAccounts>;
-  accountBalance: number;
-  selectedAccount: (account: IAccount) => void;
   vscode: any;
-  currAccount: IAccount;
-  testNetId: string;
   appRegistered: boolean;
-  addNewAcc: (result: IAccount) => void;
   handleAppRegister: () => void;
-}
+};
 
 type FormInputs = {
   accountFromAddress: string;
@@ -24,25 +19,24 @@ type FormInputs = {
   amount: number;
 };
 
-const Account: React.FC<IProps> = ({
-  testNetId,
-  addNewAcc,
-  accountBalance,
-  vscode,
-  currAccount,
-  accounts,
-  appRegistered,
-  selectedAccount,
-  handleAppRegister,
-}: IProps) => {
-  const [balance, setBalance] = useState(0);
+const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppRegister }: IProps) => {
   const [publicAddress, setPublicAddress] = useState('');
   const [pvtKey, setPvtKey] = useState('');
   const [showButton, setShowButton] = useState(false);
-  const [error, setError] = useState('');
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
   const [msg, setMsg] = useState('');
   const { register, handleSubmit } = useForm<FormInputs>();
+
+  // UseSelector to extract state elements.
+  const { testNetId, currAccount, accountBalance, error } = useSelector((state: GlobalStore) => ({
+    testNetId: state.debugStore.testNetId,
+    currAccount: state.accountStore.currAccount,
+    accountBalance: state.accountStore.balance,
+    error: state.debugStore.error,
+  }));
+
+  // dispatch function to be called with the action
+  const dispatch = useDispatch();
 
   useEffect(() => {
     window.addEventListener('message', async (event) => {
@@ -53,17 +47,22 @@ const Account: React.FC<IProps> = ({
           label: data.newAccount.pubAddr,
           value: data.newAccount.checksumAddr,
         };
-        addNewAcc(account);
+        // calling addNewAcc inside dispatch
+        dispatch(addNewAcc(account));
         setShowButton(false);
         setPublicAddress(account.label);
       } else if (data.pvtKey && data.pvtKey !== pvtKey) {
         // TODO: handle pvt key not found errors
         setPvtKey(data.pvtKey);
       } else if (data.error) {
-        setError(data.error);
+        dispatch(setErrMsg(data.error));
       }
       if (data.transactionResult) {
         setSendBtnDisable(false);
+      }
+      if (data.balance) {
+        const { balance, account } = data;
+        dispatch(setCurrAccChange({ balance, currAccount: account }));
       }
     });
   }, []);
@@ -71,12 +70,6 @@ const Account: React.FC<IProps> = ({
   useEffect(() => {
     setMsg('Success! Read privatekey.');
   }, [pvtKey]);
-
-  useEffect(() => {
-    if (accountBalance !== balance) {
-      setBalance(accountBalance);
-    }
-  }, [accountBalance]);
 
   useEffect(() => {
     vscode.postMessage({
@@ -104,10 +97,10 @@ const Account: React.FC<IProps> = ({
     try {
       vscode.postMessage({
         command: 'delete-keyPair',
-        payload: currAccount.value,
+        payload: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
       });
     } catch (err) {
-      setError(err);
+      dispatch(setErrMsg(err));
     }
   };
 
@@ -117,7 +110,7 @@ const Account: React.FC<IProps> = ({
     try {
       if (testNetId === 'ganache') {
         const transactionInfo = {
-          fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          fromAddress: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
           toAddress: formData.accountToAddress,
           amount: formData.amount,
         };
@@ -129,7 +122,7 @@ const Account: React.FC<IProps> = ({
       } else {
         // Build unsigned transaction
         const transactionInfo = {
-          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          from: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
           to: formData.accountToAddress,
           value: formData.amount,
         };
@@ -140,8 +133,16 @@ const Account: React.FC<IProps> = ({
         });
       }
     } catch (err) {
-      setError(err);
+      dispatch(setErrMsg(err));
     }
+  };
+
+  const handleSelect = (account: IAccount) => {
+    vscode.postMessage({
+      command: 'get-balance',
+      account,
+      testNetId,
+    });
   };
 
   const formatGroupLabel = (data: any) => (
@@ -172,7 +173,7 @@ const Account: React.FC<IProps> = ({
         <div className="select-container">
           <Selector
             options={accounts}
-            onSelect={selectedAccount}
+            onSelect={handleSelect}
             defaultValue={currAccount}
             formatGroupLabel={formatGroupLabel}
             placeholder="Select Accounts"
@@ -185,7 +186,13 @@ const Account: React.FC<IProps> = ({
           <label className="label">Account Balance </label>
         </div>
         <div className="input-container">
-          <input className="input custom_input_css" value={balance} type="text" placeholder="account balance" />
+          <input
+            className="input custom_input_css"
+            value={accountBalance}
+            type="text"
+            placeholder="account balance"
+            disabled
+          />
         </div>
       </div>
 
@@ -308,10 +315,4 @@ const Account: React.FC<IProps> = ({
   );
 };
 
-function mapStateToProps({ debugStore, accountStore }: any) {
-  const { testNetId } = debugStore;
-  const { currAccount, accountBalance } = accountStore;
-  return { testNetId, currAccount, accountBalance };
-}
-
-export default connect(mapStateToProps, { addNewAcc })(Account);
+export default Account;

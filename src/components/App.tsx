@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   addTestResults,
   addFinalResultCallback,
   clearFinalResult,
   setDeployedResult,
-  clearDeployedResult,
   setCallResult,
   setAccountBalance,
   setCurrAccChange,
   setTestNetId,
+  setErrMsg,
+  setCompiledResults,
 } from '../actions';
 import './App.css';
 
@@ -30,31 +31,7 @@ import Deploy from './Deploy/Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from './Account/Account';
-import { IAccount, SolcVersionType, GroupedSelectorAccounts, CompilationResult } from '../types';
-
-interface IAccData {
-  currAccount: IAccount;
-  balance: Number;
-  accounts: IAccount[];
-}
-interface IProps {
-  // eslint-disable-next-line no-unused-vars
-  addTestResults: (result: any) => void;
-  // eslint-disable-next-line no-unused-vars
-  addFinalResultCallback: (result: any) => void;
-  clearFinalResult: () => void;
-  // eslint-disable-next-line no-unused-vars
-  setDeployedResult: (result: any) => void;
-  setCallResult: (result: any) => void;
-  setAccountBalance: (accData: IAccData) => void;
-  setCurrAccChange: (accData: any) => void;
-  setTestNetId: (testNetId: any) => void;
-  accountBalance: number;
-  accounts: string[];
-  // currAccount: IAccount;
-  testNetId: string;
-  test: any;
-}
+import { IAccStore, SolcVersionType, GroupedSelectorAccounts, CompilationResult, GlobalStore } from '../types';
 
 interface IOpt {
   value: string;
@@ -63,32 +40,21 @@ interface IOpt {
 
 // @ts-ignore
 const vscode = acquireVsCodeApi(); // eslint-disable-line
-const App = (props: IProps) => {
+const App: React.FC = () => {
   const [message, setMessage] = useState<any[]>([]);
-  const [compiled, setCompiled] = useState<CompilationResult>();
-  const [error, setError] = useState<Error | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [contractName, setContractName] = useState<string>('');
   const [processMessage, setProcessMessage] = useState('');
   const [availableVersions, setAvailableVersions] = useState<Array<SolcVersionType>>([]);
   const [gasEstimate, setGasEstimate] = useState(0);
-  const [deployedResult, setDeployedResult] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
-  const [accounts, setAccounts] = useState<string[]>([]);
   const [selectorAccounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>([]);
   const [contracts, setContracts] = useState<string[]>([]);
   const [files, setFiles] = useState<string[]>([]);
-  const [currAccount, setCurrAccount] = useState<IAccount>();
-  const [balance, setBalance] = useState<number>(props.accountBalance);
   const [transactionResult, setTransactionResult] = useState('');
-  const [testNetId, setTestNetId] = useState('');
   const [fileType, setFileType] = useState('');
   const [traceError, setTraceError] = useState('');
-  const [accountName, setAccountName] = useState<IAccount>({
-    label: '',
-    value: [''],
-  });
   const [localAcc, setLocalAcc] = useState<any[]>([]);
   const [testNetAcc, setTestNetAcc] = useState<any[]>([]);
   const [testNets] = useState([
@@ -98,6 +64,21 @@ const App = (props: IProps) => {
     { value: '5', label: 'Görli' },
   ]);
   const [appRegistered, setAppRegistered] = useState(false);
+
+  // redux
+  // UseSelector to extract state elements.
+  const { compiled, testNetId, accounts, currAccount, accountBalance, testResults, error } = useSelector(
+    (state: GlobalStore) => ({
+      compiled: state.contractsStore.compiledResult,
+      testNetId: state.debugStore.testNetId,
+      accounts: state.accountStore.accounts,
+      currAccount: state.accountStore.currAccount,
+      accountBalance: state.accountStore.balance,
+      testResults: state.test.testResults,
+      error: state.debugStore.error,
+    })
+  );
+  const dispatch = useDispatch();
 
   const mergeAccount = () => {
     // TODO: update reducer
@@ -145,7 +126,7 @@ const App = (props: IProps) => {
       if (data.fetchAccounts) {
         const { balance, accounts } = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
-        const accData: IAccData = {
+        const accData: IAccStore = {
           balance,
           currAccount: {
             label: accounts[0],
@@ -153,17 +134,11 @@ const App = (props: IProps) => {
           },
           accounts,
         };
-        setAccounts(accounts);
-        setCurrAccount(accounts[0]);
-        setAccountName(accounts[0]);
-        setBalance(balance);
-        props.setAccountBalance(accData);
+        dispatch(setAccountBalance(accData));
       }
       if (data.balance) {
         const { balance, account } = data;
-        setBalance(balance);
-        props.setCurrAccChange({ balance, currAccount: account });
-        setCurrAccount(account);
+        dispatch(setCurrAccChange({ balance, currAccount: account }));
       }
       if (data.registered) {
         setAppRegistered(data.registered);
@@ -181,12 +156,12 @@ const App = (props: IProps) => {
           const fileName: string = Object.keys(compiled.sources)[0];
           const contractsArray: string[] = setSelectorOption(Object.keys(compiled.contracts[fileName]));
           const files: string[] = setFileSelectorOptions(Object.keys(compiled.sources));
-          setCompiled(compiled);
           setFileName(fileName);
           setProcessMessage('');
           setContractName(Object.keys(compiled.contracts[fileName])[0]);
           setContracts(contractsArray);
           setFiles(files);
+          dispatch(setCompiledResults(compiled));
         } catch (error) {
           setProcessMessage('Error Parsing Compilation result');
         }
@@ -202,7 +177,7 @@ const App = (props: IProps) => {
       }
 
       if (data.resetTestState === 'resetTestState') {
-        props.clearFinalResult();
+        dispatch(clearFinalResult());
       }
 
       if (data.testPanel === 'test') {
@@ -215,26 +190,25 @@ const App = (props: IProps) => {
 
       if (data._testCallback) {
         const result = data._testCallback;
-        props.addTestResults(result);
+        dispatch(addTestResults(result));
       }
       if (data._finalCallback) {
         const result = data._finalCallback;
-        props.addFinalResultCallback(result);
+        dispatch(addFinalResultCallback(result));
         setProcessMessage('');
       }
       if (data._importFileCb) {
         return;
       }
       if (data.errors) {
-        setError(data.errors);
+        setErrMsg(data.errors);
       }
       if (data.gasEstimate) {
         setGasEstimate(data.gasEstimate);
       }
       if (data.deployedResult) {
         const result = data.deployedResult.deployedResult;
-        props.setDeployedResult(result);
-        setDeployedResult(data.deployedResult.deployedResult);
+        dispatch(setDeployedResult(JSON.parse(result)));
       }
       if (data.txTrace) {
         setTxTrace(data.txTrace);
@@ -244,7 +218,7 @@ const App = (props: IProps) => {
       }
       if (data.callResult) {
         const result = data.callResult;
-        props.setCallResult(result);
+        dispatch(setCallResult(result));
       }
       if (data.transactionResult) {
         setTransactionResult(data.transactionResult);
@@ -254,25 +228,6 @@ const App = (props: IProps) => {
     vscode.postMessage({ command: 'get-localAccounts' });
     vscode.postMessage({ command: 'run-getAccounts' });
   }, []);
-
-  useEffect(() => {
-    if (props.accounts !== accounts) {
-      setAccounts(props.accounts);
-    }
-
-    if (props.testNetId !== testNetId) {
-      setTestNetId(props.testNetId);
-    }
-  }, [props.accounts]);
-
-  useEffect(() => {
-    props.setTestNetId(testNetId);
-    vscode.postMessage({
-      command: 'get-balance',
-      account: currAccount,
-      testNetId,
-    });
-  }, [accountName, testNetId]);
 
   const changeContract = (selectedOpt: IOpt) => {
     setContractName(selectedOpt.value);
@@ -300,16 +255,13 @@ const App = (props: IProps) => {
   };
 
   const setSelectedNetwork = (testNet: any) => {
-    setTestNetId(testNet.value);
-  };
-
-  const setSelectedAccount = (account: IAccount) => {
-    setCurrAccount(account);
-    setAccountName(account);
-  };
-
-  const handelChangeFromAddress = (event: any) => {
-    setCurrAccount(event.target.value);
+    const testNetId = testNet.value;
+    dispatch(setTestNetId(testNetId));
+    vscode.postMessage({
+      command: 'get-balance',
+      account: currAccount,
+      testNetId,
+    });
   };
 
   const handleAppRegister = () => {
@@ -385,10 +337,10 @@ const App = (props: IProps) => {
             {accounts.length > 0 && (
               <div className="account-brief">
                 <b>Account: </b>
-                <span>{accountName && accountName.label ? accountName.label : accounts[0]}</span>
+                <span>{currAccount ? currAccount.checksumAddr || currAccount.pubAddr || currAccount.value : '0x'}</span>
                 <br />
                 <b>Balance: </b>
-                <span>{balance}</span>
+                <span>{accountBalance}</span>
               </div>
             )}
             {compiled && fileName && (
@@ -412,7 +364,6 @@ const App = (props: IProps) => {
                       abi={compiled.contracts[fileName][contractName].abi}
                       vscode={vscode}
                       gasEstimate={gasEstimate}
-                      deployedResult={deployedResult}
                       openAdvanceDeploy={openAdvanceDeploy}
                     />
                   )}
@@ -425,22 +376,30 @@ const App = (props: IProps) => {
             <Account
               vscode={vscode}
               accounts={selectorAccounts}
-              selectedAccount={setSelectedAccount}
-              // getSelectedAccount={getSelectedAccount}
               appRegistered={appRegistered}
               handleAppRegister={handleAppRegister}
             />
           </TabPanel>
+          {/* Advanced Deploy panel */}
           <TabPanel>
-            {compiled && contractName && compiled.contracts[fileName][contractName] && (
-              <Deploy
-                contractName={contractName}
-                bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                abi={compiled.contracts[fileName][contractName].abi}
-                vscode={vscode}
-                errors={error!}
-              />
-            )}
+            <div className="compiledOutput">
+              {compiled && contractName && compiled.contracts[fileName][contractName] && (
+                <div id={contractName} className="contract-container">
+                  <ContractCompiled
+                    contractName={contractName}
+                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                    abi={compiled.contracts[fileName][contractName].abi}
+                  />
+                  <Deploy
+                    contractName={contractName}
+                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
+                    abi={compiled.contracts[fileName][contractName].abi}
+                    vscode={vscode}
+                    errors={error!}
+                  />
+                </div>
+              )}
+            </div>
           </TabPanel>
           {/* Debug panel */}
           <TabPanel className="react-tab-panel">
@@ -448,7 +407,7 @@ const App = (props: IProps) => {
           </TabPanel>
           {/* Test panel */}
           <TabPanel className="react-tab-panel">
-            {props.test.testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
+            {testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
           </TabPanel>
         </Tabs>
         <div className="err_warning_container">
@@ -467,30 +426,9 @@ const App = (props: IProps) => {
       <div className="process-msg-container">
         {processMessage && <pre className="processMessage">{processMessage}</pre>}
       </div>
+      <div className="error-msg">{error && <pre>{error.message}</pre>}</div>
     </div>
   );
 };
 
-function mapStateToProps({ test, accountStore, debugStore }: any) {
-  const { accountBalance, accounts, currAccount } = accountStore;
-  const { testNetId } = debugStore;
-  return {
-    accountBalance,
-    accounts,
-    currAccount,
-    test,
-    testNetId,
-  };
-}
-
-export default connect(mapStateToProps, {
-  addTestResults,
-  addFinalResultCallback,
-  clearFinalResult,
-  setDeployedResult,
-  setAccountBalance,
-  setTestNetId,
-  setCurrAccChange,
-  clearDeployedResult,
-  setCallResult,
-})(App);
+export default App;

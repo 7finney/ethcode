@@ -1,27 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import JSONPretty from 'react-json-pretty';
-import './deploy.css';
-import { connect } from 'react-redux';
-import { ABIDescription, CompilationResult, ConstructorInput, IAccount } from 'types';
-import { setUnsgTxn, setTestnetCallResult } from '../../actions';
+import './Deploy.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
+import { setUnsgTxn, setTestnetCallResult, setErrMsg } from '../../actions';
 import { Button, ButtonType } from '../common/ui';
 import { useForm } from 'react-hook-form';
+import DeployForm from './DeployForm';
 
 export interface IProps {
-  // eslint-disable-next-line no-unused-vars
-  setUnsgTxn: (unsgTxn: any) => void;
-  // eslint-disable-next-line no-unused-vars
-  setTestnetCallResult: (result: any) => void;
   contractName: string;
   bytecode: string;
   abi: Array<ABIDescription>;
   vscode: any;
   errors: Error;
-  compiledResult: CompilationResult;
-  testNetId: string;
-  currAccount: IAccount;
-  unsignedTx: any;
-  testNetCallResult: any;
 }
 
 type FormInputs = {
@@ -31,12 +23,11 @@ type FormInputs = {
   methodInputs: string;
 };
 
-const Deploy = (props: IProps) => {
+const Deploy: React.FC<IProps> = (props: IProps) => {
   const [constructorInput, setConstructorInput] = useState<ConstructorInput | ConstructorInput[]>();
-  const [error, setError] = useState<Error | string>();
   const [gasEstimate, setGasEstimate] = useState(0);
   const [byteCode, setByteCode] = useState<string>();
-  const [abi, setAbi] = useState({});
+  const [abi, setAbi] = useState<Array<ABIDescription>>([]);
   const [methodName, setMethodName] = useState<string>('');
   const [methodArray, setMethodArray] = useState({});
   const [methodInputs, setMethodInputs] = useState('');
@@ -47,11 +38,22 @@ const Deploy = (props: IProps) => {
   const [processMessage, setProcessMessage] = useState('');
   const [isPayable, setIsPayable] = useState(false);
   const [payableAmount, setPayableAmount] = useState<number>(0);
-  const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
-  const [buildTxToggle, setBuildTxToggle] = useState(true);
   const [callFunToggle, setCallFunToggle] = useState(true);
+  const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
 
   const { register, handleSubmit } = useForm<FormInputs>();
+  const constructorInputRef = useRef<ConstructorInput | ConstructorInput[] | null>(null);
+
+  // redux
+  // UseSelector to extract state elements.
+  const { testNetId, currAccount, unsignedTx, testNetCallResult, error } = useSelector((state: GlobalStore) => ({
+    testNetId: state.debugStore.testNetId,
+    currAccount: state.accountStore.currAccount,
+    testNetCallResult: state.contractsStore.testNetCallResult,
+    unsignedTx: state.txStore.unsignedTx,
+    error: state.debugStore.error,
+  }));
+  const dispatch = useDispatch();
 
   useEffect(() => {
     setAbi(props.abi);
@@ -62,20 +64,16 @@ const Deploy = (props: IProps) => {
 
       if (data.deployedResult) {
         setTxtHash(data.deployedResult);
-        // this.setState({ txtHash: data.deployedResult });
       }
       if (data.gasEstimate) {
         setGasEstimate(data.gasEstimate);
-        setGasEstimateToggle(false);
-        setBuildTxToggle(false);
       }
       if (data.buildTxResult) {
         // TODO: fix unsigned tx is not updated after once
-        props.setUnsgTxn(data.buildTxResult);
-        setBuildTxToggle(false);
+        dispatch(setUnsgTxn(data.buildTxResult));
       }
       if (data.unsignedTx) {
-        props.setUnsgTxn(data.unsignedTx);
+        dispatch(setUnsgTxn(data.unsignedTx));
       }
       if (data.pvtKey) {
         // TODO: fetching private key process needs fix
@@ -84,80 +82,18 @@ const Deploy = (props: IProps) => {
         setMsg('process Finished');
       }
       if (data.TestnetCallResult) {
-        props.setTestnetCallResult(data.TestnetCallResult);
+        dispatch(setTestnetCallResult(data.TestnetCallResult));
         setCallFunToggle(true);
       }
       if (data.error) {
-        setError(data.error);
+        dispatch(setErrMsg(data.error));
       }
     });
-
-    // get private key for corresponding public key
-    if (props.currAccount && props.currAccount.type === 'Local') {
-      setProcessMessage('Fetching private key...');
-      props.vscode.postMessage({
-        command: 'get-pvt-key',
-        payload: props.currAccount.pubAddr ? props.currAccount.pubAddr : props.currAccount.value,
-      });
-    }
-
-    // Extract constructor input from abi and make array of all the methods input field.
-    const methodArray: any = {};
-    // eslint-disable-next-line no-restricted-syntax
-    for (const i in props.abi) {
-      if (props.abi[i].type === 'constructor' && props.abi[i].inputs!.length > 0) {
-        try {
-          const constructorInput: ConstructorInput[] = JSON.parse(JSON.stringify(props.abi[i].inputs));
-          // eslint-disable-next-line guard-for-in, no-restricted-syntax
-          for (const j in constructorInput) {
-            constructorInput[j].value = '';
-          }
-          setConstructorInput(constructorInput);
-        } catch (error) {
-          setError('Error Setting/Parsing ABI type constructor');
-        }
-      } else if (props.abi[i].type !== 'constructor') {
-        try {
-          // TODO: bellow strategy to extract method names and inputs should be improved
-          // eslint-disable-next-line @typescript-eslint/dot-notation
-          const methodname: string | undefined = props.abi[i]['name'];
-          // if we have inputs
-          // @ts-ignore
-          methodArray[methodname] = {};
-          // @ts-ignore
-          if (props.abi[i].inputs && props.abi[i].inputs.length > 0) {
-            // @ts-ignore
-            // eslint-disable-next-line @typescript-eslint/dot-notation
-            methodArray[methodname]['inputs'] = JSON.parse(JSON.stringify(props.abi[i]['inputs']));
-            // @ts-ignore
-            // eslint-disable-next-line guard-for-in, no-restricted-syntax
-            for (const i in methodArray[methodname].inputs) {
-              // @ts-ignore
-              // eslint-disable-next-line @typescript-eslint/dot-notation
-              methodArray[methodname]['inputs'][i].value = '';
-            }
-          } else {
-            // @ts-ignore
-            methodArray[methodname].inputs = [];
-          }
-          // @ts-ignore
-          methodArray[methodname].stateMutprops.ability = props.abi[i].stateMutability;
-        } catch (error) {
-          setError(`Error Setting/Parsing ABI ${error}`);
-        }
-      }
-    }
-    setMethodArray(methodArray);
   }, []);
 
-  const handleConstructorInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setConstructorInput(JSON.parse(event.target.value));
-  };
-
   const handleBuildTxn = () => {
-    const { vscode, bytecode, abi, currAccount, testNetId } = props;
-    const publicKey = currAccount.value;
-    setBuildTxToggle(true);
+    const { vscode, bytecode, abi } = props;
+    const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
     // create unsigned transaction here
     try {
       vscode.postMessage({
@@ -172,37 +108,36 @@ const Deploy = (props: IProps) => {
         testNetId,
       });
     } catch (error) {
-      setError(error);
+      dispatch(setErrMsg(error));
     }
   };
 
   const getGasEstimate = () => {
-    const { vscode, bytecode, abi, currAccount, testNetId } = props;
+    const { vscode, bytecode, abi } = props;
     setGasEstimateToggle(true);
-    const publicKey = currAccount.value;
     try {
       vscode.postMessage({
         command: 'run-get-gas-estimate',
         payload: {
-          from: publicKey,
           abi,
           bytecode,
-          params: constructorInput,
+          params: constructorInputRef.current,
+          from: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
         },
         testNetId,
       });
     } catch (err) {
-      setError(err);
+      dispatch(setErrMsg(err));
     }
   };
 
   const handleCall = (formData: FormInputs) => {
-    const { vscode, abi, currAccount, testNetId } = props;
+    const { vscode, abi } = props;
     setPayableAmount(formData.amount);
     setContractAddress(formData.contractAddress);
     setMethodName(formData.methodName);
     setMethodInputs(formData.methodInputs);
-    const publicKey = currAccount.value;
+    const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
     setCallFunToggle(true);
     vscode.postMessage({
       command: 'contract-method-call',
@@ -238,7 +173,7 @@ const Deploy = (props: IProps) => {
   };
 
   const signAndDeploy = () => {
-    const { vscode, unsignedTx, testNetId } = props;
+    const { vscode } = props;
     try {
       vscode.postMessage({
         command: 'sign-deploy-tx',
@@ -249,67 +184,33 @@ const Deploy = (props: IProps) => {
         testNetId,
       });
     } catch (error) {
-      setError(error);
+      dispatch(setErrMsg(error));
     }
   };
-
-  const handleGasEstimateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setGasEstimate(parseInt(event.target.value, 10));
-    if (gasEstimate > 0) {
-      setBuildTxToggle(false);
-    }
-  };
-
-  const { contractName, currAccount, unsignedTx, testNetCallResult } = props;
 
   const publicKey = currAccount && currAccount.value ? currAccount.value : '';
   return (
     <div className="deploy_container">
-      {/* Bytecode and Abi */}
       <div>
-        <h4 className="tag contract-name inline-block highlight-success">
-          Contract Name: <span>{contractName}</span>
-        </h4>
-        <div className="byte-code" style={{ marginBottom: '15px' }}>
-          <input
-            className="input custom_input_css"
-            style={{ width: '80vw' }}
-            type="text"
-            name="bytecode"
-            onChange={(e) => setByteCode(e.target.value)}
-            value={byteCode}
-            placeholder="byte code"
-            disabled
+        <div>
+          <DeployForm
+            abi={abi}
+            gasEstimate={gasEstimate}
+            handleDeploy={signAndDeploy}
+            handleBuildTxn={handleBuildTxn}
+            pvtKey={pvtKey}
+            unsignedTx={unsignedTx}
+            constructorInputRef={constructorInputRef}
           />
-        </div>
-        <div className="abi-definition">
-          <input
-            className="input custom_input_css"
-            style={{ width: '80vw' }}
-            type="text"
-            name="abi"
-            onChange={(e) => setAbi(JSON.parse(e.target.value))}
-            value={JSON.stringify(abi)}
-            placeholder="abi"
-            disabled
-          />
+          <form onSubmit={getGasEstimate}>
+            <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
+              Get gas estimate
+            </Button>
+          </form>
         </div>
       </div>
       {/* Constructor */}
       <div>
-        <div className="tag form-container">
-          {constructorInput && (
-            <div className="json_input_container">
-              <textarea
-                className="tag json_input custom_input_css"
-                style={{ margin: '10px 0' }}
-                value={JSON.stringify(constructorInput, null, '\t')}
-                onChange={(e) => handleConstructorInputChange(e)}
-              />
-            </div>
-          )}
-        </div>
-
         {/* Call Function */}
         <div className="tag">
           <form onSubmit={handleSubmit(handleCall)} className="form_align">
@@ -366,37 +267,6 @@ const Deploy = (props: IProps) => {
         </div>
       )}
 
-      {/* Get gas estimate */}
-      <div className="account_row">
-        <div className="input-container">
-          <Button buttonType={ButtonType.Button} disabled={gasEstimateToggle} onClick={getGasEstimate}>
-            Get gas estimate
-          </Button>
-        </div>
-        <div className="input-container">
-          <input
-            className="input custom_input_css"
-            name="gasEstimate"
-            onChange={(e) => handleGasEstimateChange(e)}
-            type="text"
-            placeholder="gas supply"
-            value={gasEstimate}
-          />
-        </div>
-      </div>
-
-      <div className="input-container">
-        {gasEstimate > 0 ? (
-          <Button buttonType={ButtonType.Button} disabled={buildTxToggle} onClick={handleBuildTxn}>
-            Build transaction
-          </Button>
-        ) : (
-          <Button buttonType={ButtonType.Button} disabled onClick={handleBuildTxn}>
-            Build transaction
-          </Button>
-        )}
-      </div>
-
       {unsignedTx && (
         <div className="tag">
           <h4 className="contract-name inline-block highlight-success">Unsigned Transaction:</h4>
@@ -425,21 +295,6 @@ const Deploy = (props: IProps) => {
           <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
         </div>
       </div>
-
-      <div className="account_row">
-        <div className="tag">
-          {pvtKey && unsignedTx ? (
-            <button className="acc-button custom_button_css" onClick={signAndDeploy}>
-              Sign & Deploy
-            </button>
-          ) : (
-            <button disabled className="acc-button button_disable custom_button_css" onClick={signAndDeploy}>
-              Sign & Deploy
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Final Transaction Hash */}
       {pvtKey && (
         <div className="account_row">
@@ -451,7 +306,6 @@ const Deploy = (props: IProps) => {
           </div>
         </div>
       )}
-
       {/* Notification */}
       {processMessage && <pre className="processMessage">{processMessage}</pre>}
 
@@ -470,21 +324,4 @@ const Deploy = (props: IProps) => {
   );
 };
 
-function mapStateToProps({ compiledStore, debugStore, accountStore, txStore }: any) {
-  const { compiledResult, testNetCallResult } = compiledStore;
-  const { testNetId } = debugStore;
-  const { currAccount } = accountStore;
-  const { unsignedTx } = txStore;
-  return {
-    compiledResult,
-    testNetCallResult,
-    testNetId,
-    currAccount,
-    unsignedTx,
-  };
-}
-
-export default connect(mapStateToProps, {
-  setUnsgTxn,
-  setTestnetCallResult,
-})(Deploy);
+export default Deploy;

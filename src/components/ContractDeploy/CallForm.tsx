@@ -1,11 +1,11 @@
 import React, { useEffect, useState, MutableRefObject } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, ButtonType } from 'components/common/ui';
-import { ABIDescription, ConstructorInput, IAccount } from 'types';
+import { ABIDescription, ConstructorInput, IAccount, TransactionResult } from 'types';
 
 interface IProps {
   constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
-  deployedResult: string;
+  deployedResult: TransactionResult;
   abi: ABIDescription[];
   currAccount: IAccount;
   testNetId: string;
@@ -25,11 +25,10 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
   const [methodInputs, setMethodInputs] = useState('');
   const [isPayable, setIsPayable] = useState(false);
   const [methodArray, setmethodArray] = useState({});
-  const [deployedAddress, setDeployedAddress] = useState<string>('');
   const [payableAmount] = useState<number>(0);
   const [error, setError] = useState<Error | null>(null);
 
-  const { register: contractReg, handleSubmit: handleContractSubmit, getValues } = useForm<FormContract>();
+  const { register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<FormContract>();
 
   useEffect(() => {
     window.addEventListener('message', (event) => {
@@ -72,10 +71,8 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
     setmethodArray(methodArray);
   }, []);
   useEffect(() => {
-    if (props.deployedResult !== '') {
-      const deployedObj = JSON.parse(props.deployedResult);
-      setDeployedAddress(deployedObj.contractAddress);
-    }
+    const { deployedResult } = props;
+    setValue('contractAddress', deployedResult.contractAddress);
   }, [props.deployedResult]);
   const handleMethodInputs = (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
     setMethodInputs(event.target.value);
@@ -99,7 +96,6 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
     }
   };
   const handleCall = () => {
-    setDeployedAddress(getValues('contractAddress'));
     const { vscode, abi, currAccount } = props;
     setError(null);
     setCallFunctionToggle(true);
@@ -107,7 +103,7 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
       command: 'ganache-contract-method-call',
       payload: {
         abi,
-        address: deployedAddress,
+        address: getValues('contractAddress'),
         methodName,
         params: JSON.parse(methodInputs),
         gasSupply: props.constructorInputRef.current,
@@ -126,7 +122,7 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
         placeholder="Enter contract address"
         style={{ marginRight: '5px' }}
         name="contractAddress"
-        defaultValue={deployedAddress}
+        defaultValue={getValues('contractAddress')}
         ref={contractReg}
       />
       <input

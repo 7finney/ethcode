@@ -5,16 +5,30 @@ import {
   SET_DEPLOYED_RESULT,
   CLEAR_DEPLOYED_RESULT,
   SET_CALL_RESULT,
-  SET_ACC_BALANCE,
+  SET_ACC_DATA,
   SET_UPDATE_BALANCE,
   SET_TESTNET_ID,
   SET_UNSG_TX,
   APPND_NEW_ACC,
   SET_TESTNET_CALL_RESULT,
+  SET_PROCESS_MSG,
+  SET_ERR_MSG,
+  SET_COMPILED_RESULT,
 } from './types';
 
-import { IAccount } from '../types';
+import { CompilationResult, IAccount, IAccStore } from '../types';
 import { Dispatch } from 'react';
+
+interface IDispatch {
+  type: string;
+  payload: CompilationResult | IAccount | IAccStore | string | Error;
+}
+
+export const setCompiledResults = (data: CompilationResult) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_COMPILED_RESULT, payload: data });
+  };
+};
 
 export const addTestResults = (data: any) => {
   return (dispatch: Dispatch<any>) => {
@@ -36,7 +50,7 @@ export const clearFinalResult = () => {
 
 export const setDeployedResult = (data: any) => {
   return (dispatch: Dispatch<any>) => {
-    dispatch({ type: SET_DEPLOYED_RESULT, payload: JSON.parse(data) });
+    dispatch({ type: SET_DEPLOYED_RESULT, payload: data });
   };
 };
 
@@ -58,9 +72,9 @@ export const setTestnetCallResult = (data: any) => {
   };
 };
 
-export const setAccountBalance = (data: any) => {
-  return (dispatch: Dispatch<any>) => {
-    dispatch({ type: SET_ACC_BALANCE, payload: data });
+export const setAccountBalance = (data: IAccStore) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_ACC_DATA, payload: data });
   };
 };
 
@@ -83,7 +97,19 @@ export const setUnsgTxn = (unsgTxn: any) => {
 };
 
 export const addNewAcc = (account: IAccount) => {
-  return (dispatch: Dispatch<any>) => {
+  return (dispatch: Dispatch<IDispatch>) => {
     dispatch({ type: APPND_NEW_ACC, payload: account });
+  };
+};
+
+export const setProcessMsg = (msg: string) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_PROCESS_MSG, payload: msg });
+  };
+};
+
+export const setErrMsg = (error: Error) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_ERR_MSG, payload: error });
   };
 };

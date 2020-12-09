@@ -28,6 +28,17 @@ module.exports = {
     sourceType: 'module',
     project: ['./tsconfig.json', './tsconfig.extension.json'],
   },
+  settings: {
+    'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
+    },
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
+  },
   rules: {
     'no-plusplus': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',

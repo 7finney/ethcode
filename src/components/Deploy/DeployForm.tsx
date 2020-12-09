@@ -4,15 +4,13 @@ import { Button, ButtonType } from 'components/common/ui';
 import { ABIDescription, ConstructorInput, IAccount } from 'types';
 
 interface IProps {
-  bytecode: string;
   abi: Array<ABIDescription>;
-  vscode: any;
-  currAccount: IAccount;
-  testNetId: string;
   gasEstimate: number;
-  // constructorInput: ConstructorInput | ConstructorInput[];
+  pvtKey: string;
+  unsignedTx: string;
   constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
-  openAdvanceDeploy: () => void;
+  handleDeploy: () => void;
+  handleBuildTxn: () => void;
 }
 
 interface IPropsTextArea {
@@ -44,15 +42,14 @@ const ParseTextarea: React.FC<IPropsTextArea> = ({ value, onChange, constructorI
     onChange(JSON.parse(value));
   };
 
-  return <textarea wrap="off" className="custom_input_css json_input" onChange={handleChange} value={text} />;
+  return <textarea className="custom_input_css json_input" onChange={handleChange} value={text} />;
 };
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {
-  const [testNetId, setTestNetId] = useState('');
-
+  const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
+  const [buildTxToggle, setBuildTxToggle] = useState(true);
   const { control, register, handleSubmit, getValues, setValue } = useForm<TDeployForm>();
   useEffect(() => {
-    setTestNetId(props.testNetId);
     const { abi } = props;
     // setValue('constructorInput', constructorInput);
 
@@ -78,31 +75,21 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
     setValue('gasSupply', props.gasEstimate);
   }, [props.gasEstimate]);
 
-  const handleDeploy = () => {
-    const { vscode, bytecode, abi, currAccount } = props;
-    vscode.postMessage({
-      command: 'run-deploy',
-      payload: {
-        abi,
-        bytecode,
-        params: getValues('constructorInput'),
-        gasSupply: getValues('gasSupply'),
-        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
-      },
-      testNetId,
-    });
-  };
+  const { pvtKey, unsignedTx, handleDeploy, gasEstimate, handleBuildTxn } = props;
   return (
     <form onSubmit={handleSubmit(handleDeploy)}>
       <div className="form-container">
-        <div className="json_input_container">
+        <div className="json_input_container" style={{ marginLeft: '-10px' }}>
           <Controller
             name="constructorInput"
             render={() => (
               <ParseTextarea
                 value={getValues('constructorInput')}
                 constructorInputRef={props.constructorInputRef}
-                onChange={(input: ConstructorInput[]) => setValue('constructorInput', input)}
+                onChange={(input: ConstructorInput[]) => {
+                  setValue('constructorInput', input);
+                  // props.onChange(input);
+                }}
               />
             )}
             control={control}
@@ -122,16 +109,24 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
           name="gasSupply"
         />
       </div>
-      <div style={{ marginBottom: '5px' }}>
-        {testNetId !== 'ganache' ? (
-          <Button buttonType={ButtonType.Input} onClick={props.openAdvanceDeploy}>
-            Advance Deploy
+      {/* Build unsigned transaction */}
+      <div className="input-container">
+        {gasEstimate > 0 ? (
+          <Button buttonType={ButtonType.Button} disabled={buildTxToggle} onClick={handleBuildTxn}>
+            Build transaction
           </Button>
         ) : (
-          <Button buttonType={ButtonType.Input} disabled={!(getValues('gasSupply') > 0)}>
-            Deploy
+          <Button buttonType={ButtonType.Button} disabled onClick={handleBuildTxn}>
+            Build transaction
           </Button>
         )}
+      </div>
+      <div className="account_row">
+        <div className="tag">
+          <Button buttonType={ButtonType.Input} disabled={!!(pvtKey && unsignedTx)}>
+            Sign & Deploy
+          </Button>
+        </div>
       </div>
     </form>
   );

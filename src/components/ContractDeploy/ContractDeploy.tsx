@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './ContractDeploy.css';
 import JSONPretty from 'react-json-pretty';
-import { connect } from 'react-redux';
-import { ABIDescription, CompilationResult, ConstructorInput, IAccount } from 'types';
-import { setCallResult } from '../../actions';
+import { useSelector, useDispatch } from 'react-redux';
+import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
+import { setCallResult, setTestNetId } from '../../actions';
 import { Button, ButtonType } from '../common/ui';
 import CallForm from './CallForm';
 import DeployForm from './DeployForm';
@@ -13,32 +13,31 @@ interface IProps {
   abi: Array<ABIDescription>;
   vscode: any;
   gasEstimate: number;
-  deployedResult: string;
-  compiledResult: CompilationResult;
-  callResult: any;
-  currAccount: IAccount;
-  testNetId: string;
   openAdvanceDeploy: () => void;
-  // eslint-disable-next-line no-unused-vars
-  setCallResult: (result: CompilationResult) => void;
 }
 
 const ContractDeploy: React.FC<IProps> = (props: IProps) => {
-  const [error, setError] = useState<Error | null>(null);
-  const [deployed, setDeployed] = useState({});
-  const [testNetId, setTestNetId] = useState<string>('');
-  const [disable, setDisable] = useState(true);
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const constructorInputRef = useRef<ConstructorInput | ConstructorInput[] | null>(null);
 
+  // redux
+  // UseSelector to extract state elements.
+  const { testNetId, callResult, deployedResult, currAccount } = useSelector((state: GlobalStore) => ({
+    testNetId: state.debugStore.testNetId,
+    deployedResult: state.txStore.deployedResult,
+    callResult: state.contractsStore.callResult,
+    currAccount: state.accountStore.currAccount,
+  }));
+  const dispatch = useDispatch();
+
   useEffect(() => {
-    setTestNetId(props.testNetId);
-    setDeployed(props.compiledResult);
+    dispatch(setTestNetId(testNetId));
     window.addEventListener('message', (event) => {
       const { data } = event;
 
       if (data.ganacheCallResult) {
-        props.setCallResult(data.ganacheCallResult);
+        dispatch(setCallResult(data.ganacheCallResult));
       }
       if (data.error) {
         setError(data.error);
@@ -51,29 +50,11 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   }, [error]);
 
   useEffect(() => {
-    if (props.testNetId !== testNetId && props.testNetId !== 'ganache') {
-      setDisable(true);
-    } else if (props.testNetId !== testNetId) {
-      setDisable(disable);
-      setTestNetId(props.testNetId);
-    }
-  }, [props.testNetId, testNetId]);
-
-  useEffect(() => {
-    if (props.deployedResult !== '') {
-      const deployedObj = JSON.parse(props.deployedResult);
-      setDeployed(deployedObj);
-      setDisable(false);
-    }
-  }, [props.deployedResult]);
-
-  useEffect(() => {
-    setDisable(false);
     setGasEstimateToggle(false);
   }, [props.gasEstimate]);
 
   const handleGetGasEstimate = () => {
-    const { vscode, bytecode, abi, currAccount } = props;
+    const { vscode, bytecode, abi } = props;
     setGasEstimateToggle(true);
     try {
       vscode.postMessage({
@@ -82,7 +63,7 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
           abi,
           bytecode,
           params: constructorInputRef.current,
-          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          from: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
         },
         testNetId,
       });
@@ -92,19 +73,21 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   };
 
   return (
-    <div>
+    <div className="deploy_container">
       <div>
         <div>
-          <DeployForm
-            vscode={props.vscode}
-            abi={props.abi}
-            bytecode={props.bytecode}
-            gasEstimate={props.gasEstimate}
-            currAccount={props.currAccount}
-            testNetId={props.testNetId}
-            constructorInputRef={constructorInputRef}
-            openAdvanceDeploy={props.openAdvanceDeploy}
-          />
+          {currAccount && (
+            <DeployForm
+              vscode={props.vscode}
+              abi={props.abi}
+              bytecode={props.bytecode}
+              gasEstimate={props.gasEstimate}
+              currAccount={currAccount}
+              testNetId={testNetId}
+              constructorInputRef={constructorInputRef}
+              openAdvanceDeploy={props.openAdvanceDeploy}
+            />
+          )}
           <form onSubmit={handleGetGasEstimate}>
             <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
               Get gas estimate
@@ -112,14 +95,16 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
           </form>
         </div>
         <div>
-          <CallForm
-            vscode={props.vscode}
-            abi={props.abi}
-            currAccount={props.currAccount}
-            testNetId={props.testNetId}
-            constructorInputRef={constructorInputRef}
-            deployedResult={props.deployedResult}
-          />
+          {deployedResult && currAccount && (
+            <CallForm
+              vscode={props.vscode}
+              abi={props.abi}
+              currAccount={currAccount}
+              testNetId={testNetId}
+              constructorInputRef={constructorInputRef}
+              deployedResult={deployedResult}
+            />
+          )}
         </div>
       </div>
       <div className="error_message">
@@ -132,25 +117,25 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
           </div>
         )}
       </div>
-      {Object.entries(props.callResult).length > 0 && (
+      {callResult && Object.entries(callResult).length > 0 && (
         <div className="call-result">
           <span>
             {/* 
               // @ts-ignore */}
-            {props.callResult || (props.callResult && props.callResult.callResult) ? 'Call result:' : 'Call error:'}
+            {callResult || (callResult && callResult.callResult) ? 'Call result:' : 'Call error:'}
           </span>
           <div>
             {/* TODO: add better way to show result and error */}
-            {props.callResult && <pre className="large-code">{props.callResult}</pre>}
+            {callResult && <pre className="large-code">{callResult}</pre>}
           </div>
         </div>
       )}
-      {Object.entries(deployed).length > 0 && (
+      {deployedResult && Object.entries(deployedResult).length > 0 && (
         <div className="transaction_receipt">
           <span className="contract-name inline-block highlight-success">Transaction Receipt:</span>
           <div>
             <pre className="large-code">
-              <JSONPretty id="json-pretty" data={deployed} />
+              <JSONPretty id="json-pretty" data={deployedResult} />
             </pre>
           </div>
         </div>
@@ -159,18 +144,4 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   );
 };
 
-function mapStateToProps({ debugStore, compiledStore, accountStore }: any) {
-  const { currAccount } = accountStore;
-  const { testNetId } = debugStore;
-  const { compiledresult, callResult } = compiledStore;
-  return {
-    testNetId,
-    compiledResult: compiledresult,
-    callResult,
-    currAccount,
-  };
-}
-
-export default connect(mapStateToProps, {
-  setCallResult,
-})(ContractDeploy);
+export default ContractDeploy;
