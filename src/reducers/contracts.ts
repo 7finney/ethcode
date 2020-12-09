@@ -1,4 +1,4 @@
-import { CompilationResult, TransactionResult } from 'types/solidityTypes';
+import { IContractStore } from 'types';
 import {
   SET_DEPLOYED_RESULT,
   CLEAR_DEPLOYED_RESULT,
@@ -7,20 +7,13 @@ import {
   SET_COMPILED_RESULT,
 } from '../actions/types';
 
-interface IState {
-  compiledresult: Array<CompilationResult>;
-  callResult: { [key: string]: string };
-  testNetCallResult: { [key: string]: string };
-  deployedResult: TransactionResult | null;
-}
-const initialState: IState = {
-  compiledresult: [],
+const initialState: IContractStore = {
+  compiledResult: null,
   callResult: {},
   testNetCallResult: {},
   deployedResult: null,
 };
-
-export default (state: any = initialState, action: any): IState => {
+export default (state: IContractStore = initialState, action: any): IContractStore => {
   switch (action.type) {
     case SET_DEPLOYED_RESULT:
       return {
@@ -30,7 +23,7 @@ export default (state: any = initialState, action: any): IState => {
     case CLEAR_DEPLOYED_RESULT:
       return {
         ...state,
-        compiledresult: {},
+        compiledResult: null,
         callResult: {},
         deployedResult: null,
       };
@@ -47,7 +40,7 @@ export default (state: any = initialState, action: any): IState => {
     case SET_COMPILED_RESULT:
       return {
         ...state,
-        compiledResult: JSON.parse(action.payload),
+        compiledResult: action.payload,
       };
     default:
       return state;

@@ -64,7 +64,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
 
       if (data.deployedResult) {
         setTxtHash(data.deployedResult);
-        // this.setState({ txtHash: data.deployedResult });
       }
       if (data.gasEstimate) {
         setGasEstimate(data.gasEstimate);
@@ -90,24 +89,11 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
         dispatch(setErrMsg(data.error));
       }
     });
-
-    // get private key for corresponding public key
-    // if (currAccount && currAccount.type === 'Local') {
-    //   setProcessMessage('Fetching private key...');
-    //   props.vscode.postMessage({
-    //     command: 'get-pvt-key',
-    //     payload: currAccount.pubAddr ? currAccount.pubAddr : currAccount.value,
-    //   });
-    // }
   }, []);
-
-  const handleConstructorInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setConstructorInput(JSON.parse(event.target.value));
-  };
 
   const handleBuildTxn = () => {
     const { vscode, bytecode, abi } = props;
-    const publicKey = currAccount.value;
+    const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
     // create unsigned transaction here
     try {
       vscode.postMessage({
@@ -136,7 +122,7 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
           abi,
           bytecode,
           params: constructorInputRef.current,
-          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          from: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
         },
         testNetId,
       });
@@ -151,7 +137,7 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
     setContractAddress(formData.contractAddress);
     setMethodName(formData.methodName);
     setMethodInputs(formData.methodInputs);
-    const publicKey = currAccount.value;
+    const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
     setCallFunToggle(true);
     vscode.postMessage({
       command: 'contract-method-call',
@@ -309,21 +295,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
           <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
         </div>
       </div>
-
-      {/* <div className="account_row">
-        <div className="tag">
-          {pvtKey && unsignedTx ? (
-            <button className="acc-button custom_button_css" onClick={signAndDeploy}>
-              Sign & Deploy
-            </button>
-          ) : (
-            <button disabled className="acc-button button_disable custom_button_css" onClick={signAndDeploy}>
-              Sign & Deploy
-            </button>
-          )}
-        </div>
-      </div> */}
-
       {/* Final Transaction Hash */}
       {pvtKey && (
         <div className="account_row">
@@ -335,7 +306,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
           </div>
         </div>
       )}
-
       {/* Notification */}
       {processMessage && <pre className="processMessage">{processMessage}</pre>}
 

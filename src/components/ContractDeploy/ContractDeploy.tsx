@@ -17,17 +17,14 @@ interface IProps {
 }
 
 const ContractDeploy: React.FC<IProps> = (props: IProps) => {
-  // const [deployed, setDeployed] = useState({});
-  // const [disable, setDisable] = useState(true);
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const constructorInputRef = useRef<ConstructorInput | ConstructorInput[] | null>(null);
 
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, compiledResult, callResult, deployedResult, currAccount } = useSelector((state: GlobalStore) => ({
+  const { testNetId, callResult, deployedResult, currAccount } = useSelector((state: GlobalStore) => ({
     testNetId: state.debugStore.testNetId,
-    compiledResult: state.contractsStore.compiledResult,
     deployedResult: state.txStore.deployedResult,
     callResult: state.contractsStore.callResult,
     currAccount: state.accountStore.currAccount,
@@ -66,7 +63,7 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
           abi,
           bytecode,
           params: constructorInputRef.current,
-          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          from: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
         },
         testNetId,
       });
@@ -79,16 +76,18 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
     <div className="deploy_container">
       <div>
         <div>
-          <DeployForm
-            vscode={props.vscode}
-            abi={props.abi}
-            bytecode={props.bytecode}
-            gasEstimate={props.gasEstimate}
-            currAccount={currAccount}
-            testNetId={testNetId}
-            constructorInputRef={constructorInputRef}
-            openAdvanceDeploy={props.openAdvanceDeploy}
-          />
+          {currAccount && (
+            <DeployForm
+              vscode={props.vscode}
+              abi={props.abi}
+              bytecode={props.bytecode}
+              gasEstimate={props.gasEstimate}
+              currAccount={currAccount}
+              testNetId={testNetId}
+              constructorInputRef={constructorInputRef}
+              openAdvanceDeploy={props.openAdvanceDeploy}
+            />
+          )}
           <form onSubmit={handleGetGasEstimate}>
             <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
               Get gas estimate
@@ -96,7 +95,7 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
           </form>
         </div>
         <div>
-          {deployedResult && (
+          {deployedResult && currAccount && (
             <CallForm
               vscode={props.vscode}
               abi={props.abi}
@@ -131,12 +130,12 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
           </div>
         </div>
       )}
-      {compiledResult && Object.entries(compiledResult).length > 0 && (
+      {deployedResult && Object.entries(deployedResult).length > 0 && (
         <div className="transaction_receipt">
           <span className="contract-name inline-block highlight-success">Transaction Receipt:</span>
           <div>
             <pre className="large-code">
-              <JSONPretty id="json-pretty" data={compiledResult} />
+              <JSONPretty id="json-pretty" data={deployedResult} />
             </pre>
           </div>
         </div>

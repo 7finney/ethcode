@@ -23,7 +23,6 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
   const [publicAddress, setPublicAddress] = useState('');
   const [pvtKey, setPvtKey] = useState('');
   const [showButton, setShowButton] = useState(false);
-  // const [error, setError] = useState('');
   const [sendBtnDisable, setSendBtnDisable] = useState(false);
   const [msg, setMsg] = useState('');
   const { register, handleSubmit } = useForm<FormInputs>();
@@ -32,7 +31,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
   const { testNetId, currAccount, accountBalance, error } = useSelector((state: GlobalStore) => ({
     testNetId: state.debugStore.testNetId,
     currAccount: state.accountStore.currAccount,
-    accountBalance: state.accountStore.accountBalance,
+    accountBalance: state.accountStore.balance,
     error: state.debugStore.error,
   }));
 
@@ -98,7 +97,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
     try {
       vscode.postMessage({
         command: 'delete-keyPair',
-        payload: currAccount.value,
+        payload: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
       });
     } catch (err) {
       dispatch(setErrMsg(err));
@@ -111,7 +110,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
     try {
       if (testNetId === 'ganache') {
         const transactionInfo = {
-          fromAddress: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          fromAddress: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
           toAddress: formData.accountToAddress,
           amount: formData.amount,
         };
@@ -123,7 +122,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
       } else {
         // Build unsigned transaction
         const transactionInfo = {
-          from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+          from: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
           to: formData.accountToAddress,
           value: formData.amount,
         };

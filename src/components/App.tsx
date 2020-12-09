@@ -10,6 +10,7 @@ import {
   setCurrAccChange,
   setTestNetId,
   setErrMsg,
+  setCompiledResults,
 } from '../actions';
 import './App.css';
 
@@ -30,13 +31,7 @@ import Deploy from './Deploy/Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from './Account/Account';
-import { IAccount, SolcVersionType, GroupedSelectorAccounts, CompilationResult, GlobalStore } from '../types';
-
-interface IAccData {
-  currAccount: IAccount;
-  balance: Number;
-  accounts: IAccount[];
-}
+import { IAccStore, SolcVersionType, GroupedSelectorAccounts, CompilationResult, GlobalStore } from '../types';
 
 interface IOpt {
   value: string;
@@ -45,10 +40,8 @@ interface IOpt {
 
 // @ts-ignore
 const vscode = acquireVsCodeApi(); // eslint-disable-line
-const App = () => {
+const App: React.FC = () => {
   const [message, setMessage] = useState<any[]>([]);
-  const [compiled, setCompiled] = useState<CompilationResult>();
-  // const [error, setError] = useState<Error | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [contractName, setContractName] = useState<string>('');
   const [processMessage, setProcessMessage] = useState('');
@@ -74,12 +67,13 @@ const App = () => {
 
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, accounts, currAccount, accountBalance, testResults, error } = useSelector(
+  const { compiled, testNetId, accounts, currAccount, accountBalance, testResults, error } = useSelector(
     (state: GlobalStore) => ({
+      compiled: state.contractsStore.compiledResult,
       testNetId: state.debugStore.testNetId,
       accounts: state.accountStore.accounts,
       currAccount: state.accountStore.currAccount,
-      accountBalance: state.accountStore.accountBalance,
+      accountBalance: state.accountStore.balance,
       testResults: state.test.testResults,
       error: state.debugStore.error,
     })
@@ -132,7 +126,7 @@ const App = () => {
       if (data.fetchAccounts) {
         const { balance, accounts } = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
-        const accData: IAccData = {
+        const accData: IAccStore = {
           balance,
           currAccount: {
             label: accounts[0],
@@ -167,7 +161,7 @@ const App = () => {
           setContractName(Object.keys(compiled.contracts[fileName])[0]);
           setContracts(contractsArray);
           setFiles(files);
-          dispatch(setCompiled(compiled));
+          dispatch(setCompiledResults(compiled));
         } catch (error) {
           setProcessMessage('Error Parsing Compilation result');
         }
@@ -343,7 +337,7 @@ const App = () => {
             {accounts.length > 0 && (
               <div className="account-brief">
                 <b>Account: </b>
-                <span>{currAccount.checksumAddr || currAccount.pubAddr || currAccount.value}</span>
+                <span>{currAccount ? currAccount.checksumAddr || currAccount.pubAddr || currAccount.value : '0x'}</span>
                 <br />
                 <b>Balance: </b>
                 <span>{accountBalance}</span>
