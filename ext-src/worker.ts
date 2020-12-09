@@ -515,8 +515,6 @@ process.on('message', async (m) => {
       }
     });
     call.on('data', (data: any) => {
-      console.log(data);
-
       // @ts-ignore
       process.send({ buildTxResult: data.result });
     });

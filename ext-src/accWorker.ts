@@ -1,11 +1,11 @@
-import * as fs from "fs";
+import * as fs from 'fs';
 // @ts-ignore
-import { toChecksumAddress } from "./hash/util";
+import { toChecksumAddress } from './hash/util';
 
-import { LocalAddressType } from "./types";
+import { LocalAddressType } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const keythereum = require("keythereum");
+const keythereum = require('keythereum');
 
 interface Account {
   pubAddr: string;
@@ -22,7 +22,7 @@ function listAddresses(keyStorePath: string) {
     }
     if (files) {
       localAddresses = files.map((file) => {
-        const arr = file.split("--");
+        const arr = file.split('--');
         return {
           pubAddress: `0x${arr[arr.length - 1]}`,
           checksumAddress: toChecksumAddress(`0x${arr[arr.length - 1]}`),
@@ -39,8 +39,8 @@ function createKeyPair(path: string, pswd: string) {
   const params = { keyBytes: 32, ivBytes: 16 };
   const bareKey = keythereum.create(params);
   const options = {
-    kdf: "scrypt",
-    cipher: "aes-128-ctr",
+    kdf: 'scrypt',
+    cipher: 'aes-128-ctr',
   };
   const keyObject = keythereum.dump(pswd, bareKey.privateKey, bareKey.salt, bareKey.iv, options);
   const account: Account = { pubAddr: keyObject.address, checksumAddr: toChecksumAddress(keyObject.address) };
@@ -62,11 +62,11 @@ function deleteKeyPair(keyStorePath: string, address: string) {
         process.send({ error: `Unable to scan directory: ${err}` });
       }
       files.forEach((file) => {
-        if (file.includes(address.replace("0x", ""))) {
+        if (file.includes(address.replace('0x', ''))) {
           fs.unlinkSync(`${keyStorePath}/keystore/${file}`);
           listAddresses(keyStorePath);
           // @ts-ignore
-          process.send({ resp: "Account deleted successfully" });
+          process.send({ resp: 'Account deleted successfully' });
         }
       });
     });
@@ -81,22 +81,22 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
   const keyObject = keythereum.importFromFile(address, keyStorePath);
   const privateKey = keythereum.recover(pswd, keyObject);
   // @ts-ignore
-  process.send({ privateKey: privateKey.toString("hex") });
+  process.send({ privateKey: privateKey.toString('hex') });
 }
 
 // worker communication
 // @ts-ignore
-process.on("message", (m) => {
-  if (m.command === "create-account") {
+process.on('message', (m) => {
+  if (m.command === 'create-account') {
     createKeyPair(m.ksPath, m.pswd);
   }
-  if (m.command === "extract-privateKey" && m.address && m.pswd && m.keyStorePath) {
+  if (m.command === 'extract-privateKey' && m.address && m.pswd && m.keyStorePath) {
     extractPvtKey(m.keyStorePath, m.address, m.pswd);
   }
-  if (m.command === "delete-keyPair") {
+  if (m.command === 'delete-keyPair') {
     deleteKeyPair(m.keyStorePath, m.address);
   }
-  if (m.command === "get-localAccounts") {
+  if (m.command === 'get-localAccounts') {
     listAddresses(m.keyStorePath);
   }
 });

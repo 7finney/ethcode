@@ -24,10 +24,10 @@ type FormInputs = {
 };
 
 const Deploy: React.FC<IProps> = (props: IProps) => {
-  const [constructorInput, setConstructorInput] = useState<ConstructorInput | ConstructorInput[]>();
+  // const [constructorInput, setConstructorInput] = useState<ConstructorInput | ConstructorInput[]>();
   const [gasEstimate, setGasEstimate] = useState(0);
-  const [byteCode, setByteCode] = useState<string>();
-  const [abi, setAbi] = useState<Array<ABIDescription>>([]);
+  // const [byteCode, setByteCode] = useState<string>();
+  // const [abi, setAbi] = useState<Array<ABIDescription>>([]);
   const [methodName, setMethodName] = useState<string>('');
   const [methodArray, setMethodArray] = useState({});
   const [methodInputs, setMethodInputs] = useState('');
@@ -56,9 +56,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    setAbi(props.abi);
-    setByteCode(props.bytecode);
-
     window.addEventListener('message', (event) => {
       const { data } = event;
 
@@ -90,27 +87,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
       }
     });
   }, []);
-
-  const handleBuildTxn = () => {
-    const { vscode, bytecode, abi } = props;
-    const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
-    // create unsigned transaction here
-    try {
-      vscode.postMessage({
-        command: 'build-rawtx',
-        payload: {
-          from: publicKey,
-          abi,
-          bytecode,
-          params: constructorInput || [],
-          gasSupply: gasEstimate || 0,
-        },
-        testNetId,
-      });
-    } catch (error) {
-      dispatch(setErrMsg(error));
-    }
-  };
 
   const getGasEstimate = () => {
     const { vscode, bytecode, abi } = props;
@@ -172,127 +148,127 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
     }
   };
 
-  const signAndDeploy = () => {
-    const { vscode } = props;
-    try {
-      vscode.postMessage({
-        command: 'sign-deploy-tx',
-        payload: {
-          unsignedTx,
-          pvtKey,
-        },
-        testNetId,
-      });
-    } catch (error) {
-      dispatch(setErrMsg(error));
-    }
-  };
-
   const publicKey = currAccount && currAccount.value ? currAccount.value : '';
+  const { abi, bytecode, vscode } = props;
   return (
-    <div className="deploy_container">
-      <div>
+    <div>
+      <div className="deploy_container">
         <div>
-          <DeployForm
-            abi={abi}
-            gasEstimate={gasEstimate}
-            handleDeploy={signAndDeploy}
-            handleBuildTxn={handleBuildTxn}
-            pvtKey={pvtKey}
-            unsignedTx={unsignedTx}
-            constructorInputRef={constructorInputRef}
-          />
-          <form onSubmit={getGasEstimate}>
-            <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
-              Get gas estimate
-            </Button>
-          </form>
-        </div>
-      </div>
-      {/* Constructor */}
-      <div>
-        {/* Call Function */}
-        <div className="tag">
-          <form onSubmit={handleSubmit(handleCall)} className="form_align">
-            <input
-              type="text"
-              className="custom_input_css"
-              placeholder="Enter contract address"
-              style={{ marginRight: '5px' }}
-              name="contractAddress"
-              ref={register}
-            />
-            <input
-              type="text"
-              className="custom_input_css"
-              placeholder="Enter contract function name"
-              name="methodName"
-              ref={register}
-              onChange={handleMethodnameInput}
-            />
-            {methodName !== '' && methodInputs !== '' && methodInputs !== '[]' && (
-              <div className="json_input_container" style={{ margin: '10px 0' }}>
-                <textarea name="methodInputs" className="json_input custom_input_css" ref={register} />
-              </div>
-            )}
-            {isPayable && (
-              <input
-                type="number"
-                className="custom_input_css"
-                placeholder="Enter payable amount"
-                style={{ margin: '5px' }}
-                name="payableAmount"
-              />
-            )}
-            <Button buttonType={ButtonType.Input} disabled={callFunToggle}>
-              Call function
-            </Button>
-          </form>
-        </div>
-      </div>
-
-      {/* Call function Result */}
-      {Object.entries(testNetCallResult).length > 0 && (
-        <div className="tag call-result">
-          <span>{testNetCallResult ? 'Call result:' : 'Call error:'}</span>
           <div>
-            {testNetCallResult ? (
-              <pre className="large-code">{testNetCallResult}</pre>
-            ) : (
-              <pre className="large-code" style={{ color: 'red' }}>
-                {JSON.stringify(error)}
+            <DeployForm
+              vscode={vscode}
+              bytecode={bytecode}
+              abi={abi}
+              gasEstimate={gasEstimate}
+              pvtKey={pvtKey}
+              constructorInputRef={constructorInputRef}
+            />
+            <form onSubmit={getGasEstimate}>
+              <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
+                Get gas estimate
+              </Button>
+            </form>
+          </div>
+        </div>
+        {/* Constructor */}
+        <div>
+          {/* Call Function */}
+          <div className="tag">
+            <form onSubmit={handleSubmit(handleCall)} className="form_align">
+              <input
+                type="text"
+                className="custom_input_css"
+                placeholder="Enter contract address"
+                style={{ marginRight: '5px' }}
+                name="contractAddress"
+                ref={register}
+              />
+              <input
+                type="text"
+                className="custom_input_css"
+                placeholder="Enter contract function name"
+                name="methodName"
+                ref={register}
+                onChange={handleMethodnameInput}
+              />
+              {methodName !== '' && methodInputs !== '' && methodInputs !== '[]' && (
+                <div className="json_input_container" style={{ margin: '10px 0' }}>
+                  <textarea name="methodInputs" className="json_input custom_input_css" ref={register} />
+                </div>
+              )}
+              {isPayable && (
+                <input
+                  type="number"
+                  className="custom_input_css"
+                  placeholder="Enter payable amount"
+                  style={{ margin: '5px' }}
+                  name="payableAmount"
+                />
+              )}
+              <Button buttonType={ButtonType.Input} disabled={callFunToggle}>
+                Call function
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        {/* Call function Result */}
+        {Object.entries(testNetCallResult).length > 0 && (
+          <div className="tag call-result">
+            <span>{testNetCallResult ? 'Call result:' : 'Call error:'}</span>
+            <div>
+              {testNetCallResult ? (
+                <pre className="large-code">{testNetCallResult}</pre>
+              ) : (
+                <pre className="large-code" style={{ color: 'red' }}>
+                  {JSON.stringify(error)}
+                </pre>
+              )}
+            </div>
+          </div>
+        )}
+
+        {unsignedTx && (
+          <div className="tag">
+            <h4 className="contract-name inline-block highlight-success">Unsigned Transaction:</h4>
+            <div className="json_input_container" style={{ marginTop: '10px' }}>
+              <pre className="large-code">
+                <JSONPretty id="json-pretty" data={unsignedTx} />
               </pre>
-            )}
+            </div>
+          </div>
+        )}
+
+        <div className="account_row">
+          <div className="tag">
+            <h4>Public key</h4>
+          </div>
+          <div className="input-container">
+            <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" />
           </div>
         </div>
-      )}
 
-      {unsignedTx && (
-        <div className="tag">
-          <h4 className="contract-name inline-block highlight-success">Unsigned Transaction:</h4>
-          <div className="json_input_container" style={{ marginTop: '10px' }}>
-            <pre className="large-code">
-              <JSONPretty id="json-pretty" data={unsignedTx} />
+        <div className="account_row">
+          <div className="tag">
+            <h4>Private key</h4>
+          </div>
+          <div className="input-container">
+            <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
+          </div>
+        </div>
+        {/* Notification */}
+        {processMessage && <pre className="processMessage">{processMessage}</pre>}
+
+        {/* Error Handle */}
+        <div className="error_message">
+          {error && (
+            <pre className="large-code" style={{ color: 'red' }}>
+              {
+                // @ts-ignore
+                JSON.stringify(error)
+              }
             </pre>
-          </div>
-        </div>
-      )}
-
-      <div className="account_row">
-        <div className="tag">
-          <h4>Public key</h4>
-        </div>
-        <div className="input-container">
-          <input className="input custom_input_css" type="text" value={publicKey} placeholder="public key" />
-        </div>
-      </div>
-
-      <div className="account_row">
-        <div className="tag">
-          <h4>Private key</h4>
-        </div>
-        <div className="input-container">
-          <input className="input custom_input_css" type="text" disabled placeholder="private key" value={pvtKey} />
+          )}
         </div>
       </div>
       {/* Final Transaction Hash */}
@@ -306,20 +282,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
           </div>
         </div>
       )}
-      {/* Notification */}
-      {processMessage && <pre className="processMessage">{processMessage}</pre>}
-
-      {/* Error Handle */}
-      <div className="error_message">
-        {error && (
-          <pre className="large-code" style={{ color: 'red' }}>
-            {
-              // @ts-ignore
-              JSON.stringify(error)
-            }
-          </pre>
-        )}
-      </div>
     </div>
   );
 };

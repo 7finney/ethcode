@@ -10,7 +10,6 @@ interface IProps {
   currAccount: IAccount;
   testNetId: string;
   gasEstimate: number;
-  // constructorInput: ConstructorInput | ConstructorInput[];
   constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
   openAdvanceDeploy: () => void;
 }
@@ -54,7 +53,6 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
   useEffect(() => {
     setTestNetId(props.testNetId);
     const { abi } = props;
-    // setValue('constructorInput', constructorInput);
 
     // eslint-disable-next-line no-restricted-syntax
     for (const i in abi) {

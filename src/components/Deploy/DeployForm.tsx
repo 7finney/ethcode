@@ -1,16 +1,17 @@
 import React, { MutableRefObject, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonType } from 'components/common/ui';
-import { ABIDescription, ConstructorInput, IAccount } from 'types';
+import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
+import { setErrMsg } from 'actions';
 
 interface IProps {
+  bytecode: string;
   abi: Array<ABIDescription>;
+  vscode: any;
   gasEstimate: number;
   pvtKey: string;
-  unsignedTx: string;
   constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
-  handleDeploy: () => void;
-  handleBuildTxn: () => void;
 }
 
 interface IPropsTextArea {
@@ -46,13 +47,19 @@ const ParseTextarea: React.FC<IPropsTextArea> = ({ value, onChange, constructorI
 };
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {
-  const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [buildTxToggle, setBuildTxToggle] = useState(true);
-  const { control, register, handleSubmit, getValues, setValue } = useForm<TDeployForm>();
+  const { control, register, getValues, setValue } = useForm<TDeployForm>();
+  // redux
+  // UseSelector to extract state elements.
+  const { testNetId, currAccount, unsignedTx } = useSelector((state: GlobalStore) => ({
+    testNetId: state.debugStore.testNetId,
+    currAccount: state.accountStore.currAccount,
+    testNetCallResult: state.contractsStore.testNetCallResult,
+    unsignedTx: state.txStore.unsignedTx,
+  }));
+  const dispatch = useDispatch();
   useEffect(() => {
     const { abi } = props;
-    // setValue('constructorInput', constructorInput);
-
     // eslint-disable-next-line no-restricted-syntax
     for (const i in abi) {
       if (abi[i].type === 'constructor' && abi[i].inputs!.length > 0) {
@@ -73,11 +80,49 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
   // set gas estimate
   useEffect(() => {
     setValue('gasSupply', props.gasEstimate);
+    setBuildTxToggle(false);
   }, [props.gasEstimate]);
 
-  const { pvtKey, unsignedTx, handleDeploy, gasEstimate, handleBuildTxn } = props;
+  const handleBuildTxn = () => {
+    const { vscode, bytecode, abi } = props;
+    const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
+    // create unsigned transaction here
+    try {
+      vscode.postMessage({
+        command: 'build-rawtx',
+        payload: {
+          from: publicKey,
+          abi,
+          bytecode,
+          params: getValues('constructorInput'),
+          gasSupply: getValues('gasSupply'),
+        },
+        testNetId,
+      });
+    } catch (error) {
+      dispatch(setErrMsg(error));
+    }
+  };
+
+  const signAndDeploy = () => {
+    const { vscode, pvtKey } = props;
+    try {
+      vscode.postMessage({
+        command: 'sign-deploy-tx',
+        payload: {
+          unsignedTx,
+          pvtKey,
+        },
+        testNetId,
+      });
+    } catch (error) {
+      dispatch(setErrMsg(error));
+    }
+  };
+
+  const { pvtKey, gasEstimate } = props;
   return (
-    <form onSubmit={handleSubmit(handleDeploy)}>
+    <form>
       <div className="form-container">
         <div className="json_input_container" style={{ marginLeft: '-10px' }}>
           <Controller
@@ -88,7 +133,6 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
                 constructorInputRef={props.constructorInputRef}
                 onChange={(input: ConstructorInput[]) => {
                   setValue('constructorInput', input);
-                  // props.onChange(input);
                 }}
               />
             )}
@@ -111,19 +155,17 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
       </div>
       {/* Build unsigned transaction */}
       <div className="input-container">
-        {gasEstimate > 0 ? (
-          <Button buttonType={ButtonType.Button} disabled={buildTxToggle} onClick={handleBuildTxn}>
-            Build transaction
-          </Button>
-        ) : (
-          <Button buttonType={ButtonType.Button} disabled onClick={handleBuildTxn}>
-            Build transaction
-          </Button>
-        )}
+        <Button
+          buttonType={ButtonType.Button}
+          disabled={gasEstimate > 0 ? buildTxToggle : true}
+          onClick={handleBuildTxn}
+        >
+          Build transaction
+        </Button>
       </div>
       <div className="account_row">
         <div className="tag">
-          <Button buttonType={ButtonType.Input} disabled={!!(pvtKey && unsignedTx)}>
+          <Button buttonType={ButtonType.Input} disabled={!!(pvtKey && unsignedTx)} onClick={signAndDeploy}>
             Sign & Deploy
           </Button>
         </div>
