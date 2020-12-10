@@ -10,23 +10,23 @@ interface IProps {
   currAccount: IAccount;
   testNetId: string;
   gasEstimate: number;
-  constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
+  constructorInputRef: MutableRefObject<ConstructorInput[] | null>;
   openAdvanceDeploy: () => void;
 }
 
 interface IPropsTextArea {
-  value: ConstructorInput | ConstructorInput[];
-  onChange: (value: ConstructorInput[]) => void;
-  constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
+  value: Array<ConstructorInput>;
+  onChange: (value: Array<ConstructorInput>) => void;
+  constructorInputRef: MutableRefObject<ConstructorInput[] | null>;
 }
 
 type TDeployForm = {
   gasSupply: number;
-  constructorInput: ConstructorInput | ConstructorInput[];
+  constructorInput: Array<ConstructorInput>;
 };
 
 const ParseTextarea: React.FC<IPropsTextArea> = ({ value, onChange, constructorInputRef }: IPropsTextArea) => {
-  const [text, setText] = React.useState<string>('{}');
+  const [text, setText] = React.useState<string>('[]');
   useEffect(() => {
     setText(JSON.stringify(value, null, '\t'));
   }, [value]);
@@ -83,7 +83,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
       payload: {
         abi,
         bytecode,
-        params: getValues('constructorInput'),
+        params: getValues('constructorInput') || [],
         gasSupply: getValues('gasSupply'),
         from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
       },

@@ -19,7 +19,7 @@ interface IProps {
 const ContractDeploy: React.FC<IProps> = (props: IProps) => {
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const constructorInputRef = useRef<ConstructorInput | ConstructorInput[] | null>(null);
+  const constructorInputRef = useRef<ConstructorInput[] | null>(null);
 
   // redux
   // UseSelector to extract state elements.
@@ -95,8 +95,9 @@ const ContractDeploy: React.FC<IProps> = (props: IProps) => {
               </Button>
             </form>
           </div>
+          {/* Call Function */}
           <div>
-            {deployedResult && currAccount && (
+            {currAccount && (
               <CallForm
                 vscode={props.vscode}
                 abi={props.abi}

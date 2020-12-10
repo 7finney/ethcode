@@ -3,10 +3,10 @@ import JSONPretty from 'react-json-pretty';
 import './Deploy.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
-import { setUnsgTxn, setTestnetCallResult, setErrMsg } from '../../actions';
+import { setUnsgTxn, setCallResult, setErrMsg } from '../../actions';
 import { Button, ButtonType } from '../common/ui';
-import { useForm } from 'react-hook-form';
 import DeployForm from './DeployForm';
+import CallForm from './CallForm';
 
 export interface IProps {
   contractName: string;
@@ -16,36 +16,21 @@ export interface IProps {
   errors: Error;
 }
 
-type FormInputs = {
-  contractAddress: string;
-  methodName: string;
-  amount: number;
-  methodInputs: string;
-};
-
 const Deploy: React.FC<IProps> = (props: IProps) => {
   const [gasEstimate, setGasEstimate] = useState(0);
-  const [methodName, setMethodName] = useState<string>('');
-  const [methodArray, setMethodArray] = useState({});
-  const [methodInputs, setMethodInputs] = useState('');
-  const [contractAddress, setContractAddress] = useState('');
   const [txtHash, setTxtHash] = useState('');
   const [processMessage, setProcessMessage] = useState('');
-  const [isPayable, setIsPayable] = useState(false);
-  const [payableAmount, setPayableAmount] = useState<number>(0);
-  const [callFunToggle, setCallFunToggle] = useState(true);
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
-
-  const { register, handleSubmit } = useForm<FormInputs>();
-  const constructorInputRef = useRef<ConstructorInput | ConstructorInput[] | null>(null);
+  const constructorInputRef = useRef<ConstructorInput[] | null>(null);
 
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, unsignedTx, testNetCallResult, pvtKey, error } = useSelector(
+  const { testNetId, currAccount, unsignedTx, deployedResult, callResult, pvtKey, error } = useSelector(
     (state: GlobalStore) => ({
       testNetId: state.debugStore.testNetId,
       currAccount: state.accountStore.currAccount,
-      testNetCallResult: state.contractsStore.testNetCallResult,
+      deployedResult: state.contractsStore.deployedResult,
+      callResult: state.contractsStore.callResult,
       unsignedTx: state.txStore.unsignedTx,
       pvtKey: state.accountStore.privateKey,
       error: state.debugStore.error,
@@ -70,15 +55,8 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
       if (data.unsignedTx) {
         dispatch(setUnsgTxn(data.unsignedTx));
       }
-      // if (data.pvtKey) {
-      //   // TODO: fetching private key process needs fix
-      //   setPvtKey(data.pvtKey);
-      //   setProcessMessage('');
-      //   setMsg('process Finished');
-      // }
-      if (data.TestnetCallResult) {
-        dispatch(setTestnetCallResult(data.TestnetCallResult));
-        setCallFunToggle(true);
+      if (data.callResult) {
+        dispatch(setCallResult(data.callResult));
       }
       if (data.error) {
         dispatch(setErrMsg(data.error));
@@ -105,60 +83,21 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
     }
   };
 
-  const handleCall = (formData: FormInputs) => {
-    const { vscode, abi } = props;
-    setPayableAmount(formData.amount);
-    setContractAddress(formData.contractAddress);
-    setMethodName(formData.methodName);
-    setMethodInputs(formData.methodInputs);
-    const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
-    setCallFunToggle(true);
-    vscode.postMessage({
-      command: 'contract-method-call',
-      payload: {
-        from: publicKey,
-        abi,
-        address: contractAddress,
-        methodName,
-        params: JSON.parse(methodInputs),
-        gasSupply: gasEstimate,
-        value: payableAmount,
-      },
-      testNetId,
-    });
-  };
-
-  const handleMethodnameInput = (event: any) => {
-    const methodName: string = event.target.value;
-    setCallFunToggle(false);
-    if (methodName && Object.prototype.hasOwnProperty.call(methodArray, event.target.value)) {
-      setMethodName(methodName);
-      // @ts-ignore
-      setMethodArray(JSON.stringify(methodArray[methodName].inputs, null, '\t'));
-      // @ts-ignore
-      setIsPayable(methodArray[methodName].stateMutability === 'payable');
-    } else {
-      setMethodName('');
-      // @ts-ignore
-      setMethodArray('');
-      // @ts-ignore
-      setIsPayable(false);
-    }
-  };
-
   const publicKey = currAccount && currAccount.value ? currAccount.value : '';
   const { abi, bytecode, vscode } = props;
   return (
     <div>
       <div className="deploy_container">
         <div>
-          <DeployForm
-            vscode={vscode}
-            bytecode={bytecode}
-            abi={abi}
-            gasEstimate={gasEstimate}
-            constructorInputRef={constructorInputRef}
-          />
+          {currAccount && (
+            <DeployForm
+              vscode={vscode}
+              bytecode={bytecode}
+              abi={abi}
+              gasEstimate={gasEstimate}
+              constructorInputRef={constructorInputRef}
+            />
+          )}
           <form onSubmit={getGasEstimate}>
             <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
               Get gas estimate
@@ -166,51 +105,26 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
           </form>
         </div>
         {/* Call Function */}
-        <div className="tag">
-          <form onSubmit={handleSubmit(handleCall)} className="form_align">
-            <input
-              type="text"
-              className="custom_input_css"
-              placeholder="Enter contract address"
-              style={{ marginRight: '5px' }}
-              name="contractAddress"
-              ref={register}
+        <div>
+          {currAccount && (
+            <CallForm
+              vscode={props.vscode}
+              abi={props.abi}
+              currAccount={currAccount}
+              testNetId={testNetId}
+              constructorInputRef={constructorInputRef}
+              deployedResult={deployedResult}
             />
-            <input
-              type="text"
-              className="custom_input_css"
-              placeholder="Enter contract function name"
-              name="methodName"
-              ref={register}
-              onChange={handleMethodnameInput}
-            />
-            {methodName !== '' && methodInputs !== '' && methodInputs !== '[]' && (
-              <div className="json_input_container" style={{ margin: '10px 0' }}>
-                <textarea name="methodInputs" className="json_input custom_input_css" ref={register} />
-              </div>
-            )}
-            {isPayable && (
-              <input
-                type="number"
-                className="custom_input_css"
-                placeholder="Enter payable amount"
-                style={{ margin: '5px' }}
-                name="payableAmount"
-              />
-            )}
-            <Button buttonType={ButtonType.Input} disabled={callFunToggle}>
-              Call function
-            </Button>
-          </form>
+          )}
         </div>
 
         {/* Call function Result */}
-        {Object.entries(testNetCallResult).length > 0 && (
+        {Object.entries(callResult).length > 0 && (
           <div className="tag call-result">
-            <span>{testNetCallResult ? 'Call result:' : 'Call error:'}</span>
+            <span>{callResult ? 'Call result:' : 'Call error:'}</span>
             <div>
-              {testNetCallResult ? (
-                <pre className="large-code">{testNetCallResult}</pre>
+              {callResult ? (
+                <pre className="large-code">{callResult}</pre>
               ) : (
                 <pre className="large-code" style={{ color: 'red' }}>
                   {JSON.stringify(error)}

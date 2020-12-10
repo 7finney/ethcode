@@ -1,10 +1,10 @@
 import React, { useEffect, useState, MutableRefObject } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Button, ButtonType, TextArea } from 'components/common/ui';
-import { ABIDescription, ABIParameter, ConstructorInput, IAccount, TransactionResult } from 'types';
+import { useForm } from 'react-hook-form';
+import { Button, ButtonType } from 'components/common/ui';
+import { ABIDescription, ConstructorInput, IAccount, TransactionResult } from 'types';
 
 interface IProps {
-  constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
+  constructorInputRef: MutableRefObject<Array<ConstructorInput> | null>;
   deployedResult: TransactionResult | null;
   abi: ABIDescription[];
   currAccount: IAccount;
@@ -15,7 +15,6 @@ interface IProps {
 type FormContract = {
   contractAddress: string;
   methodName: string;
-  methodInputs: Array<ABIParameter>;
   payableAmount: number;
   gasSupply: number;
 };
@@ -28,9 +27,7 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
   const [methodArray, setmethodArray] = useState({});
   const [payableAmount] = useState<number>(0);
 
-  const { control, register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<
-    FormContract
-  >();
+  const { register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<FormContract>();
 
   useEffect(() => {
     window.addEventListener('message', (event) => {
@@ -75,6 +72,9 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
     const { deployedResult } = props;
     setValue('contractAddress', deployedResult ? deployedResult.contractAddress : '0x');
   }, [props.deployedResult]);
+  const handleMethodInputs = (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMethodInputs(event.target.value);
+  };
   const handleMethodnameInput = (
     event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
   ) => {
@@ -97,12 +97,12 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
     const { vscode, abi, currAccount } = props;
     setCallFunctionToggle(true);
     vscode.postMessage({
-      command: 'ganache-contract-method-call',
+      command: 'contract-method-call',
       payload: {
         abi,
         address: getValues('contractAddress'),
         methodName,
-        params: getValues('methodInputs') || [],
+        params: JSON.parse(methodInputs),
         gasSupply: props.constructorInputRef.current,
         // TODO: add value supply in case of payable functions
         value: payableAmount,
@@ -130,18 +130,9 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
         ref={contractReg}
         onChange={handleMethodnameInput}
       />
-      {methodName !== '' && methodInputs !== '' && (
+      {methodName !== '' && methodInputs !== '' && methodInputs !== '[]' && (
         <div className="json_input_container" style={{ marginTop: '10px' }}>
-          <Controller
-            name="methodInputs"
-            render={() => (
-              <TextArea
-                value={getValues('methodInputs')}
-                onChange={(input: Array<ABIParameter>) => setValue('methodInputs', input)}
-              />
-            )}
-            control={control}
-          />
+          <textarea className="json_input custom_input_css" value={methodInputs} onChange={handleMethodInputs} />
         </div>
       )}
       {isPayable && (

@@ -10,18 +10,18 @@ interface IProps {
   abi: Array<ABIDescription>;
   vscode: any;
   gasEstimate: number;
-  constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
+  constructorInputRef: MutableRefObject<Array<ConstructorInput> | null>;
 }
 
 interface IPropsTextArea {
-  value: ConstructorInput | ConstructorInput[];
-  onChange: (value: ConstructorInput[]) => void;
-  constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
+  value: Array<ConstructorInput>;
+  onChange: (value: Array<ConstructorInput>) => void;
+  constructorInputRef: MutableRefObject<Array<ConstructorInput> | null>;
 }
 
 type TDeployForm = {
   gasSupply: number;
-  constructorInput: ConstructorInput | ConstructorInput[];
+  constructorInput: Array<ConstructorInput>;
 };
 
 const ParseTextarea: React.FC<IPropsTextArea> = ({ value, onChange, constructorInputRef }: IPropsTextArea) => {
@@ -53,7 +53,6 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
   const { testNetId, currAccount, unsignedTx, pvtKey } = useSelector((state: GlobalStore) => ({
     testNetId: state.debugStore.testNetId,
     currAccount: state.accountStore.currAccount,
-    testNetCallResult: state.contractsStore.testNetCallResult,
     unsignedTx: state.txStore.unsignedTx,
     pvtKey: state.accountStore.privateKey,
   }));
@@ -64,7 +63,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
     for (const i in abi) {
       if (abi[i].type === 'constructor' && abi[i].inputs!.length > 0) {
         try {
-          const constructorInput: ConstructorInput[] = JSON.parse(JSON.stringify(abi[i].inputs));
+          const constructorInput: Array<ConstructorInput> = JSON.parse(JSON.stringify(abi[i].inputs));
           // eslint-disable-next-line no-restricted-syntax, guard-for-in
           for (const j in constructorInput) {
             constructorInput[j].value = '';
@@ -94,7 +93,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
           from: publicKey,
           abi,
           bytecode,
-          params: getValues('constructorInput'),
+          params: getValues('constructorInput') || [],
           gasSupply: getValues('gasSupply'),
         },
         testNetId,
@@ -131,7 +130,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
               <ParseTextarea
                 value={getValues('constructorInput')}
                 constructorInputRef={props.constructorInputRef}
-                onChange={(input: ConstructorInput[]) => {
+                onChange={(input: Array<ConstructorInput>) => {
                   setValue('constructorInput', input);
                 }}
               />

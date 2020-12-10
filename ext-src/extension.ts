@@ -674,8 +674,8 @@ class ReactPanel {
       logger.error(new Error('App Not registered'));
       return;
     }
+    logger.log(`testnet Id: ${testNetId}`);
     if (testNetId === 'ganache') {
-      logger.log(`testnet Id: ${testNetId}`);
       callWorker.send({
         command: 'ganache-contract-method-call',
         payload,
@@ -683,7 +683,6 @@ class ReactPanel {
         testnetId: testNetId,
       });
     } else {
-      logger.log(`testnet Id: ${testNetId}`);
       callWorker.send({
         command: 'contract-method-call',
         payload,

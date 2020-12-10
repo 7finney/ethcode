@@ -10,7 +10,6 @@ import {
 const initialState: IContractStore = {
   compiledResult: null,
   callResult: {},
-  testNetCallResult: {},
   deployedResult: null,
 };
 export default (state: IContractStore = initialState, action: any): IContractStore => {
@@ -35,7 +34,7 @@ export default (state: IContractStore = initialState, action: any): IContractSto
     case SET_TESTNET_CALL_RESULT:
       return {
         ...state,
-        testNetCallResult: action.payload,
+        callResult: action.payload,
       };
     case SET_COMPILED_RESULT:
       return {

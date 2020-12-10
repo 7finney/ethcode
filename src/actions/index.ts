@@ -15,6 +15,7 @@ import {
   SET_ERR_MSG,
   SET_COMPILED_RESULT,
   SET_PVT_KEY,
+  SET_GAS_ESTM,
 } from './types';
 
 import { CompilationResult, IAccount, IAccStore } from '../types';
@@ -22,7 +23,7 @@ import { Dispatch } from 'react';
 
 interface IDispatch {
   type: string;
-  payload: CompilationResult | IAccount | IAccStore | string | Error;
+  payload: CompilationResult | IAccount | IAccStore | string | number | Error;
 }
 
 export const setCompiledResults = (data: CompilationResult) => {
@@ -118,5 +119,11 @@ export const setPvtKey = (data: IAccStore) => {
 export const setErrMsg = (error: Error) => {
   return (dispatch: Dispatch<IDispatch>) => {
     dispatch({ type: SET_ERR_MSG, payload: error });
+  };
+};
+
+export const setGasEstimate = (gas: number) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_GAS_ESTM, payload: gas });
   };
 };

@@ -14,14 +14,13 @@ export interface IDebugStore {
 }
 
 export interface ITxStore {
+  gasEstimate: number;
   unsignedTx: string;
-  // deployedResult: TransactionResult;
 }
 
 export interface IContractStore {
   compiledResult: CompilationResult | null;
   callResult: { [key: string]: string };
-  testNetCallResult: { [key: string]: string };
   deployedResult: TransactionResult | null;
 }
 
