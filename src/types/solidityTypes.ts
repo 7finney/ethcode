@@ -277,7 +277,7 @@ export type UserMethodDoc = {
 
 // TODO Add proper types from solidity documentation
 export type ConstructorInput = {
-  internalType: string;
+  internalType?: string;
   name: string;
   type: string;
   value?: string;

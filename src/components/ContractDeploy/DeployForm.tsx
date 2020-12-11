@@ -1,6 +1,6 @@
 import React, { MutableRefObject, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, ButtonType } from 'components/common/ui';
+import { Button, ButtonType, TextArea } from 'components/common/ui';
 import { ABIDescription, ConstructorInput, IAccount } from 'types';
 
 interface IProps {
@@ -14,37 +14,10 @@ interface IProps {
   openAdvanceDeploy: () => void;
 }
 
-interface IPropsTextArea {
-  value: Array<ConstructorInput>;
-  onChange: (value: Array<ConstructorInput>) => void;
-  constructorInputRef: MutableRefObject<ConstructorInput[] | null>;
-}
-
-type TDeployForm = {
+interface TDeployForm {
   gasSupply: number;
   constructorInput: Array<ConstructorInput>;
-};
-
-const ParseTextarea: React.FC<IPropsTextArea> = ({ value, onChange, constructorInputRef }: IPropsTextArea) => {
-  const [text, setText] = React.useState<string>('[]');
-  useEffect(() => {
-    setText(JSON.stringify(value, null, '\t'));
-  }, [value]);
-  useEffect(() => {
-    if (text) {
-      /* eslint no-param-reassign: "warn" */
-      constructorInputRef.current = JSON.parse(text);
-    }
-  }, [text]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { value } = e.target;
-    setText(JSON.stringify(JSON.parse(value), null, '\t'));
-    onChange(JSON.parse(value));
-  };
-
-  return <textarea wrap="off" className="custom_input_css json_input" onChange={handleChange} value={text} />;
-};
+}
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {
   const [testNetId, setTestNetId] = useState('');
@@ -97,10 +70,10 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
           <Controller
             name="constructorInput"
             render={() => (
-              <ParseTextarea
+              <TextArea
                 value={getValues('constructorInput')}
-                constructorInputRef={props.constructorInputRef}
-                onChange={(input: ConstructorInput[]) => setValue('constructorInput', input)}
+                inputRef={props.constructorInputRef}
+                onChange={(input: Array<ConstructorInput>) => setValue('constructorInput', input)}
               />
             )}
             control={control}

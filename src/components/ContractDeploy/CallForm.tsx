@@ -23,7 +23,6 @@ type FormContract = {
 const CallForm: React.FC<IProps> = (props: IProps) => {
   const [callFunctionToggle, setCallFunctionToggle] = useState(true);
   const [methodName, setMethodName] = useState<string>('');
-  const [methodInputs, setMethodInputs] = useState('');
   const [isPayable, setIsPayable] = useState(false);
   const [methodArray, setmethodArray] = useState({});
   const [payableAmount] = useState<number>(0);
@@ -84,12 +83,9 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
     if (methodName && methodArray.hasOwnProperty(methodName)) {
       setMethodName(methodName);
       // @ts-ignore
-      setMethodInputs(JSON.stringify(methodArray[methodName].inputs, null, '\t'));
-      // @ts-ignore
       setIsPayable(methodArray[methodName].stateMutability === 'payable');
     } else {
       setMethodName('');
-      setMethodInputs('');
       setIsPayable(false);
     }
   };
@@ -130,7 +126,7 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
         ref={contractReg}
         onChange={handleMethodnameInput}
       />
-      {methodName !== '' && methodInputs !== '' && (
+      {methodName !== '' && (
         <div className="json_input_container" style={{ marginTop: '10px' }}>
           <Controller
             name="methodInputs"

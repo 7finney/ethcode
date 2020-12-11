@@ -1,16 +1,28 @@
-import React, { useEffect } from 'react';
-import { ABIParameter } from 'types';
+import React, { MutableRefObject, useEffect } from 'react';
+import { ABIParameter, ConstructorInput } from 'types';
 
-interface ITextArea {
-  value: Array<ABIParameter>;
-  onChange: (value: Array<ABIParameter>) => void;
+interface TextAreaInput extends ABIParameter, ConstructorInput {}
+
+interface ITextAreaProps<T> {
+  value: Array<T>;
+  inputRef?: MutableRefObject<Array<T> | null>;
+  onChange: (value: Array<T>) => void;
 }
-
-const TextArea: React.FC<ITextArea> = ({ value, onChange }: ITextArea) => {
+const TextArea: React.FC<ITextAreaProps<TextAreaInput>> = ({
+  value,
+  inputRef,
+  onChange,
+}: ITextAreaProps<TextAreaInput>) => {
   const [text, setText] = React.useState<string>('[]');
   useEffect(() => {
     setText(JSON.stringify(value, null, '\t'));
   }, [value]);
+  useEffect(() => {
+    if (text && inputRef) {
+      /* eslint no-param-reassign: "warn" */
+      inputRef.current = JSON.parse(text);
+    }
+  }, [text]);
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = e.target;
     setText(JSON.stringify(JSON.parse(value), null, '\t'));

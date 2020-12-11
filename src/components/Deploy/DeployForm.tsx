@@ -1,7 +1,7 @@
 import React, { MutableRefObject, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, ButtonType } from 'components/common/ui';
+import { Button, ButtonType, TextArea } from 'components/common/ui';
 import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
 import { setErrMsg } from 'actions';
 
@@ -13,36 +13,9 @@ interface IProps {
   constructorInputRef: MutableRefObject<Array<ConstructorInput> | null>;
 }
 
-interface IPropsTextArea {
-  value: Array<ConstructorInput>;
-  onChange: (value: Array<ConstructorInput>) => void;
-  constructorInputRef: MutableRefObject<Array<ConstructorInput> | null>;
-}
-
 type TDeployForm = {
   gasSupply: number;
   constructorInput: Array<ConstructorInput>;
-};
-
-const ParseTextarea: React.FC<IPropsTextArea> = ({ value, onChange, constructorInputRef }: IPropsTextArea) => {
-  const [text, setText] = React.useState<string>('{}');
-  useEffect(() => {
-    setText(JSON.stringify(value, null, '\t'));
-  }, [value]);
-  useEffect(() => {
-    if (text) {
-      /* eslint no-param-reassign: "warn" */
-      constructorInputRef.current = JSON.parse(text);
-    }
-  }, [text]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { value } = e.target;
-    setText(JSON.stringify(JSON.parse(value), null, '\t'));
-    onChange(JSON.parse(value));
-  };
-
-  return <textarea className="custom_input_css json_input" onChange={handleChange} value={text} />;
 };
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {
@@ -127,9 +100,9 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
           <Controller
             name="constructorInput"
             render={() => (
-              <ParseTextarea
+              <TextArea
                 value={getValues('constructorInput')}
-                constructorInputRef={props.constructorInputRef}
+                inputRef={props.constructorInputRef}
                 onChange={(input: Array<ConstructorInput>) => {
                   setValue('constructorInput', input);
                 }}

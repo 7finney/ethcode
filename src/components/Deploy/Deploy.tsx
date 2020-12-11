@@ -19,8 +19,6 @@ export interface IProps {
 const Deploy: React.FC<IProps> = (props: IProps) => {
   const [gasEstimate, setGasEstimate] = useState(0);
   const [txtHash, setTxtHash] = useState('');
-  const [processMessage, setProcessMessage] = useState('');
-  const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const constructorInputRef = useRef<ConstructorInput[] | null>(null);
 
   // redux
@@ -66,7 +64,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
 
   const getGasEstimate = () => {
     const { vscode, bytecode, abi } = props;
-    setGasEstimateToggle(true);
     try {
       vscode.postMessage({
         command: 'run-get-gas-estimate',
@@ -99,9 +96,7 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
             />
           )}
           <form onSubmit={getGasEstimate}>
-            <Button buttonType={ButtonType.Input} disabled={gasEstimateToggle}>
-              Get gas estimate
-            </Button>
+            <Button buttonType={ButtonType.Input}>Get gas estimate</Button>
           </form>
         </div>
         {/* Call Function */}
@@ -112,7 +107,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
               abi={props.abi}
               currAccount={currAccount}
               testNetId={testNetId}
-              constructorInputRef={constructorInputRef}
               deployedResult={deployedResult}
             />
           )}
@@ -168,8 +162,6 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
             />
           </div>
         </div>
-        {/* Notification */}
-        {processMessage && <pre className="processMessage">{processMessage}</pre>}
 
         {/* Error Handle */}
         <div className="error_message">

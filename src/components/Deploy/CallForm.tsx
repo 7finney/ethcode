@@ -1,10 +1,9 @@
-import React, { useEffect, useState, MutableRefObject } from 'react';
-import { useForm } from 'react-hook-form';
-import { Button, ButtonType } from 'components/common/ui';
-import { ABIDescription, ConstructorInput, IAccount, TransactionResult } from 'types';
+import React, { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { Button, ButtonType, TextArea } from 'components/common/ui';
+import { ABIParameter, ABIDescription, IAccount, TransactionResult } from 'types';
 
 interface IProps {
-  constructorInputRef: MutableRefObject<Array<ConstructorInput> | null>;
   deployedResult: TransactionResult | null;
   abi: ABIDescription[];
   currAccount: IAccount;
@@ -15,6 +14,7 @@ interface IProps {
 type FormContract = {
   contractAddress: string;
   methodName: string;
+  methodInputs: Array<ABIParameter>;
   payableAmount: number;
   gasSupply: number;
 };
@@ -22,12 +22,13 @@ type FormContract = {
 const CallForm: React.FC<IProps> = (props: IProps) => {
   const [callFunctionToggle, setCallFunctionToggle] = useState(true);
   const [methodName, setMethodName] = useState<string>('');
-  const [methodInputs, setMethodInputs] = useState('');
   const [isPayable, setIsPayable] = useState(false);
   const [methodArray, setmethodArray] = useState({});
   const [payableAmount] = useState<number>(0);
 
-  const { register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<FormContract>();
+  const { control, register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<
+    FormContract
+  >();
 
   useEffect(() => {
     window.addEventListener('message', (event) => {
@@ -68,13 +69,12 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
     }
     setmethodArray(methodArray);
   }, []);
+
   useEffect(() => {
     const { deployedResult } = props;
     setValue('contractAddress', deployedResult ? deployedResult.contractAddress : '0x');
   }, [props.deployedResult]);
-  const handleMethodInputs = (event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMethodInputs(event.target.value);
-  };
+
   const handleMethodnameInput = (
     event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
   ) => {
@@ -84,12 +84,9 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
     if (methodName && methodArray.hasOwnProperty(methodName)) {
       setMethodName(methodName);
       // @ts-ignore
-      setMethodInputs(JSON.stringify(methodArray[methodName].inputs, null, '\t'));
-      // @ts-ignore
       setIsPayable(methodArray[methodName].stateMutability === 'payable');
     } else {
       setMethodName('');
-      setMethodInputs('');
       setIsPayable(false);
     }
   };
@@ -102,9 +99,8 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
         abi,
         address: getValues('contractAddress'),
         methodName,
-        params: JSON.parse(methodInputs),
-        gasSupply: props.constructorInputRef.current,
-        // TODO: add value supply in case of payable functions
+        params: getValues('methodInputs') || [],
+        gasSupply: getValues('gasSupply') || 0,
         value: payableAmount,
         from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
       },
@@ -130,9 +126,18 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
         ref={contractReg}
         onChange={handleMethodnameInput}
       />
-      {methodName !== '' && methodInputs !== '' && methodInputs !== '[]' && (
+      {methodName !== '' && (
         <div className="json_input_container" style={{ marginTop: '10px' }}>
-          <textarea className="json_input custom_input_css" value={methodInputs} onChange={handleMethodInputs} />
+          <Controller
+            name="methodInputs"
+            render={() => (
+              <TextArea
+                value={getValues('methodInputs')}
+                onChange={(input: Array<ABIParameter>) => setValue('methodInputs', input)}
+              />
+            )}
+            control={control}
+          />
         </div>
       )}
       {isPayable && (
