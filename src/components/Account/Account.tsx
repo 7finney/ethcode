@@ -9,7 +9,6 @@ import { useForm } from 'react-hook-form';
 type IProps = {
   accounts: Array<GroupedSelectorAccounts>;
   vscode: any;
-  appRegistered: boolean;
   handleAppRegister: () => void;
 };
 
@@ -19,22 +18,19 @@ type FormInputs = {
   amount: number;
 };
 
-const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppRegister }: IProps) => {
+const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IProps) => {
   const [publicAddress, setPublicAddress] = useState('');
-  // const [pvtKey, setPvtKey] = useState('');
-  const [showButton, setShowButton] = useState(false);
-  const [sendBtnDisable, setSendBtnDisable] = useState(false);
-  const [msg, setMsg] = useState('');
-  const { register, handleSubmit } = useForm<FormInputs>();
+  const { register, handleSubmit, formState } = useForm<FormInputs>({ mode: 'onChange' });
 
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, accountBalance, defaultAccounts, pvtKey, error } = useSelector(
+  const { testNetId, currAccount, accountBalance, defaultAccounts, pvtKey, appRegistered, error } = useSelector(
     (state: GlobalStore) => ({
       testNetId: state.debugStore.testNetId,
       currAccount: state.accountStore.currAccount,
       accountBalance: state.accountStore.balance,
       defaultAccounts: state.accountStore.accounts,
       pvtKey: state.accountStore.privateKey,
+      appRegistered: state.debugStore.appRegistered,
       error: state.debugStore.error,
     })
   );
@@ -46,14 +42,11 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
     window.addEventListener('message', async (event) => {
       const { data } = event;
       if (data.newAccount) {
-        // TODO: Update account into redux
         const account: IAccount = {
           label: data.newAccount.pubAddr,
           value: data.newAccount.checksumAddr,
         };
-        // calling addNewAcc inside dispatch
         dispatch(addNewAcc(account));
-        setShowButton(false);
         setPublicAddress(account.label);
       }
       if (data.pvtKey) {
@@ -66,19 +59,12 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
       if (data.error) {
         dispatch(setErrMsg(data.error));
       }
-      if (data.transactionResult) {
-        setSendBtnDisable(false);
-      }
       if (data.balance) {
         const { balance, account } = data;
         dispatch(setCurrAccChange({ balance, currAccount: account }));
       }
     });
   }, []);
-
-  useEffect(() => {
-    setMsg('Success! Read privatekey.');
-  }, [pvtKey]);
 
   useEffect(() => {
     vscode.postMessage({
@@ -90,15 +76,10 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
   // generate keypair
   const handleGenKeyPair = () => {
     const password = '';
-    try {
-      vscode.postMessage({
-        command: 'gen-keypair',
-        payload: password,
-      });
-      setShowButton(true);
-    } catch (err) {
-      setShowButton(false);
-    }
+    vscode.postMessage({
+      command: 'gen-keypair',
+      payload: password,
+    });
   };
 
   // delete keypair
@@ -115,7 +96,6 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
 
   // handle send ether
   const handleTransactionSubmit = (formData: FormInputs) => {
-    setSendBtnDisable(true);
     try {
       if (testNetId === 'ganache') {
         const transactionInfo = {
@@ -165,11 +145,11 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
     <div className="account_container">
       <div className="account_row">
         <div className="label-container">
-          <label className="label">App Status: {appRegistered ? 'Verified' : 'Not Verified'}</label>
+          <label className="label">App Status:</label>
         </div>
         <div className="input-container">
           <Button buttonType={ButtonType.Input} disabled={appRegistered} onClick={handleAppRegister}>
-            Register App
+            {appRegistered ? 'Authenticated' : 'Register App'}
           </Button>
         </div>
       </div>
@@ -217,6 +197,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
               border: '1px solid #fa4138',
             }}
             onClick={deleteAccount}
+            disabled={!pvtKey}
           >
             Delete Account
           </Button>
@@ -242,7 +223,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
               value={currAccount ? currAccount.value : '0x'}
               type="text"
               placeholder="from"
-              ref={register}
+              ref={register({ required: true })}
             />
           </div>
         </div>
@@ -257,7 +238,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
               className="input custom_input_css"
               type="text"
               placeholder="to"
-              ref={register}
+              ref={register({ required: true })}
             />
           </div>
         </div>
@@ -267,14 +248,20 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
             <label className="label">Amount </label>
           </div>
           <div className="input-container">
-            <input className="input custom_input_css" type="text" name="amount" placeholder="amount" ref={register} />
+            <input
+              className="input custom_input_css"
+              type="text"
+              name="amount"
+              placeholder="amount"
+              ref={register({ required: true })}
+            />
           </div>
         </div>
 
         <div className="account_row">
           <div className="label-container" />
           <div className="input-container">
-            <Button buttonType={ButtonType.Input} disabled={sendBtnDisable} style={{ marginLeft: '10px' }}>
+            <Button buttonType={ButtonType.Input} disabled={!formState.isValid} style={{ marginLeft: '10px' }}>
               Send
             </Button>
           </div>
@@ -294,7 +281,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, appRegistered, handleAppR
         </div>
         <div className="input-container">
           {/* todo */}
-          <Button buttonType={ButtonType.Input} disabled={showButton} onClick={handleGenKeyPair}>
+          <Button buttonType={ButtonType.Input} onClick={handleGenKeyPair}>
             Genarate key pair
           </Button>
         </div>

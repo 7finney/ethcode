@@ -7,26 +7,20 @@ export enum ButtonType {
 }
 
 interface IProps {
-  disabled?: boolean;
   buttonType: ButtonType;
+  disabled?: boolean;
   onClick?: () => void;
   style?: CSSProperties;
 }
 
-const Button: React.FC<IProps> = (props, { buttonType, disabled }) => {
+const Button: React.FC<IProps> = (props, { buttonType }: IProps) => {
   switch (buttonType) {
     case ButtonType.Input:
-      return (
-        <input
-          type="submit"
-          className={disabled ? 'custom_button_css button_disable' : 'custom_button_css'}
-          {...props}
-        />
-      );
+      return <input type="submit" className="custom_button_css" {...props} />;
     case ButtonType.Button:
-      return <button className={disabled ? 'custom_button_css button_disable' : 'custom_button_css'} {...props} />;
+      return <button className="custom_button_css" {...props} />;
     default:
-      return <button className={disabled ? 'custom_button_css button_disable' : 'custom_button_css'} {...props} />;
+      return <button className="custom_button_css" {...props} />;
   }
 };
 

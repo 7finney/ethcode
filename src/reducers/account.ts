@@ -1,4 +1,4 @@
-import { IAccount, IAccStore } from 'types';
+import { IAccStore } from 'types';
 import { SET_ACC_DATA, SET_UPDATE_BALANCE, APPND_NEW_ACC, SET_PVT_KEY } from '../actions/types';
 
 const initialState: IAccStore = {

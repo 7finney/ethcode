@@ -16,6 +16,7 @@ import {
   SET_COMPILED_RESULT,
   SET_PVT_KEY,
   SET_GAS_ESTM,
+  SET_APP_REG,
 } from './types';
 
 import { CompilationResult, IAccount, IAccStore } from '../types';
@@ -23,7 +24,7 @@ import { Dispatch } from 'react';
 
 interface IDispatch {
   type: string;
-  payload: CompilationResult | IAccount | IAccStore | string | number | Error;
+  payload: CompilationResult | IAccount | IAccStore | string | number | boolean | Error;
 }
 
 export const setCompiledResults = (data: CompilationResult) => {
@@ -125,5 +126,11 @@ export const setErrMsg = (error: Error) => {
 export const setGasEstimate = (gas: number) => {
   return (dispatch: Dispatch<IDispatch>) => {
     dispatch({ type: SET_GAS_ESTM, payload: gas });
+  };
+};
+
+export const setAppRegistered = (appRegistered: boolean) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_APP_REG, payload: appRegistered });
   };
 };

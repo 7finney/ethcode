@@ -15,3 +15,4 @@ export const SET_PROCESS_MSG = 'SET_PROCESS_MSG';
 export const SET_ERR_MSG = 'SET_ERR_MSG';
 export const SET_PVT_KEY = 'SET_PVT_KEY';
 export const SET_GAS_ESTM = 'SET_GAS_ESTM';
+export const SET_APP_REG = 'SET_APP_REG';

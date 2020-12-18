@@ -1,23 +1,19 @@
-import { SET_TESTNET_ID, SET_PROCESS_MSG, SET_ERR_MSG } from '../actions/types';
+import { IDebugStore } from 'types';
+import { SET_TESTNET_ID, SET_PROCESS_MSG, SET_ERR_MSG, SET_APP_REG } from '../actions/types';
 
 interface IAction {
   type: string;
-  payload: string | Error;
+  payload: string | boolean | Error;
 }
 
-interface IState {
-  testNetId: string;
-  processMsg: string;
-  error: Error | null;
-}
-
-const initialState = {
+const initialState: IDebugStore = {
   testNetId: 'ganache',
   processMsg: '',
+  appRegistered: false,
   error: null,
 };
 
-export default (state: IState = initialState, action: IAction) => {
+export default (state: IDebugStore = initialState, action: IAction) => {
   switch (action.type) {
     case SET_TESTNET_ID:
       return {
@@ -33,6 +29,11 @@ export default (state: IState = initialState, action: IAction) => {
       return {
         ...state,
         error: action.payload,
+      };
+    case SET_APP_REG:
+      return {
+        ...state,
+        appRegistered: action.payload,
       };
     default:
       return state;

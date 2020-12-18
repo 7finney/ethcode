@@ -6,13 +6,10 @@
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  cursor: pointer;
   margin: 2pt;
-}
-
-.button_disable {
+  cursor: pointer;
+}:disabled {
   background: #081b13 !important;
-  border: 1px solid #081b13 !important;
   color: white !important;
   cursor: default !important;
 }

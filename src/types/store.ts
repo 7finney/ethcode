@@ -10,6 +10,7 @@ export interface IAccStore {
 export interface IDebugStore {
   testNetId: string;
   processMsg: string;
+  appRegistered: boolean;
   error: Error | null;
 }
 

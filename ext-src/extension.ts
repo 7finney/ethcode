@@ -54,11 +54,12 @@ async function updateUserSettings(accessScope: string, valueToAdd: string): Prom
   }
 }
 
-async function verifyUserToken(appId: string, email: string): Promise<boolean> {
+async function verifyUserToken(appId: string, email: string, authtoken: string): Promise<boolean> {
   try {
     const r = await axios.post('https://auth.ethco.de/user/token/app/verify', {
       email,
       app_id: appId,
+      token: authtoken,
     });
     logger.success(r.data.Status);
     if (r.status === 200) {
@@ -76,11 +77,11 @@ async function registerAppToToken() {
     const appId = retrieveUserSettings('ethcode.userConfig.appRegistration', 'appId');
     const email = retrieveUserSettings('ethcode.userConfig.appRegistration', 'email');
     const token = retrieveUserSettings('ethcode.userConfig.appRegistration', 'token');
-    if (appId === '' || email === '') {
+    if (appId === '' || email === '' || token === '') {
       logger.log('App Not Registered');
       return false;
     }
-    const verified = await verifyUserToken(appId!, email!);
+    const verified = await verifyUserToken(appId!, email!, token!);
     if (!verified) {
       logger.error(new Error('App token tampered with or revoked'));
       return false;

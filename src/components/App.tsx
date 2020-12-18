@@ -11,6 +11,7 @@ import {
   setTestNetId,
   setErrMsg,
   setCompiledResults,
+  setAppRegistered,
 } from '../actions';
 import './App.css';
 
@@ -63,7 +64,7 @@ const App: React.FC = () => {
     // { value: '4', label: 'Rinkeby' },
     { value: '5', label: 'Görli' },
   ]);
-  const [appRegistered, setAppRegistered] = useState(false);
+  // const [appRegistered, setAppRegistered] = useState(false);
 
   // redux
   // UseSelector to extract state elements.
@@ -141,7 +142,7 @@ const App: React.FC = () => {
         dispatch(setCurrAccChange({ balance, currAccount: account }));
       }
       if (data.registered) {
-        setAppRegistered(data.registered);
+        dispatch(setAppRegistered(data.registered));
       }
       // compiled
       if (data.compiled) {
@@ -315,7 +316,7 @@ const App: React.FC = () => {
             <div className="tab-container">
               <Tab>Main</Tab>
               <Tab>Account</Tab>
-              {compiled && fileName ? <Tab>Deploy</Tab> : <Tab disabled>Deploy</Tab>}
+              <Tab disabled={!!(compiled && fileName)}>Deploy</Tab>
               <Tab>Debug</Tab>
               <Tab>Test</Tab>
             </div>
@@ -373,12 +374,7 @@ const App: React.FC = () => {
           </TabPanel>
           {/* Account Panel */}
           <TabPanel>
-            <Account
-              vscode={vscode}
-              accounts={selectorAccounts}
-              appRegistered={appRegistered}
-              handleAppRegister={handleAppRegister}
-            />
+            <Account vscode={vscode} accounts={selectorAccounts} handleAppRegister={handleAppRegister} />
           </TabPanel>
           {/* Advanced Deploy panel */}
           <TabPanel>
