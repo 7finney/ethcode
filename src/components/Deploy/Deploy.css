@@ -7,3 +7,8 @@
 .tag {
   margin-left: 10px;
 }
+
+.json_input_container, .json_input {
+  max-height: 35vh;
+  min-height: 15vh;
+}

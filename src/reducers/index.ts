@@ -1,14 +1,14 @@
-import { combineReducers } from "redux";
-import testReducer from "./testReducer";
-import compiledReducer from "./compiledReducer";
-import accountReducer from "./accountReducer";
-import debugReducer from "./debugReducer";
-import txReducer from "./transactionReducer";
+import { combineReducers } from 'redux';
+import testReducer from './test';
+import compiledReducer from './contracts';
+import accountReducer from './account';
+import debugReducer from './debug';
+import txReducer from './transaction';
 
 export default combineReducers({
   test: testReducer,
-  compiledStore: compiledReducer,
+  contractsStore: compiledReducer,
   accountStore: accountReducer,
   debugStore: debugReducer,
-  txStore: txReducer
+  txStore: txReducer,
 });

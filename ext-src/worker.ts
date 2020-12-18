@@ -1,35 +1,39 @@
 // @ts-ignore
-import * as solc from "solc";
-import * as path from "path";
-import * as fs from "fs";
-import axios from "axios";
-import { RemixURLResolver } from "remix-url-resolver";
+import * as path from 'path';
+import * as fs from 'fs';
+import axios from 'axios';
+import { RemixURLResolver } from 'remix-url-resolver';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-const EthereumTx = require('ethereumjs-tx').Transaction;
 import { sha3 } from './hash/sha3';
-var formatters = require('web3-core-helpers').formatters;
 
-const PROTO_PATH = [path.join(__dirname, '../services/remix-tests.proto'), path.join(__dirname, '../services/client-call.proto'), path.join(__dirname, '../services/remix-debug.proto')];
-const packageDefinition = protoLoader.loadSync(PROTO_PATH,
-  {
-    keepCase: true,
-    longs: String,
-    enums: String,
-    defaults: true,
-    oneofs: true
-  }
-);
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const EthereumTx = require('ethereumjs-tx').Transaction;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { formatters } = require('web3-core-helpers');
+
+const PROTO_PATH = [
+  path.join(__dirname, '../services/remix-tests.proto'),
+  path.join(__dirname, '../services/client-call.proto'),
+  path.join(__dirname, '../services/remix-debug.proto'),
+];
+const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+});
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 
 // remix-tests grpc
-const remix_tests_pb = protoDescriptor.remix_tests;
-const remix_debug_pb = protoDescriptor.remix_debug;
+const remixTestsPB = protoDescriptor.remix_tests;
+const remixDebugPB = protoDescriptor.remix_debug;
 
-let remix_tests_client: any;
-let remix_debug_client: any;
+let remixTestsClient: any;
+let remixDebugClient: any;
 try {
-  remix_tests_client = new remix_tests_pb.RemixTestsService('rt.ethco.de:50051', grpc.credentials.createInsecure());
+  remixTestsClient = new remixTestsPB.RemixTestsService('rt.ethco.de:50051', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -37,18 +41,18 @@ try {
 
 // remix-debug grpc
 try {
-  remix_debug_client = new remix_debug_pb.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
+  remixDebugClient = new remixDebugPB.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
 }
 
 // client-call grpc
-const client_call_pb = protoDescriptor.eth_client_call;
-let client_call_client: any;
+const clientCallPB = protoDescriptor.eth_client_call;
+let clientCallClient: any;
 try {
-  client_call_client = new client_call_pb.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
-  // client_call_client = new client_call_pb.ClientCallService('192.168.0.9:50053', grpc.credentials.createInsecure());
+  clientCallClient = new clientCallPB.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  // clientCallClient = new clientCallPB.ClientCallService('192.168.0.9:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
@@ -56,13 +60,12 @@ try {
 
 function handleLocal(pathString: string, filePath: any) {
   // if no relative/absolute path given then search in node_modules folder
-  if (pathString && pathString.indexOf(".") !== 0 && pathString.indexOf("/") !== 0) {
-    console.error("Error: Node Modules Import is not implemented yet!");
+  if (pathString && pathString.indexOf('.') !== 0 && pathString.indexOf('/') !== 0) {
+    console.error('Error: Node Modules Import is not implemented yet!');
     // return handleNodeModulesImport(pathString, filePath, pathString)
-    return;
   } else {
     try {
-      const o = { encoding: "UTF-8" };
+      const o = { encoding: 'UTF-8' };
       // hack for compiler imports to work (do not change)
       const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
       const content = fs.readFileSync(p, o);
@@ -73,27 +76,29 @@ function handleLocal(pathString: string, filePath: any) {
       throw error;
     }
   }
+  return '';
 }
 
 function findImports(path: any) {
   // TODO: We need current solc file path here for relative local import
   // @ts-ignore
-  process.send({ processMessage: "importing file: " + path });
+  process.send({ processMessage: `importing file: ${path}` });
   const FSHandler = [
     {
-      type: "local",
+      type: 'local',
       match: (url: string) => {
         return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?([\w-]+\.sol)/g.exec(url);
       },
       handle: (match: Array<string>) => {
         return handleLocal(match[2], match[3]);
-      }
-    }
+      },
+    },
   ];
   // @ts-ignore
   const urlResolver = new RemixURLResolver();
   // this section usually executes after solc returns error file not found
-  urlResolver.resolve(path, FSHandler)
+  urlResolver
+    .resolve(path, FSHandler)
     .then((data: any) => {
       // @ts-ignore
       process.send({ data, path });
@@ -102,45 +107,48 @@ function findImports(path: any) {
       // @ts-ignore
       process.send({ error: e });
     });
-  return { 'error': 'Deferred import' };
+  return { error: 'Deferred import' };
 }
 
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
   try {
+    // eslint-disable-next-line no-param-reassign
     tx = JSON.parse(tx);
     const txData = formatters.inputTransactionFormatter(tx);
-    const chainId = Number(testnetId)
-    const unsignedTransaction = new EthereumTx({
-      from: txData.from || '0x',
-      nonce: txData.nonce || '0x',
-      gasPrice: txData.gasPrice,
-      gas: txData.gas || '0x',
-      to: txData.to || '0x',
-      value: txData.value || '0x',
-      data: txData.data || '0x'
-    }, { chain: chainId });
+    const chainId = Number(testnetId);
+    const unsignedTransaction = new EthereumTx(
+      {
+        from: txData.from || '0x',
+        nonce: txData.nonce || '0x',
+        gasPrice: txData.gasPrice,
+        gas: txData.gas || '0x',
+        to: txData.to || '0x',
+        value: txData.value || '0x',
+        data: txData.data || '0x',
+      },
+      { chain: chainId }
+    );
     const pvtk = Buffer.from(privateKey, 'hex');
     unsignedTransaction.sign(pvtk);
     const rlpEncoded = unsignedTransaction.serialize().toString('hex');
-    const rawTransaction = '0x' + rlpEncoded;
-    var transactionHash = sha3(rawTransaction);
+    const rawTransaction = `0x${rlpEncoded}`;
+    const transactionHash = sha3(rawTransaction);
     // @ts-ignore
     process.send({ responses: transactionHash });
     const c = {
       callInterface: {
-        command: "deploy-signed-tx",
+        command: 'deploy-signed-tx',
         payload: rawTransaction,
-        testnetId
-      }
+        testnetId,
+      },
     };
 
-    const call = client_call_client.RunDeploy(c, meta, (err: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any) => {
       if (err) {
         console.error(err);
       }
     });
-
 
     call.on('data', (data: any) => {
       // @ts-ignore
@@ -151,24 +159,24 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
     // });
     call.on('error', function (err: Error) {
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
     });
   } catch (error) {
     console.log(error);
     // @ts-ignore
-    process.send({ "error": error.message });
+    process.send({ error: error.message });
   }
 }
 
-process.on("message", async m => {
-  var meta = new grpc.Metadata();
-  if(m.authToken) {
+process.on('message', async (m) => {
+  const meta = new grpc.Metadata();
+  if (m.authToken) {
     meta.add('token', m.authToken.token);
     meta.add('appId', m.authToken.appId);
   }
-  if (m.command === "fetch_compiler_version") {
+  if (m.command === 'fetch_compiler_version') {
     axios
-      .get("https://ethereum.github.io/solc-bin/bin/list.json")
+      .get('https://ethereum.github.io/solc-bin/bin/list.json')
       .then((res: any) => {
         // @ts-ignore
         process.send({ versions: res.data });
@@ -180,15 +188,15 @@ process.on("message", async m => {
         process.exit(1);
       });
   }
-  if (m.command === "run-test") {
+  if (m.command === 'run-test') {
     // TODO: move parsing to extension.ts
     const rt = {
       testInterface: {
         command: 'run-test-sources',
-        payload: m.payload
-      }
+        payload: m.payload,
+      },
     };
-    const call = remix_tests_client.RunTests(rt);
+    const call = remixTestsClient.RunTests(rt);
     call.on('data', (data: any) => {
       const result = JSON.parse(data.result);
       if (result.filePath) {
@@ -203,15 +211,15 @@ process.on("message", async m => {
     });
   }
   // Fetch accounts and balance
-  if (m.command === "get-accounts") {
+  if (m.command === 'get-accounts') {
     const c = {
       callInterface: {
-        command: 'get-accounts'
-      }
+        command: 'get-accounts',
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.log("err", err);
+        console.log('err', err);
         // @ts-ignore
         process.exit(1);
       } else {
@@ -219,7 +227,6 @@ process.on("message", async m => {
         process.send({ response });
       }
     });
-
 
     call.on('data', (data: any) => {
       // @ts-ignore
@@ -229,18 +236,18 @@ process.on("message", async m => {
     });
   }
   // send wei value to address in other testnets
-  if (m.command == "send-ether-signed") {
+  if (m.command === 'send-ether-signed') {
     const { transactionInfo, pvtKey } = m.payload;
     const c = {
       callInterface: {
         command: 'build-raw-eth-tx',
         payload: JSON.stringify(transactionInfo),
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any) => {
       if (err) {
-        console.error("err", err);
+        console.error('err', err);
         // @ts-ignore
         process.send({ error: err });
         // @ts-ignore
@@ -260,18 +267,17 @@ process.on("message", async m => {
     });
   }
   // send wei_value to a address
-  if (m.command === "send-ether") {
-    const transactionInfo = m.transactionInfo;
+  if (m.command === 'send-ether') {
+    const { transactionInfo } = m;
     const c = {
       callInterface: {
         command: 'send-ether',
         payload: JSON.stringify(transactionInfo),
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.error("error", err);
         // @ts-ignore
         process.send({ error: err });
         // @ts-ignore
@@ -287,16 +293,16 @@ process.on("message", async m => {
     });
   }
   // fetch balance of a account
-  if (m.command === "get-balance") {
+  if (m.command === 'get-balance') {
     const hashAddr = m.account.checksumAddr ? m.account.checksumAddr : m.account.value;
     const c = {
       callInterface: {
         command: 'get-balance',
         payload: hashAddr,
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         // @ts-ignore
         process.send({ error: err });
@@ -311,7 +317,7 @@ process.on("message", async m => {
     });
   }
   // Deploy
-  if (m.command === "deploy-contract") {
+  if (m.command === 'deploy-contract') {
     if (m.authToken) {
       // @ts-ignore
       process.send({ authToken: m.authToken });
@@ -322,16 +328,16 @@ process.on("message", async m => {
       abi,
       bytecode,
       params,
-      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply
+      gasSupply: typeof gasSupply === 'string' ? parseInt(gasSupply, 10) : gasSupply,
     };
     const c = {
       callInterface: {
         command: 'deploy-contract',
         payload: JSON.stringify(inp),
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         // @ts-ignore
         process.send({ error: err });
@@ -349,11 +355,11 @@ process.on("message", async m => {
     });
     call.on('error', (err: Error) => {
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
     });
   }
   // Method call
-  if (m.command === "ganache-contract-method-call") {
+  if (m.command === 'ganache-contract-method-call') {
     const { from, abi, address, methodName, params, gasSupply, deployAccount, value } = m.payload;
     const inp = {
       from,
@@ -361,20 +367,20 @@ process.on("message", async m => {
       address,
       methodName,
       params,
-      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
+      gasSupply: typeof gasSupply === 'string' ? parseInt(gasSupply, 10) : gasSupply,
       deployAccount,
-      value
+      value,
     };
     const c = {
       callInterface: {
         command: 'ganache-contract-method-call',
         payload: JSON.stringify(inp),
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
-        console.log("err", err);
+        console.log('err', err);
       } else {
         // @ts-ignore
         process.send({ response });
@@ -389,12 +395,12 @@ process.on("message", async m => {
     });
     call.on('error', (err: Error) => {
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
     });
   }
 
   // testnet method call
-  if (m.command === "contract-method-call") {
+  if (m.command === 'contract-method-call') {
     const { from, abi, address, methodName, params, gasSupply, value } = m.payload;
     const inp = {
       from,
@@ -402,17 +408,17 @@ process.on("message", async m => {
       address,
       methodName,
       params,
-      gasSupply: (typeof gasSupply) === 'string' ? parseInt(gasSupply) : gasSupply,
-      value
+      gasSupply: typeof gasSupply === 'string' ? parseInt(gasSupply, 10) : gasSupply,
+      value,
     };
     const c = {
       callInterface: {
         command: 'contract-method-call',
         payload: JSON.stringify(inp),
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any) => {
       if (err) {
         // @ts-ignore
         process.send({ error: err });
@@ -430,24 +436,24 @@ process.on("message", async m => {
     });
     call.on('error', (err: Error) => {
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
     });
   }
   // Gas Estimate
-  if (m.command === "get-gas-estimate") {
+  if (m.command === 'get-gas-estimate') {
     const { abi, bytecode, params, from } = m.payload;
     const inp = { abi, bytecode, params, from };
     const c = {
       callInterface: {
         command: 'get-gas-estimate',
         payload: JSON.stringify(inp),
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any, response: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
       if (err) {
         // @ts-ignore
-        process.send({ "error": err });
+        process.send({ error: err });
       } else {
         // @ts-ignore
         process.send({ response });
@@ -459,19 +465,19 @@ process.on("message", async m => {
     });
     call.on('error', (err: Error) => {
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
     });
   }
   // Debug transaction
-  if (m.command === "debug-transaction") {
+  if (m.command === 'debug-transaction') {
     const dt = {
       debugInterface: {
         command: 'debug',
         payload: m.payload,
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = remix_debug_client.RunDebug(dt);
+    const call = remixDebugClient.RunDebug(dt);
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ debugResp: data.result });
@@ -481,36 +487,34 @@ process.on("message", async m => {
     });
     call.on('error', (err: Error) => {
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
     });
   }
   // Build raw transaction for contract creation
-  if (m.command == "build-rawtx") {
+  if (m.command === 'build-rawtx') {
     const { abi, bytecode, params, gasSupply, from } = m.payload;
     const inp = {
       from,
       abi,
       bytecode,
       params,
-      gasSupply
+      gasSupply,
     };
     const c = {
       callInterface: {
         command: 'build-rawtx',
         payload: JSON.stringify(inp),
-        testnetId: m.testnetId
-      }
+        testnetId: m.testnetId,
+      },
     };
-    const call = client_call_client.RunDeploy(c, meta, (err: any) => {
+    const call = clientCallClient.RunDeploy(c, meta, (err: any) => {
       if (err) {
-        console.error("err", err);
+        console.error('err', err);
         // @ts-ignore
-        process.send({ "error": err });
+        process.send({ error: err });
       }
     });
     call.on('data', (data: any) => {
-      console.log(data);
-
       // @ts-ignore
       process.send({ buildTxResult: data.result });
     });
@@ -519,11 +523,11 @@ process.on("message", async m => {
     // });
     call.on('error', (err: Error) => {
       // @ts-ignore
-      process.send({ "error": err });
+      process.send({ error: err });
     });
   }
   // sign and deploy unsigned transaction
-  if (m.command == "sign-deploy") {
+  if (m.command === 'sign-deploy') {
     const { unsignedTx, pvtKey } = m.payload;
     deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
   }

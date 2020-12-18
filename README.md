@@ -2,7 +2,7 @@
 [![Join the chat at https://gitter.im/Ethential/ethcode](https://badges.gitter.im/Ethential/ethcode.svg)](https://gitter.im/Ethential/ethcode?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Discord chat](https://img.shields.io/discord/722971683388129290?color=7389D8&logo=discord&logoColor=ffffff)](https://discord.gg/87sE7Bm)
 
-Ethcode is a vscode plugin for compiling, deploy, execute solidity and vyper smart contracts/programs in Ethereum blockchian. It supports multiple test networks. Ethcode has inbuilt support for Remix transaction debug and solidity unit testing.
+Ethcode is a vscode extension for compiling, deploy, execute solidity and vyper smart contracts/programs in Ethereum blockchian. It supports multiple test networks. Ethcode has inbuilt support for Remix transaction debug and solidity unit testing.
 
 ## Website
 https://ethcode.dev/
@@ -10,6 +10,8 @@ https://ethcode.dev/
 https://docs.ethcode.dev/
 ## Installation
 VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=ethential.ethcode
+## Authentication
+https://auth.ethco.de/
 
 ## System support
 * Linux, Mac, Windows
@@ -41,8 +43,9 @@ Ethcode signs all transactions using generated key-pair in your computer. Use `G
 
 ![Screenshot from 2020-04-11 01-02-38](https://user-images.githubusercontent.com/13261372/79018200-db1f7380-7b90-11ea-98f6-846f26405b35.png)
 
-## Register token to use ethereum cloud gateway
-1. Register and create a token on https://auth.ethco.de/
+## Authenticate with Ethential ethereum cloud gRPC endpoint
+We use cloud endpoints to deploy contracts to public blockchains. Kindly register your user and use generated authtoken to authenticate with our cloud endpoints.
+1. Register and create an authtoken on https://auth.ethco.de/
 2. Use your registered email & generated token in ethcode settings to authenticate to our cloud gateway.
 
 <img width="1440" alt="Screenshot 2020-09-29 at 6 58 29 PM" src="https://user-images.githubusercontent.com/13261372/94686544-9e1a8980-0348-11eb-92c0-9b1eea1a71be.png">

@@ -1,111 +1,80 @@
-import React, { Component } from 'react';
-import Select from 'react-select';
+import React, { useState, useEffect } from 'react';
+import Select, { ValueType } from 'react-select';
 
 interface IProps {
   options: any;
-  getSelectedOption: any;
+  onSelect: (selectedOption: any) => void;
   placeholder: string;
   defaultValue?: any | undefined;
-}
-interface IOpt {
-  value: string;
-  label: string;
-}
-
-interface IState {
-  selectedOption: any;
-  options: IOpt[];
+  formatGroupLabel?: any;
 }
 
 const customStyles = {
-  control: (base: any, state: any) => ({
+  control: (base: any) => ({
     ...base,
-    backgroundColor: "#000",
-    color: "#fff",
-    menu: "20px",
-    borderColor: '#38ffAf'
+    backgroundColor: '#000',
+    color: '#fff',
+    menu: '20px',
+    borderColor: '#38ffAf',
   }),
 
   menu: (base: any) => ({
     ...base,
-    color: "#fff",
-    background: "#000"
+    color: '#fff',
+    background: '#000',
   }),
   menuList: (base: any) => ({
     ...base,
-    color: "#fff",
-    background: "#000"
+    color: '#fff',
+    background: '#000',
   }),
   singleValue: (base: any) => ({
     ...base,
-    color: "#fff"
+    color: '#fff',
   }),
   option: (base: any, { isFocused }: any) => ({
     ...base,
-    color: "#fff",
-    backgroundColor: isFocused ? "#aaa" : null
-  })
+    color: '#fff',
+    backgroundColor: isFocused ? '#aaa' : null,
+  }),
 };
 
-class Selector extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.state = {
-      selectedOption: null,
-      options: []
+const Selector: React.FC<IProps> = (props: IProps) => {
+  const [selectedOption, setSelectedOption] = useState<any>(null);
+  const [options, setOptions] = useState([]);
+
+  // initially set everything to null
+  useEffect(() => {
+    return () => {
+      setOptions([]);
+      setSelectedOption(null);
     };
-  }
+  }, []);
+  useEffect(() => {
+    setSelectedOption(props.defaultValue);
+    setOptions(props.options);
+  }, [props.options]);
 
-  public componentDidMount() {
-    const { defaultValue, options } = this.props;
-
-    this.setState({
-      options,
-      selectedOption: defaultValue
-    })
-  }
-
-  public componentDidUpdate(prevProps: any, preState: any) {
-    const { options, defaultValue } = this.props;
-
-    if (prevProps.defaultValue !== defaultValue && preState.defaultValue !== defaultValue) {
-      this.setState({
-        selectedOption: defaultValue
-      })
-    }
-
-    if (options !== prevProps.options) {
-      this.setState({
-        options
-      })
-    }
-  }
-
-  public componentWillUnmount() {
-    this.setState({ selectedOption: null, options: [] });
-  }
-
-  handleChange = (selectedOption: any) => {
-    this.setState({ selectedOption }, () => {
-      this.props.getSelectedOption(this.state.selectedOption);
-    });
+  const handleChange = (selected: any) => {
+    setSelectedOption(selected);
+    props.onSelect(selected);
   };
 
-  render() {
-    const { selectedOption, options } = this.state;
-    const { placeholder } = this.props;
+  return (
+    <Select
+      placeholder={props.placeholder}
+      value={selectedOption}
+      onChange={(option: ValueType<any>) => handleChange(option as any)}
+      options={options}
+      formatGroupLabel={props.formatGroupLabel}
+      className="select-width"
+      styles={customStyles}
+    />
+  );
+};
 
-    return (
-      <Select
-          placeholder={placeholder}
-          value={selectedOption}
-          onChange={this.handleChange}
-          options={options}
-          className="select-width"
-          styles={customStyles}
-        />
-    );
-  }
-}
+Selector.defaultProps = {
+  defaultValue: null,
+};
 
 export default Selector;

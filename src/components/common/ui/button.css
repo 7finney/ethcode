@@ -1,0 +1,15 @@
+.custom_button_css {
+  border: 1px solid #38ffAf;
+  background: #38ffAf;
+  color: black;
+  padding: 4px 12px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 2pt;
+  cursor: pointer;
+}:disabled {
+  background: #081b13 !important;
+  color: white !important;
+  cursor: default !important;
+}
