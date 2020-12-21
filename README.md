@@ -39,16 +39,17 @@ Deploy contracts to [Goerli test network](https://github.com/goerli/testnet).
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
 
 ## Use locally generated key-pair to use with test networks
-Ethcode signs all transactions using generated key-pair in your computer. Use `Generate key pair` button to generate one. Then go to respective test network faucet and get some testnet ether. For `Görli` use [goerli-faucet](https://goerli-faucet.slock.it).
+Ethcode signs all transactions using generated key-pair in your computer. Use `Generate key pair` button to generate your keys. Then go to respective test network faucet and get some testnet ether. For `Görli` use [goerli-faucet](https://goerli-faucet.slock.it).
 
 ![Screenshot from 2020-04-11 01-02-38](https://user-images.githubusercontent.com/13261372/79018200-db1f7380-7b90-11ea-98f6-846f26405b35.png)
 
 ## Authenticate with Ethential ethereum cloud gRPC endpoint
 We use cloud endpoints to deploy contracts to public blockchains. Kindly register your user and use generated authtoken to authenticate with our cloud endpoints.
 1. Register and create an authtoken on https://auth.ethco.de/
-2. Use your registered email & generated token in ethcode settings to authenticate to our cloud gateway.
+2. Click on "Register App" in Account tab.
+3. Provide your authtoken and email id when prompted.
 
-<img width="1440" alt="Screenshot 2020-09-29 at 6 58 29 PM" src="https://user-images.githubusercontent.com/13261372/94686544-9e1a8980-0348-11eb-92c0-9b1eea1a71be.png">
+<img width="1440" alt="Screenshot from 2020-12-22 00-47-28" src="https://user-images.githubusercontent.com/13261372/102813769-6ffc9100-43ef-11eb-9b93-e1a4e3dbb0d7.png">
 
 
 ## Help
