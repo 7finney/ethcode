@@ -23,7 +23,7 @@ https://auth.ethco.de/
 
 `ctrl+alt+c` - compile [solidity](https://solidity.readthedocs.io/en/v0.6.12/) contracts.
 
-![Screenshot from 2019-09-28 23-05-13](https://user-images.githubusercontent.com/13261372/71320562-e57b0c00-24d2-11ea-9b17-2629da608c6d.png)
+![Screenshot from 2020-12-22 00-57-09](https://user-images.githubusercontent.com/13261372/102814512-c3bbaa00-43f0-11eb-9d15-cffb681b7d7f.png)
 
 Deploy contracts to [Goerli test network](https://github.com/goerli/testnet).
 
