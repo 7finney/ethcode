@@ -7,6 +7,7 @@ import * as uuid from 'uuid/v4';
 import axios from 'axios';
 
 import Logger from './logger';
+import { actionToast } from './utils';
 
 function retrieveUserSettings(accessScope: string, valueToRetreive: string): string | undefined {
   return vscode.workspace.getConfiguration(accessScope).get(valueToRetreive);
@@ -153,6 +154,14 @@ class ReactPanel {
         logger.log(`Worker message: ${JSON.stringify(message)}`);
         if (message.command === 'version') {
           this.version = message.version;
+        } else if (message.command === 'auth-updated') {
+          const actionName = 'Reload';
+          actionToast(
+            'Authentication status updated. Please reload if you have changed your authtoken!',
+            actionName
+          ).then((item: string | undefined) => {
+            if (item === actionName) vscode.commands.executeCommand('workbench.action.reloadWindow');
+          });
         } else if (message.command === 'run-deploy') {
           this.runDeploy(message.payload, message.testNetId);
         } else if (message.command.endsWith('contract-method-call')) {
@@ -283,10 +292,10 @@ class ReactPanel {
   };
 
   private createAccWorker = (): ChildProcess => {
-    return fork(path.join(__dirname, 'accWorker.js'), [], {
-      execArgv: [`--inspect=${process.debugPort + 1}`],
-    });
-    // return fork(path.join(__dirname, 'accWorker.js'));
+    // return fork(path.join(__dirname, 'accWorker.js'), [], {
+    //   execArgv: [`--inspect=${process.debugPort + 1}`],
+    // });
+    return fork(path.join(__dirname, 'accWorker.js'));
   };
 
   public async checkAppRegistration(): Promise<void> {

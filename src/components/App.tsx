@@ -64,12 +64,12 @@ const App: React.FC = () => {
     // { value: '4', label: 'Rinkeby' },
     { value: '5', label: 'Görli' },
   ]);
-  // const [appRegistered, setAppRegistered] = useState(false);
 
   // redux
   // UseSelector to extract state elements.
-  const { compiled, testNetId, accounts, currAccount, accountBalance, testResults, error } = useSelector(
+  const { registered, compiled, testNetId, accounts, currAccount, accountBalance, testResults, error } = useSelector(
     (state: GlobalStore) => ({
+      registered: state.debugStore.appRegistered,
       compiled: state.contractsStore.compiledResult,
       testNetId: state.debugStore.testNetId,
       accounts: state.accountStore.accounts,
@@ -143,6 +143,9 @@ const App: React.FC = () => {
       }
       if (data.registered) {
         dispatch(setAppRegistered(data.registered));
+        if (registered !== data.registered) {
+          vscode.postMessage({ command: 'auth-updated' });
+        }
       }
       // compiled
       if (data.compiled) {

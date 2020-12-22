@@ -1,21 +1,21 @@
 // @ts-ignore
-import * as shell from "shelljs";
-import * as fs from "fs";
-import { ISources } from "./types";
+import * as shell from 'shelljs';
+import * as fs from 'fs';
+import { ISources } from './types';
 
 function compileVyper(sources: ISources) {
   const inputJSON = {
-    language: "Vyper",
+    language: 'Vyper',
     sources,
     settings: {
-      evmVersion: "byzantium",
+      evmVersion: 'byzantium',
     },
     outputSelection: {
-      "*": ["evm.bytecode", "abi", "ast"],
+      '*': ['evm.bytecode', 'abi', 'ast'],
     },
   };
-  shell.config.execPath = shell.which("node").toString();
-  fs.writeFileSync(`${__dirname}/.temp-vy.json`, JSON.stringify(inputJSON, null, 4), "UTF-8");
+  shell.config.execPath = shell.which('node').toString();
+  fs.writeFileSync(`${__dirname}/.temp-vy.json`, JSON.stringify(inputJSON, null, 4), 'UTF-8');
   const args = `vyper-json ${__dirname}/.temp-vy.json`;
   const { stdout, stderr, code } = shell.exec(args);
   let m: unknown;
@@ -31,8 +31,8 @@ function compileVyper(sources: ISources) {
 }
 
 // @ts-ignore
-process.on("message", (m) => {
-  if (m.command === "compile") {
+process.on('message', (m) => {
+  if (m.command === 'compile') {
     compileVyper(m.source);
   }
 });

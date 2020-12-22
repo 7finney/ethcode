@@ -149,7 +149,13 @@ const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IPro
         </div>
         <div className="input-container">
           <Button buttonType={ButtonType.Input} disabled={appRegistered} onClick={handleAppRegister}>
-            {appRegistered ? 'Authenticated' : 'Register App'}
+            {appRegistered ? (
+              'Authenticated'
+            ) : (
+              <a style={{ textDecoration: 'none' }} href="https://auth.ethco.de/">
+                Register App
+              </a>
+            )}
           </Button>
         </div>
       </div>

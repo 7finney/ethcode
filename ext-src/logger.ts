@@ -1,11 +1,11 @@
-import { window, OutputChannel } from "vscode";
-import { errorToast, successToast } from "./utils";
+import { window, OutputChannel } from 'vscode';
+import { errorToast, successToast } from './utils';
 
 export default class Logger {
   private outputChannel: OutputChannel;
 
   constructor(name?: string) {
-    this.outputChannel = window.createOutputChannel(name || "Ethcode");
+    this.outputChannel = window.createOutputChannel(name || 'Ethcode');
   }
 
   private getNow = (): string => {
