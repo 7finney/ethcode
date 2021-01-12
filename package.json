@@ -30,6 +30,7 @@
     "onCommand:ethcode.runTest"
   ],
   "main": "./build/ext-src/extension.js",
+  "extensionDependencies": ["ibm.output-colorizer"],
   "contributes": {
     "configuration": {
       "type": "object",

@@ -54,11 +54,13 @@ export type ABIParameter = {
   type: ABITypeParameter;
   /** Used for tuple types */
   components?: ABIParameter[];
+  value?: string;
 };
 
 export type ABITypeParameter =
   | 'uint'
   | 'uint[]' // TODO : add <M>
+  | 'uint256'
   | 'int'
   | 'int[]' // TODO : add <M>
   | 'address'

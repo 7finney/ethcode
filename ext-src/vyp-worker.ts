@@ -9,9 +9,9 @@ function compileVyper(sources: ISources) {
     sources,
     settings: {
       evmVersion: 'byzantium',
-    },
-    outputSelection: {
-      '*': ['evm.bytecode', 'abi', 'ast'],
+      outputSelection: {
+        '*': ['evm.bytecode', 'abi', 'ast'],
+      },
     },
   };
   shell.config.execPath = shell.which('node').toString();
