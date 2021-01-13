@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "Ethential",
   "categories": [
     "Debuggers",
@@ -30,7 +30,9 @@
     "onCommand:ethcode.runTest"
   ],
   "main": "./build/ext-src/extension.js",
-  "extensionDependencies": ["ibm.output-colorizer"],
+  "extensionDependencies": [
+    "ibm.output-colorizer"
+  ],
   "contributes": {
     "configuration": {
       "type": "object",
