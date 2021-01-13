@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, ButtonType, TextArea } from 'components/common/ui';
 import { ABIParameter, ABIDescription, IAccount, TransactionResult } from 'types';
+import { abiHelpers } from '../common/lib';
 
 interface IProps {
   deployedResult: TransactionResult | null;
@@ -23,7 +24,6 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
   const [callFunctionToggle, setCallFunctionToggle] = useState(true);
   const [methodName, setMethodName] = useState<string>('');
   const [isPayable, setIsPayable] = useState(false);
-  const [methodArray, setmethodArray] = useState({});
   const [payableAmount] = useState<number>(0);
 
   const { control, register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<
@@ -37,37 +37,6 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
         setCallFunctionToggle(false);
       }
     });
-    const { abi } = props;
-    const methodArray: any = {};
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const i in abi) {
-      if (abi[i].type !== 'constructor') {
-        try {
-          // TODO: bellow strategy to extract method names and inputs should be improved
-          const methodname: string = abi[i].name! ? abi[i].name! : 'fallback';
-          // if we have inputs
-          // @ts-ignore
-          methodArray[methodname] = {};
-          // @ts-ignore
-          if (abi[i].inputs && abi[i].inputs.length > 0) {
-            // @ts-ignore
-            // eslint-disable-next-line no-restricted-syntax, guard-for-in
-            for (const i in methodArray[methodname].inputs) {
-              methodArray[methodname].inputs[i].value = '';
-            }
-          } else {
-            // @ts-ignore
-            methodArray[methodname].inputs = [];
-          }
-          // @ts-ignore
-          methodArray[methodname].stateMutability = abi[i].stateMutability;
-        } catch (error) {
-          console.error('Error In abi parsing: ', error);
-        }
-      }
-    }
-    setmethodArray(methodArray);
   }, []);
 
   useEffect(() => {
@@ -79,15 +48,16 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
     event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setCallFunctionToggle(false);
+    const { abi } = props;
     const methodName: string = event.target.value;
-    // eslint-disable-next-line no-prototype-builtins
-    if (methodName && methodArray.hasOwnProperty(methodName)) {
+    const methodABI: ABIDescription = abiHelpers.getMethodABI(abi, methodName);
+    if (methodABI) {
       setMethodName(methodName);
-      // @ts-ignore
-      setIsPayable(methodArray[methodName].stateMutability === 'payable');
-    } else {
-      setMethodName('');
-      setIsPayable(false);
+      setIsPayable(methodABI.stateMutability === 'payable');
+      const inputs = methodABI.inputs?.map((input) => {
+        return { ...input, value: '' };
+      });
+      setValue('methodInputs', inputs as Array<ABIParameter>);
     }
   };
   const handleCall = () => {
