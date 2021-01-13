@@ -1,5 +1,5 @@
 import React, { useEffect, useState, MutableRefObject } from 'react';
-import { Controller, useForm, NestedValue } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { Button, ButtonType, TextArea } from 'components/common/ui';
 import { ABIDescription, ABIParameter, ConstructorInput, IAccount, TransactionResult } from 'types';
 import { abiHelpers } from '../common/lib';

@@ -1,7 +1,8 @@
 import React, { MutableRefObject, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, ButtonType, TextArea } from 'components/common/ui';
-import { ABIDescription, ConstructorInput, IAccount } from 'types';
+import { ABIDescription, ConstructorInput, IAccount, ABIParameter } from 'types';
+import { abiHelpers } from '../common/lib';
 
 interface IProps {
   bytecode: string;
@@ -16,7 +17,7 @@ interface IProps {
 
 interface TDeployForm {
   gasSupply: number;
-  constructorInput: Array<ConstructorInput>;
+  constructorInput: Array<ABIParameter>;
 }
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {
@@ -26,21 +27,12 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
   useEffect(() => {
     setTestNetId(props.testNetId);
     const { abi } = props;
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const i in abi) {
-      if (abi[i].type === 'constructor' && abi[i].inputs!.length > 0) {
-        try {
-          const constructorInput: ConstructorInput[] = JSON.parse(JSON.stringify(abi[i].inputs));
-          // eslint-disable-next-line no-restricted-syntax, guard-for-in
-          for (const j in constructorInput) {
-            constructorInput[j].value = '';
-          }
-          setValue('constructorInput', constructorInput);
-        } catch (error) {
-          console.error('Error In abi constructor parsing: ', error);
-        }
-      }
+    const constructorABI: ABIDescription = abiHelpers.getConstructorABI(abi);
+    if (constructorABI) {
+      const inputs = constructorABI.inputs?.map((input) => {
+        return { ...input, value: '' };
+      });
+      if (inputs) setValue('constructorInput', inputs);
     }
   }, [props.abi]);
 

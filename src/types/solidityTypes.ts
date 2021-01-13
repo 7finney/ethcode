@@ -47,6 +47,14 @@ export type EventDescription = {
   anonymous: boolean;
 };
 
+// TODO Add proper types from solidity documentation
+export type ConstructorInput = {
+  internalType?: string;
+  name: string;
+  type: string;
+  value?: string;
+};
+
 export type ABIParameter = {
   /** The name of the parameter */
   name: string;
@@ -275,14 +283,6 @@ export type UserMethodList = {
 };
 export type UserMethodDoc = {
   notice: string;
-};
-
-// TODO Add proper types from solidity documentation
-export type ConstructorInput = {
-  internalType?: string;
-  name: string;
-  type: string;
-  value?: string;
 };
 
 export type TransactionResult = {
