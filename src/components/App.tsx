@@ -233,22 +233,22 @@ const App: React.FC = () => {
     vscode.postMessage({ command: 'run-getAccounts' });
   }, []);
 
-  const changeContract = (selectedOpt: IOpt) => {
+  const switchContract = (selectedOpt: IOpt) => {
     setContractName(selectedOpt.value);
   };
 
   useEffect(() => {
     if (compiled && compiled.contracts) {
-      changeContract({
+      switchContract({
         value: `${Object.keys(compiled.contracts[fileName])[0]}`,
         label: `${Object.keys(compiled.contracts[fileName])[0]}`,
       });
     }
   }, [fileName]);
 
-  const changeFile = (selectedOpt: IOpt) => {
+  const switchFile = (selectedOpt: IOpt) => {
     setFileName(selectedOpt.value);
-    setContracts(setSelectorOption(Object.keys(compiled!.contracts[fileName])));
+    setContracts(setSelectorOption(Object.keys(compiled!.contracts[selectedOpt.value])));
   };
 
   const setSelectedVersion = (version: any) => {
@@ -300,7 +300,7 @@ const App: React.FC = () => {
           defaultValue={testNets[0]}
         />
         {compiled && compiled.sources && Object.keys(compiled.sources).length > 0 && (
-          <Selector options={files} onSelect={changeFile} placeholder="Select Files" defaultValue={files[0]} />
+          <Selector options={files} onSelect={switchFile} placeholder="Select Files" defaultValue={files[0]} />
         )}
       </div>
       {transactionResult && (
@@ -350,18 +350,14 @@ const App: React.FC = () => {
             {compiled && fileName && (
               <div className="container-margin">
                 <div className="contractSelect_container">
-                  <Selector options={contracts} onSelect={changeContract} placeholder="Select Contract" />
+                  <Selector options={contracts} onSelect={switchContract} placeholder="Select Contract" />
                 </div>
               </div>
             )}
             {compiled && contractName && compiled.contracts[fileName][contractName] && (
               <div className="compiledOutput">
                 <div id={contractName} className="contract-container">
-                  <ContractCompiled
-                    contractName={contractName}
-                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                    abi={compiled.contracts[fileName][contractName].abi}
-                  />
+                  <ContractCompiled contractName={contractName} fileName={fileName} />
                   {currAccount && (
                     <ContractDeploy
                       bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
@@ -384,11 +380,7 @@ const App: React.FC = () => {
             <div className="compiledOutput">
               {compiled && contractName && compiled.contracts[fileName][contractName] && (
                 <div id={contractName} className="contract-container">
-                  <ContractCompiled
-                    contractName={contractName}
-                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                    abi={compiled.contracts[fileName][contractName].abi}
-                  />
+                  <ContractCompiled contractName={contractName} fileName={fileName} />
                   <Deploy
                     contractName={contractName}
                     bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}

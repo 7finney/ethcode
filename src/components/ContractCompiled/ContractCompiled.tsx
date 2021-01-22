@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { ABIDescription } from 'types';
+import { useSelector } from 'react-redux';
+import { GlobalStore } from 'types';
 import './ContractCompiled.css';
 
 interface IProps {
   contractName: string;
-  bytecode: string;
-  abi: ABIDescription[];
+  fileName: string;
 }
 
 const ContractCompiled = (props: IProps) => {
-  const { contractName, bytecode, abi } = props;
+  const { contractName, fileName } = props;
   const [error] = useState(null);
+  const { bytecode, abi } = useSelector((state: GlobalStore) => ({
+    bytecode: state.contractsStore.compiledResult?.contracts[fileName][contractName].evm.bytecode.object,
+    abi: state.contractsStore.compiledResult?.contracts[fileName][contractName].abi,
+  }));
   return (
     <div>
       <span className="contract-name inline-block highlight-success">Contract Name: {contractName}</span>
