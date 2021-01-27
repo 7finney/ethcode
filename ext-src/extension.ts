@@ -453,7 +453,7 @@ class ReactPanel {
             lang: 'vyper',
             solidityCompilerVersion: '',
           },
-          ['userConfig', 'compile']
+          ['userConfig', 'compiler']
         );
       }
       if (m.processMessage) {

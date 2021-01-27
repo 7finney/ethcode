@@ -3,17 +3,18 @@ import { useSelector } from 'react-redux';
 import { GlobalStore } from 'types';
 import './ContractCompiled.css';
 
-interface IProps {
-  contractName: string;
-  fileName: string;
-}
-
-const ContractCompiled = (props: IProps) => {
-  const { contractName, fileName } = props;
+const ContractCompiled = () => {
   const [error] = useState(null);
-  const { bytecode, abi } = useSelector((state: GlobalStore) => ({
-    bytecode: state.contractsStore.compiledResult?.contracts[fileName][contractName].evm.bytecode.object,
-    abi: state.contractsStore.compiledResult?.contracts[fileName][contractName].abi,
+  const { bytecode, abi, contractName } = useSelector((state: GlobalStore) => ({
+    bytecode:
+      state.contractsStore.compiledResult?.contracts[state.contractsStore.activeFileName][
+        state.contractsStore.activeContractName
+      ]?.evm.bytecode.object,
+    abi:
+      state.contractsStore.compiledResult?.contracts[state.contractsStore.activeFileName][
+        state.contractsStore.activeContractName
+      ]?.abi,
+    contractName: state.contractsStore.activeContractName,
   }));
   return (
     <div>

@@ -23,6 +23,8 @@ export interface IContractStore {
   compiledResult: CompilationResult | null;
   callResult: { [key: string]: string };
   deployedResult: TransactionResult | null;
+  activeContractName: string;
+  activeFileName: string;
 }
 
 export type GlobalStore = {
