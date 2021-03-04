@@ -185,6 +185,7 @@ const App: React.FC = () => {
           dispatch(setActiveContractName(Object.keys(compiled.contracts[fileName])[0]));
           dispatch(setCompiledResults(compiled));
         } catch (error) {
+          console.log(error);
           setProcessMessage('Error Parsing Compilation result');
         }
       }

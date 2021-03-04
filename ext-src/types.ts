@@ -36,3 +36,11 @@ export interface SolcError {
   sourceLocation: ISrcLoc;
   type: string;
 }
+
+export interface ICompilationResult {
+  source: {
+    target: string;
+    sources: ISources;
+  };
+  data: any;
+}
