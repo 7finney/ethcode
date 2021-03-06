@@ -11,7 +11,7 @@ https://docs.ethcode.dev/
 ## Installation
 VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=ethential.ethcode
 ## Authentication
-https://auth.ethco.de/
+https://auth.ethcode.dev/
 
 ## System support
 * Linux, Mac, Windows
@@ -45,7 +45,7 @@ Ethcode signs all transactions using generated key-pair in your computer. Use `G
 
 ## Authenticate with Ethential ethereum cloud gRPC endpoint
 We use cloud endpoints to deploy contracts to public blockchains. Kindly register your user and use generated authtoken to authenticate with our cloud endpoints.
-1. Register and create an authtoken on https://auth.ethco.de/
+1. Register and create an authtoken on https://auth.ethcode.dev/
 2. Click on "Register App" in Account tab.
 3. Provide your authtoken and email id when prompted.
 
