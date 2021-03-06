@@ -16,7 +16,7 @@ const authToken: TokenData = {
 
 export async function verifyUserToken(appId: string, email: string, authtoken: string): Promise<boolean> {
   try {
-    const r = await axios.post('https://auth.ethco.de/user/token/app/verify', {
+    const r = await axios.post('https://auth.ethcode.dev/user/token/app/verify', {
       email,
       app_id: appId,
       token: authtoken,

@@ -234,7 +234,7 @@ export class ReactPanel {
       });
       if (token || email) {
         const appId = uuid();
-        await axios.post('https://auth.ethco.de/user/token/app/add', {
+        await axios.post('https://auth.ethcode.dev/user/token/app/add', {
           email,
           app_id: appId,
           token,

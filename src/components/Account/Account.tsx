@@ -152,7 +152,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IPro
             {appRegistered ? (
               'Authenticated'
             ) : (
-              <a style={{ textDecoration: 'none' }} href="https://auth.ethco.de/">
+              <a style={{ textDecoration: 'none' }} href="https://auth.ethcode.dev/">
                 Register App
               </a>
             )}
