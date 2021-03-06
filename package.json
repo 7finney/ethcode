@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.1.15",
+  "version": "0.2.2",
   "publisher": "Ethential",
   "categories": [
     "Debuggers",
@@ -45,7 +45,7 @@
         "ethcode.grpc.serviceEndpoints": {
           "type": "object",
           "default": {
-            "client-call": "cc.ethcode.de:50053",
+            "client-call": "cc.ethcode.dev:50053",
             "remix-tests": "rt.ethco.de:50051",
             "remix-debug": "rd.ethco.de:50052"
           },
