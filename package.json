@@ -30,7 +30,9 @@
     "onCommand:ethcode.runTest"
   ],
   "main": "./build/ext-src/extension.js",
-  "extensionDependencies": ["ibm.output-colorizer"],
+  "extensionDependencies": [
+    "ibm.output-colorizer"
+  ],
   "contributes": {
     "configuration": {
       "type": "object",
@@ -182,7 +184,7 @@
     "jest-environment-jsdom-fourteen": "0.1.0",
     "jest-resolve": "24.7.1",
     "jest-watch-typeahead": "0.3.0",
-    "keythereum": "^1.0.4",
+    "keythereum": "^1.2.0",
     "mini-css-extract-plugin": "0.5.0",
     "number-to-bn": "^1.7.0",
     "optimize-css-assets-webpack-plugin": "5.0.1",
