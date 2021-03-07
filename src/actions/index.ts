@@ -17,6 +17,9 @@ import {
   SET_PVT_KEY,
   SET_GAS_ESTM,
   SET_APP_REG,
+  SET_ACTIVE_CONTRACT_NAME,
+  SET_ACTIVE_FILE_NAME,
+  CLEAR_COMPILED_RESULT,
 } from './types';
 
 import { CompilationResult, IAccount, IAccStore } from '../types';
@@ -27,6 +30,11 @@ interface IDispatch {
   payload: CompilationResult | IAccount | IAccStore | string | number | boolean | Error;
 }
 
+export const clearCompiledResults = () => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: CLEAR_COMPILED_RESULT, payload: '' });
+  };
+};
 export const setCompiledResults = (data: CompilationResult) => {
   return (dispatch: Dispatch<IDispatch>) => {
     dispatch({ type: SET_COMPILED_RESULT, payload: data });
@@ -132,5 +140,17 @@ export const setGasEstimate = (gas: number) => {
 export const setAppRegistered = (appRegistered: boolean) => {
   return (dispatch: Dispatch<IDispatch>) => {
     dispatch({ type: SET_APP_REG, payload: appRegistered });
+  };
+};
+
+export const setActiveContractName = (contractName: string) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_ACTIVE_CONTRACT_NAME, payload: contractName });
+  };
+};
+
+export const setActiveFileName = (fileName: string) => {
+  return (dispatch: Dispatch<IDispatch>) => {
+    dispatch({ type: SET_ACTIVE_FILE_NAME, payload: fileName });
   };
 };

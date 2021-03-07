@@ -12,13 +12,16 @@ import {
   setErrMsg,
   setCompiledResults,
   setAppRegistered,
+  setActiveContractName,
+  setActiveFileName,
+  clearCompiledResults,
 } from '../actions';
 import './App.css';
 
 import {
   solidityVersion,
-  setSelectorOption,
-  setFileSelectorOptions,
+  extractContractSelectorOption,
+  extractFileSelectorOptions,
   setGanacheAccountsOption,
   setLocalAccountOption,
 } from '../helper';
@@ -43,15 +46,14 @@ interface IOpt {
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 const App: React.FC = () => {
   const [message, setMessage] = useState<any[]>([]);
-  const [fileName, setFileName] = useState<string>('');
-  const [contractName, setContractName] = useState<string>('');
+  // const [fileName, setFileName] = useState<string>('');
   const [processMessage, setProcessMessage] = useState('');
   const [availableVersions, setAvailableVersions] = useState<Array<SolcVersionType>>([]);
   const [gasEstimate, setGasEstimate] = useState(0);
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
   const [selectorAccounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>([]);
-  const [contracts, setContracts] = useState<string[]>([]);
+  const [contractNames, setContractNames] = useState<string[]>([]);
   const [files, setFiles] = useState<string[]>([]);
   const [transactionResult, setTransactionResult] = useState('');
   const [fileType, setFileType] = useState('');
@@ -67,18 +69,33 @@ const App: React.FC = () => {
 
   // redux
   // UseSelector to extract state elements.
-  const { registered, compiled, testNetId, accounts, currAccount, accountBalance, testResults, error } = useSelector(
-    (state: GlobalStore) => ({
-      registered: state.debugStore.appRegistered,
-      compiled: state.contractsStore.compiledResult,
-      testNetId: state.debugStore.testNetId,
-      accounts: state.accountStore.accounts,
-      currAccount: state.accountStore.currAccount,
-      accountBalance: state.accountStore.balance,
-      testResults: state.test.testResults,
-      error: state.debugStore.error,
-    })
-  );
+  const {
+    registered,
+    // compiled,
+    sources,
+    contracts,
+    contractName,
+    fileName,
+    testNetId,
+    accounts,
+    currAccount,
+    accountBalance,
+    testResults,
+    error,
+  } = useSelector((state: GlobalStore) => ({
+    registered: state.debugStore.appRegistered,
+    // compiled: state.contractsStore.compiledResult,
+    sources: state.contractsStore.compiledResult?.sources,
+    contracts: state.contractsStore.compiledResult?.contracts,
+    contractName: state.contractsStore.activeContractName,
+    fileName: state.contractsStore.activeFileName,
+    testNetId: state.debugStore.testNetId,
+    accounts: state.accountStore.accounts,
+    currAccount: state.accountStore.currAccount,
+    accountBalance: state.accountStore.balance,
+    testResults: state.test.testResults,
+    error: state.debugStore.error,
+  }));
   const dispatch = useDispatch();
 
   const mergeAccount = () => {
@@ -149,6 +166,7 @@ const App: React.FC = () => {
       }
       // compiled
       if (data.compiled) {
+        dispatch(clearCompiledResults());
         try {
           const compiled: CompilationResult = JSON.parse(data.compiled);
           if (compiled.errors && compiled.errors.length > 0) {
@@ -158,15 +176,16 @@ const App: React.FC = () => {
             setProcessMessage('');
           }
           const fileName: string = Object.keys(compiled.sources)[0];
-          const contractsArray: string[] = setSelectorOption(Object.keys(compiled.contracts[fileName]));
-          const files: string[] = setFileSelectorOptions(Object.keys(compiled.sources));
-          setFileName(fileName);
+          const contractNames: string[] = extractContractSelectorOption(Object.keys(compiled.contracts[fileName]));
+          const files: string[] = extractFileSelectorOptions(Object.keys(compiled.sources));
           setProcessMessage('');
-          setContractName(Object.keys(compiled.contracts[fileName])[0]);
-          setContracts(contractsArray);
           setFiles(files);
+          setContractNames(contractNames);
+          dispatch(setActiveFileName(fileName));
+          dispatch(setActiveContractName(Object.keys(compiled.contracts[fileName])[0]));
           dispatch(setCompiledResults(compiled));
         } catch (error) {
+          console.log(error);
           setProcessMessage('Error Parsing Compilation result');
         }
       }
@@ -233,22 +252,23 @@ const App: React.FC = () => {
     vscode.postMessage({ command: 'run-getAccounts' });
   }, []);
 
-  const changeContract = (selectedOpt: IOpt) => {
-    setContractName(selectedOpt.value);
+  const switchContract = (selectedOpt: IOpt) => {
+    dispatch(setActiveContractName(selectedOpt.value));
   };
 
   useEffect(() => {
-    if (compiled && compiled.contracts) {
-      changeContract({
-        value: `${Object.keys(compiled.contracts[fileName])[0]}`,
-        label: `${Object.keys(compiled.contracts[fileName])[0]}`,
+    if (contracts) {
+      switchContract({
+        value: `${Object.keys(contracts[fileName])[0]}`,
+        label: `${Object.keys(contracts[fileName])[0]}`,
       });
+      const contractNames: string[] = extractContractSelectorOption(Object.keys(contracts[fileName]));
+      setContractNames(contractNames);
     }
   }, [fileName]);
 
-  const changeFile = (selectedOpt: IOpt) => {
-    setFileName(selectedOpt.value);
-    setContracts(setSelectorOption(Object.keys(compiled!.contracts[fileName])));
+  const switchFile = (selectedOpt: IOpt) => {
+    dispatch(setActiveFileName(selectedOpt.value));
   };
 
   const setSelectedVersion = (version: any) => {
@@ -299,8 +319,8 @@ const App: React.FC = () => {
           placeholder="Select Network"
           defaultValue={testNets[0]}
         />
-        {compiled && compiled.sources && Object.keys(compiled.sources).length > 0 && (
-          <Selector options={files} onSelect={changeFile} placeholder="Select Files" defaultValue={files[0]} />
+        {sources && Object.keys(sources).length > 0 && (
+          <Selector options={files} onSelect={switchFile} placeholder="Select Files" defaultValue={files[0]} />
         )}
       </div>
       {transactionResult && (
@@ -319,7 +339,7 @@ const App: React.FC = () => {
             <div className="tab-container">
               <Tab>Main</Tab>
               <Tab>Account</Tab>
-              <Tab disabled={!!(compiled && fileName)}>Deploy</Tab>
+              <Tab disabled={!!fileName}>Deploy</Tab>
               <Tab>Debug</Tab>
               <Tab>Test</Tab>
             </div>
@@ -347,25 +367,21 @@ const App: React.FC = () => {
                 <span>{accountBalance}</span>
               </div>
             )}
-            {compiled && fileName && (
+            {fileName && (
               <div className="container-margin">
                 <div className="contractSelect_container">
-                  <Selector options={contracts} onSelect={changeContract} placeholder="Select Contract" />
+                  <Selector options={contractNames} onSelect={switchContract} placeholder="Select Contract" />
                 </div>
               </div>
             )}
-            {compiled && contractName && compiled.contracts[fileName][contractName] && (
+            {contractName && contracts && contracts[fileName][contractName] && (
               <div className="compiledOutput">
                 <div id={contractName} className="contract-container">
-                  <ContractCompiled
-                    contractName={contractName}
-                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                    abi={compiled.contracts[fileName][contractName].abi}
-                  />
+                  <ContractCompiled />
                   {currAccount && (
                     <ContractDeploy
-                      bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                      abi={compiled.contracts[fileName][contractName].abi}
+                      bytecode={contracts[fileName][contractName].evm.bytecode.object}
+                      abi={contracts[fileName][contractName].abi}
                       vscode={vscode}
                       gasEstimate={gasEstimate}
                       openAdvanceDeploy={openAdvanceDeploy}
@@ -382,17 +398,13 @@ const App: React.FC = () => {
           {/* Advanced Deploy panel */}
           <TabPanel>
             <div className="compiledOutput">
-              {compiled && contractName && compiled.contracts[fileName][contractName] && (
+              {contractName && contracts && contracts[fileName][contractName] && (
                 <div id={contractName} className="contract-container">
-                  <ContractCompiled
-                    contractName={contractName}
-                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                    abi={compiled.contracts[fileName][contractName].abi}
-                  />
+                  <ContractCompiled />
                   <Deploy
                     contractName={contractName}
-                    bytecode={compiled.contracts[fileName][contractName].evm.bytecode.object}
-                    abi={compiled.contracts[fileName][contractName].abi}
+                    bytecode={contracts[fileName][contractName].evm.bytecode.object}
+                    abi={contracts[fileName][contractName].abi}
                     vscode={vscode}
                     errors={error!}
                   />
