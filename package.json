@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "Ethential",
   "categories": [
     "Debuggers",
@@ -47,7 +47,7 @@
         "ethcode.grpc.serviceEndpoints": {
           "type": "object",
           "default": {
-            "client-call": "cc.ethcode.de:50053",
+            "client-call": "cc.ethcode.dev:50053",
             "remix-tests": "rt.ethco.de:50051",
             "remix-debug": "rd.ethco.de:50052"
           },
@@ -184,7 +184,7 @@
     "jest-environment-jsdom-fourteen": "0.1.0",
     "jest-resolve": "24.7.1",
     "jest-watch-typeahead": "0.3.0",
-    "keythereum": "^1.0.4",
+    "keythereum": "^1.2.0",
     "mini-css-extract-plugin": "0.5.0",
     "number-to-bn": "^1.7.0",
     "optimize-css-assets-webpack-plugin": "5.0.1",

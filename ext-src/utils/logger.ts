@@ -1,5 +1,5 @@
 import { window, OutputChannel } from 'vscode';
-import { errorToast, successToast } from './utils';
+import { errorToast, successToast } from './toast';
 
 export default class Logger {
   private outputChannel: OutputChannel;

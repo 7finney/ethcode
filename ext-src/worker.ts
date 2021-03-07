@@ -51,7 +51,7 @@ try {
 const clientCallPB = protoDescriptor.eth_client_call;
 let clientCallClient: any;
 try {
-  clientCallClient = new clientCallPB.ClientCallService('cc.ethco.de:50053', grpc.credentials.createInsecure());
+  clientCallClient = new clientCallPB.ClientCallService('cc.ethcode.dev:50053', grpc.credentials.createInsecure());
   // clientCallClient = new clientCallPB.ClientCallService('192.168.0.9:50053', grpc.credentials.createInsecure());
 } catch (e) {
   // @ts-ignore
