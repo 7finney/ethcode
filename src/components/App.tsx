@@ -304,15 +304,6 @@ const App: React.FC = () => {
         <h1 className="App-title">ETHcode</h1>
       </header>
       <div className="selectors">
-        {/* quick fix solidity version selector bug */}
-        {availableVersions && fileType !== 'vyper' && (
-          <Selector
-            onSelect={setSelectedVersion}
-            options={availableVersions}
-            placeholder="Select Compiler Version"
-            defaultValue={availableVersions[0]}
-          />
-        )}
         <Selector
           onSelect={setSelectedNetwork}
           options={testNets}
