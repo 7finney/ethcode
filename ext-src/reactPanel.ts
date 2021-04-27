@@ -132,7 +132,7 @@ export class ReactPanel {
   }
 
   public static createOrShow(extensionPath: string) {
-    const column = window.activeTextEditor ? -2 : undefined;
+    const column = window.activeTextEditor ? ViewColumn.Beside : undefined;
 
     // If we already have a panel, show it.
     // Otherwise, create a new panel.
@@ -148,7 +148,7 @@ export class ReactPanel {
       }
     } else {
       try {
-        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.One);
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.Active);
         ReactPanel.currentPanel.version = 'latest';
         ReactPanel.currentPanel.getCompilerVersion();
         ReactPanel.currentPanel.checkFileName();
