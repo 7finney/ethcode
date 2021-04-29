@@ -35,7 +35,8 @@ import Deploy from './Deploy/Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from './Account/Account';
-import { IAccStore, SolcVersionType, GroupedSelectorAccounts, CompilationResult, GlobalStore } from '../types';
+import { OutputJSONForm } from './OutputJSONForm';
+import { IAccStore, SolcVersionType, GroupedSelectorAccounts, GlobalStore } from '../types';
 
 interface IOpt {
   value: string;
@@ -46,7 +47,6 @@ interface IOpt {
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 const App: React.FC = () => {
   const [message, setMessage] = useState<any[]>([]);
-  // const [fileName, setFileName] = useState<string>('');
   const [processMessage, setProcessMessage] = useState('');
   const [availableVersions, setAvailableVersions] = useState<Array<SolcVersionType>>([]);
   const [gasEstimate, setGasEstimate] = useState(0);
@@ -71,7 +71,6 @@ const App: React.FC = () => {
   // UseSelector to extract state elements.
   const {
     registered,
-    // compiled,
     sources,
     contracts,
     contractName,
@@ -125,6 +124,30 @@ const App: React.FC = () => {
       setSelectorAccounts([]);
     }
   };
+  const loadCompiledJSON = (data: any) => {
+    dispatch(clearCompiledResults());
+    try {
+      const { compiled } = data;
+      if (compiled.errors && compiled.errors.length > 0) {
+        setMessage(compiled.errors);
+      } else if (!compiled.errors) {
+        setMessage([]);
+        setProcessMessage('');
+      }
+      const fileName: string = Object.keys(compiled.sources)[0];
+      const contractNames: string[] = extractContractSelectorOption(Object.keys(compiled.contracts[fileName]));
+      const files: string[] = extractFileSelectorOptions(Object.keys(compiled.sources));
+      setProcessMessage('');
+      setFiles(files);
+      setContractNames(contractNames);
+      dispatch(setActiveFileName(fileName));
+      dispatch(setActiveContractName(Object.keys(compiled.contracts[fileName])[0]));
+      dispatch(setCompiledResults(compiled));
+    } catch (error) {
+      console.error(error);
+      setProcessMessage('Error Parsing Compilation result');
+    }
+  };
 
   useEffect(() => {
     mergeAccount();
@@ -166,28 +189,7 @@ const App: React.FC = () => {
       }
       // compiled
       if (data.compiled) {
-        dispatch(clearCompiledResults());
-        try {
-          const compiled: CompilationResult = JSON.parse(data.compiled);
-          if (compiled.errors && compiled.errors.length > 0) {
-            setMessage(compiled.errors);
-          } else if (!compiled.errors) {
-            setMessage([]);
-            setProcessMessage('');
-          }
-          const fileName: string = Object.keys(compiled.sources)[0];
-          const contractNames: string[] = extractContractSelectorOption(Object.keys(compiled.contracts[fileName]));
-          const files: string[] = extractFileSelectorOptions(Object.keys(compiled.sources));
-          setProcessMessage('');
-          setFiles(files);
-          setContractNames(contractNames);
-          dispatch(setActiveFileName(fileName));
-          dispatch(setActiveContractName(Object.keys(compiled.contracts[fileName])[0]));
-          dispatch(setCompiledResults(compiled));
-        } catch (error) {
-          console.log(error);
-          setProcessMessage('Error Parsing Compilation result');
-        }
+        loadCompiledJSON(data);
       }
       if (data.processMessage) {
         const { processMessage } = data;
@@ -271,13 +273,6 @@ const App: React.FC = () => {
     dispatch(setActiveFileName(selectedOpt.value));
   };
 
-  const setSelectedVersion = (version: any) => {
-    vscode.postMessage({
-      command: 'version',
-      version: version.value,
-    });
-  };
-
   const setSelectedNetwork = (testNet: any) => {
     const testNetId = testNet.value;
     dispatch(setTestNetId(testNetId));
@@ -337,18 +332,6 @@ const App: React.FC = () => {
           </TabList>
           {/* Main panel */}
           <TabPanel className="react-tab-panel">
-            <div className="instructions">
-              <p>
-                <pre className="hot-keys">
-                  <b>ctrl+alt+c</b> - Compile contracts
-                </pre>
-              </p>
-              <p>
-                <pre className="hot-keys">
-                  <b>ctrl+alt+t</b> - Run unit tests
-                </pre>
-              </p>
-            </div>
             {accounts.length > 0 && (
               <div className="account-brief">
                 <b>Account: </b>
@@ -356,6 +339,11 @@ const App: React.FC = () => {
                 <br />
                 <b>Balance: </b>
                 <span>{accountBalance}</span>
+              </div>
+            )}
+            {!contracts && (
+              <div>
+                <OutputJSONForm handleLoad={loadCompiledJSON} />
               </div>
             )}
             {fileName && (

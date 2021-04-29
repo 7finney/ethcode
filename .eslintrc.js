@@ -1,3 +1,5 @@
+const { off } = require('process');
+
 module.exports = {
   extends: [
     'airbnb-typescript',
@@ -62,5 +64,6 @@ module.exports = {
     'prettier/prettier': ['error', { singleQuote: true, endOfLine: 'auto', printWidth: 120 }],
     'no-unused-vars': ['warn', { vars: 'all', args: 'after-used', ignoreRestSiblings: false }],
     'react/require-default-props': 0,
+    'import/prefer-default-export': 0,
   },
 };
