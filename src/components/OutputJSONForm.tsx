@@ -15,7 +15,8 @@ export const OutputJSONForm: FC<IProps> = ({ handleLoad }: IProps) => {
     FormCompiled
   >({ shouldUnregister: false });
   const handleSubmit = () => {
-    handleLoad({ compiled: getValues('compiledJSON') });
+    const compiledJSON: CompilationResult = getValues('compiledJSON');
+    handleLoad({ compiled: JSON.stringify(compiledJSON) });
   };
   return (
     <form onSubmit={handleCompiledResultSubmit(handleSubmit)} className="form_align">

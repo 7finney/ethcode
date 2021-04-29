@@ -6,11 +6,6 @@ export type IAccount = {
   checksumAddr?: string;
 };
 
-export type SolcVersionType = {
-  value: string;
-  label: string;
-};
-
 export interface GroupedSelectorAccounts {
   label: string;
   options: IAccount[];

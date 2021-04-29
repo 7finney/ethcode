@@ -19,7 +19,6 @@ import {
 import './App.css';
 
 import {
-  solidityVersion,
   extractContractSelectorOption,
   extractFileSelectorOptions,
   setGanacheAccountsOption,
@@ -36,7 +35,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from './Account/Account';
 import { OutputJSONForm } from './OutputJSONForm';
-import { IAccStore, SolcVersionType, GroupedSelectorAccounts, GlobalStore } from '../types';
+import { IAccStore, GroupedSelectorAccounts, CompilationResult, GlobalStore } from '../types';
 
 interface IOpt {
   value: string;
@@ -48,7 +47,6 @@ const vscode = acquireVsCodeApi(); // eslint-disable-line
 const App: React.FC = () => {
   const [message, setMessage] = useState<any[]>([]);
   const [processMessage, setProcessMessage] = useState('');
-  const [availableVersions, setAvailableVersions] = useState<Array<SolcVersionType>>([]);
   const [gasEstimate, setGasEstimate] = useState(0);
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
@@ -127,7 +125,7 @@ const App: React.FC = () => {
   const loadCompiledJSON = (data: any) => {
     dispatch(clearCompiledResults());
     try {
-      const { compiled } = data;
+      const compiled: CompilationResult = JSON.parse(data.compiled);
       if (compiled.errors && compiled.errors.length > 0) {
         setMessage(compiled.errors);
       } else if (!compiled.errors) {
@@ -194,11 +192,6 @@ const App: React.FC = () => {
       if (data.processMessage) {
         const { processMessage } = data;
         setProcessMessage(processMessage);
-      }
-      if (data.versions) {
-        const options = solidityVersion(data.versions.releases, data.versions.latestRelease);
-        setAvailableVersions(options);
-        setProcessMessage('');
       }
 
       if (data.resetTestState === 'resetTestState') {
