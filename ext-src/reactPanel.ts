@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { WebviewPanel, Disposable, ViewColumn, window, Uri, commands, ExtensionContext, workspace } from 'vscode';
+import { WebviewPanel, Disposable, ViewColumn, window, Uri, commands } from 'vscode';
 import { fork, ChildProcess } from 'child_process';
 import * as uuid from 'uuid/v4';
 import axios from 'axios';
@@ -41,9 +41,6 @@ export class ReactPanel {
 
   private _disposed = false;
 
-  // @ts-ignore
-  private version: string;
-
   private constructor(extensionPath: string, column: ViewColumn) {
     this._extensionPath = extensionPath;
 
@@ -67,9 +64,7 @@ export class ReactPanel {
     this._panel.webview.onDidReceiveMessage(
       (message: any) => {
         logger.log(`Worker message: ${JSON.stringify(message)}`);
-        if (message.command === 'version') {
-          this.version = message.version;
-        } else if (message.command === 'auth-updated') {
+        if (message.command === 'auth-updated') {
           const actionName = 'Reload';
           actionToast(
             'Authentication status updated. Please reload if you have changed your authtoken!',
@@ -132,14 +127,12 @@ export class ReactPanel {
   }
 
   public static createOrShow(extensionPath: string) {
-    const column = window.activeTextEditor ? -2 : undefined;
+    const column = window.activeTextEditor ? ViewColumn.Beside : undefined;
 
     // If we already have a panel, show it.
     // Otherwise, create a new panel.
     if (ReactPanel.currentPanel) {
       try {
-        ReactPanel.currentPanel.getCompilerVersion();
-        ReactPanel.currentPanel.version = 'latest';
         ReactPanel.currentPanel._panel.reveal(column);
         ReactPanel.currentPanel.checkFileName();
         ReactPanel.currentPanel.checkAppRegistration();
@@ -148,19 +141,13 @@ export class ReactPanel {
       }
     } else {
       try {
-        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.One);
-        ReactPanel.currentPanel.version = 'latest';
-        ReactPanel.currentPanel.getCompilerVersion();
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.Active);
         ReactPanel.currentPanel.checkFileName();
         ReactPanel.currentPanel.checkAppRegistration();
       } catch (error) {
         logger.error(error);
       }
     }
-  }
-
-  public setSolidityVersion(selected: any) {
-    this.version = selected;
   }
 
   public checkFileName() {
@@ -192,22 +179,6 @@ export class ReactPanel {
     //   execArgv: ["--inspect=" + (process.debugPort + 1)]
     // });
     return fork(path.join(__dirname, 'worker.js'));
-  };
-
-  private createSolidityWorker = (): ChildProcess => {
-    // enable --inspect for debug
-    // return fork(path.join(__dirname, "solc-worker.js"), [], {
-    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
-    // });
-    return fork(path.join(__dirname, 'solc-worker.js'));
-  };
-
-  private createVyperWorker = (): ChildProcess => {
-    // enable --inspect for debug
-    // return fork(path.join(__dirname, "vyp-worker.js"), [], {
-    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
-    // });
-    return fork(path.join(__dirname, 'vyp-worker.js'));
   };
 
   private createAccWorker = (): ChildProcess => {
@@ -256,130 +227,6 @@ export class ReactPanel {
       return false;
     }
   };
-
-  private invokeSolidityCompiler(context: ExtensionContext, sources: ISources, rootPath: Uri): void {
-    // solidity compiler code goes bellow
-    const input = {
-      language: 'Solidity',
-      sources,
-      settings: {
-        outputSelection: {
-          '*': {
-            '*': ['*'],
-          },
-        },
-      },
-    };
-    // child_process won't work because of debugging issue if launched with F5
-    // child_process will work when launched with ctrl+F5
-    // more on this - https://github.com/Microsoft/vscode/issues/40875
-    const solcWorker = this.createSolidityWorker();
-    logger.log(`Solidity compiler invoked with WorkerID: ${solcWorker.pid}`);
-    logger.log(`Compiling with solidity version ${this.version}`);
-    // Reset Components State before compilation
-    this._panel.webview.postMessage({ processMessage: 'Compiling...' });
-    solcWorker.send({
-      command: 'compile',
-      payload: input,
-      version: this.version,
-    });
-    solcWorker.on('message', (m: any) => {
-      logger.log(`Solidity worker message: ${JSON.stringify(m)}`);
-      if (m.error) {
-        logger.error(m.error);
-      } else if (m.command === 'import') {
-        if (!sources[m.path]) {
-          // eslint-disable-next-line no-param-reassign
-          sources[m.path] = {
-            content: undefined,
-          };
-          solcWorker.send({
-            command: 'import',
-            payload: {
-              path: m.path,
-              rootPath,
-            },
-          });
-        }
-      } else if (m.command === 're-compile') {
-        if (m.path) {
-          // eslint-disable-next-line no-param-reassign
-          sources[m.path] = {
-            content: m.data.content,
-          };
-          input.sources = sources;
-          const noContent = Object.values(input.sources).filter((source) => source.content === undefined);
-          if (noContent.length < 1) {
-            solcWorker.send({
-              command: 'compile',
-              payload: input,
-              version: this.version,
-            });
-          }
-        }
-      } else if (m.command === 'compiled') {
-        context.workspaceState.update('sources', JSON.stringify(sources));
-        this._panel.webview.postMessage({
-          compiled: m.output,
-          sources,
-          testPanel: 'main',
-        });
-        updateUserSession(
-          {
-            lang: 'solidity',
-            solidityCompilerVersion: this.version,
-          },
-          ['userConfig', 'compiler']
-        );
-      } else if (m.command === 'process') {
-        this._panel.webview.postMessage({ processMessage: m.processMessage });
-      } else if (m.command === 'compile-ok') {
-        solcWorker.send({ command: 'exit' });
-      }
-    });
-    solcWorker.on('error', (error: Error) => {
-      logger.log(`Compile worker process exited with error ${error.message}`);
-      solcWorker.kill();
-    });
-    solcWorker.on('exit', (code: number, signal: string) => {
-      logger.log(`Compile worker process exited with code ${code} and signal ${signal}`);
-      this._panel.webview.postMessage({ processMessage: '' });
-    });
-  }
-
-  private invokeVyperCompiler(context: ExtensionContext, sources: ISources): void {
-    const vyperWorker = this.createVyperWorker();
-    logger.log(`Vyper compiler invoked with WorkerID: ${vyperWorker.pid}`);
-    logger.log(`Compiling with vyper compiler version: ${this.version}`);
-    this._panel.webview.postMessage({ processMessage: 'Compiling...' });
-    vyperWorker.send({
-      command: 'compile',
-      source: sources,
-      version: this.version,
-    });
-    vyperWorker.on('message', (m: any) => {
-      logger.log(`Vyper worker message: ${JSON.stringify(m)}`);
-      if (m.error) {
-        logger.error(m.error);
-      }
-      if (m.compiled) {
-        context.workspaceState.update('sources', JSON.stringify(sources));
-
-        this._panel.webview.postMessage({ compiled: m.compiled, sources });
-        vyperWorker.kill();
-        updateUserSession(
-          {
-            lang: 'vyper',
-            solidityCompilerVersion: '',
-          },
-          ['userConfig', 'compiler']
-        );
-      }
-      if (m.processMessage) {
-        this._panel.webview.postMessage({ processMessage: m.processMessage });
-      }
-    });
-  }
 
   private genKeyPair(password: string, ksPath: string): void {
     const accWorker = this.createAccWorker();
@@ -699,34 +546,6 @@ export class ReactPanel {
     });
   }
 
-  public compileContract(context: ExtensionContext, editorContent: string | undefined, fn: string | undefined) {
-    // send JSON serializable compiled data
-    const sources: ISources = {};
-    if (fn) {
-      sources[fn] = {
-        content: editorContent,
-      };
-      context.workspaceState.update('sources', JSON.stringify(sources));
-      const regexVyp = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.vy|.v.py|.vyper.py)$/g;
-      const regexSol = /([a-zA-Z0-9\s_\\.\-\\(\\):])+(.sol|.solidity)$/g;
-      // @ts-ignore
-      if (fn.match(regexVyp) && fn.match(regexVyp).length > 0) {
-        // invoke vyper compiler
-        this.invokeVyperCompiler(context, sources);
-        // @ts-ignore
-      } else if (fn.match(regexSol) && fn.match(regexSol).length > 0) {
-        // @ts-ignore
-        const rootPath = workspace.workspaceFolders[0];
-        // invoke solidity compiler
-        this.invokeSolidityCompiler(context, sources, rootPath.uri);
-      } else {
-        const error = new Error('No matching file found!');
-        logger.error(error);
-        throw error;
-      }
-    }
-  }
-
   public sendTestContract(editorContent: string | undefined, fn: string | undefined) {
     const sources: ISources = {};
     if (fn) {
@@ -769,42 +588,6 @@ export class ReactPanel {
     });
     solcWorker.on('exit', () => {
       logger.log('Remix-tests worker exited!');
-    });
-  }
-
-  public getCompilerVersion() {
-    return new Promise((resolve, reject) => {
-      const versionWorker = this.createWorker();
-      versionWorker.send({ command: 'fetch_compiler_version' });
-      this._panel.webview.postMessage({
-        processMessage: 'Fetching Compiler Versions...',
-      });
-      versionWorker.on('message', (m: any) => {
-        logger.log(`Solidity worker message: ${JSON.stringify(m)}`);
-        const { versions } = m;
-        if (versions) {
-          this._panel.webview.postMessage({ versions });
-          this._panel.webview.postMessage({ processMessage: '' });
-          resolve(versions);
-          versionWorker.kill();
-        } else {
-          // eslint-disable-next-line prefer-promise-reject-errors
-          reject([]);
-          versionWorker.kill();
-        }
-      });
-      versionWorker.on('error', (error: Error) => {
-        logger.error(error);
-        reject(error);
-      });
-      versionWorker.on('exit', (code: number, signal: string) => {
-        const em = `getVersion worker process exited with code ${code} and signal ${signal}`;
-        logger.log(em);
-        this._panel.webview.postMessage({
-          message: `Error code ${code} : Error signal ${signal}`,
-        });
-        reject(new Error(`Error code ${code} : Error signal ${signal}`));
-      });
     });
   }
 

@@ -22,21 +22,6 @@ export interface TokenData {
   email?: string;
 }
 
-interface ISrcLoc {
-  end: number;
-  file: string;
-  start: number;
-}
-export interface SolcError {
-  component: string;
-  errorCode: string;
-  formattedMessage: string;
-  message: string;
-  severity: string;
-  sourceLocation: ISrcLoc;
-  type: string;
-}
-
 export interface ICompilationResult {
   source: {
     target: string;

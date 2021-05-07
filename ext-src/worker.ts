@@ -1,7 +1,6 @@
 // @ts-ignore
 import * as path from 'path';
 import * as fs from 'fs';
-import axios from 'axios';
 import { RemixURLResolver } from 'remix-url-resolver';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
@@ -154,10 +153,7 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
       // @ts-ignore
       process.send({ transactionResult: data.result });
     });
-    // call.on('end', function () {
-    //   process.exit(0);
-    // });
-    call.on('error', function (err: Error) {
+    call.on('error', (err: Error) => {
       // @ts-ignore
       process.send({ error: err });
     });
@@ -173,20 +169,6 @@ process.on('message', async (m) => {
   if (m.authToken) {
     meta.add('token', m.authToken.token);
     meta.add('appId', m.authToken.appId);
-  }
-  if (m.command === 'fetch_compiler_version') {
-    axios
-      .get('https://ethereum.github.io/solc-bin/bin/list.json')
-      .then((res: any) => {
-        // @ts-ignore
-        process.send({ versions: res.data });
-      })
-      .catch((e: Error) => {
-        // @ts-ignore
-        process.send({ error: e });
-        // @ts-ignore
-        process.exit(1);
-      });
   }
   if (m.command === 'run-test') {
     // TODO: move parsing to extension.ts
@@ -206,7 +188,7 @@ process.on('message', async (m) => {
         process.send({ utResp: data });
       }
     });
-    call.on('end', function () {
+    call.on('end', () => {
       process.exit(0);
     });
   }
