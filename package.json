@@ -194,7 +194,7 @@
     "terser-webpack-plugin": "1.2.3",
     "ts-pnp": "1.1.2",
     "typescript": "^4.0.5",
-    "underscore": "^1.9.2",
+    "underscore": "^1.12.1",
     "url-loader": "1.1.2",
     "utf8": "^3.0.0",
     "uuid": "^3.4.0",
