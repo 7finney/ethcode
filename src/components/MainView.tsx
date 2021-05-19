@@ -15,16 +15,7 @@ import {
 } from '../actions';
 import { setGanacheAccountsOption, setLocalAccountOption } from '../helper';
 
-import { getFiles, extractFileSelectorOptions } from '../contractHelper';
-
-import {
-  IAccStore,
-  GroupedSelectorAccounts,
-  CompilationResult,
-  GlobalStore,
-  IFileSelectorItem,
-  ABIDescription,
-} from '../types';
+import { IAccStore, GroupedSelectorAccounts, CompilationResult, GlobalStore, ABIDescription } from '../types';
 
 import ContractDeploy from './ContractDeploy';
 import { Selector } from './common/ui';
@@ -37,10 +28,6 @@ import Account from './Account/Account';
 import { OutputJSONForm } from './OutputJSONForm';
 import { AppContext } from '../appContext';
 
-interface IOpt {
-  value: string;
-  label: string;
-}
 // @ts-ignore
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 
@@ -50,9 +37,7 @@ export const MainView = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
   const [selectorAccounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>([]);
-  const [files, setFiles] = useState<Array<IFileSelectorItem>>([]);
   const [transactionResult, setTransactionResult] = useState('');
-  const [fileType, setFileType] = useState('');
   const [traceError, setTraceError] = useState('');
   const [localAcc, setLocalAcc] = useState<any[]>([]);
   const [testNetAcc, setTestNetAcc] = useState<any[]>([]);
@@ -65,7 +50,7 @@ export const MainView = () => {
   const [abi, setAbi] = useState<Array<ABIDescription>>([]);
   const [bytecode, setBytecode] = useState<string>('');
   // Context
-  const { compiledJSON, setCompiledJSON, activeFileName, setActiveFileName, setTestNetID } = useContext(AppContext);
+  const { compiledJSON, setCompiledJSON, setTestNetID } = useContext(AppContext);
   // redux
   // UseSelector to extract state elements.
   const { registered, accounts, currAccount, accountBalance, testResults, error } = useSelector(
@@ -121,19 +106,7 @@ export const MainView = () => {
         setMessage([]);
         setProcessMessage('');
       }
-      // TODO:
-      // Get file names
-      // Select [0] file by default
-      // Get contracts from that file
-      const files = extractFileSelectorOptions(getFiles(compiled)); // get files from compiled JSON
-      const fileName: string = Object.keys(compiled.contracts)[0];
-      // const contractNames: string[] = extractContractSelectorOption(Object.keys(compiled.contracts[fileName]));
-      // TODO: get file names from compiled JSON (standard/combined)
       setProcessMessage('');
-      setFiles(files);
-      // setContractNames(contractNames);
-      setActiveFileName(fileName);
-      // dispatch(setActiveContractName(Object.keys(compiled.contracts[fileName])[0]));
     } catch (error) {
       console.error(error);
       setProcessMessage('Error Parsing Compilation result');
@@ -147,10 +120,6 @@ export const MainView = () => {
   useEffect(() => {
     window.addEventListener('message', async (event) => {
       const { data } = event;
-
-      if (data.fileType) {
-        setFileType(data.fileType);
-      }
       // accounts
       if (data.localAccounts) {
         setLocalAcc(setLocalAccountOption(data.localAccounts));
@@ -257,7 +226,7 @@ export const MainView = () => {
     setTabIndex(2);
   };
   const reactJSONViewStyle = {
-    border: 'solid 1px red',
+    // border: 'solid 1px red',
     maxHeight: '30vh',
     maxWidth: '90vw',
     overflow: 'scroll',
@@ -298,7 +267,7 @@ export const MainView = () => {
             <div className="tab-container">
               <Tab>Main</Tab>
               <Tab>Account</Tab>
-              <Tab disabled={!!activeFileName}>Deploy</Tab>
+              <Tab>Deploy</Tab>
               <Tab>Debug</Tab>
               <Tab>Test</Tab>
             </div>
@@ -317,19 +286,21 @@ export const MainView = () => {
             <div>
               <OutputJSONForm handleLoad={loadCompiledJSON} />
             </div>
-            {activeFileName && compiledJSON && (
-              <ReactJson
-                src={compiledJSON.contracts[activeFileName]}
-                name={activeFileName}
-                theme="monokai"
-                collapsed
-                style={reactJSONViewStyle}
-                onSelect={handleJSONItemSelect}
-                enableClipboard={handleCopy}
-              />
+            {compiledJSON && (
+              <div className="compiledOutput">
+                <ReactJson
+                  src={compiledJSON.contracts}
+                  name="Contracts"
+                  theme="monokai"
+                  collapsed
+                  style={reactJSONViewStyle}
+                  onSelect={handleJSONItemSelect}
+                  enableClipboard={handleCopy}
+                />
+              </div>
             )}
-            {currAccount && (abi || bytecode) && (
-              <div id={activeFileName} className="contract-container">
+            {currAccount && (Object.keys(abi).length > 0 || bytecode.length > 0) && (
+              <div className="contract-container">
                 <ContractDeploy bytecode={bytecode} abi={abi} vscode={vscode} openAdvanceDeploy={openAdvanceDeploy} />
               </div>
             )}
@@ -340,15 +311,9 @@ export const MainView = () => {
           </TabPanel>
           {/* Advanced Deploy panel */}
           <TabPanel>
-            {currAccount && (abi || bytecode) && (
-              <div id={activeFileName} className="contract-container">
-                <Deploy
-                  // TODO: fix compiled/standard JSON bytecode
-                  bytecode={bytecode}
-                  abi={abi}
-                  vscode={vscode}
-                  errors={error!}
-                />
+            {currAccount && (Object.keys(abi).length > 0 || bytecode.length > 0) && (
+              <div className="contract-container">
+                <Deploy bytecode={bytecode} abi={abi} vscode={vscode} errors={error!} />
               </div>
             )}
           </TabPanel>
