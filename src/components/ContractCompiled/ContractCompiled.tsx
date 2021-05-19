@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useSelector } from 'react-redux';
-import { GlobalStore } from 'types';
+import { GlobalStore } from '../../types';
+import { AppContext } from '../../appContext';
 import './ContractCompiled.css';
 
 const ContractCompiled = () => {
   const [error] = useState(null);
+  const { compiledJSON, activeFileName } = useContext(AppContext);
   const { bytecode, abi, contractName } = useSelector((state: GlobalStore) => ({
     bytecode:
       state.contractsStore.compiledResult?.contracts[state.contractsStore.activeFileName][

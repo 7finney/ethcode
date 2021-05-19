@@ -1,10 +1,11 @@
-import React, { MutableRefObject, useEffect, useState } from 'react';
+import React, { MutableRefObject, useContext, useEffect, useState, FormEvent, MouseEvent } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, ButtonType, TextArea } from 'components/common/ui';
 import { ABIDescription, ConstructorInput, GlobalStore, ABIParameter } from 'types';
 import { setErrMsg } from 'actions';
 import { abiHelpers } from '../common/lib';
+import { AppContext } from '../../appContext';
 
 interface IProps {
   bytecode: string;
@@ -19,20 +20,20 @@ type TDeployForm = {
   constructorInput: Array<ABIParameter>;
 };
 
-const DeployForm: React.FC<IProps> = (props: IProps) => {
+const DeployForm: React.FC<IProps> = ({ vscode, abi, bytecode, gasEstimate, constructorInputRef }: IProps) => {
   const [buildTxToggle, setBuildTxToggle] = useState(true);
-  const { control, register, getValues, setValue } = useForm<TDeployForm>();
+  const { control, register, getValues, setValue, handleSubmit } = useForm<TDeployForm>();
+  // Context
+  const { testNetID } = useContext(AppContext);
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, unsignedTx, pvtKey } = useSelector((state: GlobalStore) => ({
-    testNetId: state.debugStore.testNetId,
+  const { currAccount, unsignedTx, pvtKey } = useSelector((state: GlobalStore) => ({
     currAccount: state.accountStore.currAccount,
     unsignedTx: state.txStore.unsignedTx,
     pvtKey: state.accountStore.privateKey,
   }));
   const dispatch = useDispatch();
   useEffect(() => {
-    const { abi } = props;
     const constructorABI: ABIDescription = abiHelpers.getConstructorABI(abi);
     if (constructorABI) {
       const inputs = constructorABI.inputs?.map((input) => {
@@ -40,16 +41,16 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
       });
       if (inputs) setValue('constructorInput', inputs);
     }
-  }, [props.abi]);
+  }, [abi]);
 
   // set gas estimate
   useEffect(() => {
-    setValue('gasSupply', props.gasEstimate);
+    setValue('gasSupply', gasEstimate);
     setBuildTxToggle(false);
-  }, [props.gasEstimate]);
+  }, [gasEstimate]);
 
-  const handleBuildTxn = () => {
-    const { vscode, bytecode, abi } = props;
+  const handleBuildTxn = (e: FormEvent | MouseEvent) => {
+    e.preventDefault();
     const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
     // create unsigned transaction here
     try {
@@ -62,7 +63,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
           params: getValues('constructorInput') || [],
           gasSupply: getValues('gasSupply'),
         },
-        testNetId,
+        testNetId: testNetID,
       });
     } catch (error) {
       dispatch(setErrMsg(error));
@@ -70,7 +71,6 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
   };
 
   const signAndDeploy = () => {
-    const { vscode } = props;
     try {
       vscode.postMessage({
         command: 'sign-deploy-tx',
@@ -78,16 +78,15 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
           unsignedTx,
           pvtKey,
         },
-        testNetId,
+        testNetId: testNetID,
       });
     } catch (error) {
       dispatch(setErrMsg(error));
     }
   };
 
-  const { gasEstimate } = props;
   return (
-    <form>
+    <form onSubmit={handleSubmit(signAndDeploy)}>
       <div className="form-container">
         <div className="json_input_container" style={{ marginLeft: '-10px' }}>
           <Controller
@@ -95,7 +94,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
             render={() => (
               <TextArea
                 value={getValues('constructorInput')}
-                inputRef={props.constructorInputRef}
+                inputRef={constructorInputRef}
                 onChange={(input: Array<ConstructorInput>) => {
                   setValue('constructorInput', input);
                 }}
@@ -127,9 +126,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
         >
           Build transaction
         </Button>
-        <Button buttonType={ButtonType.Input} onClick={signAndDeploy}>
-          Sign & Deploy
-        </Button>
+        <Button buttonType={ButtonType.Input}>Sign & Deploy</Button>
       </div>
     </form>
   );

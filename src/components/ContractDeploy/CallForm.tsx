@@ -1,15 +1,15 @@
-import React, { useEffect, useState, MutableRefObject } from 'react';
+import React, { useEffect, useState, MutableRefObject, useContext } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, ButtonType, TextArea } from 'components/common/ui';
 import { ABIDescription, ABIParameter, ConstructorInput, IAccount, TransactionResult } from 'types';
 import { abiHelpers } from '../common/lib';
+import { AppContext } from '../../appContext';
 
 interface IProps {
   constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
   deployedResult: TransactionResult | null;
   abi: ABIDescription[];
   currAccount: IAccount;
-  testNetId: string;
   vscode: any;
 }
 
@@ -26,6 +26,8 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
   const [methodName, setMethodName] = useState<string>('');
   const [isPayable, setIsPayable] = useState(false);
   const [payableAmount] = useState<number>(0);
+
+  const { testNetID } = useContext(AppContext);
 
   const { control, register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<
     FormContract
@@ -76,7 +78,7 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
         value: payableAmount,
         from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
       },
-      testNetId: props.testNetId,
+      testNetId: testNetID,
     });
   };
   return (
