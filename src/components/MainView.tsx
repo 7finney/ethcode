@@ -233,13 +233,14 @@ export const MainView = () => {
     marginLeft: 'auto',
     marginRight: 'auto',
   };
-  const handleJSONItemSelect = (select: any) => {
-    setBytecode(select.value);
-  };
   const handleCopy = (copy: OnCopyProps) => {
-    // @ts-ignore
-    const abi: Array<ABIDescription> = Object.keys(copy.src).map((key) => copy.src[key]);
-    setAbi(abi);
+    if (typeof copy.src === 'string') {
+      setBytecode(copy.src);
+    } else {
+      // @ts-ignore
+      const abi: Array<ABIDescription> = Object.keys(copy.src).map((key) => copy.src[key]);
+      setAbi(abi);
+    }
   };
   return (
     <div>
@@ -293,8 +294,9 @@ export const MainView = () => {
                   name="Contracts"
                   theme="monokai"
                   collapsed
+                  collapseStringsAfterLength={12}
                   style={reactJSONViewStyle}
-                  onSelect={handleJSONItemSelect}
+                  // onSelect={handleJSONItemSelect}
                   enableClipboard={handleCopy}
                 />
               </div>
