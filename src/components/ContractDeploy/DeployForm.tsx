@@ -1,15 +1,15 @@
-import React, { MutableRefObject, useEffect, useState } from 'react';
+import React, { MutableRefObject, useEffect, useState, useContext } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, ButtonType, TextArea } from 'components/common/ui';
 import { ABIDescription, ConstructorInput, IAccount, ABIParameter } from 'types';
 import { abiHelpers } from '../common/lib';
+import { AppContext } from '../../appContext';
 
 interface IProps {
   bytecode: string;
   abi: Array<ABIDescription>;
   vscode: any;
   currAccount: IAccount;
-  testNetId: string;
   gasEstimate: number;
   constructorInputRef: MutableRefObject<ConstructorInput[] | null>;
   openAdvanceDeploy: () => void;
@@ -21,11 +21,11 @@ interface TDeployForm {
 }
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {
-  const [testNetId, setTestNetId] = useState('');
+  // Context
+  const { testNetID } = useContext(AppContext);
 
   const { control, register, handleSubmit, getValues, setValue } = useForm<TDeployForm>();
   useEffect(() => {
-    setTestNetId(props.testNetId);
     const { abi } = props;
     const constructorABI: ABIDescription = abiHelpers.getConstructorABI(abi);
     if (constructorABI) {
@@ -52,7 +52,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
         gasSupply: getValues('gasSupply'),
         from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
       },
-      testNetId,
+      testNetId: testNetID,
     });
   };
   return (
@@ -86,14 +86,12 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
         />
       </div>
       <div style={{ marginBottom: '5px' }}>
-        {testNetId !== 'ganache' ? (
+        {testNetID !== 'ganache' ? (
           <Button buttonType={ButtonType.Input} onClick={props.openAdvanceDeploy}>
             Advance Deploy
           </Button>
         ) : (
-          <Button buttonType={ButtonType.Input} disabled={!(getValues('gasSupply') > 0)}>
-            Deploy
-          </Button>
+          <Button buttonType={ButtonType.Input}>Deploy</Button>
         )}
       </div>
     </form>

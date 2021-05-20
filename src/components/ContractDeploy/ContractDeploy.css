@@ -26,6 +26,13 @@
   height: 100%;
 }
 
+.large-code {
+  overflow-x: scroll;
+  background-color: #000;
+  color: #fff;
+  padding: 5px;
+}
+
 .gas_supply {
   margin: 20px 0;
 }

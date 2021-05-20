@@ -1,39 +1,40 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import JSONPretty from 'react-json-pretty';
 import './Deploy.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
-import { setUnsgTxn, setCallResult, setErrMsg } from '../../actions';
+import { setUnsgTxn, setCallResult } from '../../actions';
 import { Button, ButtonType } from '../common/ui';
 import DeployForm from './DeployForm';
 import CallForm from './CallForm';
+import { AppContext } from '../../appContext';
 
 export interface IProps {
-  contractName: string;
   bytecode: string;
   abi: Array<ABIDescription>;
   vscode: any;
   errors: Error;
 }
 
-const Deploy: React.FC<IProps> = (props: IProps) => {
+const Deploy: React.FC<IProps> = ({ abi, bytecode, vscode }: IProps) => {
+  const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [gasEstimate, setGasEstimate] = useState(0);
   const [txtHash, setTxtHash] = useState('');
+  const [error, setError] = useState<Error | null>(null);
   const constructorInputRef = useRef<ConstructorInput[] | null>(null);
+
+  // Context
+  const { testNetID } = useContext(AppContext);
 
   // redux
   // UseSelector to extract state elements.
-  const { testNetId, currAccount, unsignedTx, deployedResult, callResult, pvtKey, error } = useSelector(
-    (state: GlobalStore) => ({
-      testNetId: state.debugStore.testNetId,
-      currAccount: state.accountStore.currAccount,
-      deployedResult: state.contractsStore.deployedResult,
-      callResult: state.contractsStore.callResult,
-      unsignedTx: state.txStore.unsignedTx,
-      pvtKey: state.accountStore.privateKey,
-      error: state.debugStore.error,
-    })
-  );
+  const { currAccount, unsignedTx, deployedResult, callResult, pvtKey } = useSelector((state: GlobalStore) => ({
+    currAccount: state.accountStore.currAccount,
+    deployedResult: state.contractsStore.deployedResult,
+    callResult: state.contractsStore.callResult,
+    unsignedTx: state.txStore.unsignedTx,
+    pvtKey: state.accountStore.privateKey,
+  }));
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -44,6 +45,7 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
         setTxtHash(data.deployedResult);
       }
       if (data.gasEstimate) {
+        setGasEstimateToggle(false);
         setGasEstimate(data.gasEstimate);
       }
       if (data.buildTxResult) {
@@ -57,13 +59,13 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
         dispatch(setCallResult(data.callResult));
       }
       if (data.error) {
-        dispatch(setErrMsg(data.error));
+        setError(data.error);
       }
     });
   }, []);
 
-  const getGasEstimate = () => {
-    const { vscode, bytecode, abi } = props;
+  const handleGetGasEstimate = () => {
+    setGasEstimateToggle(true);
     try {
       vscode.postMessage({
         command: 'run-get-gas-estimate',
@@ -73,18 +75,23 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
           params: constructorInputRef.current,
           from: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
         },
-        testNetId,
+        testNetId: testNetID,
       });
     } catch (err) {
-      dispatch(setErrMsg(err));
+      setError(err);
     }
   };
 
   const publicKey = currAccount && currAccount.value ? currAccount.value : '';
-  const { abi, bytecode, vscode } = props;
   return (
     <div>
       <div className="deploy_container">
+        <div className="byte-code">
+          <pre className="large-code">{JSON.stringify(bytecode)}</pre>
+        </div>
+        <div className="abi-definition">
+          <pre className="large-code">{JSON.stringify(abi)}</pre>
+        </div>
         <div>
           {currAccount && (
             <DeployForm
@@ -95,18 +102,18 @@ const Deploy: React.FC<IProps> = (props: IProps) => {
               constructorInputRef={constructorInputRef}
             />
           )}
-          <form onSubmit={getGasEstimate}>
-            <Button buttonType={ButtonType.Input}>Get gas estimate</Button>
-          </form>
+          <Button buttonType={ButtonType.Button} onClick={handleGetGasEstimate} disabled={gasEstimateToggle}>
+            Get gas estimate
+          </Button>
         </div>
         {/* Call Function */}
         <div>
           {currAccount && (
             <CallForm
-              vscode={props.vscode}
-              abi={props.abi}
+              vscode={vscode}
+              abi={abi}
               currAccount={currAccount}
-              testNetId={testNetId}
+              testNetId={testNetID}
               deployedResult={deployedResult}
             />
           )}

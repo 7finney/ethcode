@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
 import './DebugDisplay.css';
 import { Button, ButtonType } from '../common/ui';
 import { useForm } from 'react-hook-form';
+import { AppContext } from '../../appContext';
 
 interface IProps {
   vscode: any;
   txTrace: any;
-  testNetId: string;
   traceError: string;
 }
 
@@ -19,9 +19,10 @@ const DebugDisplay = (props: IProps) => {
   const [oldDebugObj, setOldDebugObj] = useState<string>();
   const [newDebugObj, setNewDebugObj] = useState<string>();
   const [opIndex, setOpIndex] = useState(-1);
-  const [testNetId, setTestNetId] = useState('');
   const [disable, setDisable] = useState(false);
   const [traceError, setTraceError] = useState('');
+  // Context
+  const { testNetID } = useContext(AppContext);
 
   const { register, handleSubmit } = useForm<FormInputs>();
 
@@ -34,7 +35,7 @@ const DebugDisplay = (props: IProps) => {
     props.vscode.postMessage({
       command: 'debugTransaction',
       txHash,
-      testNetId,
+      testNetId: testNetID,
     });
   };
 
@@ -57,10 +58,6 @@ const DebugDisplay = (props: IProps) => {
     setOldDebugObj(JSON.stringify(props.txTrace[opIndex], null, '\t'));
     setNewDebugObj(JSON.stringify(props.txTrace[opIndex + 1], null, '\t'));
   }, [opIndex]);
-
-  useEffect(() => {
-    setTestNetId(props.testNetId);
-  }, [props.testNetId]);
 
   const stopDebug = () => {
     setDisable(false);
