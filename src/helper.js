@@ -1,27 +1,3 @@
-export function extractContractSelectorOption(optionsArray) {
-  const options = [];
-  optionsArray.map((obj) => {
-    const optItm = {
-      value: obj,
-      label: obj,
-    };
-    return options.push(optItm);
-  });
-  return options;
-}
-
-export function extractFileSelectorOptions(optionsArray) {
-  const options = [];
-  optionsArray.map((file) => {
-    const optItm = {
-      value: file,
-      label: file.substring(file.lastIndexOf('/') + 1),
-    };
-    return options.push(optItm);
-  });
-  return options;
-}
-
 export function setGanacheAccountsOption(optionsArray) {
   const options = [];
   optionsArray.map((obj) => {

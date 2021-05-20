@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties, FormEvent, MouseEvent } from 'react';
 import './button.css';
 
 export enum ButtonType {
@@ -9,7 +9,7 @@ export enum ButtonType {
 interface IProps {
   buttonType: ButtonType;
   disabled?: boolean;
-  onClick?: () => void;
+  onClick?: (_e: FormEvent<HTMLInputElement> | MouseEvent<HTMLElement>) => void;
   style?: CSSProperties;
 }
 
