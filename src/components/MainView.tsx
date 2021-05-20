@@ -56,9 +56,6 @@ export const MainView = () => {
   const { registered, accounts, currAccount, accountBalance, testResults, error } = useSelector(
     (state: GlobalStore) => ({
       registered: state.debugStore.appRegistered,
-      contracts: state.contractsStore.compiledResult?.contracts,
-      contractName: state.contractsStore.activeContractName,
-      fileName: state.contractsStore.activeFileName,
       accounts: state.accountStore.accounts,
       currAccount: state.accountStore.currAccount,
       accountBalance: state.accountStore.balance,
@@ -96,7 +93,7 @@ export const MainView = () => {
     }
   };
   const loadCompiledJSON = (data: any) => {
-    dispatch(clearCompiledResults());
+    setCompiledJSON(undefined);
     try {
       const compiled: CompilationResult = JSON.parse(data.compiled);
       setCompiledJSON(compiled);

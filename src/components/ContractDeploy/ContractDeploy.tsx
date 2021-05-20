@@ -13,7 +13,6 @@ interface IProps {
   bytecode: string;
   abi: Array<ABIDescription>;
   vscode: any;
-  // gasEstimate: number;
   openAdvanceDeploy: () => void;
 }
 

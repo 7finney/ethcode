@@ -3,7 +3,7 @@ import { CompilationResult } from './types';
 
 interface ContextInterface {
   compiledJSON: CompilationResult | undefined;
-  setCompiledJSON: (_value: CompilationResult) => void;
+  setCompiledJSON: (_value: CompilationResult | undefined) => void;
   activeFileName: string;
   setActiveFileName: (_value: string) => void;
   testNetID: string;
@@ -11,7 +11,7 @@ interface ContextInterface {
 }
 export const AppContext = createContext<ContextInterface>({
   compiledJSON: undefined,
-  setCompiledJSON: (_value: CompilationResult) => {},
+  setCompiledJSON: (_value: CompilationResult | undefined) => {},
   activeFileName: '',
   setActiveFileName: (_value: string) => {},
   testNetID: 'ganache',
