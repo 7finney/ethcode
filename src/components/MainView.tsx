@@ -266,8 +266,8 @@ export const MainView = () => {
               <Tab>Main</Tab>
               <Tab>Account</Tab>
               <Tab>Deploy</Tab>
-              <Tab>Debug</Tab>
-              <Tab>Test</Tab>
+              {/* <Tab>Debug</Tab>
+              <Tab>Test</Tab> */}
             </div>
           </TabList>
           {/* Main panel */}
@@ -317,13 +317,13 @@ export const MainView = () => {
             )}
           </TabPanel>
           {/* Debug panel */}
-          <TabPanel className="react-tab-panel">
+          {/* <TabPanel className="react-tab-panel">
             <DebugDisplay vscode={vscode} txTrace={txTrace} traceError={traceError} />
-          </TabPanel>
+          </TabPanel> */}
           {/* Test panel */}
-          <TabPanel className="react-tab-panel">
+          {/* <TabPanel className="react-tab-panel">
             {testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
-          </TabPanel>
+          </TabPanel> */}
         </Tabs>
         <div className="err_warning_container">
           {message.map((m, i) => {
