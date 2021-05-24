@@ -3,15 +3,7 @@ import { WebviewPanel, Disposable, ViewColumn, window, Uri, commands } from 'vsc
 import { fork, ChildProcess } from 'child_process';
 import * as uuid from 'uuid/v4';
 import axios from 'axios';
-import {
-  Logger,
-  actionToast,
-  updateUserSession,
-  registerAppToToken,
-  updateUserSettings,
-  retrieveUserSettings,
-  getNonce,
-} from './utils';
+import { Logger, actionToast, updateUserSession, updateUserSettings, retrieveUserSettings, getNonce } from './utils';
 import { ISources, TokenData, IAccount } from './types';
 
 const logger = new Logger();
@@ -189,8 +181,8 @@ export class ReactPanel {
   };
 
   public async checkAppRegistration(): Promise<void> {
-    const registered = await registerAppToToken();
-    this._panel.webview.postMessage({ registered });
+    // const registered = await registerAppToToken();
+    this._panel.webview.postMessage({ registered: true });
   }
 
   public getTokens = async (): Promise<boolean> => {
