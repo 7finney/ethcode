@@ -5,7 +5,7 @@ import { ABIParameter, ABIDescription, IAccount, TransactionResult } from 'types
 import { abiHelpers } from '../common/lib';
 
 interface IProps {
-  deployedResult: TransactionResult | null;
+  deployedResult: TransactionResult | undefined;
   abi: ABIDescription[];
   currAccount: IAccount;
   testNetId: string;

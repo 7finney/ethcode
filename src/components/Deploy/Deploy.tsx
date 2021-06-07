@@ -1,9 +1,7 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import JSONPretty from 'react-json-pretty';
 import './Deploy.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
-import { setUnsgTxn, setCallResult } from '../../actions';
+import { ABIDescription, ConstructorInput } from 'types';
 import { Button, ButtonType } from '../common/ui';
 import DeployForm from './DeployForm';
 import CallForm from './CallForm';
@@ -24,18 +22,16 @@ const Deploy: React.FC<IProps> = ({ abi, bytecode, vscode }: IProps) => {
   const constructorInputRef = useRef<ConstructorInput[] | null>(null);
 
   // Context
-  const { testNetID } = useContext(AppContext);
-
-  // redux
-  // UseSelector to extract state elements.
-  const { currAccount, unsignedTx, deployedResult, callResult, pvtKey } = useSelector((state: GlobalStore) => ({
-    currAccount: state.accountStore.currAccount,
-    deployedResult: state.contractsStore.deployedResult,
-    callResult: state.contractsStore.callResult,
-    unsignedTx: state.txStore.unsignedTx,
-    pvtKey: state.accountStore.privateKey,
-  }));
-  const dispatch = useDispatch();
+  const {
+    testNetID,
+    currAccount,
+    pvtKey,
+    callResult,
+    setCallResult,
+    deployedResult,
+    unsignedTx,
+    setUnsgTxn,
+  } = useContext(AppContext);
 
   useEffect(() => {
     window.addEventListener('message', (event) => {
@@ -50,13 +46,13 @@ const Deploy: React.FC<IProps> = ({ abi, bytecode, vscode }: IProps) => {
       }
       if (data.buildTxResult) {
         // TODO: fix unsigned tx is not updated after once
-        dispatch(setUnsgTxn(data.buildTxResult));
+        setUnsgTxn(data.buildTxResult);
       }
       if (data.unsignedTx) {
-        dispatch(setUnsgTxn(data.unsignedTx));
+        setUnsgTxn(data.unsignedTx);
       }
       if (data.callResult) {
-        dispatch(setCallResult(data.callResult));
+        setCallResult(data.callResult);
       }
       if (data.error) {
         setError(data.error);
@@ -120,7 +116,7 @@ const Deploy: React.FC<IProps> = ({ abi, bytecode, vscode }: IProps) => {
         </div>
 
         {/* Call function Result */}
-        {Object.entries(callResult).length > 0 && (
+        {callResult && Object.entries(callResult).length > 0 && (
           <div className="tag call-result">
             <span>{callResult ? 'Call result:' : 'Call error:'}</span>
             <div>

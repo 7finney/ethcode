@@ -7,7 +7,7 @@ import { AppContext } from '../../appContext';
 
 interface IProps {
   constructorInputRef: MutableRefObject<ConstructorInput | ConstructorInput[] | null>;
-  deployedResult: TransactionResult | null;
+  deployedResult: TransactionResult | undefined;
   abi: ABIDescription[];
   currAccount: IAccount;
   vscode: any;

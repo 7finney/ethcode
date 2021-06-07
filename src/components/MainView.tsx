@@ -1,25 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import ReactJson, { OnCopyProps } from 'react-json-view';
-import {
-  addTestResults,
-  addFinalResultCallback,
-  clearFinalResult,
-  setDeployedResult,
-  setCallResult,
-  setAccountBalance,
-  setCurrAccChange,
-  setErrMsg,
-  setAppRegistered,
-  clearCompiledResults,
-} from '../actions';
 import { setGanacheAccountsOption, setLocalAccountOption } from '../helper';
 
-import { IAccStore, GroupedSelectorAccounts, CompilationResult, GlobalStore, ABIDescription } from '../types';
+import { CompilationResult, ABIDescription, IAccount } from '../types';
 
 import ContractDeploy from './ContractDeploy';
 import { Selector } from './common/ui';
-import TestDisplay from './TestDisplay';
 import DebugDisplay from './DebugDisplay';
 import Deploy from './Deploy/Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
@@ -36,7 +22,6 @@ export const MainView = () => {
   const [processMessage, setProcessMessage] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
   const [txTrace, setTxTrace] = useState({});
-  const [selectorAccounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>([]);
   const [transactionResult, setTransactionResult] = useState('');
   const [traceError, setTraceError] = useState('');
   const [localAcc, setLocalAcc] = useState<any[]>([]);
@@ -50,20 +35,20 @@ export const MainView = () => {
   const [abi, setAbi] = useState<Array<ABIDescription>>([]);
   const [bytecode, setBytecode] = useState<string>('');
   // Context
-  const { compiledJSON, setCompiledJSON, setTestNetID } = useContext(AppContext);
-  // redux
-  // UseSelector to extract state elements.
-  const { registered, accounts, currAccount, accountBalance, testResults, error } = useSelector(
-    (state: GlobalStore) => ({
-      registered: state.debugStore.appRegistered,
-      accounts: state.accountStore.accounts,
-      currAccount: state.accountStore.currAccount,
-      accountBalance: state.accountStore.balance,
-      testResults: state.test.testResults,
-      error: state.debugStore.error,
-    })
-  );
-  const dispatch = useDispatch();
+  const {
+    currAccount,
+    setAccount,
+    accounts,
+    compiledJSON,
+    accountBalance,
+    setCompiledJSON,
+    setTestNetID,
+    setSelectorAccounts,
+    setAccountBalance,
+    setCallResult,
+    error,
+    setError,
+  } = useContext(AppContext);
 
   const mergeAccount = () => {
     // TODO: update reducer
@@ -124,25 +109,17 @@ export const MainView = () => {
       if (data.fetchAccounts) {
         const { balance, accounts } = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
-        const accData: IAccStore = {
-          balance,
-          currAccount: {
-            label: accounts[0],
-            value: accounts[0], // TODO: use toChecksumAddress to create checksum address of the given
-          },
-          accounts,
+        const currAccount: IAccount = {
+          label: accounts[0],
+          value: accounts[0],
         };
-        dispatch(setAccountBalance(accData));
+        setAccount(currAccount);
+        setAccountBalance(balance);
       }
       if (data.balance) {
         const { balance, account } = data;
-        dispatch(setCurrAccChange({ balance, currAccount: account }));
-      }
-      if (data.registered) {
-        dispatch(setAppRegistered(data.registered));
-        if (registered !== data.registered) {
-          vscode.postMessage({ command: 'auth-updated' });
-        }
+        setAccount(account);
+        setAccountBalance(balance);
       }
       // compiled
       if (data.compiled) {
@@ -153,10 +130,6 @@ export const MainView = () => {
         setProcessMessage(processMessage);
       }
 
-      if (data.resetTestState === 'resetTestState') {
-        dispatch(clearFinalResult());
-      }
-
       if (data.testPanel === 'test') {
         setTabIndex(4);
       }
@@ -165,24 +138,15 @@ export const MainView = () => {
         setTabIndex(0);
       }
 
-      if (data._testCallback) {
-        const result = data._testCallback;
-        dispatch(addTestResults(result));
-      }
-      if (data._finalCallback) {
-        const result = data._finalCallback;
-        dispatch(addFinalResultCallback(result));
-        setProcessMessage('');
-      }
       if (data._importFileCb) {
         return;
       }
       if (data.errors) {
-        setErrMsg(data.errors);
+        setError(data.errors);
       }
       if (data.deployedResult) {
         const result = data.deployedResult.deployedResult;
-        dispatch(setDeployedResult(JSON.parse(result)));
+        // setDeployedResult(JSON.parse(result));
       }
       if (data.txTrace) {
         setTxTrace(data.txTrace);
@@ -192,7 +156,7 @@ export const MainView = () => {
       }
       if (data.callResult) {
         const result = data.callResult;
-        dispatch(setCallResult(result));
+        setCallResult(result);
       }
       if (data.transactionResult) {
         setTransactionResult(data.transactionResult);
@@ -272,7 +236,7 @@ export const MainView = () => {
           </TabList>
           {/* Main panel */}
           <TabPanel className="react-tab-panel">
-            {accounts.length > 0 && (
+            {accounts && accounts.length > 0 && (
               <div className="account-brief">
                 <b>Account: </b>
                 <span>{currAccount ? currAccount.checksumAddr || currAccount.pubAddr || currAccount.value : '0x'}</span>
@@ -306,7 +270,7 @@ export const MainView = () => {
           </TabPanel>
           {/* Account Panel */}
           <TabPanel>
-            <Account vscode={vscode} accounts={selectorAccounts} handleAppRegister={handleAppRegister} />
+            <Account vscode={vscode} />
           </TabPanel>
           {/* Advanced Deploy panel */}
           <TabPanel>

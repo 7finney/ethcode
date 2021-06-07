@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Selector, Button, ButtonType } from '../common/ui';
 import './Account.css';
-import { addNewAcc, setCurrAccChange, setPvtKey, setErrMsg } from '../../actions';
-import { IAccount, GroupedSelectorAccounts, GlobalStore } from '../../types';
+import { setErrMsg } from '../../actions';
+import { IAccount } from '../../types';
 import { useForm } from 'react-hook-form';
+import { AppContext } from '../../appContext';
 
 type IProps = {
-  accounts: Array<GroupedSelectorAccounts>;
   vscode: any;
-  handleAppRegister: () => void;
 };
 
 type FormInputs = {
@@ -18,25 +17,21 @@ type FormInputs = {
   amount: number;
 };
 
-const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IProps) => {
+const Account: React.FC<IProps> = ({ vscode }: IProps) => {
   const [publicAddress, setPublicAddress] = useState('');
   const { register, handleSubmit, formState } = useForm<FormInputs>({ mode: 'onChange' });
-
-  // UseSelector to extract state elements.
-  const { testNetId, currAccount, accountBalance, defaultAccounts, pvtKey, appRegistered, error } = useSelector(
-    (state: GlobalStore) => ({
-      testNetId: state.debugStore.testNetId,
-      currAccount: state.accountStore.currAccount,
-      accountBalance: state.accountStore.balance,
-      defaultAccounts: state.accountStore.accounts,
-      pvtKey: state.accountStore.privateKey,
-      appRegistered: state.debugStore.appRegistered,
-      error: state.debugStore.error,
-    })
-  );
-
-  // dispatch function to be called with the action
-  const dispatch = useDispatch();
+  const {
+    testNetID,
+    currAccount,
+    setAccount,
+    accounts,
+    pvtKey,
+    setPvtKey,
+    accountBalance,
+    setAccountBalance,
+    error,
+    setError,
+  } = useContext(AppContext);
 
   useEffect(() => {
     window.addEventListener('message', async (event) => {
@@ -46,22 +41,20 @@ const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IPro
           label: data.newAccount.pubAddr,
           value: data.newAccount.checksumAddr,
         };
-        dispatch(addNewAcc(account));
+        // dispatch(addNewAcc(account));
         setPublicAddress(account.label);
       }
       if (data.pvtKey) {
         // TODO: handle pvt key not found errors
-        // setPvtKey(data.pvtKey);
-        dispatch(
-          setPvtKey({ currAccount, balance: accountBalance, accounts: defaultAccounts, privateKey: data.pvtKey })
-        );
+        setPvtKey(data.pvtKey);
       }
       if (data.error) {
-        dispatch(setErrMsg(data.error));
+        setError(data.error);
       }
       if (data.balance) {
         const { balance, account } = data;
-        dispatch(setCurrAccChange({ balance, currAccount: account }));
+        setAccount(account);
+        setAccountBalance(balance);
       }
     });
   }, []);
@@ -89,15 +82,15 @@ const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IPro
         command: 'delete-keyPair',
         payload: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
       });
-    } catch (err) {
-      dispatch(setErrMsg(err));
+    } catch (error) {
+      setError(error);
     }
   };
 
   // handle send ether
   const handleTransactionSubmit = (formData: FormInputs) => {
     try {
-      if (testNetId === 'ganache') {
+      if (testNetID === 'ganache') {
         const transactionInfo = {
           fromAddress: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
           toAddress: formData.accountToAddress,
@@ -106,7 +99,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IPro
         vscode.postMessage({
           command: 'send-ether',
           payload: transactionInfo,
-          testNetId,
+          testNetId: testNetID,
         });
       } else {
         // Build unsigned transaction
@@ -118,11 +111,11 @@ const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IPro
         vscode.postMessage({
           command: 'send-ether-signed',
           payload: { transactionInfo, pvtKey },
-          testNetId,
+          testNetId: testNetID,
         });
       }
-    } catch (err) {
-      dispatch(setErrMsg(err));
+    } catch (error) {
+      setError(error);
     }
   };
 
@@ -130,7 +123,7 @@ const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IPro
     vscode.postMessage({
       command: 'get-balance',
       account,
-      testNetId,
+      testNetId: testNetID,
     });
   };
 
@@ -143,23 +136,6 @@ const Account: React.FC<IProps> = ({ vscode, accounts, handleAppRegister }: IPro
 
   return (
     <div className="account_container">
-      <div className="account_row">
-        <div className="label-container">
-          <label className="label">App Status:</label>
-        </div>
-        <div className="input-container">
-          <Button buttonType={ButtonType.Input} disabled={appRegistered} onClick={handleAppRegister}>
-            {appRegistered ? (
-              'Authenticated'
-            ) : (
-              <a style={{ textDecoration: 'none' }} href="https://auth.ethcode.dev/">
-                Register App
-              </a>
-            )}
-          </Button>
-        </div>
-      </div>
-
       {/* Account Selection */}
       <div className="account_row">
         <div className="label-container">
