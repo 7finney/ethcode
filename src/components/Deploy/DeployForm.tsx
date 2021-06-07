@@ -2,7 +2,6 @@ import React, { MutableRefObject, useContext, useEffect, useState, FormEvent, Mo
 import { Controller, useForm } from 'react-hook-form';
 import { Button, ButtonType, TextArea } from 'components/common/ui';
 import { ABIDescription, ConstructorInput, ABIParameter } from 'types';
-import { setErrMsg } from 'actions';
 import { abiHelpers } from '../common/lib';
 import { AppContext } from '../../appContext';
 

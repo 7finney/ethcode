@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { Selector, Button, ButtonType } from '../common/ui';
 import './Account.css';
-import { setErrMsg } from '../../actions';
 import { IAccount } from '../../types';
 import { useForm } from 'react-hook-form';
 import { AppContext } from '../../appContext';
