@@ -39,7 +39,6 @@ const Account: React.FC<IProps> = ({ vscode }: IProps) => {
           label: data.newAccount.pubAddr,
           value: data.newAccount.checksumAddr,
         };
-        // dispatch(addNewAcc(account));
         setPublicAddress(account.label);
       }
       if (data.pvtKey) {

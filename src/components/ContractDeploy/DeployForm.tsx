@@ -1,4 +1,4 @@
-import React, { MutableRefObject, useEffect, useState, useContext } from 'react';
+import React, { MutableRefObject, useEffect, useContext } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, ButtonType, TextArea } from '../index';
 import { ABIDescription, ConstructorInput, IAccount, ABIParameter } from 'types';

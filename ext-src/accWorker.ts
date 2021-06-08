@@ -42,7 +42,7 @@ function createKeyPair(path: string, pswd: string) {
     kdf: 'scrypt',
     cipher: 'aes-128-ctr',
   };
-  const keyObject = keythereum.dump(pswd, bareKey.privateKey, bareKey.salt, bareKey.iv, options);
+  const keyObject = keythereum.dump(Buffer.from(pswd, 'utf-8'), bareKey.privateKey, bareKey.salt, bareKey.iv, options);
   const account: Account = { pubAddr: keyObject.address, checksumAddr: toChecksumAddress(keyObject.address) };
   // @ts-ignore
   process.send({ account });
@@ -79,7 +79,7 @@ function deleteKeyPair(keyStorePath: string, address: string) {
 // extract privateKey against address
 function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
   const keyObject = keythereum.importFromFile(address, keyStorePath);
-  const privateKey = keythereum.recover(pswd, keyObject);
+  const privateKey = keythereum.recover(Buffer.from(pswd, 'utf-8'), keyObject);
   // @ts-ignore
   process.send({ privateKey: privateKey.toString('hex') });
 }

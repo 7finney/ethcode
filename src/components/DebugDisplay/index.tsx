@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer';
-import './DebugDisplay.css';
+import '../style.css';
 import { Button, ButtonType } from '..';
 import { useForm } from 'react-hook-form';
 import { AppContext } from '../../appContext';
