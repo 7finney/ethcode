@@ -1,8 +1,8 @@
 import React, { useEffect, useState, MutableRefObject, useContext } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, ButtonType, TextArea } from 'components/common/ui';
+import { Button, ButtonType, TextArea } from '../index';
 import { ABIDescription, ABIParameter, ConstructorInput, IAccount, TransactionResult } from 'types';
-import { abiHelpers } from '../common/lib';
+import { abiHelpers } from '../../lib';
 import { AppContext } from '../../appContext';
 
 interface IProps {

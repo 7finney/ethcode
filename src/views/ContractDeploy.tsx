@@ -3,10 +3,10 @@ import './ContractDeploy.css';
 import JSONPretty from 'react-json-pretty';
 import { useSelector, useDispatch } from 'react-redux';
 import { ABIDescription, ConstructorInput } from 'types';
-import { Button, ButtonType } from '../common/ui';
-import CallForm from './CallForm';
-import DeployForm from './DeployForm';
-import { AppContext } from '../../appContext';
+import { Button, ButtonType } from '../components';
+import CallForm from '../components/ContractDeploy/CallForm';
+import DeployForm from '../components/ContractDeploy/DeployForm';
+import { AppContext } from '../appContext';
 
 interface IProps {
   bytecode: string;

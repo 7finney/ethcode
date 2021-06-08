@@ -5,13 +5,12 @@ import { setGanacheAccountsOption, setLocalAccountOption } from '../helper';
 import { CompilationResult, ABIDescription, IAccount } from '../types';
 
 import ContractDeploy from './ContractDeploy';
-import { Selector } from './common/ui';
-import DebugDisplay from './DebugDisplay';
-import Deploy from './Deploy/Deploy';
+import { Selector } from '../components';
+import Deploy from './Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
-import Account from './Account/Account';
-import { OutputJSONForm } from './OutputJSONForm';
+import Account from './Account';
+import { OutputJSONForm } from '../components/OutputJSONForm';
 import { AppContext } from '../appContext';
 
 // @ts-ignore

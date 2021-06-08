@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, ButtonType, JSONInput } from './common/ui';
+import { Button, ButtonType, JSONInput } from './index';
 import { CompilationResult } from 'types';
 
 interface IProps {

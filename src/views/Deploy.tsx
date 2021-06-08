@@ -2,10 +2,10 @@ import React, { useEffect, useState, useRef, useContext } from 'react';
 import JSONPretty from 'react-json-pretty';
 import './Deploy.css';
 import { ABIDescription, ConstructorInput } from 'types';
-import { Button, ButtonType } from '../common/ui';
-import DeployForm from './DeployForm';
-import CallForm from './CallForm';
-import { AppContext } from '../../appContext';
+import { Button, ButtonType } from '../components';
+import CallForm from '../components/Deploy/CallForm';
+import DeployForm from '../components/Deploy/DeployForm';
+import { AppContext } from '../appContext';
 
 export interface IProps {
   bytecode: string;

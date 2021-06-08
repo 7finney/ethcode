@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import './App.css';
 
-import { AppContext } from '../appContext';
-import { MainView } from './MainView';
-import { CompilationResult, IAccount, GroupedSelectorAccounts, TransactionResult } from '../types';
+import { AppContext } from './appContext';
+import { MainView } from './views/MainView';
+import { CompilationResult, IAccount, GroupedSelectorAccounts, TransactionResult } from './types';
 
 const App: React.FC = () => {
   // Context

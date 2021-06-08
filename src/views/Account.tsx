@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Selector, Button, ButtonType } from '../common/ui';
+import { Selector, Button, ButtonType } from '../components';
 import './Account.css';
-import { IAccount } from '../../types';
+import { IAccount } from '../types';
 import { useForm } from 'react-hook-form';
-import { AppContext } from '../../appContext';
+import { AppContext } from '../appContext';
 
 type IProps = {
   vscode: any;
