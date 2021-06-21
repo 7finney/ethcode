@@ -15,6 +15,10 @@ const pwdInpOpt: InputBoxOptions = {
   password: true,
   placeHolder: 'Password',
 };
+const pubkeyInp: InputBoxOptions = {
+  ignoreFocusOut: true,
+  placeHolder: 'Public key',
+};
 
 const createAccWorker = (): ChildProcess => {
   // return fork(path.join(__dirname, 'accWorker.js'), [], {
@@ -26,7 +30,6 @@ const createAccWorker = (): ChildProcess => {
 export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('ethcode.activate', async () => {
-      logger.log('Activating ethcode...');
       ReactPanel.createOrShow(context.extensionPath);
       logger.success('Welcome to Ethcode!');
     }),
@@ -40,8 +43,8 @@ export async function activate(context: vscode.ExtensionContext) {
         : undefined;
       ReactPanel.currentPanel.sendTestContract(editorContent, fileName);
     }),
-    vscode.commands.registerCommand('ethcode.create.account', async () => {
-      logger.log('Creating ethereum keypair...');
+    // Create new account with password
+    vscode.commands.registerCommand('ethcode.account.create', async () => {
       try {
         const password = await vscode.window.showInputBox(pwdInpOpt);
         const accWorker = createAccWorker();
@@ -54,6 +57,23 @@ export async function activate(context: vscode.ExtensionContext) {
           }
         });
         accWorker.send({ command: 'create-account', pswd: password, ksPath: context.extensionPath });
+      } catch (error) {
+        logger.error(error);
+      }
+    }),
+    // Delete selected account with password
+    vscode.commands.registerCommand('ethcode.account.delete', async () => {
+      try {
+        const publicKey = await vscode.window.showInputBox(pubkeyInp);
+        const accWorker = createAccWorker();
+        accWorker.on('message', (m: any) => {
+          if (m.resp) {
+            logger.success('Account deleted!');
+          } else if (m.error) {
+            logger.error(m.error);
+          }
+        });
+        accWorker.send({ command: 'delete-keyPair', address: publicKey, keyStorePath: context.extensionPath });
       } catch (error) {
         logger.error(error);
       }

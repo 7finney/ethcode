@@ -110,8 +110,13 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.create.account",
+        "command": "ethcode.account.create",
         "title": "Create ethereum account",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.delete",
+        "title": "Delete ethereum account",
         "category": "Ethcode"
       }
     ],
