@@ -24,8 +24,7 @@
     "node": ">=8.16.0"
   },
   "activationEvents": [
-    "onCommand:ethcode.activate",
-    "onCommand:ethcode.runTest"
+    "onCommand:ethcode.activate"
   ],
   "main": "./build/ext-src/extension.js",
   "extensionDependencies": [
@@ -108,22 +107,18 @@
       {
         "command": "ethcode.activate",
         "title": "Activate ETHcode extension",
-        "category": "Ethereum"
+        "category": "Ethcode"
       },
       {
-        "command": "ethcode.runTest",
-        "title": "Solidity unit test",
-        "category": "Ethereum"
+        "command": "ethcode.create.account",
+        "title": "Create ethereum account",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
       {
         "key": "ctrl+alt+e",
         "command": "ethcode.activate"
-      },
-      {
-        "key": "ctrl+alt+t",
-        "command": "ethcode.runTest"
       }
     ]
   },
