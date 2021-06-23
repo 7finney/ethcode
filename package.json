@@ -133,6 +133,11 @@
         "command": "ethcode.network.set",
         "title": "Select ethereum network",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.list",
+        "title": "List ethereum accounts",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [

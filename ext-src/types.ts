@@ -3,14 +3,21 @@ import { QuickPickItem } from 'vscode';
 export interface ISource {
   content: string | undefined;
 }
+
 export interface ISources {
   [key: string]: ISource;
 }
+
 export interface IAccount {
   label: string;
   value: string;
   pubAddr?: string;
   checksumAddr?: string;
+}
+
+export interface Account {
+  pubAddr: string;
+  checksumAddr: string;
 }
 
 export type LocalAddressType = {
@@ -34,4 +41,8 @@ export interface ICompilationResult {
 
 export interface INetworkQP extends QuickPickItem {
   networkId: number;
+}
+
+export interface IAccountQP extends QuickPickItem {
+  checksumAddr: string;
 }

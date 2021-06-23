@@ -7,7 +7,7 @@ import API from './api';
 import { ReactPanel } from './reactPanel';
 
 import Logger from './utils/logger';
-import { INetworkQP } from './types';
+import { IAccountQP, INetworkQP, LocalAddressType } from './types';
 
 // Create logger
 const logger = new Logger();
@@ -44,10 +44,6 @@ const createWorker = (): ChildProcess => {
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('ethcode.activate', async () => {
-      ReactPanel.createOrShow(context.extensionPath);
-      logger.success('Welcome to Ethcode!');
-    }),
     // Create new account with password
     vscode.commands.registerCommand('ethcode.account.create', async () => {
       try {
@@ -150,7 +146,53 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.show();
     }),
     // Set Account
-    vscode.commands.registerCommand('ethcode.account.set', () => {})
+    vscode.commands.registerCommand('ethcode.account.set', () => {
+      const quickPick = vscode.window.createQuickPick<IAccountQP>();
+      const addresses: Array<LocalAddressType> | undefined = context.workspaceState.get('addresses');
+      if (addresses && addresses.length > 0) {
+        const options: Array<IAccountQP> = addresses.map((account) => ({
+          label: account.pubAddress,
+          checksumAddr: account.checksumAddress,
+        }));
+        quickPick.items = options.map((account) => ({
+          label: account.checksumAddr,
+          checksumAddr: account.checksumAddr,
+        }));
+      }
+      quickPick.placeholder = 'Select account';
+      quickPick.onDidChangeActive((selection: Array<IAccountQP>) => {
+        quickPick.value = selection[0].label;
+      });
+      quickPick.onDidChangeSelection((selection: Array<IAccountQP>) => {
+        if (selection[0]) {
+          const { checksumAddr } = selection[0];
+          context.workspaceState.update('account', checksumAddr);
+          quickPick.dispose();
+        }
+      });
+      quickPick.onDidHide(() => quickPick.dispose());
+      quickPick.show();
+    }),
+    // List Accounts
+    vscode.commands.registerCommand('ethcode.account.list', () => {
+      const accWorker = createAccWorker();
+      accWorker.on('message', (m) => {
+        if (m.localAddresses) {
+          context.workspaceState.update('addresses', <Array<LocalAddressType>>m.localAddresses);
+          logger.success(JSON.stringify(m.localAddresses));
+        }
+      });
+      accWorker.send({
+        command: 'get-localAccounts',
+        keyStorePath: context.extensionPath,
+      });
+    }),
+    // Activate
+    vscode.commands.registerCommand('ethcode.activate', async () => {
+      vscode.commands.executeCommand('ethcode.account.list');
+      ReactPanel.createOrShow(context.extensionPath);
+      logger.success('Welcome to Ethcode!');
+    })
   );
   await ReactPanel.createOrShow(context.extensionPath);
   let api;
