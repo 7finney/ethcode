@@ -4,7 +4,7 @@ import { fork, ChildProcess } from 'child_process';
 import * as uuid from 'uuid/v4';
 import axios from 'axios';
 import { Logger, actionToast, updateUserSession, updateUserSettings, retrieveUserSettings, getNonce } from './utils';
-import { ISources, TokenData, IAccount } from './types';
+import { TokenData, IAccount } from './types';
 
 const logger = new Logger();
 

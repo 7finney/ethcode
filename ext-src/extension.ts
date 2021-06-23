@@ -24,9 +24,9 @@ const unsignedTxInp: InputBoxOptions = {
   ignoreFocusOut: false,
   placeHolder: 'Unsigned transaction JSON',
 };
-const testNetInp: InputBoxOptions = {
+const txPayloadInp: InputBoxOptions = {
   ignoreFocusOut: false,
-  placeHolder: 'Test Network ID',
+  placeHolder: 'Transaction payload JSON',
 };
 
 const createAccWorker = (): ChildProcess => {
@@ -83,8 +83,8 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('ethcode.account.sign-deploy', async () => {
       try {
         const testNetId = context.workspaceState.get('networkId');
-        const unsignedTx = await vscode.window.showInputBox(unsignedTxInp);
-        const publicKey = await vscode.window.showInputBox(pubkeyInp);
+        const account = context.workspaceState.get('account');
+        const unsignedTx = context.workspaceState.get('unsignedTx');
         const password = await vscode.window.showInputBox(pwdInpOpt);
         const accWorker = createAccWorker();
         const signedDeployWorker = createWorker();
@@ -113,9 +113,9 @@ export async function activate(context: vscode.ExtensionContext) {
         });
         accWorker.send({
           command: 'extract-privateKey',
-          address: publicKey,
+          address: account,
           keyStorePath: context.extensionPath,
-          password,
+          password: password || '',
         });
       } catch (error) {
         logger.error(error);
@@ -186,6 +186,43 @@ export async function activate(context: vscode.ExtensionContext) {
         command: 'get-localAccounts',
         keyStorePath: context.extensionPath,
       });
+    }),
+    // Set unsigned transaction
+    vscode.commands.registerCommand('ethcode.transaction.set', async (tx) => {
+      const unsignedTx = tx || (await vscode.window.showInputBox(unsignedTxInp));
+      context.workspaceState.update('unsignedTx', unsignedTx);
+    }),
+    // Create unsigned transaction
+    vscode.commands.registerCommand('ethcode.transaction.build', async () => {
+      const networkId = context.workspaceState.get('networkId');
+      const account = context.workspaceState.get('account');
+      const editorContent = vscode.window.activeTextEditor
+        ? vscode.window.activeTextEditor.document.getText()
+        : undefined;
+      if (editorContent) {
+        const { abi, bytecode, params, gas } = JSON.parse(editorContent);
+        const txWorker = createWorker();
+        txWorker.on('message', (m: any) => {
+          logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
+          if (m.error) {
+            logger.error(m.error);
+          } else {
+            context.workspaceState.update('unsignedTx', m.buildTxResult);
+            logger.success(m.buildTxResult);
+          }
+        });
+        txWorker.send({
+          command: 'build-rawtx',
+          payload: {
+            abi,
+            bytecode,
+            params,
+            gasSupply: gas,
+            from: account,
+          },
+          testnetId: networkId,
+        });
+      }
     }),
     // Activate
     vscode.commands.registerCommand('ethcode.activate', async () => {

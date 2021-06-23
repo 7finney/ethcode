@@ -138,6 +138,16 @@
         "command": "ethcode.account.list",
         "title": "List ethereum accounts",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.transaction.set",
+        "title": "Set ethereum transaction",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.transaction.build",
+        "title": "Build Ethereum raw transaction",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
@@ -145,7 +155,15 @@
         "key": "ctrl+alt+e",
         "command": "ethcode.activate"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceLangId == json",
+          "command": "ethcode.transaction.build"
+        }
+      ]
+    }
   },
   "dependencies": {
     "@babel/core": "7.4.3",
