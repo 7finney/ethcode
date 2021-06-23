@@ -538,51 +538,6 @@ export class ReactPanel {
     });
   }
 
-  public sendTestContract(editorContent: string | undefined, fn: string | undefined) {
-    const sources: ISources = {};
-    if (fn) {
-      sources[fn] = {
-        content: editorContent,
-      };
-    }
-    const solcWorker = this.createWorker();
-    this._panel.webview.postMessage({ resetTestState: 'resetTestState' });
-    this._panel.webview.postMessage({
-      processMessage: 'Running unit tests...',
-    });
-    solcWorker.send({ command: 'run-test', payload: JSON.stringify(sources) });
-    solcWorker.on('message', (m: any) => {
-      logger.log(`Remix-tests worker message: ${JSON.stringify(m)}`);
-      if (m.data && m.path) {
-        sources[m.path] = {
-          content: m.data.content,
-        };
-        solcWorker.send({
-          command: 'run-test',
-          payload: JSON.stringify(sources),
-        });
-      }
-      if (m.utResp) {
-        const res = JSON.parse(m.utResp.result);
-        if (res.type) {
-          this._panel.webview.postMessage({
-            _testCallback: res,
-            testPanel: 'test',
-          });
-        } else {
-          this._panel.webview.postMessage({
-            _finalCallback: res,
-            testPanel: 'test',
-          });
-          solcWorker.kill();
-        }
-      }
-    });
-    solcWorker.on('exit', () => {
-      logger.log('Remix-tests worker exited!');
-    });
-  }
-
   public dispose() {
     if (this._disposed) {
       return;

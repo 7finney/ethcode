@@ -1,3 +1,5 @@
+import { QuickPickItem } from 'vscode';
+
 export interface ISource {
   content: string | undefined;
 }
@@ -28,4 +30,8 @@ export interface ICompilationResult {
     sources: ISources;
   };
   data: any;
+}
+
+export interface INetworkQP extends QuickPickItem {
+  networkId: number;
 }

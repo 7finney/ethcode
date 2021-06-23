@@ -118,6 +118,21 @@
         "command": "ethcode.account.delete",
         "title": "Delete ethereum account",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.sign-deploy",
+        "title": "Sign & deploy ethereum transaction",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.set",
+        "title": "Select ethereum account",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.network.set",
+        "title": "Select ethereum network",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
