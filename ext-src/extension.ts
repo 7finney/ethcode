@@ -24,10 +24,6 @@ const unsignedTxInp: InputBoxOptions = {
   ignoreFocusOut: false,
   placeHolder: 'Unsigned transaction JSON',
 };
-const txPayloadInp: InputBoxOptions = {
-  ignoreFocusOut: false,
-  placeHolder: 'Transaction payload JSON',
-};
 
 const createAccWorker = (): ChildProcess => {
   // return fork(path.join(__dirname, 'accWorker.js'), [], {
