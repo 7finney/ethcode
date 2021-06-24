@@ -57,58 +57,6 @@ try {
   process.send({ error: e });
 }
 
-function handleLocal(pathString: string, filePath: any) {
-  // if no relative/absolute path given then search in node_modules folder
-  if (pathString && pathString.indexOf('.') !== 0 && pathString.indexOf('/') !== 0) {
-    console.error('Error: Node Modules Import is not implemented yet!');
-    // return handleNodeModulesImport(pathString, filePath, pathString)
-  } else {
-    try {
-      const o = { encoding: 'UTF-8' };
-      // hack for compiler imports to work (do not change)
-      const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
-      const content = fs.readFileSync(p, o);
-      return content;
-    } catch (error) {
-      // @ts-ignore
-      process.send({ error });
-      throw error;
-    }
-  }
-  return '';
-}
-
-function findImports(path: any) {
-  // TODO: We need current solc file path here for relative local import
-  // @ts-ignore
-  process.send({ processMessage: `importing file: ${path}` });
-  const FSHandler = [
-    {
-      type: 'local',
-      match: (url: string) => {
-        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?([\w-]+\.sol)/g.exec(url);
-      },
-      handle: (match: Array<string>) => {
-        return handleLocal(match[2], match[3]);
-      },
-    },
-  ];
-  // @ts-ignore
-  const urlResolver = new RemixURLResolver();
-  // this section usually executes after solc returns error file not found
-  urlResolver
-    .resolve(path, FSHandler)
-    .then((data: any) => {
-      // @ts-ignore
-      process.send({ data, path });
-    })
-    .catch((e: Error) => {
-      // @ts-ignore
-      process.send({ error: e });
-    });
-  return { error: 'Deferred import' };
-}
-
 // sign an unsigned raw transaction and deploy
 function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) {
   try {
@@ -169,28 +117,6 @@ process.on('message', async (m) => {
   if (m.authToken) {
     meta.add('token', m.authToken.token);
     meta.add('appId', m.authToken.appId);
-  }
-  if (m.command === 'run-test') {
-    // TODO: move parsing to extension.ts
-    const rt = {
-      testInterface: {
-        command: 'run-test-sources',
-        payload: m.payload,
-      },
-    };
-    const call = remixTestsClient.RunTests(rt);
-    call.on('data', (data: any) => {
-      const result = JSON.parse(data.result);
-      if (result.filePath) {
-        findImports(result.filePath);
-      } else {
-        // @ts-ignore
-        process.send({ utResp: data });
-      }
-    });
-    call.on('end', () => {
-      process.exit(0);
-    });
   }
   // Fetch accounts and balance
   if (m.command === 'get-accounts') {

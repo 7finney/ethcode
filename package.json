@@ -24,8 +24,7 @@
     "node": ">=8.16.0"
   },
   "activationEvents": [
-    "onCommand:ethcode.activate",
-    "onCommand:ethcode.runTest"
+    "onCommand:ethcode.activate"
   ],
   "main": "./build/ext-src/extension.js",
   "extensionDependencies": [
@@ -108,24 +107,63 @@
       {
         "command": "ethcode.activate",
         "title": "Activate ETHcode extension",
-        "category": "Ethereum"
+        "category": "Ethcode"
       },
       {
-        "command": "ethcode.runTest",
-        "title": "Solidity unit test",
-        "category": "Ethereum"
+        "command": "ethcode.account.create",
+        "title": "Create ethereum account",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.delete",
+        "title": "Delete ethereum account",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.sign-deploy",
+        "title": "Sign & deploy ethereum transaction",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.set",
+        "title": "Select ethereum account",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.network.set",
+        "title": "Select ethereum network",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.list",
+        "title": "List ethereum accounts",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.transaction.set",
+        "title": "Set ethereum transaction",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.transaction.build",
+        "title": "Build Ethereum raw transaction",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
       {
         "key": "ctrl+alt+e",
         "command": "ethcode.activate"
-      },
-      {
-        "key": "ctrl+alt+t",
-        "command": "ethcode.runTest"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceLangId == json",
+          "command": "ethcode.transaction.build"
+        }
+      ]
+    }
   },
   "dependencies": {
     "@babel/core": "7.4.3",

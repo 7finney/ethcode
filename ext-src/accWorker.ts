@@ -91,7 +91,7 @@ process.on('message', (m) => {
     createKeyPair(m.ksPath, m.pswd);
   }
   if (m.command === 'extract-privateKey') {
-    extractPvtKey(m.keyStorePath, m.address, m.pswd);
+    extractPvtKey(m.keyStorePath, m.address, m.password);
   }
   if (m.command === 'delete-keyPair') {
     deleteKeyPair(m.keyStorePath, m.address);

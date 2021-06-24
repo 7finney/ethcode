@@ -241,7 +241,7 @@ export const MainView = () => {
                 <span>{currAccount ? currAccount.checksumAddr || currAccount.pubAddr || currAccount.value : '0x'}</span>
                 <br />
                 <b>Balance: </b>
-                <span>{accountBalance}</span>
+                <span>{accountBalance} wei</span>
               </div>
             )}
             <div>
