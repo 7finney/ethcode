@@ -148,6 +148,16 @@
         "command": "ethcode.transaction.build",
         "title": "Build Ethereum raw transaction",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.combined-json.load",
+        "title": "Load combined JSON output",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.standard-json.load",
+        "title": "Load standard JSON output",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
@@ -160,7 +170,18 @@
       "editor/context": [
         {
           "when": "resourceLangId == json",
-          "command": "ethcode.transaction.build"
+          "command": "ethcode.transaction.build",
+          "group": "Ethereum"
+        },
+        {
+          "when": "resourceLangId == json",
+          "command": "ethcode.combined-json.load",
+          "group": "Ethereum"
+        },
+        {
+          "when": "resourceLangId == json",
+          "command": "ethcode.standard-json.load",
+          "group": "Ethereum"
         }
       ]
     }

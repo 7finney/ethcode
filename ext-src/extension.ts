@@ -1,13 +1,23 @@
 // @ts-ignore
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { InputBoxOptions } from 'vscode';
+import { InputBoxOptions, window, commands } from 'vscode';
 import { fork, ChildProcess } from 'child_process';
 import API from './api';
 import { ReactPanel } from './reactPanel';
 
 import Logger from './utils/logger';
-import { IAccountQP, INetworkQP, LocalAddressType } from './types';
+import {
+  IAccountQP,
+  INetworkQP,
+  LocalAddressType,
+  CombinedJSONOutput,
+  StandardJSONOutput,
+  ICombinedJSONContractsQP,
+  IStandardJSONContractsQP,
+  CompiledContract,
+  isCompiledContract,
+} from './types';
 
 // Create logger
 const logger = new Logger();
@@ -41,9 +51,9 @@ const createWorker = (): ChildProcess => {
 export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     // Create new account with password
-    vscode.commands.registerCommand('ethcode.account.create', async () => {
+    commands.registerCommand('ethcode.account.create', async () => {
       try {
-        const password = await vscode.window.showInputBox(pwdInpOpt);
+        const password = await window.showInputBox(pwdInpOpt);
         const accWorker = createAccWorker();
         accWorker.on('message', (m: any) => {
           if (m.account) {
@@ -59,9 +69,9 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
     // Delete selected account with password
-    vscode.commands.registerCommand('ethcode.account.delete', async () => {
+    commands.registerCommand('ethcode.account.delete', async () => {
       try {
-        const publicKey = await vscode.window.showInputBox(pubkeyInp);
+        const publicKey = await window.showInputBox(pubkeyInp);
         const accWorker = createAccWorker();
         accWorker.on('message', (m: any) => {
           if (m.resp) {
@@ -76,12 +86,12 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
     // Sign & deploy a transaction
-    vscode.commands.registerCommand('ethcode.account.sign-deploy', async () => {
+    commands.registerCommand('ethcode.account.sign-deploy', async () => {
       try {
         const testNetId = context.workspaceState.get('networkId');
         const account = context.workspaceState.get('account');
         const unsignedTx = context.workspaceState.get('unsignedTx');
-        const password = await vscode.window.showInputBox(pwdInpOpt);
+        const password = await window.showInputBox(pwdInpOpt);
         const accWorker = createAccWorker();
         const signedDeployWorker = createWorker();
         accWorker.on('message', (m: any) => {
@@ -118,8 +128,8 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
     // Set Network
-    vscode.commands.registerCommand('ethcode.network.set', () => {
-      const quickPick = vscode.window.createQuickPick<INetworkQP>();
+    commands.registerCommand('ethcode.network.set', () => {
+      const quickPick = window.createQuickPick<INetworkQP>();
       const options: Array<INetworkQP> = [
         { label: 'Main', networkId: 1 },
         { label: 'Ropsten', networkId: 3 },
@@ -142,8 +152,8 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.show();
     }),
     // Set Account
-    vscode.commands.registerCommand('ethcode.account.set', () => {
-      const quickPick = vscode.window.createQuickPick<IAccountQP>();
+    commands.registerCommand('ethcode.account.set', () => {
+      const quickPick = window.createQuickPick<IAccountQP>();
       const addresses: Array<LocalAddressType> | undefined = context.workspaceState.get('addresses');
       if (addresses && addresses.length > 0) {
         const options: Array<IAccountQP> = addresses.map((account) => ({
@@ -170,7 +180,7 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.show();
     }),
     // List Accounts
-    vscode.commands.registerCommand('ethcode.account.list', () => {
+    commands.registerCommand('ethcode.account.list', () => {
       const accWorker = createAccWorker();
       accWorker.on('message', (m) => {
         if (m.localAddresses) {
@@ -184,17 +194,15 @@ export async function activate(context: vscode.ExtensionContext) {
       });
     }),
     // Set unsigned transaction
-    vscode.commands.registerCommand('ethcode.transaction.set', async (tx) => {
-      const unsignedTx = tx || (await vscode.window.showInputBox(unsignedTxInp));
+    commands.registerCommand('ethcode.transaction.set', async (tx) => {
+      const unsignedTx = tx || (await window.showInputBox(unsignedTxInp));
       context.workspaceState.update('unsignedTx', unsignedTx);
     }),
     // Create unsigned transaction
-    vscode.commands.registerCommand('ethcode.transaction.build', async () => {
+    commands.registerCommand('ethcode.transaction.build', async () => {
       const networkId = context.workspaceState.get('networkId');
       const account = context.workspaceState.get('account');
-      const editorContent = vscode.window.activeTextEditor
-        ? vscode.window.activeTextEditor.document.getText()
-        : undefined;
+      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
       if (editorContent) {
         const { abi, bytecode, params, gas } = JSON.parse(editorContent);
         const txWorker = createWorker();
@@ -220,9 +228,95 @@ export async function activate(context: vscode.ExtensionContext) {
         });
       }
     }),
+    // Load combined JSON output
+    commands.registerCommand('ethcode.combined-json.load', () => {
+      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
+      if (editorContent) {
+        const { contracts }: CombinedJSONOutput = JSON.parse(editorContent);
+        const quickPick = window.createQuickPick<ICombinedJSONContractsQP>();
+        quickPick.items = Object.keys(contracts).map((contract) => ({ label: contract, contractKey: contract }));
+        quickPick.placeholder = 'Select contract';
+        quickPick.onDidChangeActive((selection: Array<ICombinedJSONContractsQP>) => {
+          quickPick.value = selection[0].label;
+        });
+        quickPick.onDidChangeSelection((selection: Array<ICombinedJSONContractsQP>) => {
+          if (selection[0]) {
+            const contract: CompiledContract = contracts[selection[0].contractKey];
+            if (isCompiledContract(contract)) {
+              context.workspaceState.update('contract', contract);
+            } else {
+              logger.error(Error('Could not parse contract.'));
+            }
+            quickPick.dispose();
+          }
+        });
+        quickPick.onDidHide(() => quickPick.dispose());
+        quickPick.show();
+      } else {
+        logger.error(
+          Error(
+            'Could not load JSON file. Make sure it follows Solidity output description. Know more: https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description.'
+          )
+        );
+      }
+    }),
+    // Load combined JSON output
+    commands.registerCommand('ethcode.standard-json.load', () => {
+      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
+      if (editorContent) {
+        const { contracts }: StandardJSONOutput = JSON.parse(editorContent);
+        const quickPick = window.createQuickPick<IStandardJSONContractsQP>();
+        quickPick.items = Object.keys(contracts).map((contract) => ({ label: contract, contractKey: contract }));
+        quickPick.placeholder = 'Select contract file';
+        quickPick.onDidChangeActive((selection: Array<IStandardJSONContractsQP>) => {
+          quickPick.value = selection[0].label;
+        });
+        quickPick.onDidChangeSelection((selection: Array<IStandardJSONContractsQP>) => {
+          if (selection[0]) {
+            const contractFileName = selection[0].contractKey;
+            const contractFile = contracts[contractFileName];
+            if (!isCompiledContract(contractFile)) {
+              const contractQp = window.createQuickPick<IStandardJSONContractsQP>();
+              contractQp.items = Object.keys(contractFile).map((contract) => ({
+                label: contract,
+                contractKey: contract,
+              }));
+              contractQp.placeholder = 'Select contract';
+              contractQp.onDidChangeActive((selection: Array<IStandardJSONContractsQP>) => {
+                contractQp.value = selection[0].label;
+              });
+              contractQp.onDidChangeSelection((selection: Array<IStandardJSONContractsQP>) => {
+                if (selection[0]) {
+                  const contract: CompiledContract = contracts[contractFileName][selection[0].contractKey];
+                  if (isCompiledContract(contract)) {
+                    context.workspaceState.update('contract', contract);
+                  } else {
+                    logger.error(Error('Could not parse contract.'));
+                  }
+                  contractQp.dispose();
+                }
+              });
+              contractQp.onDidHide(() => contractQp.dispose());
+              contractQp.show();
+            } else {
+              logger.error(Error('Could not parse contract.'));
+            }
+            quickPick.dispose();
+          }
+        });
+        quickPick.onDidHide(() => quickPick.dispose());
+        quickPick.show();
+      } else {
+        logger.error(
+          Error(
+            'Could not load JSON file. Make sure it follows Solidity output description. Know more: https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description.'
+          )
+        );
+      }
+    }),
     // Activate
-    vscode.commands.registerCommand('ethcode.activate', async () => {
-      vscode.commands.executeCommand('ethcode.account.list');
+    commands.registerCommand('ethcode.activate', async () => {
+      commands.executeCommand('ethcode.account.list');
       ReactPanel.createOrShow(context.extensionPath);
       logger.success('Welcome to Ethcode!');
     })
