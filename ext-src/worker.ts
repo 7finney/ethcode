@@ -5,6 +5,7 @@ import { RemixURLResolver } from 'remix-url-resolver';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { sha3 } from './hash/sha3';
+import { ABIParameter } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const EthereumTx = require('ethereumjs-tx').Transaction;
@@ -110,6 +111,11 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
     // @ts-ignore
     process.send({ error: error.message });
   }
+}
+
+// create constructor input file
+function writeConstrucor(path: string, inputs: Array<ABIParameter>) {
+  fs.writeFileSync(`${path}/constructor-input.json`, JSON.stringify(inputs, null, 2));
 }
 
 process.on('message', async (m) => {
@@ -438,5 +444,9 @@ process.on('message', async (m) => {
   if (m.command === 'sign-deploy') {
     const { unsignedTx, pvtKey } = m.payload;
     deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
+  }
+  if (m.command === 'create-input-file') {
+    const { inputs, path } = m.payload;
+    writeConstrucor(path, inputs);
   }
 });

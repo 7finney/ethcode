@@ -1,7 +1,7 @@
 // @ts-ignore
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { InputBoxOptions, window, commands } from 'vscode';
+import { InputBoxOptions, window, commands, workspace } from 'vscode';
 import { fork, ChildProcess } from 'child_process';
 import API from './api';
 import { ReactPanel } from './reactPanel';
@@ -15,9 +15,13 @@ import {
   StandardJSONOutput,
   ICombinedJSONContractsQP,
   IStandardJSONContractsQP,
-  CompiledContract,
-  isCompiledContract,
+  StandardCompiledContract,
+  CombinedCompiledContract,
+  isStdContract,
+  isComContract,
+  ABIDescription,
 } from './types';
+import { errors } from './utils';
 
 // Create logger
 const logger = new Logger();
@@ -33,6 +37,12 @@ const pubkeyInp: InputBoxOptions = {
 const unsignedTxInp: InputBoxOptions = {
   ignoreFocusOut: false,
   placeHolder: 'Unsigned transaction JSON',
+};
+
+const paramsInpOpt: InputBoxOptions = {
+  ignoreFocusOut: false,
+  placeHolder: 'Enter constructor parameters',
+  value: '[]',
 };
 
 const createAccWorker = (): ChildProcess => {
@@ -202,9 +212,37 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.transaction.build', async () => {
       const networkId = context.workspaceState.get('networkId');
       const account = context.workspaceState.get('account');
-      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-      if (editorContent) {
-        const { abi, bytecode, params, gas } = JSON.parse(editorContent);
+      const contract = context.workspaceState.get('contract');
+      const params = await window.showInputBox(paramsInpOpt);
+      console.log(contract);
+      if (isComContract(contract)) {
+        console.log('Build transaction for combined output');
+        const { abi, bin } = contract;
+        const txWorker = createWorker();
+        txWorker.on('message', (m: any) => {
+          logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
+          if (m.error) {
+            logger.error(m.error);
+          } else {
+            context.workspaceState.update('unsignedTx', m.buildTxResult);
+            logger.success(m.buildTxResult);
+          }
+        });
+        const payload = {
+          abi,
+          bytecode: bin,
+          params: JSON.parse(params!) || [],
+          gasSupply: 2488581,
+          from: account,
+        };
+        txWorker.send({
+          command: 'build-rawtx',
+          payload,
+          testnetId: networkId,
+        });
+      } else if (isStdContract(contract)) {
+        const { abi, evm } = contract;
+        const { bytecode } = evm;
         const txWorker = createWorker();
         txWorker.on('message', (m: any) => {
           logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
@@ -220,12 +258,14 @@ export async function activate(context: vscode.ExtensionContext) {
           payload: {
             abi,
             bytecode,
-            params,
-            gasSupply: gas,
+            params: [],
+            gasSupply: 0,
             from: account,
           },
           testnetId: networkId,
         });
+      } else {
+        logger.error(Error('Could not parse contract.'));
       }
     }),
     // Load combined JSON output
@@ -241,8 +281,8 @@ export async function activate(context: vscode.ExtensionContext) {
         });
         quickPick.onDidChangeSelection((selection: Array<ICombinedJSONContractsQP>) => {
           if (selection[0]) {
-            const contract: CompiledContract = contracts[selection[0].contractKey];
-            if (isCompiledContract(contract)) {
+            const contract: CombinedCompiledContract = contracts[selection[0].contractKey];
+            if (isComContract(contract)) {
               context.workspaceState.update('contract', contract);
             } else {
               logger.error(Error('Could not parse contract.'));
@@ -275,7 +315,7 @@ export async function activate(context: vscode.ExtensionContext) {
           if (selection[0]) {
             const contractFileName = selection[0].contractKey;
             const contractFile = contracts[contractFileName];
-            if (!isCompiledContract(contractFile)) {
+            if (!isStdContract(contractFile)) {
               const contractQp = window.createQuickPick<IStandardJSONContractsQP>();
               contractQp.items = Object.keys(contractFile).map((contract) => ({
                 label: contract,
@@ -287,8 +327,8 @@ export async function activate(context: vscode.ExtensionContext) {
               });
               contractQp.onDidChangeSelection((selection: Array<IStandardJSONContractsQP>) => {
                 if (selection[0]) {
-                  const contract: CompiledContract = contracts[contractFileName][selection[0].contractKey];
-                  if (isCompiledContract(contract)) {
+                  const contract: StandardCompiledContract = contracts[contractFileName][selection[0].contractKey];
+                  if (isStdContract(contract)) {
                     context.workspaceState.update('contract', contract);
                   } else {
                     logger.error(Error('Could not parse contract.'));
@@ -313,6 +353,26 @@ export async function activate(context: vscode.ExtensionContext) {
           )
         );
       }
+    }),
+    // Create Input JSON
+    commands.registerCommand('ethcode.contract.input.create', async () => {
+      const contract:
+        | CombinedCompiledContract
+        | StandardCompiledContract
+        | undefined = await context.workspaceState.get('contract');
+      if (contract && workspace.workspaceFolders) {
+        const constructor = contract.abi.filter((i: ABIDescription) => i.type === 'constructor');
+        console.log(constructor);
+        console.log(workspace.workspaceFolders[0].uri.path);
+        const fileWorker = createWorker();
+        fileWorker.send({
+          command: 'create-input-file',
+          payload: {
+            path: workspace.workspaceFolders[0].uri.path,
+            inputs: constructor[0].inputs,
+          },
+        });
+      } else logger.error(errors.ContractNotFound);
     }),
     // Activate
     commands.registerCommand('ethcode.activate', async () => {

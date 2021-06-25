@@ -158,6 +158,11 @@
         "command": "ethcode.standard-json.load",
         "title": "Load standard JSON output",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.contract.input.create",
+        "title": "Create constructor input JSON",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [

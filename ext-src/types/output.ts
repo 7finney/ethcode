@@ -48,12 +48,12 @@ export interface StandardJSONOutput {
 }
 
 export interface CombinedJSONContracts {
-  [fileName: string]: CompiledContract;
+  [fileName: string]: CombinedCompiledContract;
 }
 
 export interface StandardJSONContracts {
   [fileName: string]: {
-    [contract: string]: CompiledContract;
+    [contract: string]: StandardCompiledContract;
   };
 }
 
@@ -148,7 +148,7 @@ export interface AstNodeAtt {
 /// ///////////
 // CONTRACT //
 /// ///////////
-export interface CompiledContract {
+export interface StandardCompiledContract {
   /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
   abi: ABIDescription[];
   // See the Metadata Output documentation (serialised JSON string)
@@ -192,6 +192,22 @@ export interface CompiledContract {
     /** Binary format (hex string) */
     wasm: string;
   };
+}
+
+export interface CombinedCompiledContract {
+  /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
+  abi: ABIDescription[];
+  asm: unknown;
+  bin: string;
+  'bin-runtime': string;
+  // See the Metadata Output documentation (serialised JSON string)
+  metadata: string;
+  /** User documentation (natural specification) */
+  userdoc: UserDocumentation;
+  /** Developer documentation (natural specification) */
+  devdoc: DeveloperDocumentation;
+  opcodes: string;
+  hashes: { [key: string]: string };
 }
 
 /// //////
