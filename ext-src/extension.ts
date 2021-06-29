@@ -20,6 +20,8 @@ import {
   isStdContract,
   isComContract,
   ABIDescription,
+  ABIParameter,
+  ConstructorInputValue,
 } from './types';
 import { errors } from './utils';
 
@@ -361,17 +363,21 @@ export async function activate(context: vscode.ExtensionContext) {
         | StandardCompiledContract
         | undefined = await context.workspaceState.get('contract');
       if (contract && workspace.workspaceFolders) {
-        const constructor = contract.abi.filter((i: ABIDescription) => i.type === 'constructor');
-        console.log(constructor);
-        console.log(workspace.workspaceFolders[0].uri.path);
-        const fileWorker = createWorker();
-        fileWorker.send({
-          command: 'create-input-file',
-          payload: {
-            path: workspace.workspaceFolders[0].uri.path,
-            inputs: constructor[0].inputs,
-          },
-        });
+        const constructor: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type === 'constructor');
+        const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
+        if (constInps && constInps.length > 0) {
+          const inputs: Array<ConstructorInputValue> = constInps.map(
+            (inp: ABIParameter) => <ConstructorInputValue>{ ...inp, value: '' }
+          );
+          const fileWorker = createWorker();
+          fileWorker.send({
+            command: 'create-input-file',
+            payload: {
+              path: workspace.workspaceFolders[0].uri.path,
+              inputs,
+            },
+          });
+        }
       } else logger.error(errors.ContractNotFound);
     }),
     // Activate

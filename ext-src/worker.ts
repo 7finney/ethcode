@@ -1,7 +1,6 @@
 // @ts-ignore
 import * as path from 'path';
 import * as fs from 'fs';
-import { RemixURLResolver } from 'remix-url-resolver';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { sha3 } from './hash/sha3';

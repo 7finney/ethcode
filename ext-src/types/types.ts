@@ -1,5 +1,5 @@
 import { QuickPickItem } from 'vscode';
-import { StandardCompiledContract, CombinedCompiledContract } from './output';
+import { StandardCompiledContract, CombinedCompiledContract, ABIParameter, FunctionDescription } from './output';
 
 export interface ISource {
   content: string | undefined;
@@ -54,6 +54,10 @@ export interface ICombinedJSONContractsQP extends QuickPickItem {
 
 export interface IStandardJSONContractsQP extends QuickPickItem {
   contractKey: string;
+}
+
+export interface ConstructorInputValue extends ABIParameter {
+  value: string;
 }
 
 // Typeguard
