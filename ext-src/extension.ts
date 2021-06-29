@@ -217,6 +217,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const account = context.workspaceState.get('account');
       const contract = context.workspaceState.get('contract');
       const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
+      const gas: number | undefined = context.workspaceState.get('gasEstimate');
       if (isComContract(contract)) {
         const { abi, bin } = contract;
         const txWorker = createWorker();
@@ -233,7 +234,7 @@ export async function activate(context: vscode.ExtensionContext) {
           abi,
           bytecode: bin,
           params: params || [],
-          gasSupply: 2488581,
+          gasSupply: gas || 0,
           from: account,
         };
         txWorker.send({
@@ -387,6 +388,39 @@ export async function activate(context: vscode.ExtensionContext) {
         context.workspaceState.update('constructor-inputs', constructorInputs);
       }
     }),
+    // Get gas estimate
+    commands.registerCommand('ethcode.contract.gas.get', async () => {
+      const networkId = context.workspaceState.get('networkId');
+      const account = context.workspaceState.get('account');
+      const contract = context.workspaceState.get('contract');
+      const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
+      if (isComContract(contract)) {
+        const { abi, bin } = contract;
+        const payload = {
+          abi,
+          bytecode: bin,
+          params: params || [],
+          from: account,
+        };
+        const txWorker = createWorker();
+        txWorker.on('message', (m: any) => {
+          logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
+          if (m.error) {
+            logger.error(m.error);
+          } else {
+            context.workspaceState.update('gasEstimate', m.gasEstimate);
+            logger.success(m.gasEstimate);
+          }
+        });
+        txWorker.send({
+          command: 'get-gas-estimate',
+          payload,
+          testnetId: networkId,
+        });
+      }
+    }),
+    // TODO
+    // Set custom gas estimate
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');

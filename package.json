@@ -168,6 +168,11 @@
         "command": "ethcode.contract.input.load",
         "title": "Load constructor inputs from JSON",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.contract.gas.get",
+        "title": "Get gas estimates for transaction",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [

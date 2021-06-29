@@ -25,27 +25,6 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 
-// remix-tests grpc
-const remixTestsPB = protoDescriptor.remix_tests;
-const remixDebugPB = protoDescriptor.remix_debug;
-
-let remixTestsClient: any;
-let remixDebugClient: any;
-try {
-  remixTestsClient = new remixTestsPB.RemixTestsService('rt.ethco.de:50051', grpc.credentials.createInsecure());
-} catch (e) {
-  // @ts-ignore
-  process.send({ error: e });
-}
-
-// remix-debug grpc
-try {
-  remixDebugClient = new remixDebugPB.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
-} catch (e) {
-  // @ts-ignore
-  process.send({ error: e });
-}
-
 // client-call grpc
 const clientCallPB = protoDescriptor.eth_client_call;
 let clientCallClient: any;
@@ -375,28 +354,6 @@ process.on('message', async (m) => {
     call.on('data', (data: any) => {
       // @ts-ignore
       process.send({ gasEstimate: data.result });
-    });
-    call.on('error', (err: Error) => {
-      // @ts-ignore
-      process.send({ error: err });
-    });
-  }
-  // Debug transaction
-  if (m.command === 'debug-transaction') {
-    const dt = {
-      debugInterface: {
-        command: 'debug',
-        payload: m.payload,
-        testnetId: m.testnetId,
-      },
-    };
-    const call = remixDebugClient.RunDebug(dt);
-    call.on('data', (data: any) => {
-      // @ts-ignore
-      process.send({ debugResp: data.result });
-    });
-    call.on('end', () => {
-      process.exit(0);
     });
     call.on('error', (err: Error) => {
       // @ts-ignore
