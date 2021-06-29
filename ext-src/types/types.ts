@@ -69,3 +69,7 @@ export function isStdContract(obj: any): obj is StandardCompiledContract {
 export function isComContract(obj: any): obj is CombinedCompiledContract {
   return obj.abi !== undefined && obj.bin !== undefined;
 }
+
+export function isConstructorInputValue(obj: any): obj is ConstructorInputValue {
+  return obj.value !== undefined;
+}

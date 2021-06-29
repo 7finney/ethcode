@@ -163,6 +163,11 @@
         "command": "ethcode.contract.input.create",
         "title": "Create constructor input JSON",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.contract.input.load",
+        "title": "Load constructor inputs from JSON",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
@@ -186,6 +191,11 @@
         {
           "when": "resourceLangId == json",
           "command": "ethcode.standard-json.load",
+          "group": "Ethereum"
+        },
+        {
+          "when": "resourceLangId == json",
+          "command": "ethcode.contract.input.load",
           "group": "Ethereum"
         }
       ]

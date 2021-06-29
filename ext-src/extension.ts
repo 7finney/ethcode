@@ -22,6 +22,7 @@ import {
   ABIDescription,
   ABIParameter,
   ConstructorInputValue,
+  isConstructorInputValue,
 } from './types';
 import { errors } from './utils';
 
@@ -215,10 +216,8 @@ export async function activate(context: vscode.ExtensionContext) {
       const networkId = context.workspaceState.get('networkId');
       const account = context.workspaceState.get('account');
       const contract = context.workspaceState.get('contract');
-      const params = await window.showInputBox(paramsInpOpt);
-      console.log(contract);
+      const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
       if (isComContract(contract)) {
-        console.log('Build transaction for combined output');
         const { abi, bin } = contract;
         const txWorker = createWorker();
         txWorker.on('message', (m: any) => {
@@ -233,7 +232,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const payload = {
           abi,
           bytecode: bin,
-          params: JSON.parse(params!) || [],
+          params: params || [],
           gasSupply: 2488581,
           from: account,
         };
@@ -379,6 +378,14 @@ export async function activate(context: vscode.ExtensionContext) {
           });
         }
       } else logger.error(errors.ContractNotFound);
+    }),
+    // Load constructor inputs from JSON
+    commands.registerCommand('ethcode.contract.input.load', async () => {
+      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
+      if (editorContent) {
+        const constructorInputs: Array<ConstructorInputValue> = JSON.parse(editorContent);
+        context.workspaceState.update('constructor-inputs', constructorInputs);
+      }
     }),
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
