@@ -173,6 +173,11 @@
         "command": "ethcode.contract.gas.get",
         "title": "Get gas estimates for transaction",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.contract.gas.set",
+        "title": "Set gas estimates for transaction",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [

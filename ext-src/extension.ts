@@ -22,7 +22,6 @@ import {
   ABIDescription,
   ABIParameter,
   ConstructorInputValue,
-  isConstructorInputValue,
 } from './types';
 import { errors } from './utils';
 
@@ -41,11 +40,9 @@ const unsignedTxInp: InputBoxOptions = {
   ignoreFocusOut: false,
   placeHolder: 'Unsigned transaction JSON',
 };
-
-const paramsInpOpt: InputBoxOptions = {
+const gasInp: InputBoxOptions = {
   ignoreFocusOut: false,
-  placeHolder: 'Enter constructor parameters',
-  value: '[]',
+  placeHolder: 'Enter custom gas',
 };
 
 const createAccWorker = (): ChildProcess => {
@@ -419,8 +416,11 @@ export async function activate(context: vscode.ExtensionContext) {
         });
       }
     }),
-    // TODO
     // Set custom gas estimate
+    commands.registerCommand('ethcode.contract.gas.set', async () => {
+      const gas = await window.showInputBox(gasInp);
+      context.workspaceState.update('gasEstimate', gas);
+    }),
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');
