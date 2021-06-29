@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.2.2",
+  "version": "0.2.5",
   "publisher": "Ethential",
   "categories": [
     "Debuggers",
@@ -24,7 +24,9 @@
     "node": ">=8.16.0"
   },
   "activationEvents": [
-    "onCommand:ethcode.activate"
+    "onCommand:ethcode.activate",
+    "onCommand:ethcode.combined-json.load",
+    "onCommand:ethcode.standard-json.load"
   ],
   "main": "./build/ext-src/extension.js",
   "extensionDependencies": [

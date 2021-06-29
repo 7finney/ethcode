@@ -1,19 +1,17 @@
+/* eslint class-methods-use-this: "warn" */
+
 import { ICompilationResult } from './types';
-import { ExtensionContext } from 'vscode';
+import { ExtensionContext, commands } from 'vscode';
 import { ReactPanel } from './reactPanel';
 
 export default class API {
-  private _panel: ReactPanel;
+  // ctx: ExtensionContext;
 
-  constructor(context: ExtensionContext, panel: ReactPanel) {
-    this._panel = panel;
-  }
+  // constructor(context: ExtensionContext) {
+  //   this.ctx = context;
+  // }
 
   loadCompiled(compilationRes: ICompilationResult) {
-    this._panel.postMessage({
-      compiled: JSON.stringify(compilationRes.data),
-      sources: compilationRes.source.sources,
-      testPanel: 'main',
-    });
+    commands.executeCommand('ethcode.standard-json.load', compilationRes.data);
   }
 }

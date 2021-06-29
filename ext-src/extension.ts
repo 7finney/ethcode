@@ -12,9 +12,7 @@ import {
   INetworkQP,
   LocalAddressType,
   CombinedJSONOutput,
-  StandardJSONOutput,
   ICombinedJSONContractsQP,
-  IStandardJSONContractsQP,
   StandardCompiledContract,
   CombinedCompiledContract,
   isStdContract,
@@ -22,7 +20,9 @@ import {
   ABIDescription,
   ABIParameter,
   ConstructorInputValue,
+  isStdJSONOutput,
 } from './types';
+import { parseJSONPayload } from './lib';
 import { errors } from './utils';
 
 // Create logger
@@ -300,57 +300,12 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
     // Load combined JSON output
-    commands.registerCommand('ethcode.standard-json.load', () => {
-      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-      if (editorContent) {
-        const { contracts }: StandardJSONOutput = JSON.parse(editorContent);
-        const quickPick = window.createQuickPick<IStandardJSONContractsQP>();
-        quickPick.items = Object.keys(contracts).map((contract) => ({ label: contract, contractKey: contract }));
-        quickPick.placeholder = 'Select contract file';
-        quickPick.onDidChangeActive((selection: Array<IStandardJSONContractsQP>) => {
-          quickPick.value = selection[0].label;
-        });
-        quickPick.onDidChangeSelection((selection: Array<IStandardJSONContractsQP>) => {
-          if (selection[0]) {
-            const contractFileName = selection[0].contractKey;
-            const contractFile = contracts[contractFileName];
-            if (!isStdContract(contractFile)) {
-              const contractQp = window.createQuickPick<IStandardJSONContractsQP>();
-              contractQp.items = Object.keys(contractFile).map((contract) => ({
-                label: contract,
-                contractKey: contract,
-              }));
-              contractQp.placeholder = 'Select contract';
-              contractQp.onDidChangeActive((selection: Array<IStandardJSONContractsQP>) => {
-                contractQp.value = selection[0].label;
-              });
-              contractQp.onDidChangeSelection((selection: Array<IStandardJSONContractsQP>) => {
-                if (selection[0]) {
-                  const contract: StandardCompiledContract = contracts[contractFileName][selection[0].contractKey];
-                  if (isStdContract(contract)) {
-                    context.workspaceState.update('contract', contract);
-                  } else {
-                    logger.error(Error('Could not parse contract.'));
-                  }
-                  contractQp.dispose();
-                }
-              });
-              contractQp.onDidHide(() => contractQp.dispose());
-              contractQp.show();
-            } else {
-              logger.error(Error('Could not parse contract.'));
-            }
-            quickPick.dispose();
-          }
-        });
-        quickPick.onDidHide(() => quickPick.dispose());
-        quickPick.show();
+    commands.registerCommand('ethcode.standard-json.load', (_jsonPayload: any) => {
+      if (_jsonPayload && isStdJSONOutput(_jsonPayload)) {
+        parseJSONPayload(context, JSON.stringify(_jsonPayload));
       } else {
-        logger.error(
-          Error(
-            'Could not load JSON file. Make sure it follows Solidity output description. Know more: https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description.'
-          )
-        );
+        const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
+        parseJSONPayload(context, editorContent);
       }
     }),
     // Create Input JSON
@@ -391,45 +346,54 @@ export async function activate(context: vscode.ExtensionContext) {
       const account = context.workspaceState.get('account');
       const contract = context.workspaceState.get('contract');
       const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
+      let payload = {};
       if (isComContract(contract)) {
         const { abi, bin } = contract;
-        const payload = {
+        payload = {
           abi,
           bytecode: bin,
           params: params || [],
           from: account,
         };
-        const txWorker = createWorker();
-        txWorker.on('message', (m: any) => {
-          logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
-          if (m.error) {
-            logger.error(m.error);
-          } else {
-            context.workspaceState.update('gasEstimate', m.gasEstimate);
-            logger.success(m.gasEstimate);
-          }
-        });
-        txWorker.send({
-          command: 'get-gas-estimate',
-          payload,
-          testnetId: networkId,
-        });
+      } else if (isStdContract(contract)) {
+        const { abi, evm } = contract;
+        payload = {
+          abi,
+          bytecode: evm.bytecode.object,
+          params: params || [],
+          from: account,
+        };
       }
+      const txWorker = createWorker();
+      txWorker.on('message', (m: any) => {
+        logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
+        if (m.error) {
+          logger.error(m.error);
+        } else {
+          context.workspaceState.update('gasEstimate', m.gasEstimate);
+          logger.success(m.gasEstimate);
+        }
+      });
+      txWorker.send({
+        command: 'get-gas-estimate',
+        payload,
+        testnetId: networkId,
+      });
     }),
     // Set custom gas estimate
     commands.registerCommand('ethcode.contract.gas.set', async () => {
       const gas = await window.showInputBox(gasInp);
       context.workspaceState.update('gasEstimate', gas);
     }),
+    commands.registerCommand('ethcode.show', async () => {
+      ReactPanel.createOrShow(context.extensionPath);
+    }),
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');
-      ReactPanel.createOrShow(context.extensionPath);
       logger.success('Welcome to Ethcode!');
     })
   );
-  await ReactPanel.createOrShow(context.extensionPath);
-  let api;
-  if (ReactPanel.currentPanel) api = new API(context, ReactPanel.currentPanel);
+  const api = new API();
   return api;
 }

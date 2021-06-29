@@ -1,5 +1,5 @@
 import { QuickPickItem } from 'vscode';
-import { StandardCompiledContract, CombinedCompiledContract, ABIParameter, FunctionDescription } from './output';
+import { StandardCompiledContract, CombinedCompiledContract, ABIParameter, StandardJSONOutput } from './output';
 
 export interface ISource {
   content: string | undefined;
@@ -72,4 +72,8 @@ export function isComContract(obj: any): obj is CombinedCompiledContract {
 
 export function isConstructorInputValue(obj: any): obj is ConstructorInputValue {
   return obj.value !== undefined;
+}
+
+export function isStdJSONOutput(obj: any): obj is StandardJSONOutput {
+  return obj.contracts !== undefined;
 }
