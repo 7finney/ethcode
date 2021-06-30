@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { CompilationResult, IAccount, GroupedSelectorAccounts, TransactionResult } from './types';
+import { CompilationResult, IAccount, GroupedSelectorAccounts, TransactionResult, CompiledContract } from './types';
 
 interface ContextInterface {
   unsignedTx: string | undefined;
@@ -14,6 +14,8 @@ interface ContextInterface {
   setSelectorAccounts: (_value: Array<GroupedSelectorAccounts> | undefined) => void;
   compiledJSON: CompilationResult | undefined;
   setCompiledJSON: (_value: CompilationResult | undefined) => void;
+  contract: CompiledContract | undefined;
+  setCompiledContract: (_value: CompiledContract | undefined) => void;
   activeFileName: string;
   setActiveFileName: (_value: string) => void;
   testNetID: string;
@@ -38,6 +40,8 @@ export const AppContext = createContext<ContextInterface>({
   setSelectorAccounts: (_value: Array<GroupedSelectorAccounts> | undefined) => {},
   compiledJSON: undefined,
   setCompiledJSON: (_value: CompilationResult | undefined) => {},
+  contract: undefined,
+  setCompiledContract: (_value: CompiledContract | undefined) => {},
   activeFileName: '',
   setActiveFileName: (_value: string) => {},
   testNetID: 'ganache',

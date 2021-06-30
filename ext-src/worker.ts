@@ -1,10 +1,10 @@
 // @ts-ignore
 import * as path from 'path';
 import * as fs from 'fs';
-import { RemixURLResolver } from 'remix-url-resolver';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { sha3 } from './hash/sha3';
+import { ABIParameter } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const EthereumTx = require('ethereumjs-tx').Transaction;
@@ -24,27 +24,6 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   oneofs: true,
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
-
-// remix-tests grpc
-const remixTestsPB = protoDescriptor.remix_tests;
-const remixDebugPB = protoDescriptor.remix_debug;
-
-let remixTestsClient: any;
-let remixDebugClient: any;
-try {
-  remixTestsClient = new remixTestsPB.RemixTestsService('rt.ethco.de:50051', grpc.credentials.createInsecure());
-} catch (e) {
-  // @ts-ignore
-  process.send({ error: e });
-}
-
-// remix-debug grpc
-try {
-  remixDebugClient = new remixDebugPB.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
-} catch (e) {
-  // @ts-ignore
-  process.send({ error: e });
-}
 
 // client-call grpc
 const clientCallPB = protoDescriptor.eth_client_call;
@@ -110,6 +89,11 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
     // @ts-ignore
     process.send({ error: error.message });
   }
+}
+
+// create constructor input file
+function writeConstrucor(path: string, inputs: Array<ABIParameter>) {
+  fs.writeFileSync(`${path}/constructor-input.json`, JSON.stringify(inputs, null, 2));
 }
 
 process.on('message', async (m) => {
@@ -376,28 +360,6 @@ process.on('message', async (m) => {
       process.send({ error: err });
     });
   }
-  // Debug transaction
-  if (m.command === 'debug-transaction') {
-    const dt = {
-      debugInterface: {
-        command: 'debug',
-        payload: m.payload,
-        testnetId: m.testnetId,
-      },
-    };
-    const call = remixDebugClient.RunDebug(dt);
-    call.on('data', (data: any) => {
-      // @ts-ignore
-      process.send({ debugResp: data.result });
-    });
-    call.on('end', () => {
-      process.exit(0);
-    });
-    call.on('error', (err: Error) => {
-      // @ts-ignore
-      process.send({ error: err });
-    });
-  }
   // Build raw transaction for contract creation
   if (m.command === 'build-rawtx') {
     const { abi, bytecode, params, gasSupply, from } = m.payload;
@@ -438,5 +400,9 @@ process.on('message', async (m) => {
   if (m.command === 'sign-deploy') {
     const { unsignedTx, pvtKey } = m.payload;
     deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
+  }
+  if (m.command === 'create-input-file') {
+    const { inputs, path } = m.payload;
+    writeConstrucor(path, inputs);
   }
 });

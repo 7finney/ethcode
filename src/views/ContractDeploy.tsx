@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import './ContractDeploy.css';
 import JSONPretty from 'react-json-pretty';
-import { useSelector, useDispatch } from 'react-redux';
 import { ABIDescription, ConstructorInput } from 'types';
 import { Button, ButtonType } from '../components';
 import CallForm from '../components/ContractDeploy/CallForm';
