@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useRef, useContext } from 'react';
 import './ContractDeploy.css';
 import JSONPretty from 'react-json-pretty';
-import { useSelector, useDispatch } from 'react-redux';
-import { ABIDescription, ConstructorInput, GlobalStore } from 'types';
-import { setCallResult } from '../../actions';
-import { Button, ButtonType } from '../common/ui';
-import CallForm from './CallForm';
-import DeployForm from './DeployForm';
-import { AppContext } from '../../appContext';
+import { ABIDescription, ConstructorInput } from 'types';
+import { Button, ButtonType } from '../components';
+import CallForm from '../components/ContractDeploy/CallForm';
+import DeployForm from '../components/ContractDeploy/DeployForm';
+import { AppContext } from '../appContext';
 
 interface IProps {
   bytecode: string;
@@ -23,24 +21,14 @@ const ContractDeploy: React.FC<IProps> = ({ bytecode, abi, vscode, openAdvanceDe
   const [gasEstimate, setGasEstimate] = useState(0);
 
   // Context
-  const { testNetID } = useContext(AppContext);
-
-  // redux
-  // UseSelector to extract state elements.
-  const { callResult, deployedResult, currAccount } = useSelector((state: GlobalStore) => ({
-    testNetId: state.debugStore.testNetId,
-    deployedResult: state.contractsStore.deployedResult,
-    callResult: state.contractsStore.callResult,
-    currAccount: state.accountStore.currAccount,
-  }));
-  const dispatch = useDispatch();
+  const { testNetID, currAccount, deployedResult, callResult, setCallResult } = useContext(AppContext);
 
   useEffect(() => {
     window.addEventListener('message', (event) => {
       const { data } = event;
 
       if (data.ganacheCallResult) {
-        dispatch(setCallResult(data.ganacheCallResult));
+        setCallResult(data.ganacheCallResult);
       }
       if (data.error) {
         setError(data.error);

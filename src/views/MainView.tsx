@@ -1,69 +1,54 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import ReactJson, { OnCopyProps } from 'react-json-view';
-import {
-  addTestResults,
-  addFinalResultCallback,
-  clearFinalResult,
-  setDeployedResult,
-  setCallResult,
-  setAccountBalance,
-  setCurrAccChange,
-  setErrMsg,
-  setAppRegistered,
-  clearCompiledResults,
-} from '../actions';
 import { setGanacheAccountsOption, setLocalAccountOption } from '../helper';
 
-import { IAccStore, GroupedSelectorAccounts, CompilationResult, GlobalStore, ABIDescription } from '../types';
+import { ABIDescription, IAccount, CompiledContract } from '../types';
 
 import ContractDeploy from './ContractDeploy';
-import { Selector } from './common/ui';
-import TestDisplay from './TestDisplay';
-import DebugDisplay from './DebugDisplay';
-import Deploy from './Deploy/Deploy';
+import Deploy from './Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
-import Account from './Account/Account';
-import { OutputJSONForm } from './OutputJSONForm';
+import Account from './Account';
 import { AppContext } from '../appContext';
 
 // @ts-ignore
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 
+interface ITestNet {
+  value: string;
+  label: string;
+}
+
 export const MainView = () => {
-  const [message, setMessage] = useState<any[]>([]);
   const [processMessage, setProcessMessage] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
-  const [txTrace, setTxTrace] = useState({});
-  const [selectorAccounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>([]);
   const [transactionResult, setTransactionResult] = useState('');
-  const [traceError, setTraceError] = useState('');
   const [localAcc, setLocalAcc] = useState<any[]>([]);
   const [testNetAcc, setTestNetAcc] = useState<any[]>([]);
-  const [testNets] = useState([
+  const [testNets] = useState<Array<ITestNet>>([
     { value: 'ganache', label: 'Ganache' },
     // { value: '3', label: 'Ropsten' },
     // { value: '4', label: 'Rinkeby' },
     { value: '5', label: 'Görli' },
   ]);
+  const [testNet, setTestNet] = useState<ITestNet>(testNets[0]);
   const [abi, setAbi] = useState<Array<ABIDescription>>([]);
   const [bytecode, setBytecode] = useState<string>('');
   // Context
-  const { compiledJSON, setCompiledJSON, setTestNetID } = useContext(AppContext);
-  // redux
-  // UseSelector to extract state elements.
-  const { registered, accounts, currAccount, accountBalance, testResults, error } = useSelector(
-    (state: GlobalStore) => ({
-      registered: state.debugStore.appRegistered,
-      accounts: state.accountStore.accounts,
-      currAccount: state.accountStore.currAccount,
-      accountBalance: state.accountStore.balance,
-      testResults: state.test.testResults,
-      error: state.debugStore.error,
-    })
-  );
-  const dispatch = useDispatch();
+  const {
+    currAccount,
+    setAccount,
+    accounts,
+    contract,
+    accountBalance,
+    setCompiledContract,
+    setTestNetID,
+    setSelectorAccounts,
+    setAccountBalance,
+    setCallResult,
+    error,
+    setError,
+  } = useContext(AppContext);
 
   const mergeAccount = () => {
     // TODO: update reducer
@@ -92,21 +77,13 @@ export const MainView = () => {
       setSelectorAccounts([]);
     }
   };
-  const loadCompiledJSON = (data: any) => {
-    setCompiledJSON(undefined);
+  const loadContract = (_contract: any) => {
     try {
-      const compiled: CompilationResult = JSON.parse(data.compiled);
-      setCompiledJSON(compiled);
-      if (compiled.errors && compiled.errors.length > 0) {
-        setMessage(compiled.errors);
-      } else if (!compiled.errors) {
-        setMessage([]);
-        setProcessMessage('');
-      }
-      setProcessMessage('');
+      const contract: CompiledContract = _contract;
+      setCompiledContract(contract);
     } catch (error) {
       console.error(error);
-      setProcessMessage('Error Parsing Compilation result');
+      setProcessMessage('Error Parsing CompiledContract');
     }
   };
 
@@ -124,100 +101,50 @@ export const MainView = () => {
       if (data.fetchAccounts) {
         const { balance, accounts } = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
-        const accData: IAccStore = {
-          balance,
-          currAccount: {
-            label: accounts[0],
-            value: accounts[0], // TODO: use toChecksumAddress to create checksum address of the given
-          },
-          accounts,
+        const currAccount: IAccount = {
+          label: accounts[0],
+          value: accounts[0],
         };
-        dispatch(setAccountBalance(accData));
+        setAccount(currAccount);
+        setAccountBalance(balance);
       }
       if (data.balance) {
         const { balance, account } = data;
-        dispatch(setCurrAccChange({ balance, currAccount: account }));
+        setAccount(account);
+        setAccountBalance(balance);
       }
-      if (data.registered) {
-        dispatch(setAppRegistered(data.registered));
-        if (registered !== data.registered) {
-          vscode.postMessage({ command: 'auth-updated' });
-        }
-      }
-      // compiled
-      if (data.compiled) {
-        loadCompiledJSON(data);
+      if (data.contract) {
+        loadContract(data.contract);
       }
       if (data.processMessage) {
         const { processMessage } = data;
         setProcessMessage(processMessage);
       }
-
-      if (data.resetTestState === 'resetTestState') {
-        dispatch(clearFinalResult());
-      }
-
-      if (data.testPanel === 'test') {
-        setTabIndex(4);
-      }
-
       if (data.testPanel === 'main') {
         setTabIndex(0);
       }
-
-      if (data._testCallback) {
-        const result = data._testCallback;
-        dispatch(addTestResults(result));
-      }
-      if (data._finalCallback) {
-        const result = data._finalCallback;
-        dispatch(addFinalResultCallback(result));
-        setProcessMessage('');
-      }
-      if (data._importFileCb) {
-        return;
-      }
       if (data.errors) {
-        setErrMsg(data.errors);
-      }
-      if (data.deployedResult) {
-        const result = data.deployedResult.deployedResult;
-        dispatch(setDeployedResult(JSON.parse(result)));
-      }
-      if (data.txTrace) {
-        setTxTrace(data.txTrace);
-      }
-      if (data.traceError) {
-        setTraceError(data.traceError);
+        setError(data.errors);
       }
       if (data.callResult) {
         const result = data.callResult;
-        dispatch(setCallResult(result));
+        setCallResult(result);
       }
       if (data.transactionResult) {
         setTransactionResult(data.transactionResult);
+      }
+      if (data.networkId) {
+        const testnet = testNets.filter((net) => net.value === JSON.stringify(data.networkId));
+        setTestNetID(data.networkId);
+        setTestNet(testnet[0]);
       }
     });
     // Component mounted start getting gRPC things
     vscode.postMessage({ command: 'get-localAccounts' });
     vscode.postMessage({ command: 'run-getAccounts' });
+    vscode.postMessage({ command: 'get-contract' });
+    vscode.postMessage({ command: 'get-network' });
   }, []);
-
-  const setSelectedNetwork = (testNet: any) => {
-    const testNetId = testNet.value;
-    setTestNetID(testNetId);
-    vscode.postMessage({
-      command: 'get-balance',
-      account: currAccount,
-      testNetId,
-    });
-  };
-
-  const handleAppRegister = () => {
-    vscode.postMessage({
-      command: 'app-register',
-    });
-  };
 
   const openAdvanceDeploy = (): void => {
     setTabIndex(2);
@@ -241,14 +168,7 @@ export const MainView = () => {
   };
   return (
     <div>
-      <div className="selectors">
-        <Selector
-          onSelect={setSelectedNetwork}
-          options={testNets}
-          placeholder="Select Network"
-          defaultValue={testNets[0]}
-        />
-      </div>
+      <div className="selectors">Selected Network: {testNet.label}</div>
       {transactionResult && (
         <div className="tx-info">
           <span>Last transaction:</span>
@@ -266,34 +186,28 @@ export const MainView = () => {
               <Tab>Main</Tab>
               <Tab>Account</Tab>
               <Tab>Deploy</Tab>
-              {/* <Tab>Debug</Tab>
-              <Tab>Test</Tab> */}
             </div>
           </TabList>
           {/* Main panel */}
           <TabPanel className="react-tab-panel">
-            {accounts.length > 0 && (
+            {accounts && accounts.length > 0 && (
               <div className="account-brief">
                 <b>Account: </b>
                 <span>{currAccount ? currAccount.checksumAddr || currAccount.pubAddr || currAccount.value : '0x'}</span>
                 <br />
                 <b>Balance: </b>
-                <span>{accountBalance}</span>
+                <span>{accountBalance} wei</span>
               </div>
             )}
-            <div>
-              <OutputJSONForm handleLoad={loadCompiledJSON} />
-            </div>
-            {compiledJSON && (
+            {contract && (
               <div className="compiledOutput">
                 <ReactJson
-                  src={compiledJSON.contracts}
+                  src={contract}
                   name="Contracts"
                   theme="monokai"
                   collapsed
                   collapseStringsAfterLength={12}
                   style={reactJSONViewStyle}
-                  // onSelect={handleJSONItemSelect}
                   enableClipboard={handleCopy}
                 />
               </div>
@@ -306,7 +220,7 @@ export const MainView = () => {
           </TabPanel>
           {/* Account Panel */}
           <TabPanel>
-            <Account vscode={vscode} accounts={selectorAccounts} handleAppRegister={handleAppRegister} />
+            <Account vscode={vscode} />
           </TabPanel>
           {/* Advanced Deploy panel */}
           <TabPanel>
@@ -316,27 +230,7 @@ export const MainView = () => {
               </div>
             )}
           </TabPanel>
-          {/* Debug panel */}
-          {/* <TabPanel className="react-tab-panel">
-            <DebugDisplay vscode={vscode} txTrace={txTrace} traceError={traceError} />
-          </TabPanel> */}
-          {/* Test panel */}
-          {/* <TabPanel className="react-tab-panel">
-            {testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
-          </TabPanel> */}
         </Tabs>
-        <div className="err_warning_container">
-          {message.map((m, i) => {
-            return (
-              // eslint-disable-next-line react/no-array-index-key
-              <div key={i}>
-                {m.severity === 'warning' && <pre className="error-message yellow-text">{m.formattedMessage}</pre>}
-                {m.severity === 'error' && <pre className="error-message red-text">{m.formattedMessage}</pre>}
-                {!m.severity && <pre className="error-message">{m.formattedMessage}</pre>}
-              </div>
-            );
-          })}
-        </div>
       </div>
       <div className="process-msg-container">
         {processMessage && <pre className="processMessage">{processMessage}</pre>}

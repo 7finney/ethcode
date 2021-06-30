@@ -1,5 +1,5 @@
 import React, { CSSProperties, FormEvent, MouseEvent } from 'react';
-import './button.css';
+import './style.css';
 
 export enum ButtonType {
   Input = 'input',

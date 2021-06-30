@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, ButtonType, TextArea } from 'components/common/ui';
+import { Button, ButtonType, TextArea } from '..';
 import { ABIParameter, ABIDescription, IAccount, TransactionResult } from 'types';
-import { abiHelpers } from '../common/lib';
+import { abiHelpers } from '../../lib';
 
 interface IProps {
-  deployedResult: TransactionResult | null;
+  deployedResult: TransactionResult | undefined;
   abi: ABIDescription[];
   currAccount: IAccount;
   testNetId: string;

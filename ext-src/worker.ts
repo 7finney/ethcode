@@ -1,10 +1,10 @@
 // @ts-ignore
 import * as path from 'path';
 import * as fs from 'fs';
-import { RemixURLResolver } from 'remix-url-resolver';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { sha3 } from './hash/sha3';
+import { ABIParameter } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const EthereumTx = require('ethereumjs-tx').Transaction;
@@ -25,27 +25,6 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 
-// remix-tests grpc
-const remixTestsPB = protoDescriptor.remix_tests;
-const remixDebugPB = protoDescriptor.remix_debug;
-
-let remixTestsClient: any;
-let remixDebugClient: any;
-try {
-  remixTestsClient = new remixTestsPB.RemixTestsService('rt.ethco.de:50051', grpc.credentials.createInsecure());
-} catch (e) {
-  // @ts-ignore
-  process.send({ error: e });
-}
-
-// remix-debug grpc
-try {
-  remixDebugClient = new remixDebugPB.RemixDebugService('rd.ethco.de:50052', grpc.credentials.createInsecure());
-} catch (e) {
-  // @ts-ignore
-  process.send({ error: e });
-}
-
 // client-call grpc
 const clientCallPB = protoDescriptor.eth_client_call;
 let clientCallClient: any;
@@ -55,58 +34,6 @@ try {
 } catch (e) {
   // @ts-ignore
   process.send({ error: e });
-}
-
-function handleLocal(pathString: string, filePath: any) {
-  // if no relative/absolute path given then search in node_modules folder
-  if (pathString && pathString.indexOf('.') !== 0 && pathString.indexOf('/') !== 0) {
-    console.error('Error: Node Modules Import is not implemented yet!');
-    // return handleNodeModulesImport(pathString, filePath, pathString)
-  } else {
-    try {
-      const o = { encoding: 'UTF-8' };
-      // hack for compiler imports to work (do not change)
-      const p = pathString ? path.resolve(pathString, filePath) : path.resolve(pathString, filePath);
-      const content = fs.readFileSync(p, o);
-      return content;
-    } catch (error) {
-      // @ts-ignore
-      process.send({ error });
-      throw error;
-    }
-  }
-  return '';
-}
-
-function findImports(path: any) {
-  // TODO: We need current solc file path here for relative local import
-  // @ts-ignore
-  process.send({ processMessage: `importing file: ${path}` });
-  const FSHandler = [
-    {
-      type: 'local',
-      match: (url: string) => {
-        return /(^(?!(?:http:\/\/)|(?:https:\/\/)?(?:www.)?(?:github.com)))(^\/*[\w+-_/]*\/)*?([\w-]+\.sol)/g.exec(url);
-      },
-      handle: (match: Array<string>) => {
-        return handleLocal(match[2], match[3]);
-      },
-    },
-  ];
-  // @ts-ignore
-  const urlResolver = new RemixURLResolver();
-  // this section usually executes after solc returns error file not found
-  urlResolver
-    .resolve(path, FSHandler)
-    .then((data: any) => {
-      // @ts-ignore
-      process.send({ data, path });
-    })
-    .catch((e: Error) => {
-      // @ts-ignore
-      process.send({ error: e });
-    });
-  return { error: 'Deferred import' };
 }
 
 // sign an unsigned raw transaction and deploy
@@ -164,33 +91,16 @@ function deployUnsignedTx(meta: any, tx: any, privateKey: any, testnetId?: any) 
   }
 }
 
+// create constructor input file
+function writeConstrucor(path: string, inputs: Array<ABIParameter>) {
+  fs.writeFileSync(`${path}/constructor-input.json`, JSON.stringify(inputs, null, 2));
+}
+
 process.on('message', async (m) => {
   const meta = new grpc.Metadata();
   if (m.authToken) {
     meta.add('token', m.authToken.token);
     meta.add('appId', m.authToken.appId);
-  }
-  if (m.command === 'run-test') {
-    // TODO: move parsing to extension.ts
-    const rt = {
-      testInterface: {
-        command: 'run-test-sources',
-        payload: m.payload,
-      },
-    };
-    const call = remixTestsClient.RunTests(rt);
-    call.on('data', (data: any) => {
-      const result = JSON.parse(data.result);
-      if (result.filePath) {
-        findImports(result.filePath);
-      } else {
-        // @ts-ignore
-        process.send({ utResp: data });
-      }
-    });
-    call.on('end', () => {
-      process.exit(0);
-    });
   }
   // Fetch accounts and balance
   if (m.command === 'get-accounts') {
@@ -450,28 +360,6 @@ process.on('message', async (m) => {
       process.send({ error: err });
     });
   }
-  // Debug transaction
-  if (m.command === 'debug-transaction') {
-    const dt = {
-      debugInterface: {
-        command: 'debug',
-        payload: m.payload,
-        testnetId: m.testnetId,
-      },
-    };
-    const call = remixDebugClient.RunDebug(dt);
-    call.on('data', (data: any) => {
-      // @ts-ignore
-      process.send({ debugResp: data.result });
-    });
-    call.on('end', () => {
-      process.exit(0);
-    });
-    call.on('error', (err: Error) => {
-      // @ts-ignore
-      process.send({ error: err });
-    });
-  }
   // Build raw transaction for contract creation
   if (m.command === 'build-rawtx') {
     const { abi, bytecode, params, gasSupply, from } = m.payload;
@@ -512,5 +400,9 @@ process.on('message', async (m) => {
   if (m.command === 'sign-deploy') {
     const { unsignedTx, pvtKey } = m.payload;
     deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
+  }
+  if (m.command === 'create-input-file') {
+    const { inputs, path } = m.payload;
+    writeConstrucor(path, inputs);
   }
 });

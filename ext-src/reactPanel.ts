@@ -1,10 +1,10 @@
 import * as path from 'path';
-import { WebviewPanel, Disposable, ViewColumn, window, Uri, commands } from 'vscode';
+import { WebviewPanel, Disposable, ViewColumn, window, Uri, commands, Memento } from 'vscode';
 import { fork, ChildProcess } from 'child_process';
 import * as uuid from 'uuid/v4';
 import axios from 'axios';
-import { Logger, actionToast, updateUserSession, updateUserSettings, retrieveUserSettings, getNonce } from './utils';
-import { ISources, TokenData, IAccount } from './types';
+import { Logger, actionToast, updateUserSettings, retrieveUserSettings, getNonce } from './utils';
+import { TokenData, IAccount } from './types';
 
 const logger = new Logger();
 
@@ -33,7 +33,7 @@ export class ReactPanel {
 
   private _disposed = false;
 
-  private constructor(extensionPath: string, column: ViewColumn) {
+  private constructor(extensionPath: string, column: ViewColumn, workspaceState: Memento) {
     this._extensionPath = extensionPath;
 
     // Create and show a new webview panel
@@ -73,7 +73,6 @@ export class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
-          updateUserSession(message.account, ['userConfig', 'defaultAccount']);
           this.getBalance(message.account, message.testNetId);
         } else if (message.command === 'build-rawtx') {
           this.buildRawTx(message.payload, message.testNetId);
@@ -84,7 +83,7 @@ export class ReactPanel {
             ReactPanel.currentPanel.getAccounts();
           } else {
             try {
-              ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.One);
+              ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.One, workspaceState);
               ReactPanel.currentPanel.getAccounts();
             } catch (error) {
               logger.error(error);
@@ -95,18 +94,21 @@ export class ReactPanel {
         } else if (message.command === 'delete-keyPair') {
           this.deleteKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'get-localAccounts') {
-          updateUserSession(this._extensionPath, ['keystore', 'keyStorePath']);
-          this.getLocalAccounts(this._extensionPath);
+          // Get data from workspacestate
+          const accounts = workspaceState.get('addresses');
+          this._panel.webview.postMessage({ localAccounts: accounts });
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
         } else if (message.command === 'send-ether-signed') {
           this.sendEtherSigned(message.payload, message.testNetId);
         } else if (message.command === 'get-pvt-key') {
           this.getPvtKey(message.payload, this._extensionPath);
-        } else if (message.command === 'app-register') {
-          this.getTokens()
-            .then((r) => this._panel.webview.postMessage({ registered: r }))
-            .catch(() => this._panel.webview.postMessage({ registered: false }));
+        } else if (message.command === 'get-contract') {
+          const contract = workspaceState.get('contract');
+          this._panel.webview.postMessage({ contract });
+        } else if (message.command === 'get-network') {
+          const networkId = workspaceState.get('networkId');
+          this._panel.webview.postMessage({ networkId });
         }
       },
       null,
@@ -118,7 +120,7 @@ export class ReactPanel {
     this._panel.webview.postMessage(msg);
   }
 
-  public static createOrShow(extensionPath: string) {
+  public static createOrShow(extensionPath: string, workspaceState: Memento) {
     const column = window.activeTextEditor ? ViewColumn.Beside : undefined;
 
     // If we already have a panel, show it.
@@ -133,7 +135,7 @@ export class ReactPanel {
       }
     } else {
       try {
-        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.Active);
+        ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.Active, workspaceState);
         ReactPanel.currentPanel.checkFileName();
         ReactPanel.currentPanel.checkAppRegistration();
       } catch (error) {
@@ -391,18 +393,6 @@ export class ReactPanel {
     accountsWorker.send({ command: 'get-accounts', authToken });
   }
 
-  // get local accounts
-  private getLocalAccounts(keyStorePath: string) {
-    const accWorker = this.createAccWorker();
-    accWorker.on('message', (m: any) => {
-      logger.log(`Account worker message: ${JSON.stringify(m)}`);
-      if (m.localAddresses) {
-        this._panel.webview.postMessage({ localAccounts: m.localAddresses });
-      }
-    });
-    accWorker.send({ command: 'get-localAccounts', keyStorePath });
-  }
-
   // get balance of given account
   private getBalance(account: IAccount, testNetId: string) {
     const balanceWorker = this.createWorker();
@@ -490,8 +480,6 @@ export class ReactPanel {
     sendEtherWorker.on('message', (m: any) => {
       logger.log(`Ether worker message: ${JSON.stringify(m)}`);
       if (m.transactionResult) {
-        updateUserSession(m.transactionResult, ['userConfig', 'txHashOfLastSendEther']);
-        updateUserSession(testNetId, ['userConfig', 'networkId']);
         this._panel.webview.postMessage({
           transactionResult: m.transactionResult,
         });
@@ -518,8 +506,6 @@ export class ReactPanel {
       if (m.unsignedTx) {
         this._panel.webview.postMessage({ unsignedTx: m.unsignedTx });
       } else if (m.transactionResult) {
-        updateUserSession(m.transactionResult, ['userConfig', 'txHashOfLastSendEther']);
-        updateUserSession(testNetId, ['userConfig', 'networkId']);
         this._panel.webview.postMessage({
           transactionResult: m.transactionResult,
         });
@@ -535,51 +521,6 @@ export class ReactPanel {
       payload,
       authToken,
       testnetId: testNetId,
-    });
-  }
-
-  public sendTestContract(editorContent: string | undefined, fn: string | undefined) {
-    const sources: ISources = {};
-    if (fn) {
-      sources[fn] = {
-        content: editorContent,
-      };
-    }
-    const solcWorker = this.createWorker();
-    this._panel.webview.postMessage({ resetTestState: 'resetTestState' });
-    this._panel.webview.postMessage({
-      processMessage: 'Running unit tests...',
-    });
-    solcWorker.send({ command: 'run-test', payload: JSON.stringify(sources) });
-    solcWorker.on('message', (m: any) => {
-      logger.log(`Remix-tests worker message: ${JSON.stringify(m)}`);
-      if (m.data && m.path) {
-        sources[m.path] = {
-          content: m.data.content,
-        };
-        solcWorker.send({
-          command: 'run-test',
-          payload: JSON.stringify(sources),
-        });
-      }
-      if (m.utResp) {
-        const res = JSON.parse(m.utResp.result);
-        if (res.type) {
-          this._panel.webview.postMessage({
-            _testCallback: res,
-            testPanel: 'test',
-          });
-        } else {
-          this._panel.webview.postMessage({
-            _finalCallback: res,
-            testPanel: 'test',
-          });
-          solcWorker.kill();
-        }
-      }
-    });
-    solcWorker.on('exit', () => {
-      logger.log('Remix-tests worker exited!');
     });
   }
 

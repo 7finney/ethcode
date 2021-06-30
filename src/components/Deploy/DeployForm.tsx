@@ -1,10 +1,8 @@
 import React, { MutableRefObject, useContext, useEffect, useState, FormEvent, MouseEvent } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
-import { Button, ButtonType, TextArea } from 'components/common/ui';
-import { ABIDescription, ConstructorInput, GlobalStore, ABIParameter } from 'types';
-import { setErrMsg } from 'actions';
-import { abiHelpers } from '../common/lib';
+import { Button, ButtonType, TextArea } from '..';
+import { ABIDescription, ConstructorInput, ABIParameter } from 'types';
+import { abiHelpers } from '../../lib';
 import { AppContext } from '../../appContext';
 
 interface IProps {
@@ -24,15 +22,7 @@ const DeployForm: React.FC<IProps> = ({ vscode, abi, bytecode, gasEstimate, cons
   const [buildTxToggle, setBuildTxToggle] = useState(true);
   const { control, register, getValues, setValue, handleSubmit } = useForm<TDeployForm>();
   // Context
-  const { testNetID } = useContext(AppContext);
-  // redux
-  // UseSelector to extract state elements.
-  const { currAccount, unsignedTx, pvtKey } = useSelector((state: GlobalStore) => ({
-    currAccount: state.accountStore.currAccount,
-    unsignedTx: state.txStore.unsignedTx,
-    pvtKey: state.accountStore.privateKey,
-  }));
-  const dispatch = useDispatch();
+  const { testNetID, currAccount, pvtKey, unsignedTx, setError } = useContext(AppContext);
   useEffect(() => {
     const constructorABI: ABIDescription = abiHelpers.getConstructorABI(abi);
     if (constructorABI) {
@@ -66,7 +56,7 @@ const DeployForm: React.FC<IProps> = ({ vscode, abi, bytecode, gasEstimate, cons
         testNetId: testNetID,
       });
     } catch (error) {
-      dispatch(setErrMsg(error));
+      setError(error);
     }
   };
 
@@ -81,7 +71,7 @@ const DeployForm: React.FC<IProps> = ({ vscode, abi, bytecode, gasEstimate, cons
         testNetId: testNetID,
       });
     } catch (error) {
-      dispatch(setErrMsg(error));
+      setError(error);
     }
   };
 
