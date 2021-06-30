@@ -108,7 +108,7 @@
     "commands": [
       {
         "command": "ethcode.activate",
-        "title": "Activate ETHcode extension",
+        "title": "Activate extension",
         "category": "Ethcode"
       },
       {
@@ -123,17 +123,17 @@
       },
       {
         "command": "ethcode.account.sign-deploy",
-        "title": "Sign & deploy ethereum transaction",
+        "title": "Sign & Deploy ethereum transaction",
         "category": "Ethcode"
       },
       {
         "command": "ethcode.account.set",
-        "title": "Select ethereum account",
+        "title": "Use ethereum account",
         "category": "Ethcode"
       },
       {
         "command": "ethcode.network.set",
-        "title": "Select ethereum network",
+        "title": "Use ethereum network",
         "category": "Ethcode"
       },
       {
@@ -173,12 +173,12 @@
       },
       {
         "command": "ethcode.contract.gas.get",
-        "title": "Get gas estimates for transaction",
+        "title": "Get gas estimate for transaction",
         "category": "Ethcode"
       },
       {
         "command": "ethcode.contract.gas.set",
-        "title": "Set gas estimates for transaction",
+        "title": "Set gas estimate for transaction",
         "category": "Ethcode"
       }
     ],
