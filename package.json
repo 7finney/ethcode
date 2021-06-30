@@ -197,23 +197,18 @@
       "editor/context": [
         {
           "when": "resourceLangId == json",
-          "command": "ethcode.transaction.build",
-          "group": "Ethereum"
-        },
-        {
-          "when": "resourceLangId == json",
           "command": "ethcode.combined-json.load",
-          "group": "Ethereum"
+          "group": "Ethcode"
         },
         {
           "when": "resourceLangId == json",
           "command": "ethcode.standard-json.load",
-          "group": "Ethereum"
+          "group": "Ethcode"
         },
         {
           "when": "resourceLangId == json",
           "command": "ethcode.contract.input.load",
-          "group": "Ethereum"
+          "group": "Ethcode"
         }
       ]
     }
