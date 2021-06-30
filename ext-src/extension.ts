@@ -11,8 +11,6 @@ import {
   IAccountQP,
   INetworkQP,
   LocalAddressType,
-  CombinedJSONOutput,
-  ICombinedJSONContractsQP,
   StandardCompiledContract,
   CombinedCompiledContract,
   isStdContract,
@@ -359,7 +357,7 @@ export async function activate(context: vscode.ExtensionContext) {
       context.workspaceState.update('gasEstimate', gas);
     }),
     commands.registerCommand('ethcode.show', async () => {
-      ReactPanel.createOrShow(context.extensionPath);
+      ReactPanel.createOrShow(context.extensionPath, context.workspaceState);
     }),
     // Activate
     commands.registerCommand('ethcode.activate', async () => {

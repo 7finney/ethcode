@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import ReactJson, { OnCopyProps } from 'react-json-view';
 import { setGanacheAccountsOption, setLocalAccountOption } from '../helper';
 
-import { CompilationResult, ABIDescription, IAccount } from '../types';
+import { ABIDescription, IAccount, CompiledContract } from '../types';
 
 import ContractDeploy from './ContractDeploy';
 import { Selector } from '../components';
@@ -10,7 +10,6 @@ import Deploy from './Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from './Account';
-import { OutputJSONForm } from '../components/OutputJSONForm';
 import { AppContext } from '../appContext';
 
 // @ts-ignore
@@ -38,9 +37,9 @@ export const MainView = () => {
     currAccount,
     setAccount,
     accounts,
-    compiledJSON,
+    contract,
     accountBalance,
-    setCompiledJSON,
+    setCompiledContract,
     setTestNetID,
     setSelectorAccounts,
     setAccountBalance,
@@ -76,21 +75,13 @@ export const MainView = () => {
       setSelectorAccounts([]);
     }
   };
-  const loadCompiledJSON = (data: any) => {
-    setCompiledJSON(undefined);
+  const loadContract = (_contract: any) => {
     try {
-      const compiled: CompilationResult = JSON.parse(data.compiled);
-      setCompiledJSON(compiled);
-      if (compiled.errors && compiled.errors.length > 0) {
-        setMessage(compiled.errors);
-      } else if (!compiled.errors) {
-        setMessage([]);
-        setProcessMessage('');
-      }
-      setProcessMessage('');
+      const contract: CompiledContract = _contract;
+      setCompiledContract(contract);
     } catch (error) {
       console.error(error);
-      setProcessMessage('Error Parsing Compilation result');
+      setProcessMessage('Error Parsing CompiledContract');
     }
   };
 
@@ -120,9 +111,8 @@ export const MainView = () => {
         setAccount(account);
         setAccountBalance(balance);
       }
-      // compiled
-      if (data.compiled) {
-        loadCompiledJSON(data);
+      if (data.contract) {
+        loadContract(data.contract);
       }
       if (data.processMessage) {
         const { processMessage } = data;
@@ -164,6 +154,7 @@ export const MainView = () => {
     // Component mounted start getting gRPC things
     vscode.postMessage({ command: 'get-localAccounts' });
     vscode.postMessage({ command: 'run-getAccounts' });
+    vscode.postMessage({ command: 'get-contract' });
   }, []);
 
   const setSelectedNetwork = (testNet: any) => {
@@ -173,12 +164,6 @@ export const MainView = () => {
       command: 'get-balance',
       account: currAccount,
       testNetId,
-    });
-  };
-
-  const handleAppRegister = () => {
-    vscode.postMessage({
-      command: 'app-register',
     });
   };
 
@@ -229,8 +214,6 @@ export const MainView = () => {
               <Tab>Main</Tab>
               <Tab>Account</Tab>
               <Tab>Deploy</Tab>
-              {/* <Tab>Debug</Tab>
-              <Tab>Test</Tab> */}
             </div>
           </TabList>
           {/* Main panel */}
@@ -244,19 +227,15 @@ export const MainView = () => {
                 <span>{accountBalance} wei</span>
               </div>
             )}
-            <div>
-              <OutputJSONForm handleLoad={loadCompiledJSON} />
-            </div>
-            {compiledJSON && (
+            {contract && (
               <div className="compiledOutput">
                 <ReactJson
-                  src={compiledJSON.contracts}
+                  src={contract}
                   name="Contracts"
                   theme="monokai"
                   collapsed
                   collapseStringsAfterLength={12}
                   style={reactJSONViewStyle}
-                  // onSelect={handleJSONItemSelect}
                   enableClipboard={handleCopy}
                 />
               </div>
@@ -279,14 +258,6 @@ export const MainView = () => {
               </div>
             )}
           </TabPanel>
-          {/* Debug panel */}
-          {/* <TabPanel className="react-tab-panel">
-            <DebugDisplay vscode={vscode} txTrace={txTrace} traceError={traceError} />
-          </TabPanel> */}
-          {/* Test panel */}
-          {/* <TabPanel className="react-tab-panel">
-            {testResults.length > 0 ? <TestDisplay /> : 'No contracts to test'}
-          </TabPanel> */}
         </Tabs>
         <div className="err_warning_container">
           {message.map((m, i) => {
