@@ -106,6 +106,9 @@ export class ReactPanel {
         } else if (message.command === 'get-contract') {
           const contract = workspaceState.get('contract');
           this._panel.webview.postMessage({ contract });
+        } else if (message.command === 'get-network') {
+          const networkId = workspaceState.get('networkId');
+          this._panel.webview.postMessage({ networkId });
         }
       },
       null,

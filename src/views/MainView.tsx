@@ -5,7 +5,6 @@ import { setGanacheAccountsOption, setLocalAccountOption } from '../helper';
 import { ABIDescription, IAccount, CompiledContract } from '../types';
 
 import ContractDeploy from './ContractDeploy';
-import { Selector } from '../components';
 import Deploy from './Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
@@ -15,21 +14,24 @@ import { AppContext } from '../appContext';
 // @ts-ignore
 const vscode = acquireVsCodeApi(); // eslint-disable-line
 
+interface ITestNet {
+  value: string;
+  label: string;
+}
+
 export const MainView = () => {
-  const [message, setMessage] = useState<any[]>([]);
   const [processMessage, setProcessMessage] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
-  const [txTrace, setTxTrace] = useState({});
   const [transactionResult, setTransactionResult] = useState('');
-  const [traceError, setTraceError] = useState('');
   const [localAcc, setLocalAcc] = useState<any[]>([]);
   const [testNetAcc, setTestNetAcc] = useState<any[]>([]);
-  const [testNets] = useState([
+  const [testNets] = useState<Array<ITestNet>>([
     { value: 'ganache', label: 'Ganache' },
     // { value: '3', label: 'Ropsten' },
     // { value: '4', label: 'Rinkeby' },
     { value: '5', label: 'Görli' },
   ]);
+  const [testNet, setTestNet] = useState<ITestNet>(testNets[0]);
   const [abi, setAbi] = useState<Array<ABIDescription>>([]);
   const [bytecode, setBytecode] = useState<string>('');
   // Context
@@ -118,30 +120,11 @@ export const MainView = () => {
         const { processMessage } = data;
         setProcessMessage(processMessage);
       }
-
-      if (data.testPanel === 'test') {
-        setTabIndex(4);
-      }
-
       if (data.testPanel === 'main') {
         setTabIndex(0);
       }
-
-      if (data._importFileCb) {
-        return;
-      }
       if (data.errors) {
         setError(data.errors);
-      }
-      if (data.deployedResult) {
-        const result = data.deployedResult.deployedResult;
-        // setDeployedResult(JSON.parse(result));
-      }
-      if (data.txTrace) {
-        setTxTrace(data.txTrace);
-      }
-      if (data.traceError) {
-        setTraceError(data.traceError);
       }
       if (data.callResult) {
         const result = data.callResult;
@@ -150,22 +133,18 @@ export const MainView = () => {
       if (data.transactionResult) {
         setTransactionResult(data.transactionResult);
       }
+      if (data.networkId) {
+        const testnet = testNets.filter((net) => net.value === JSON.stringify(data.networkId));
+        setTestNetID(data.networkId);
+        setTestNet(testnet[0]);
+      }
     });
     // Component mounted start getting gRPC things
     vscode.postMessage({ command: 'get-localAccounts' });
     vscode.postMessage({ command: 'run-getAccounts' });
     vscode.postMessage({ command: 'get-contract' });
+    vscode.postMessage({ command: 'get-network' });
   }, []);
-
-  const setSelectedNetwork = (testNet: any) => {
-    const testNetId = testNet.value;
-    setTestNetID(testNetId);
-    vscode.postMessage({
-      command: 'get-balance',
-      account: currAccount,
-      testNetId,
-    });
-  };
 
   const openAdvanceDeploy = (): void => {
     setTabIndex(2);
@@ -189,14 +168,7 @@ export const MainView = () => {
   };
   return (
     <div>
-      <div className="selectors">
-        <Selector
-          onSelect={setSelectedNetwork}
-          options={testNets}
-          placeholder="Select Network"
-          defaultValue={testNets[0]}
-        />
-      </div>
+      <div className="selectors">Selected Network: {testNet.label}</div>
       {transactionResult && (
         <div className="tx-info">
           <span>Last transaction:</span>
@@ -259,18 +231,6 @@ export const MainView = () => {
             )}
           </TabPanel>
         </Tabs>
-        <div className="err_warning_container">
-          {message.map((m, i) => {
-            return (
-              // eslint-disable-next-line react/no-array-index-key
-              <div key={i}>
-                {m.severity === 'warning' && <pre className="error-message yellow-text">{m.formattedMessage}</pre>}
-                {m.severity === 'error' && <pre className="error-message red-text">{m.formattedMessage}</pre>}
-                {!m.severity && <pre className="error-message">{m.formattedMessage}</pre>}
-              </div>
-            );
-          })}
-        </div>
       </div>
       <div className="process-msg-container">
         {processMessage && <pre className="processMessage">{processMessage}</pre>}
