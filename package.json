@@ -180,6 +180,11 @@
         "command": "ethcode.contract.gas.set",
         "title": "Set gas estimate for transaction",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.show",
+        "title": "Open Ethcode Interface",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
