@@ -22,7 +22,7 @@ import {
   ConstructorInputValue,
   isStdJSONOutput,
 } from './types';
-import { parseJSONPayload } from './lib';
+import { parseCombinedJSONPayload, parseJSONPayload } from './lib';
 import { errors } from './utils';
 
 // Create logger
@@ -270,34 +270,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Load combined JSON output
     commands.registerCommand('ethcode.combined-json.load', () => {
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-      if (editorContent) {
-        const { contracts }: CombinedJSONOutput = JSON.parse(editorContent);
-        const quickPick = window.createQuickPick<ICombinedJSONContractsQP>();
-        quickPick.items = Object.keys(contracts).map((contract) => ({ label: contract, contractKey: contract }));
-        quickPick.placeholder = 'Select contract';
-        quickPick.onDidChangeActive((selection: Array<ICombinedJSONContractsQP>) => {
-          quickPick.value = selection[0].label;
-        });
-        quickPick.onDidChangeSelection((selection: Array<ICombinedJSONContractsQP>) => {
-          if (selection[0]) {
-            const contract: CombinedCompiledContract = contracts[selection[0].contractKey];
-            if (isComContract(contract)) {
-              context.workspaceState.update('contract', contract);
-            } else {
-              logger.error(Error('Could not parse contract.'));
-            }
-            quickPick.dispose();
-          }
-        });
-        quickPick.onDidHide(() => quickPick.dispose());
-        quickPick.show();
-      } else {
-        logger.error(
-          Error(
-            'Could not load JSON file. Make sure it follows Solidity output description. Know more: https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description.'
-          )
-        );
-      }
+      parseCombinedJSONPayload(context, editorContent);
     }),
     // Load combined JSON output
     commands.registerCommand('ethcode.standard-json.load', (_jsonPayload: any) => {
