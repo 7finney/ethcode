@@ -17,13 +17,13 @@ VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=e
 ## Usage instructions
 ### Activate plugin with activation command
 * Command: `ethcode.activate`
-* Description: Activates Ethcode extension
+* Description: Activates Ethcode extension.
 
 ![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
 
 ### Load compiled JSON
 * Command: `ethcode.combined-json.load`, `ethcode.standard-json.load`
-* Description: Generate constructor inputs
+* Description: Generate constructor inputs.
 
 ![Screenshot from 2021-07-01 19-41-30](https://user-images.githubusercontent.com/13261372/124138953-c7697100-daa4-11eb-9064-5756dba06606.png)
 
@@ -31,7 +31,7 @@ VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=e
 
 ### Create constructor inputs
 * Command: `ethcode.contract.input.create`
-* Description: Generate constructor inputs
+* Description: Generate constructor inputs.
 
 ![Screenshot from 2021-07-01 19-55-50](https://user-images.githubusercontent.com/13261372/124141448-10bac000-daa7-11eb-978e-0746a51b4a08.png)
 
@@ -57,14 +57,14 @@ As the JSON suggests the value for the input is provided with the `value` field.
 
 ### Build transaction
 * Command: `ethcode.transaction.build`
-* Description: Build raw transaction
+* Description: Build raw transaction.
 
 ![Screenshot from 2021-07-01 20-06-58](https://user-images.githubusercontent.com/13261372/124142793-2bd9ff80-daa8-11eb-8a72-31e6bde86d79.png)
 
 
 ### Deploy contracts.
 * Command: `ethcode.account.sign-deploy`
-* Description: Deploy transaction to network
+* Description: Deploy transaction to network.
 
 ![Screenshot from 2021-07-01 20-29-01](https://user-images.githubusercontent.com/13261372/124146369-52e60080-daab-11eb-99ff-acd46cf0d43d.png)
 
@@ -75,6 +75,26 @@ As the JSON suggests the value for the input is provided with the `value` field.
 ![Screenshot from 2021-07-01 21-00-45](https://user-images.githubusercontent.com/13261372/124150942-aa866b00-daaf-11eb-9d31-db538c140d23.png)
 
 ![Screenshot from 2021-07-01 21-00-54](https://user-images.githubusercontent.com/13261372/124150937-a9553e00-daaf-11eb-84ab-51a546ad3742.png)
+
+### List accounts
+* Command: `ethcode.account.list`
+* Description: List ethereum accounts.
+
+![Screenshot from 2021-07-01 21-21-22](https://user-images.githubusercontent.com/13261372/124153761-66489a00-dab2-11eb-9d17-a8b97468a556.png)
+
+### Use account
+* Command: `ethcode.account.set`
+* Description: Choose ethereum account for use.
+
+![Screenshot from 2021-07-01 21-23-05](https://user-images.githubusercontent.com/13261372/124153955-a0b23700-dab2-11eb-955a-9fca6c640a0b.png)
+
+### Use network
+* Command: `ethcode.network.set`
+* Description: Choose ethereum network for use.
+
+![Screenshot from 2021-07-01 21-26-05](https://user-images.githubusercontent.com/13261372/124154347-09011880-dab3-11eb-9e54-eb2952894ef8.png)
+
+
 
 ## [Vyper](https://vyper.readthedocs.io/) support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
