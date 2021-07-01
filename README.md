@@ -16,17 +16,58 @@ VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=e
 
 ## Usage instructions
 ### Activate plugin with activation command
-`ctrl+alt+e` - activates the plugin.
+* Command: `ethcode.activate`
+* Description: Activates Ethcode extension
 
 ![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
 
 ### Load compiled JSON
+* Command: `ethcode.combined-json.load`, `ethcode.standard-json.load`
+* Description: Generate constructor inputs
 
 ![Screenshot from 2021-07-01 19-41-30](https://user-images.githubusercontent.com/13261372/124138953-c7697100-daa4-11eb-9064-5756dba06606.png)
 
+
 ![Screenshot from 2021-07-01 19-41-44](https://user-images.githubusercontent.com/13261372/124138945-c59fad80-daa4-11eb-954a-f47bbf0d0fec.png)
 
-### Deploy contracts to [Goerli test network](https://github.com/goerli/testnet).
+### Create constructor inputs
+* Command: `ethcode.contract.input.create`
+* Description: Generate constructor inputs
+
+![Screenshot from 2021-07-01 19-55-50](https://user-images.githubusercontent.com/13261372/124141448-10bac000-daa7-11eb-978e-0746a51b4a08.png)
+
+This will create a `constructor-input.json` file inside your workspace.
+
+```
+[
+  {
+    "internalType": "string",
+    "name": "_greeting",
+    "type": "string",
+    "value": "Hello World!"
+  }
+]
+```
+As the JSON suggests the value for the input is provided with the `value` field.
+
+### Load constructor inpusts
+* Command: `ethcode.contract.input.load`
+* Description: Load constructor inputs.
+
+![Screenshot from 2021-07-01 20-48-35](https://user-images.githubusercontent.com/13261372/124149165-f506e800-daad-11eb-9753-eb1ff58d6ef1.png)
+
+### Build transaction
+* Command: `ethcode.transaction.build`
+* Description: Build raw transaction
+
+![Screenshot from 2021-07-01 20-06-58](https://user-images.githubusercontent.com/13261372/124142793-2bd9ff80-daa8-11eb-8a72-31e6bde86d79.png)
+
+
+### Deploy contracts.
+* Command: `ethcode.account.sign-deploy`
+* Description: Deploy transaction to network
+
+![Screenshot from 2021-07-01 20-29-01](https://user-images.githubusercontent.com/13261372/124146369-52e60080-daab-11eb-99ff-acd46cf0d43d.png)
 
 ## [Vyper](https://vyper.readthedocs.io/) support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
