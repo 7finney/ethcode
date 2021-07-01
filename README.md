@@ -10,47 +10,94 @@ https://ethcode.dev/
 https://docs.ethcode.dev/
 ## Installation
 VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=ethential.ethcode
-## Authentication
-https://auth.ethcode.dev/
 
 ## System support
 * Linux, Mac, Windows
 
 ## Usage instructions
-`ctrl+alt+e` - activate the plugin.
+### Activate plugin with activation command
+* Command: `ethcode.activate`
+* Description: Activates Ethcode extension.
 
 ![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
 
-`ctrl+alt+c` - compile [solidity](https://solidity.readthedocs.io/en/v0.6.12/) contracts.
+### Load compiled JSON
+* Command: `ethcode.combined-json.load`, `ethcode.standard-json.load`
+* Description: Generate constructor inputs.
 
-![Screenshot from 2020-12-22 00-57-09](https://user-images.githubusercontent.com/13261372/102814512-c3bbaa00-43f0-11eb-9d15-cffb681b7d7f.png)
+![Screenshot from 2021-07-01 19-41-30](https://user-images.githubusercontent.com/13261372/124138953-c7697100-daa4-11eb-9064-5756dba06606.png)
 
-Deploy contracts to [Goerli test network](https://github.com/goerli/testnet).
+![Screenshot from 2021-07-01 19-41-44](https://user-images.githubusercontent.com/13261372/124138945-c59fad80-daa4-11eb-954a-f47bbf0d0fec.png)
 
-![Screenshot from 2020-07-28 07-20-43](https://user-images.githubusercontent.com/13261372/88610617-c665dd80-d0a4-11ea-8c4a-bcb8fb0dbdbb.png)
+### Create constructor inputs
+* Command: `ethcode.contract.input.create`
+* Description: Generate constructor inputs.
 
-`ctrl+alt+t` - run [unit testing](https://www.npmjs.com/package/remix-tests).
+![Screenshot from 2021-07-01 19-55-50](https://user-images.githubusercontent.com/13261372/124141448-10bac000-daa7-11eb-978e-0746a51b4a08.png)
 
-![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/78938685-448b7d80-7ad0-11ea-8248-d2494269b52e.png)
+This will create a `constructor-input.json` file inside your workspace.
 
-**Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
+```
+[
+  {
+    "internalType": "string",
+    "name": "_greeting",
+    "type": "string",
+    "value": "Hello World!"
+  }
+]
+```
+As the JSON suggests the value for the input is provided with the `value` field.
+
+### Load constructor inpusts
+* Command: `ethcode.contract.input.load`
+* Description: Load constructor inputs.
+
+![Screenshot from 2021-07-01 20-48-35](https://user-images.githubusercontent.com/13261372/124149165-f506e800-daad-11eb-9753-eb1ff58d6ef1.png)
+
+### Build transaction
+* Command: `ethcode.transaction.build`
+* Description: Build raw transaction.
+
+![Screenshot from 2021-07-01 20-06-58](https://user-images.githubusercontent.com/13261372/124142793-2bd9ff80-daa8-11eb-8a72-31e6bde86d79.png)
+
+
+### Deploy contracts.
+* Command: `ethcode.account.sign-deploy`
+* Description: Deploy transaction to network.
+
+![Screenshot from 2021-07-01 20-29-01](https://user-images.githubusercontent.com/13261372/124146369-52e60080-daab-11eb-99ff-acd46cf0d43d.png)
+
+### Create account
+* Command: `ethcode.account.create`
+* Description: Create ethereum account. You will be prompted for password. Accounts are created inside ethcode extension directory.
+
+![Screenshot from 2021-07-01 21-00-45](https://user-images.githubusercontent.com/13261372/124150942-aa866b00-daaf-11eb-9d31-db538c140d23.png)
+
+![Screenshot from 2021-07-01 21-00-54](https://user-images.githubusercontent.com/13261372/124150937-a9553e00-daaf-11eb-84ab-51a546ad3742.png)
+
+### List accounts
+* Command: `ethcode.account.list`
+* Description: List ethereum accounts.
+
+![Screenshot from 2021-07-01 21-21-22](https://user-images.githubusercontent.com/13261372/124153761-66489a00-dab2-11eb-9d17-a8b97468a556.png)
+
+### Use account
+* Command: `ethcode.account.set`
+* Description: Choose ethereum account for use.
+
+![Screenshot from 2021-07-01 21-23-05](https://user-images.githubusercontent.com/13261372/124153955-a0b23700-dab2-11eb-955a-9fca6c640a0b.png)
+
+### Use network
+* Command: `ethcode.network.set`
+* Description: Choose ethereum network for use.
+
+![Screenshot from 2021-07-01 21-26-05](https://user-images.githubusercontent.com/13261372/124154347-09011880-dab3-11eb-9e54-eb2952894ef8.png)
+
+----------------------------------------------------------------------------
 
 ## [Vyper](https://vyper.readthedocs.io/) support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
-
-## Use locally generated key-pair to use with test networks
-Ethcode signs all transactions using generated key-pair in your computer. Use `Generate key pair` button to generate your keys. Then go to respective test network faucet and get some testnet ether. For `Görli` use [goerli-faucet](https://goerli-faucet.slock.it).
-
-![Screenshot from 2020-04-11 01-02-38](https://user-images.githubusercontent.com/13261372/79018200-db1f7380-7b90-11ea-98f6-846f26405b35.png)
-
-## Authenticate with Ethential ethereum cloud gRPC endpoint
-We use cloud endpoints to deploy contracts to public blockchains. Kindly register your user and use generated authtoken to authenticate with our cloud endpoints.
-1. Register and create an authtoken on https://auth.ethcode.dev/
-2. Click on "Register App" in Account tab.
-3. Provide your authtoken and email id when prompted.
-
-<img width="1440" alt="Screenshot from 2020-12-22 00-47-28" src="https://user-images.githubusercontent.com/13261372/102813769-6ffc9100-43ef-11eb-9b93-e1a4e3dbb0d7.png">
-
 
 ## Help
 Please help ethcode developers continue their work.
