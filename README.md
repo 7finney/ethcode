@@ -94,7 +94,7 @@ As the JSON suggests the value for the input is provided with the `value` field.
 
 ![Screenshot from 2021-07-01 21-26-05](https://user-images.githubusercontent.com/13261372/124154347-09011880-dab3-11eb-9e54-eb2952894ef8.png)
 
-
+----------------------------------------------------------------------------
 
 ## [Vyper](https://vyper.readthedocs.io/) support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
