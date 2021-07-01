@@ -10,30 +10,23 @@ https://ethcode.dev/
 https://docs.ethcode.dev/
 ## Installation
 VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=ethential.ethcode
-## Authentication
-https://auth.ethcode.dev/
 
 ## System support
 * Linux, Mac, Windows
 
 ## Usage instructions
-`ctrl+alt+e` - activate the plugin.
+### Activate plugin with activation command
+`ctrl+alt+e` - activates the plugin.
 
 ![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
 
-`ctrl+alt+c` - compile [solidity](https://solidity.readthedocs.io/en/v0.6.12/) contracts.
+### Load compiled JSON
 
-![Screenshot from 2020-12-22 00-57-09](https://user-images.githubusercontent.com/13261372/102814512-c3bbaa00-43f0-11eb-9d15-cffb681b7d7f.png)
+![Screenshot from 2021-07-01 19-41-30](https://user-images.githubusercontent.com/13261372/124138953-c7697100-daa4-11eb-9064-5756dba06606.png)
 
-Deploy contracts to [Goerli test network](https://github.com/goerli/testnet).
+![Screenshot from 2021-07-01 19-41-44](https://user-images.githubusercontent.com/13261372/124138945-c59fad80-daa4-11eb-954a-f47bbf0d0fec.png)
 
-![Screenshot from 2020-07-28 07-20-43](https://user-images.githubusercontent.com/13261372/88610617-c665dd80-d0a4-11ea-8c4a-bcb8fb0dbdbb.png)
-
-`ctrl+alt+t` - run [unit testing](https://www.npmjs.com/package/remix-tests).
-
-![Screenshot from 2019-10-30 20-00-05](https://user-images.githubusercontent.com/13261372/78938685-448b7d80-7ad0-11ea-8248-d2494269b52e.png)
-
-**Note:** *compilation with latest/default version is faster. compilation with any other selected version can be slower as it loads the compiler version from internet.*
+### Deploy contracts to [Goerli test network](https://github.com/goerli/testnet).
 
 ## [Vyper](https://vyper.readthedocs.io/) support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
@@ -42,15 +35,6 @@ Please install vyper compiler for compiling vyper contracts in ethcode. Instruct
 Ethcode signs all transactions using generated key-pair in your computer. Use `Generate key pair` button to generate your keys. Then go to respective test network faucet and get some testnet ether. For `Görli` use [goerli-faucet](https://goerli-faucet.slock.it).
 
 ![Screenshot from 2020-04-11 01-02-38](https://user-images.githubusercontent.com/13261372/79018200-db1f7380-7b90-11ea-98f6-846f26405b35.png)
-
-## Authenticate with Ethential ethereum cloud gRPC endpoint
-We use cloud endpoints to deploy contracts to public blockchains. Kindly register your user and use generated authtoken to authenticate with our cloud endpoints.
-1. Register and create an authtoken on https://auth.ethcode.dev/
-2. Click on "Register App" in Account tab.
-3. Provide your authtoken and email id when prompted.
-
-<img width="1440" alt="Screenshot from 2020-12-22 00-47-28" src="https://user-images.githubusercontent.com/13261372/102813769-6ffc9100-43ef-11eb-9b93-e1a4e3dbb0d7.png">
-
 
 ## Help
 Please help ethcode developers continue their work.
