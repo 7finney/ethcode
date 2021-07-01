@@ -27,7 +27,6 @@ VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=e
 
 ![Screenshot from 2021-07-01 19-41-30](https://user-images.githubusercontent.com/13261372/124138953-c7697100-daa4-11eb-9064-5756dba06606.png)
 
-
 ![Screenshot from 2021-07-01 19-41-44](https://user-images.githubusercontent.com/13261372/124138945-c59fad80-daa4-11eb-954a-f47bbf0d0fec.png)
 
 ### Create constructor inputs
@@ -69,13 +68,16 @@ As the JSON suggests the value for the input is provided with the `value` field.
 
 ![Screenshot from 2021-07-01 20-29-01](https://user-images.githubusercontent.com/13261372/124146369-52e60080-daab-11eb-99ff-acd46cf0d43d.png)
 
+### Create account
+* Command: `ethcode.account.create`
+* Description: Create ethereum account. You will be prompted for password. Accounts are created inside ethcode extension directory.
+
+![Screenshot from 2021-07-01 21-00-45](https://user-images.githubusercontent.com/13261372/124150942-aa866b00-daaf-11eb-9d31-db538c140d23.png)
+
+![Screenshot from 2021-07-01 21-00-54](https://user-images.githubusercontent.com/13261372/124150937-a9553e00-daaf-11eb-84ab-51a546ad3742.png)
+
 ## [Vyper](https://vyper.readthedocs.io/) support
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
-
-## Use locally generated key-pair to use with test networks
-Ethcode signs all transactions using generated key-pair in your computer. Use `Generate key pair` button to generate your keys. Then go to respective test network faucet and get some testnet ether. For `Görli` use [goerli-faucet](https://goerli-faucet.slock.it).
-
-![Screenshot from 2020-04-11 01-02-38](https://user-images.githubusercontent.com/13261372/79018200-db1f7380-7b90-11ea-98f6-846f26405b35.png)
 
 ## Help
 Please help ethcode developers continue their work.
