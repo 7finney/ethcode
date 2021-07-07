@@ -73,22 +73,15 @@ export class ReactPanel {
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'get-balance') {
-          this.getBalance(message.account, message.testNetId);
+          const balance = workspaceState.get('balance');
+          this._panel.webview.postMessage({ balance });
         } else if (message.command === 'build-rawtx') {
           this.buildRawTx(message.payload, message.testNetId);
         } else if (message.command === 'sign-deploy-tx') {
           this.signDeployTx(message.payload, message.testNetId);
         } else if (message.command === 'run-getAccounts') {
-          if (ReactPanel.currentPanel) {
-            ReactPanel.currentPanel.getAccounts();
-          } else {
-            try {
-              ReactPanel.currentPanel = new ReactPanel(extensionPath, column || ViewColumn.One, workspaceState);
-              ReactPanel.currentPanel.getAccounts();
-            } catch (error) {
-              logger.error(error);
-            }
-          }
+          const accounts = workspaceState.get('ganache-addresses');
+          this._panel.webview.postMessage({ fetchAccounts: accounts });
         } else if (message.command === 'gen-keypair') {
           this.genKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'delete-keyPair') {
@@ -372,7 +365,7 @@ export class ReactPanel {
     });
   }
 
-  // get accounts
+  // get ganache accounts
   public getAccounts() {
     const accountsWorker = this.createWorker();
     accountsWorker.on('message', (m: any) => {
@@ -382,35 +375,7 @@ export class ReactPanel {
       }
       this._panel.webview.postMessage({ fetchAccounts: m });
     });
-    const authToken = {
-      appId: retrieveUserSettings('ethcode.userConfig.appRegistration', 'appId'),
-      token: retrieveUserSettings('ethcode.userConfig.appRegistration', 'token'),
-    };
-    if (authToken.appId === '' && authToken.token === '') {
-      logger.error(new Error('App Not registered'));
-      return;
-    }
-    accountsWorker.send({ command: 'get-accounts', authToken });
-  }
-
-  // get balance of given account
-  private getBalance(account: IAccount, testNetId: string) {
-    const balanceWorker = this.createWorker();
-    balanceWorker.on('message', (m: any) => {
-      logger.log(`Balance worker message: ${JSON.stringify(m)}`);
-      this._panel.webview.postMessage({ balance: m.balance, account });
-    });
-    if (authToken.appId === '' && authToken.token === '') {
-      logger.error(new Error('App Not registered'));
-      return;
-    }
-    if (account && Object.keys(account).length > 0)
-      balanceWorker.send({
-        command: 'get-balance',
-        account,
-        authToken,
-        testnetId: testNetId,
-      });
+    accountsWorker.send({ command: 'get-accounts' });
   }
 
   // call contract method

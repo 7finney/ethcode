@@ -99,14 +99,13 @@ export const MainView = () => {
         setLocalAcc(setLocalAccountOption(data.localAccounts));
       }
       if (data.fetchAccounts) {
-        const { balance, accounts } = data.fetchAccounts;
+        const accounts = data.fetchAccounts;
         setTestNetAcc(setGanacheAccountsOption(accounts));
         const currAccount: IAccount = {
           label: accounts[0],
           value: accounts[0],
         };
         setAccount(currAccount);
-        setAccountBalance(balance);
       }
       if (data.balance) {
         const { balance, account } = data;

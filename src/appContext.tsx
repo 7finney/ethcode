@@ -1,3 +1,5 @@
+/* eslint no-unused-vars: 0 */
+
 import { createContext } from 'react';
 import { CompilationResult, IAccount, GroupedSelectorAccounts, TransactionResult, CompiledContract } from './types';
 

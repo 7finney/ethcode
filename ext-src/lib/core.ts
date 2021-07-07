@@ -44,7 +44,7 @@ export function parseJSONPayload(context: ExtensionContext, _jsonPayload: any): 
               const contract: StandardCompiledContract = contracts[contractFileName][selection[0].contractKey];
               if (isStdContract(contract)) {
                 context.workspaceState.update('contract', contract);
-                logger.success('Contract loaded!');
+                logger.log('Contract loaded!');
               } else {
                 logger.error(Error('Could not parse contract.'));
               }
@@ -85,7 +85,7 @@ export function parseCombinedJSONPayload(context: ExtensionContext, _jsonPayload
         const contract: CombinedCompiledContract = contracts[selection[0].contractKey];
         if (isComContract(contract)) {
           context.workspaceState.update('contract', contract);
-          logger.success('Contract loaded!');
+          logger.log('Contract loaded!');
         } else {
           logger.error(Error('Could not parse contract.'));
         }

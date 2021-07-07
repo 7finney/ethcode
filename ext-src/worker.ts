@@ -186,7 +186,7 @@ process.on('message', async (m) => {
   }
   // fetch balance of a account
   if (m.command === 'get-balance') {
-    const hashAddr = m.account.checksumAddr ? m.account.checksumAddr : m.account.value;
+    const hashAddr = m.account;
     const c = {
       callInterface: {
         command: 'get-balance',

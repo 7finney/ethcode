@@ -86,6 +86,16 @@
         "category": "Ethcode"
       },
       {
+        "command": "ethcode.account.ganache.list",
+        "title": "List ganache testnet accounts",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.balance",
+        "title": "Get accounts balance",
+        "category": "Ethcode"
+      },
+      {
         "command": "ethcode.transaction.set",
         "title": "Set ethereum transaction",
         "category": "Ethcode"
