@@ -1,8 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import ReactJson, { OnCopyProps } from 'react-json-view';
-import { setGanacheAccountsOption, setLocalAccountOption } from '../helper';
 
-import { ABIDescription, IAccount, CompiledContract } from '../types';
+import { ABIDescription, CompiledContract } from '../types';
 
 import ContractDeploy from './ContractDeploy';
 import Deploy from './Deploy';
@@ -23,8 +22,6 @@ export const MainView = () => {
   const [processMessage, setProcessMessage] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
   const [transactionResult, setTransactionResult] = useState('');
-  const [localAcc, setLocalAcc] = useState<any[]>([]);
-  const [testNetAcc, setTestNetAcc] = useState<any[]>([]);
   const [testNets] = useState<Array<ITestNet>>([
     { value: 'ganache', label: 'Ganache' },
     // { value: '3', label: 'Ropsten' },
@@ -38,45 +35,16 @@ export const MainView = () => {
   const {
     currAccount,
     setAccount,
-    accounts,
     contract,
     accountBalance,
     setCompiledContract,
     setTestNetID,
-    setSelectorAccounts,
     setAccountBalance,
     setCallResult,
     error,
     setError,
   } = useContext(AppContext);
 
-  const mergeAccount = () => {
-    // TODO: update reducer
-    // merge local accounts and testnet accounts
-    if (localAcc.length > 0 && testNetAcc.length > 0) {
-      setSelectorAccounts([
-        {
-          label: 'Ganache',
-          options: testNetAcc,
-        },
-        {
-          label: 'Local Accounts',
-          options: localAcc,
-        },
-      ]);
-    } else if (localAcc.length > 0) {
-      setSelectorAccounts([...localAcc]);
-    } else if (testNetAcc.length > 0) {
-      setSelectorAccounts([
-        {
-          label: 'Ganache',
-          options: testNetAcc,
-        },
-      ]);
-    } else {
-      setSelectorAccounts([]);
-    }
-  };
   const loadContract = (_contract: any) => {
     try {
       const contract: CompiledContract = _contract;
@@ -88,13 +56,12 @@ export const MainView = () => {
   };
 
   useEffect(() => {
-    mergeAccount();
-  }, [localAcc, testNetAcc]);
-
-  useEffect(() => {
     window.addEventListener('message', async (event) => {
       const { data } = event;
-      // accounts
+      if (data.account) {
+        const { account } = data;
+        setAccount(account);
+      }
       if (data.balance) {
         const { balance } = data;
         setAccountBalance(balance);
@@ -120,16 +87,18 @@ export const MainView = () => {
         setTransactionResult(data.transactionResult);
       }
       if (data.networkId) {
-        const testnet = testNets.filter((net) => net.value === JSON.stringify(data.networkId));
+        const testnet = testNets.filter(
+          (net) => net.value === (typeof data.networkId === 'string' ? data.networkId : data.networkId.toString())
+        );
         setTestNetID(data.networkId);
         setTestNet(testnet[0]);
       }
     });
     // Component mounted start getting gRPC things
-    vscode.postMessage({ command: 'get-localAccounts' });
-    vscode.postMessage({ command: 'run-getAccounts' });
+    vscode.postMessage({ command: 'getAccount' });
     vscode.postMessage({ command: 'get-contract' });
     vscode.postMessage({ command: 'get-network' });
+    vscode.postMessage({ command: 'get-balance' });
   }, []);
 
   const openAdvanceDeploy = (): void => {
@@ -176,10 +145,10 @@ export const MainView = () => {
           </TabList>
           {/* Main panel */}
           <TabPanel className="react-tab-panel">
-            {accounts && accounts.length > 0 && (
+            {currAccount && (
               <div className="account-brief">
                 <b>Account: </b>
-                <span>{currAccount ? currAccount.checksumAddr || currAccount.pubAddr || currAccount.value : '0x'}</span>
+                <span>{currAccount}</span>
                 <br />
                 <b>Balance: </b>
                 <span>{accountBalance} wei</span>

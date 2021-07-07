@@ -72,6 +72,9 @@ export class ReactPanel {
           this.runGetGasEstimate(message.payload, message.testNetId);
         } else if (message.command === 'debugTransaction') {
           this.debug(message.txHash, message.testNetId);
+        } else if (message.command === 'getAccount') {
+          const account = workspaceState.get('account');
+          this._panel.webview.postMessage({ account });
         } else if (message.command === 'get-balance') {
           const balance = workspaceState.get('balance');
           this._panel.webview.postMessage({ balance });
@@ -79,17 +82,10 @@ export class ReactPanel {
           this.buildRawTx(message.payload, message.testNetId);
         } else if (message.command === 'sign-deploy-tx') {
           this.signDeployTx(message.payload, message.testNetId);
-        } else if (message.command === 'run-getAccounts') {
-          const accounts = workspaceState.get('ganache-addresses');
-          this._panel.webview.postMessage({ fetchAccounts: accounts });
         } else if (message.command === 'gen-keypair') {
           this.genKeyPair(message.payload, this._extensionPath);
         } else if (message.command === 'delete-keyPair') {
           this.deleteKeyPair(message.payload, this._extensionPath);
-        } else if (message.command === 'get-localAccounts') {
-          // Get data from workspacestate
-          const accounts = workspaceState.get('addresses');
-          this._panel.webview.postMessage({ localAccounts: accounts });
         } else if (message.command === 'send-ether') {
           this.sendEther(message.payload, message.testNetId);
         } else if (message.command === 'send-ether-signed') {

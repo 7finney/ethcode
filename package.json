@@ -92,7 +92,7 @@
       },
       {
         "command": "ethcode.account.balance",
-        "title": "Get accounts balance",
+        "title": "Get balance",
         "category": "Ethcode"
       },
       {
