@@ -95,21 +95,8 @@ export const MainView = () => {
     window.addEventListener('message', async (event) => {
       const { data } = event;
       // accounts
-      if (data.localAccounts) {
-        setLocalAcc(setLocalAccountOption(data.localAccounts));
-      }
-      if (data.fetchAccounts) {
-        const accounts = data.fetchAccounts;
-        setTestNetAcc(setGanacheAccountsOption(accounts));
-        const currAccount: IAccount = {
-          label: accounts[0],
-          value: accounts[0],
-        };
-        setAccount(currAccount);
-      }
       if (data.balance) {
-        const { balance, account } = data;
-        setAccount(account);
+        const { balance } = data;
         setAccountBalance(balance);
       }
       if (data.contract) {
