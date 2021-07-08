@@ -41,7 +41,7 @@ const DeployForm: React.FC<IProps> = ({ vscode, abi, bytecode, gasEstimate, cons
 
   const handleBuildTxn = (e: FormEvent | MouseEvent) => {
     e.preventDefault();
-    const publicKey = currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x';
+    const publicKey = currAccount;
     // create unsigned transaction here
     try {
       vscode.postMessage({

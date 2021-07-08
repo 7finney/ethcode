@@ -9,7 +9,7 @@ const App: React.FC = () => {
   // Context
   const [unsignedTx, setUnsgTxn] = useState<string>();
   const [pvtKey, setPvtKey] = useState<string>();
-  const [currAccount, setAccount] = useState<IAccount>();
+  const [currAccount, setAccount] = useState<string>();
   const [accounts, setSelectorAccounts] = useState<Array<GroupedSelectorAccounts>>();
   const [activeFileName, setActiveFileName] = useState<string>('');
   const [compiledJSON, setCompiledJSON] = useState<CompilationResult>();

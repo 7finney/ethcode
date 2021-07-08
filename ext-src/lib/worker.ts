@@ -3,19 +3,15 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
-import { sha3 } from './hash/sha3';
-import { ABIParameter } from './types';
+import { sha3 } from '../hash/sha3';
+import { ABIParameter } from '../types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const EthereumTx = require('ethereumjs-tx').Transaction;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { formatters } = require('web3-core-helpers');
 
-const PROTO_PATH = [
-  path.join(__dirname, '../services/remix-tests.proto'),
-  path.join(__dirname, '../services/client-call.proto'),
-  path.join(__dirname, '../services/remix-debug.proto'),
-];
+const PROTO_PATH = [path.join(__dirname, '../../services/client-call.proto')];
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   keepCase: true,
   longs: String,

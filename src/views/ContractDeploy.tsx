@@ -53,7 +53,7 @@ const ContractDeploy: React.FC<IProps> = ({ bytecode, abi, vscode, openAdvanceDe
           abi,
           bytecode,
           params: constructorInputRef.current,
-          from: currAccount ? (currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value) : '0x',
+          from: currAccount,
         },
         testNetId: testNetID,
       });

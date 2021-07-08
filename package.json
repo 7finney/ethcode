@@ -106,6 +106,11 @@
         "category": "Ethcode"
       },
       {
+        "command": "ethcode.transaction.gas.get",
+        "title": "Get gas estimate for transaction",
+        "category": "Ethcode"
+      },
+      {
         "command": "ethcode.combined-json.load",
         "title": "Ethcode: Load combined JSON output"
       },
@@ -121,11 +126,6 @@
       {
         "command": "ethcode.contract.input.load",
         "title": "Ethcode: Load constructor inputs from JSON"
-      },
-      {
-        "command": "ethcode.contract.gas.get",
-        "title": "Get gas estimate for transaction",
-        "category": "Ethcode"
       },
       {
         "command": "ethcode.contract.gas.set",

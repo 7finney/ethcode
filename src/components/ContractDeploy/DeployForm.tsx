@@ -9,7 +9,7 @@ interface IProps {
   bytecode: string;
   abi: Array<ABIDescription>;
   vscode: any;
-  currAccount: IAccount;
+  currAccount: string;
   gasEstimate: number;
   constructorInputRef: MutableRefObject<ConstructorInput[] | null>;
   openAdvanceDeploy: () => void;
@@ -50,7 +50,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
         bytecode,
         params: getValues('constructorInput') || [],
         gasSupply: getValues('gasSupply'),
-        from: currAccount.checksumAddr ? currAccount.checksumAddr : currAccount.value,
+        from: currAccount,
       },
       testNetId: testNetID,
     });

@@ -1,8 +1,6 @@
 // @ts-ignore
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { InputBoxOptions, window, commands, workspace } from 'vscode';
-import { fork, ChildProcess } from 'child_process';
 import API from './api';
 import { ReactPanel } from './reactPanel';
 
@@ -20,7 +18,13 @@ import {
   ConstructorInputValue,
   isStdJSONOutput,
 } from './types';
-import { parseCombinedJSONPayload, parseJSONPayload } from './lib';
+import {
+  parseCombinedJSONPayload,
+  parseJSONPayload,
+  estimateTransactionGas,
+  createAccWorker,
+  createWorker,
+} from './lib';
 import { errors } from './utils';
 
 // Create logger
@@ -43,18 +47,6 @@ const gasInp: InputBoxOptions = {
   placeHolder: 'Enter custom gas',
 };
 
-const createAccWorker = (): ChildProcess => {
-  // return fork(path.join(__dirname, 'accWorker.js'), [], {
-  //   execArgv: [`--inspect=${process.debugPort + 1}`],
-  // });
-  return fork(path.join(__dirname, 'accWorker.js'));
-};
-const createWorker = (): ChildProcess => {
-  // return fork(path.join(__dirname, 'accWorker.js'), [], {
-  //   execArgv: [`--inspect=${process.debugPort + 1}`],
-  // });
-  return fork(path.join(__dirname, 'worker.js'));
-};
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -305,6 +297,10 @@ export async function activate(context: vscode.ExtensionContext) {
         logger.error(Error('Could not parse contract.'));
       }
     }),
+    // Get gas estimate
+    commands.registerCommand('ethcode.transaction.gas.get', async () => {
+      estimateTransactionGas(context);
+    }),
     // Load combined JSON output
     commands.registerCommand('ethcode.combined-json.load', () => {
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
@@ -352,46 +348,6 @@ export async function activate(context: vscode.ExtensionContext) {
         context.workspaceState.update('constructor-inputs', constructorInputs);
         logger.log(`Constructor inputs loaded!`);
       }
-    }),
-    // Get gas estimate
-    commands.registerCommand('ethcode.contract.gas.get', async () => {
-      const networkId = context.workspaceState.get('networkId');
-      const account: string | undefined = context.workspaceState.get('account');
-      const contract = context.workspaceState.get('contract');
-      const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
-      let payload = {};
-      if (isComContract(contract)) {
-        const { abi, bin } = contract;
-        payload = {
-          abi,
-          bytecode: bin,
-          params: params || [],
-          from: account,
-        };
-      } else if (isStdContract(contract)) {
-        const { abi, evm } = contract;
-        payload = {
-          abi,
-          bytecode: evm.bytecode.object,
-          params: params || [],
-          from: account,
-        };
-      }
-      const txWorker = createWorker();
-      txWorker.on('message', (m: any) => {
-        logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
-        if (m.error) {
-          logger.error(m.error);
-        } else {
-          context.workspaceState.update('gasEstimate', m.gasEstimate);
-          logger.log(m.gasEstimate);
-        }
-      });
-      txWorker.send({
-        command: 'get-gas-estimate',
-        payload,
-        testnetId: networkId,
-      });
     }),
     // Set custom gas estimate
     commands.registerCommand('ethcode.contract.gas.set', async () => {

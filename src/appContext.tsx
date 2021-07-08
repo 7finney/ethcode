@@ -8,8 +8,8 @@ interface ContextInterface {
   setUnsgTxn: (_value: string | undefined) => void;
   pvtKey: string | undefined;
   setPvtKey: (_value: string | undefined) => void;
-  currAccount: IAccount | undefined;
-  setAccount: (_value: IAccount | undefined) => void;
+  currAccount: string | undefined;
+  setAccount: (_value: string | undefined) => void;
   accountBalance: number;
   setAccountBalance: (_value: number) => void;
   accounts: Array<GroupedSelectorAccounts> | undefined;
@@ -35,7 +35,7 @@ export const AppContext = createContext<ContextInterface>({
   pvtKey: undefined,
   setPvtKey: (_value: string | undefined) => {},
   currAccount: undefined,
-  setAccount: (_value: IAccount | undefined) => {},
+  setAccount: (_value: string | undefined) => {},
   accountBalance: 0,
   setAccountBalance: (_value: number) => {},
   accounts: [],
