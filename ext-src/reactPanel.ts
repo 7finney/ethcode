@@ -1,10 +1,10 @@
 import * as path from 'path';
 import { WebviewPanel, Disposable, ViewColumn, window, Uri, commands, Memento } from 'vscode';
-import { fork, ChildProcess } from 'child_process';
 import * as uuid from 'uuid/v4';
 import axios from 'axios';
 import { Logger, actionToast, updateUserSettings, retrieveUserSettings, getNonce } from './utils';
-import { TokenData, IAccount } from './types';
+import { createAccWorker, createWorker } from './lib';
+import { TokenData } from './types';
 
 const logger = new Logger();
 
@@ -70,8 +70,6 @@ export class ReactPanel {
           this.runContractCall(message.payload, message.testNetId);
         } else if (message.command === 'run-get-gas-estimate') {
           this.runGetGasEstimate(message.payload, message.testNetId);
-        } else if (message.command === 'debugTransaction') {
-          this.debug(message.txHash, message.testNetId);
         } else if (message.command === 'getAccount') {
           const account = workspaceState.get('account');
           this._panel.webview.postMessage({ account });
@@ -156,21 +154,6 @@ export class ReactPanel {
     });
   }
 
-  private createWorker = (): ChildProcess => {
-    // enable --inspect for debug
-    // return fork(path.join(__dirname, "worker.js"), [], {
-    //   execArgv: ["--inspect=" + (process.debugPort + 1)]
-    // });
-    return fork(path.join(__dirname, 'worker.js'));
-  };
-
-  private createAccWorker = (): ChildProcess => {
-    // return fork(path.join(__dirname, 'accWorker.js'), [], {
-    //   execArgv: [`--inspect=${process.debugPort + 1}`],
-    // });
-    return fork(path.join(__dirname, 'accWorker.js'));
-  };
-
   public async checkAppRegistration(): Promise<void> {
     // const registered = await registerAppToToken();
     this._panel.webview.postMessage({ registered: true });
@@ -212,7 +195,7 @@ export class ReactPanel {
   };
 
   private genKeyPair(password: string, ksPath: string): void {
-    const accWorker = this.createAccWorker();
+    const accWorker = createAccWorker();
     logger.log(`Account worker invoked with WorkerID : ${accWorker.pid}.`);
     accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
@@ -230,7 +213,7 @@ export class ReactPanel {
 
   // get private key for given public key
   private getPvtKey(pubKey: string, keyStorePath: string) {
-    const accWorker = this.createAccWorker();
+    const accWorker = createAccWorker();
     accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       // TODO: handle private key not found errors
@@ -247,7 +230,7 @@ export class ReactPanel {
   }
 
   private deleteKeyPair(publicKey: string, keyStorePath: string) {
-    const accWorker = this.createAccWorker();
+    const accWorker = createAccWorker();
     accWorker.on('message', (m: any) => {
       logger.log(`Account worker message: ${JSON.stringify(m)}`);
       if (m.resp) {
@@ -268,27 +251,9 @@ export class ReactPanel {
     });
   }
 
-  private debug(txHash: string, testNetId: string): void {
-    const debugWorker = this.createWorker();
-    logger.log(`Debug worker invoked with WorkerID: ${debugWorker.pid}`);
-    debugWorker.on('message', (m: any) => {
-      logger.log(`Debug worker message: ${JSON.stringify(m)}`);
-      try {
-        this._panel.webview.postMessage({ txTrace: JSON.parse(m.debugResp) });
-      } catch (error) {
-        this._panel.webview.postMessage({ traceError: m.debugResp });
-      }
-    });
-    debugWorker.send({
-      command: 'debug-transaction',
-      payload: txHash,
-      testnetId: testNetId,
-    });
-  }
-
   // create unsigned transactions
   private buildRawTx(payload: any, testNetId: string) {
-    const txWorker = this.createWorker();
+    const txWorker = createWorker();
     txWorker.on('message', (m: any) => {
       logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
       if (m.error) {
@@ -311,7 +276,7 @@ export class ReactPanel {
 
   // Deploy contracts for ganache
   private runDeploy(payload: any, testNetId: string) {
-    const deployWorker = this.createWorker();
+    const deployWorker = createWorker();
     deployWorker.on('message', (m: any) => {
       logger.log(`Deploy worker message: ${JSON.stringify(m)}`);
       if (m.error) {
@@ -334,7 +299,7 @@ export class ReactPanel {
 
   // sign & deploy unsigned contract transactions
   private signDeployTx(payload: any, testNetId: string) {
-    const signedDeployWorker = this.createWorker();
+    const signedDeployWorker = createWorker();
     signedDeployWorker.on('message', (m: any) => {
       logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
       if (m.error) {
@@ -361,23 +326,10 @@ export class ReactPanel {
     });
   }
 
-  // get ganache accounts
-  public getAccounts() {
-    const accountsWorker = this.createWorker();
-    accountsWorker.on('message', (m: any) => {
-      logger.log(`Account worker message: ${JSON.stringify(m)}`);
-      if (m.error) {
-        logger.error(m.error.details);
-      }
-      this._panel.webview.postMessage({ fetchAccounts: m });
-    });
-    accountsWorker.send({ command: 'get-accounts' });
-  }
-
   // call contract method
   private runContractCall(payload: any, testNetId: string) {
     logger.log('Running contract call...');
-    const callWorker = this.createWorker();
+    const callWorker = createWorker();
     callWorker.on('message', (m: any) => {
       logger.log(`Call worker message: ${JSON.stringify(m)}`);
       if (m.error) {
@@ -413,7 +365,7 @@ export class ReactPanel {
 
   // Get gas estimates
   private runGetGasEstimate(payload: any, testNetId: string) {
-    const deployWorker = this.createWorker();
+    const deployWorker = createWorker();
     deployWorker.on('message', (m: any) => {
       logger.log(`Gas worker message: ${JSON.stringify(m)}`);
       if (m.error) {
@@ -437,7 +389,7 @@ export class ReactPanel {
 
   // Send ether on ganache
   private sendEther(payload: any, testNetId: string) {
-    const sendEtherWorker = this.createWorker();
+    const sendEtherWorker = createWorker();
     sendEtherWorker.on('message', (m: any) => {
       logger.log(`Ether worker message: ${JSON.stringify(m)}`);
       if (m.transactionResult) {
@@ -461,7 +413,7 @@ export class ReactPanel {
 
   // Send ether using ethereum client
   private sendEtherSigned(payload: any, testNetId: string) {
-    const sendEtherWorker = this.createWorker();
+    const sendEtherWorker = createWorker();
     sendEtherWorker.on('message', (m: any) => {
       logger.log(`Ether worker message: ${JSON.stringify(m)}`);
       if (m.unsignedTx) {
