@@ -106,43 +106,47 @@ export function parseCombinedJSONPayload(context: ExtensionContext, _jsonPayload
 }
 
 // Estimate Transaction Gas
-export function estimateTransactionGas(context: ExtensionContext) {
-  const networkId = context.workspaceState.get('networkId');
-  const account: string | undefined = context.workspaceState.get('account');
-  const contract = context.workspaceState.get('contract');
-  const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
-  let payload = {};
-  if (isComContract(contract)) {
-    const { abi, bin } = contract;
-    payload = {
-      abi,
-      bytecode: bin,
-      params: params || [],
-      from: account,
-    };
-  } else if (isStdContract(contract)) {
-    const { abi, evm } = contract;
-    payload = {
-      abi,
-      bytecode: evm.bytecode.object,
-      params: params || [],
-      from: account,
-    };
-  }
-  const txWorker = createWorker();
-  txWorker.on('message', (m: any) => {
-    if (m.error) {
-      logger.error(m.error);
-    } else {
-      context.workspaceState.update('gasEstimate', m.gasEstimate);
-      logger.log(m.gasEstimate);
+export async function estimateTransactionGas(context: ExtensionContext): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const networkId = context.workspaceState.get('networkId');
+    const account: string | undefined = context.workspaceState.get('account');
+    const contract = context.workspaceState.get('contract');
+    const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
+    let payload = {};
+    if (isComContract(contract)) {
+      const { abi, bin } = contract;
+      payload = {
+        abi,
+        bytecode: bin,
+        params: params || [],
+        from: account,
+      };
+    } else if (isStdContract(contract)) {
+      const { abi, evm } = contract;
+      payload = {
+        abi,
+        bytecode: evm.bytecode.object,
+        params: params || [],
+        from: account,
+      };
     }
-  });
-  logger.log('Transaction payload');
-  logger.log(JSON.stringify(payload, null, 2));
-  txWorker.send({
-    command: 'get-gas-estimate',
-    payload,
-    testnetId: networkId,
+    const txWorker = createWorker();
+    txWorker.on('message', (m: any) => {
+      if (m.error) {
+        logger.error(m.error);
+        reject(m.error);
+      } else {
+        context.workspaceState.update('gasEstimate', m.gasEstimate);
+        logger.log(m.gasEstimate);
+        resolve(m.gasEstimate);
+      }
+    });
+    logger.log('Transaction payload');
+    logger.log(JSON.stringify(payload, null, 2));
+    txWorker.send({
+      command: 'get-gas-estimate',
+      payload,
+      testnetId: networkId,
+    });
   });
 }

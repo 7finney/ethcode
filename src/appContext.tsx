@@ -1,7 +1,7 @@
 /* eslint no-unused-vars: 0 */
 
 import { createContext } from 'react';
-import { CompilationResult, IAccount, GroupedSelectorAccounts, TransactionResult, CompiledContract } from './types';
+import { CompilationResult, GroupedSelectorAccounts, TransactionResult, CompiledContract, ABIParameter } from './types';
 
 interface ContextInterface {
   unsignedTx: string | undefined;
@@ -18,6 +18,8 @@ interface ContextInterface {
   setCompiledJSON: (_value: CompilationResult | undefined) => void;
   contract: CompiledContract | undefined;
   setCompiledContract: (_value: CompiledContract | undefined) => void;
+  constructorInputs: Array<ABIParameter> | undefined;
+  setConstructorInputs: (_value: Array<ABIParameter> | undefined) => void;
   activeFileName: string;
   setActiveFileName: (_value: string) => void;
   testNetID: string;
@@ -44,6 +46,8 @@ export const AppContext = createContext<ContextInterface>({
   setCompiledJSON: (_value: CompilationResult | undefined) => {},
   contract: undefined,
   setCompiledContract: (_value: CompiledContract | undefined) => {},
+  constructorInputs: undefined,
+  setConstructorInputs: (_value: Array<ABIParameter> | undefined) => {},
   activeFileName: '',
   setActiveFileName: (_value: string) => {},
   testNetID: 'ganache',

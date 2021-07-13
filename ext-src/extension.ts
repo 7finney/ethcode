@@ -299,7 +299,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // Get gas estimate
     commands.registerCommand('ethcode.transaction.gas.get', async () => {
-      estimateTransactionGas(context);
+      return estimateTransactionGas(context);
     }),
     // Load combined JSON output
     commands.registerCommand('ethcode.combined-json.load', () => {

@@ -3,7 +3,7 @@ import './App.css';
 
 import { AppContext } from './appContext';
 import { MainView } from './views/MainView';
-import { CompilationResult, IAccount, GroupedSelectorAccounts, TransactionResult, CompiledContract } from './types';
+import { CompilationResult, GroupedSelectorAccounts, TransactionResult, CompiledContract, ABIParameter } from './types';
 
 const App: React.FC = () => {
   // Context
@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [activeFileName, setActiveFileName] = useState<string>('');
   const [compiledJSON, setCompiledJSON] = useState<CompilationResult>();
   const [contract, setCompiledContract] = useState<CompiledContract>();
+  const [constructorInputs, setConstructorInputs] = useState<Array<ABIParameter>>();
   const [testNetID, setTestNetID] = useState<string>('ganache');
   const [accountBalance, setAccountBalance] = useState<number>(0);
   const [callResult, setCallResult] = useState<any>();
@@ -37,6 +38,8 @@ const App: React.FC = () => {
         setCompiledJSON,
         contract,
         setCompiledContract,
+        constructorInputs,
+        setConstructorInputs,
         activeFileName,
         setActiveFileName,
         testNetID,

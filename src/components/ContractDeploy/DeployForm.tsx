@@ -1,8 +1,7 @@
 import React, { MutableRefObject, useEffect, useContext } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Button, ButtonType, TextArea } from '../index';
-import { ABIDescription, ConstructorInput, IAccount, ABIParameter } from 'types';
-import { abiHelpers } from '../../lib';
+import { ABIDescription, ConstructorInput, ABIParameter } from 'types';
 import { AppContext } from '../../appContext';
 
 interface IProps {
@@ -12,7 +11,6 @@ interface IProps {
   currAccount: string;
   gasEstimate: number;
   constructorInputRef: MutableRefObject<ConstructorInput[] | null>;
-  openAdvanceDeploy: () => void;
 }
 
 interface TDeployForm {
@@ -22,19 +20,10 @@ interface TDeployForm {
 
 const DeployForm: React.FC<IProps> = (props: IProps) => {
   // Context
-  const { testNetID } = useContext(AppContext);
+  const { testNetID, constructorInputs } = useContext(AppContext);
 
   const { control, register, handleSubmit, getValues, setValue } = useForm<TDeployForm>();
-  useEffect(() => {
-    const { abi } = props;
-    const constructorABI: ABIDescription = abiHelpers.getConstructorABI(abi);
-    if (constructorABI) {
-      const inputs = constructorABI.inputs?.map((input) => {
-        return { ...input, value: '' };
-      });
-      if (inputs) setValue('constructorInput', inputs);
-    }
-  }, [props.abi]);
+  if (constructorInputs) setValue('constructorInput', constructorInputs);
 
   // set gas estimate
   useEffect(() => {
@@ -86,13 +75,7 @@ const DeployForm: React.FC<IProps> = (props: IProps) => {
         />
       </div>
       <div style={{ marginBottom: '5px' }}>
-        {testNetID !== 'ganache' ? (
-          <Button buttonType={ButtonType.Input} onClick={props.openAdvanceDeploy}>
-            Advance Deploy
-          </Button>
-        ) : (
-          <Button buttonType={ButtonType.Input}>Deploy</Button>
-        )}
+        <Button buttonType={ButtonType.Input}>Deploy</Button>
       </div>
     </form>
   );

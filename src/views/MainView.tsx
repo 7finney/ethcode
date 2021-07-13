@@ -4,7 +4,6 @@ import ReactJson, { OnCopyProps } from 'react-json-view';
 import { ABIDescription, CompiledContract } from '../types';
 
 import ContractDeploy from './ContractDeploy';
-import Deploy from './Deploy';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import Account from './Account';
@@ -41,6 +40,7 @@ export const MainView = () => {
     setTestNetID,
     setAccountBalance,
     setCallResult,
+    setConstructorInputs,
     error,
     setError,
   } = useContext(AppContext);
@@ -93,19 +93,19 @@ export const MainView = () => {
         setTestNetID(data.networkId);
         setTestNet(testnet[0]);
       }
+      if (data.constructorInputs) {
+        setConstructorInputs(data.constructorInputs);
+      }
     });
     // Component mounted start getting gRPC things
     vscode.postMessage({ command: 'getAccount' });
     vscode.postMessage({ command: 'get-contract' });
     vscode.postMessage({ command: 'get-network' });
     vscode.postMessage({ command: 'get-balance' });
+    vscode.postMessage({ command: 'get-constructor-input' });
   }, []);
 
-  const openAdvanceDeploy = (): void => {
-    setTabIndex(2);
-  };
   const reactJSONViewStyle = {
-    // border: 'solid 1px red',
     maxHeight: '30vh',
     maxWidth: '90vw',
     overflow: 'scroll',
@@ -140,7 +140,6 @@ export const MainView = () => {
             <div className="tab-container">
               <Tab>Main</Tab>
               <Tab>Account</Tab>
-              <Tab>Deploy</Tab>
             </div>
           </TabList>
           {/* Main panel */}
@@ -169,21 +168,13 @@ export const MainView = () => {
             )}
             {currAccount && (Object.keys(abi).length > 0 || bytecode.length > 0) && (
               <div className="contract-container">
-                <ContractDeploy bytecode={bytecode} abi={abi} vscode={vscode} openAdvanceDeploy={openAdvanceDeploy} />
+                <ContractDeploy bytecode={bytecode} abi={abi} vscode={vscode} />
               </div>
             )}
           </TabPanel>
           {/* Account Panel */}
           <TabPanel>
             <Account vscode={vscode} />
-          </TabPanel>
-          {/* Advanced Deploy panel */}
-          <TabPanel>
-            {currAccount && (Object.keys(abi).length > 0 || bytecode.length > 0) && (
-              <div className="contract-container">
-                <Deploy bytecode={bytecode} abi={abi} vscode={vscode} errors={error!} />
-              </div>
-            )}
           </TabPanel>
         </Tabs>
       </div>
