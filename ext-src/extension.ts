@@ -24,6 +24,8 @@ import {
   estimateTransactionGas,
   createAccWorker,
   createWorker,
+  ganacheDeploy,
+  signDeploy,
 } from './lib';
 import { errors } from './utils';
 
@@ -87,45 +89,11 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // Sign & deploy a transaction
     commands.registerCommand('ethcode.account.sign-deploy', async () => {
-      try {
-        const testNetId = context.workspaceState.get('networkId');
-        const account = context.workspaceState.get('account');
-        const unsignedTx = context.workspaceState.get('unsignedTx');
-        const password = await window.showInputBox(pwdInpOpt);
-        const accWorker = createAccWorker();
-        const signedDeployWorker = createWorker();
-        accWorker.on('message', (m: any) => {
-          if (m.privateKey) {
-            const { privateKey } = m;
-            signedDeployWorker.on('message', (m: any) => {
-              logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
-              if (m.error) {
-                logger.error(m.error);
-              } else if (m.transactionResult) {
-                logger.log('Contract transaction submitted!');
-              }
-            });
-            signedDeployWorker.send({
-              command: 'sign-deploy',
-              payload: {
-                unsignedTx,
-                pvtKey: privateKey,
-              },
-              testnetId: testNetId,
-            });
-          } else if (m.error) {
-            logger.error(m.error);
-          }
-        });
-        accWorker.send({
-          command: 'extract-privateKey',
-          address: account,
-          keyStorePath: context.extensionPath,
-          password: password || '',
-        });
-      } catch (error) {
-        logger.error(error);
+      const testNetId = context.workspaceState.get('networkId');
+      if (testNetId === 'ganache') {
+        return ganacheDeploy(context);
       }
+      return signDeploy(context);
     }),
     // Set Network
     commands.registerCommand('ethcode.network.set', () => {

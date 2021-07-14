@@ -1,4 +1,4 @@
-import { window, ExtensionContext } from 'vscode';
+import { window, ExtensionContext, InputBoxOptions } from 'vscode';
 
 import Logger from '../utils/logger';
 import {
@@ -12,10 +12,15 @@ import {
   CombinedCompiledContract,
   ConstructorInputValue,
 } from '../types';
-import { createWorker } from './workerCreator';
+import { createWorker, createAccWorker } from './workerCreator';
 
 // Create logger
 const logger = new Logger();
+const pwdInpOpt: InputBoxOptions = {
+  ignoreFocusOut: true,
+  password: true,
+  placeHolder: 'Password',
+};
 
 // Parse Standard JSON payload
 export function parseJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
@@ -106,7 +111,7 @@ export function parseCombinedJSONPayload(context: ExtensionContext, _jsonPayload
 }
 
 // Estimate Transaction Gas
-export async function estimateTransactionGas(context: ExtensionContext): Promise<number> {
+export function estimateTransactionGas(context: ExtensionContext): Promise<number> {
   return new Promise((resolve, reject) => {
     const networkId = context.workspaceState.get('networkId');
     const account: string | undefined = context.workspaceState.get('account');
@@ -148,5 +153,87 @@ export async function estimateTransactionGas(context: ExtensionContext): Promise
       payload,
       testnetId: networkId,
     });
+  });
+}
+
+// Ganache deploy
+export function ganacheDeploy(context: ExtensionContext): Promise<any> {
+  return new Promise((resolve, reject) => {
+    (async () => {
+      try {
+        const testNetId = context.workspaceState.get('networkId');
+        const unsignedTx = context.workspaceState.get('unsignedTx');
+        const deployWorker = createWorker();
+        deployWorker.on('message', (m: any) => {
+          logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
+          if (m.error) {
+            logger.error(m.error);
+          } else if (m.transactionResult) {
+            logger.log('Contract transaction submitted!');
+            resolve(m.transactionResult);
+          }
+        });
+        deployWorker.send({
+          command: 'deploy-contract',
+          payload: {
+            unsignedTx,
+          },
+          testnetId: testNetId,
+        });
+      } catch (error) {
+        logger.error(error);
+        reject(error);
+      }
+    })();
+  });
+}
+
+export function signDeploy(context: ExtensionContext): Promise<any> {
+  return new Promise((resolve, reject) => {
+    (async () => {
+      try {
+        const testNetId = context.workspaceState.get('networkId');
+        const account = context.workspaceState.get('account');
+        const unsignedTx = context.workspaceState.get('unsignedTx');
+        const password = await window.showInputBox(pwdInpOpt);
+        const accWorker = createAccWorker();
+        const signedDeployWorker = createWorker();
+        accWorker.on('message', (m: any) => {
+          if (m.privateKey) {
+            const { privateKey } = m;
+            signedDeployWorker.on('message', (m: any) => {
+              logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
+              if (m.error) {
+                logger.error(m.error);
+                reject(m.error);
+              } else if (m.transactionResult) {
+                logger.success('Contract transaction submitted!');
+                resolve(m.transactionResult);
+              }
+            });
+            signedDeployWorker.send({
+              command: 'sign-deploy',
+              payload: {
+                unsignedTx,
+                pvtKey: privateKey,
+              },
+              testnetId: testNetId,
+            });
+          } else if (m.error) {
+            logger.error(m.error);
+            reject(m.error);
+          }
+        });
+        accWorker.send({
+          command: 'extract-privateKey',
+          address: account,
+          keyStorePath: context.extensionPath,
+          password: password || '',
+        });
+      } catch (error) {
+        logger.error(error);
+        reject(error);
+      }
+    })();
   });
 }

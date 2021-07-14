@@ -56,7 +56,7 @@ export class ReactPanel {
             if (item === actionName) commands.executeCommand('workbench.action.reloadWindow');
           });
         } else if (message.command === 'run-deploy') {
-          commands.executeCommand('ethcode.transaction.send');
+          commands.executeCommand('ethcode.account.sign-deploy');
         } else if (message.command.endsWith('contract-method-call')) {
           commands.executeCommand('ethcode.conract.call');
         } else if (message.command === 'run-get-gas-estimate') {
