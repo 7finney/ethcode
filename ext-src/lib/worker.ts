@@ -11,33 +11,20 @@ function writeConstrucor(path: string, inputs: Array<ABIParameter>) {
 
 process.on('message', async (m) => {
   const meta = new grpc.Metadata();
-  if (m.authToken) {
-    meta.add('token', m.authToken.token);
-    meta.add('appId', m.authToken.appId);
-  }
   // Fetch accounts and balance
   if (m.command === 'get-accounts') {
     const c = {
-      callInterface: {
-        command: 'get-accounts',
-      },
+      networkid: m.testnetId,
     };
-    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
+    clientCallClient.GetGanacheAccounts(c, meta, (err: any, response: any) => {
       if (err) {
         console.log('err', err);
         // @ts-ignore
-        process.exit(1);
+        process.send({ error: err });
       } else {
         // @ts-ignore
-        process.send({ response });
+        process.send({ accounts: response.accounts, balance: response.balance });
       }
-    });
-
-    call.on('data', (data: any) => {
-      // @ts-ignore
-      const result = JSON.parse(data.result);
-      // @ts-ignore
-      process.send({ accounts: result.accounts, balance: result.balance });
     });
   }
   // send wei value to address in other testnets
@@ -97,28 +84,21 @@ process.on('message', async (m) => {
       process.send({ transactionResult: data.result });
     });
   }
-  // fetch balance of a account
+  // fetch balance of an account
   if (m.command === 'get-balance') {
     const hashAddr = m.account;
     const c = {
-      callInterface: {
-        command: 'get-balance',
-        payload: hashAddr,
-        testnetId: m.testnetId,
-      },
+      networkid: m.testnetId,
+      address: hashAddr,
     };
-    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
+    clientCallClient.GetBalance(c, meta, (err: any, response: any) => {
       if (err) {
         // @ts-ignore
         process.send({ error: err });
       } else {
         // @ts-ignore
-        process.send({ response });
+        process.send({ balance: response.balance });
       }
-    });
-    call.on('data', (data: any) => {
-      // @ts-ignore
-      process.send({ balance: data.result });
     });
   }
   // Deploy

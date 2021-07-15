@@ -35,7 +35,8 @@ message GetAccountsResp {
 
 // GetBalance -> eth.getBalance -> eth_getBalance
 message GetBalanceReq {
-    string address = 1;
+    uint32 networkid = 1;
+    string address = 2;
 }
 message GetBalanceResp {
     string balance = 1;
@@ -123,6 +124,15 @@ message EstimateGasResp {
     string result = 1;
 }
 
+// Get ganache accounts
+message GanacheAccReq {
+    uint32 networkid = 1;
+}
+message GanacheAccRsp {
+    repeated string accounts = 1;
+    string balance = 2;
+}
+
 service ProtoEthService {
     rpc GetBalance(GetBalanceReq) returns (GetBalanceResp) {};
     rpc GetTransaction(GetTxReq) returns (TransactionInfo) {};
@@ -137,6 +147,7 @@ service ProtoEthService {
     // eth_sendRawTransaction should have simple requests but stream of responses
     rpc SendRawTransactions(RawTxRequest) returns (TxResponse) {};
     rpc EstimateGas(EstimateGasReq) returns (EstimateGasResp) {};
+    rpc GetGanacheAccounts(GanacheAccReq) returns (GanacheAccRsp) {};
 }
 
 // ##############################

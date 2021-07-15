@@ -183,7 +183,7 @@ export async function activate(context: vscode.ExtensionContext) {
         context.workspaceState.update('ganache-addresses', <Array<string>>m.accounts);
         logger.log(JSON.stringify(m.accounts));
       });
-      accountsWorker.send({ command: 'get-accounts' });
+      accountsWorker.send({ command: 'get-accounts', testnetId: 'ganache' });
     }),
     // Get account balance
     commands.registerCommand('ethcode.account.balance', () => {
