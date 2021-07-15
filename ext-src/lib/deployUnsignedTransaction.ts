@@ -1,12 +1,13 @@
 import { sha3 } from '../hash/sha3';
 import { clientCallClient } from './proto';
+import { SendTxRequest } from '../services/ethereum_pb';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const EthereumTx = require('ethereumjs-tx').Transaction;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { formatters } = require('web3-core-helpers');
 
 // sign raw transaction and deploy
-export function deployUnsignedTx(meta: any, tx: string, privateKey: string, testnetId?: number) {
+export function deployUnsignedTx(meta: any, tx: string, privateKey: string, testnetId: number) {
   try {
     // eslint-disable-next-line no-param-reassign
     tx = JSON.parse(tx);
@@ -31,15 +32,10 @@ export function deployUnsignedTx(meta: any, tx: string, privateKey: string, test
     const transactionHash = sha3(rawTransaction);
     // @ts-ignore
     process.send({ responses: transactionHash });
-    const c = {
-      callInterface: {
-        command: 'deploy-signed-tx',
-        payload: rawTransaction,
-        testnetId,
-      },
-    };
-
-    const call = clientCallClient.RunDeploy(c, meta, (err: any) => {
+    const c = new SendTxRequest();
+    c.setNetworkid(testnetId);
+    c.setTx(rawTransaction);
+    const call = clientCallClient.SendRawTransactions(c.toObject(), meta, (err: any) => {
       if (err) {
         console.error(err);
       }

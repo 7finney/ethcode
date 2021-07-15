@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as grpc from '@grpc/grpc-js';
 import { ABIParameter } from '../types';
-import { EstimateGasReq } from '../services/ethereum_pb';
+import { EstimateGasReq, BuildTxRequest, RawTransaction } from '../services/ethereum_pb';
 import { clientCallClient } from './proto';
 import { deployUnsignedTx, deployGanacheTx } from './deployUnsignedTransaction';
 
@@ -212,37 +212,23 @@ process.on('message', async (m) => {
   // Build raw transaction for contract creation
   if (m.command === 'build-rawtx') {
     const { abi, bytecode, params, gasSupply, from } = m.payload;
-    const inp = {
-      from,
-      abi,
-      bytecode,
-      params,
-      gasSupply,
-    };
-    const c = {
-      callInterface: {
-        command: 'build-rawtx',
-        payload: JSON.stringify(inp),
-        testnetId: m.testnetId,
-      },
-    };
-    const call = clientCallClient.RunDeploy(c, meta, (err: any) => {
+    const c = new BuildTxRequest();
+    c.setNetworkid(m.testnetId);
+    c.setAbi(JSON.stringify(abi));
+    c.setBytecode(bytecode);
+    c.setParams(JSON.stringify(params));
+    c.setFromaddress(from);
+    c.setGas(gasSupply);
+    c.setValue(0);
+    clientCallClient.BuildRawTransaction(c.toObject(), meta, (err: any, response: any) => {
       if (err) {
         console.error('err', err);
         // @ts-ignore
         process.send({ error: err });
+      } else {
+        // @ts-ignore
+        process.send({ buildTxResult: response.transaction });
       }
-    });
-    call.on('data', (data: any) => {
-      // @ts-ignore
-      process.send({ buildTxResult: data.result });
-    });
-    // call.on('end', function () {
-    //   process.exit(0);
-    // });
-    call.on('error', (err: Error) => {
-      // @ts-ignore
-      process.send({ error: err });
     });
   }
   // sign and deploy unsigned transaction

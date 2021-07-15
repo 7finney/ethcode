@@ -57,21 +57,38 @@ message DeploySignedTransactionResp {
     string txReciept = 1;
 }
 
+// Transactions
+message BuildTxRequest {
+    uint32 networkid = 1;
+    string abi = 2;
+    string bytecode = 3;
+    string params = 4;
+    string fromaddress = 5;
+    uint64 gas = 6;
+    uint64 value = 7;
+}
+
+message SendTxRequest {
+    uint32 networkid = 1;
+    string tx = 2;
+}
+
+message RawTransaction {
+    string transaction = 1;
+}
+
+
 // GetTransaction -> Eth.getTransaction -> eth_getTransactionByHAsh
 message TxHash {
     string txhash = 1;
 }
+
 message TransactionInfo {
     string transaction = 1;
 }
 
 message TxReceipt {
     string txReceipt = 1;
-}
-
-message RawTxRequest {
-    uint32 networkid = 1;
-    string tx = 2;
 }
 
 message BlockNumber {
@@ -99,7 +116,7 @@ message CallRequest {
     string address = 5;
     string from_address = 6; // python will not allow .from so it has to be fromAddress
     uint64 value = 7;
-    uint64 gas_supply = 8;
+    uint64 gas = 8;
 }
 
 message CallResponse {
@@ -129,7 +146,13 @@ message GanacheAccRsp {
 }
 
 service ProtoEthService {
+    // Done
     rpc GetBalance(GetBalanceReq) returns (GetBalanceResp) {};
+    rpc EstimateGas(EstimateGasReq) returns (EstimateGasResp) {};
+    rpc GetGanacheAccounts(GanacheAccReq) returns (GanacheAccRsp) {};
+    // TODO
+    rpc BuildRawTransaction(BuildTxRequest) returns (RawTransaction) {};
+    rpc SendRawTransactions(SendTxRequest) returns (TxHash) {};
     rpc GetTransaction(GetTxReq) returns (TransactionInfo) {};
     rpc GetTransactionReceipt(TxHash) returns (TxReceipt) {};
     rpc ContractCall(CallRequest) returns (CallResponse) {};
@@ -139,9 +162,6 @@ service ProtoEthService {
     rpc GetBlockTransactionCount(HashStringOrNumber) returns (CountResp) {};
     rpc GetBlock(HashStringOrNumber) returns (ObjResp) {};
     rpc GetTransactionFromBlock(InfoWithIndex) returns (ObjResp) {};
-    rpc SendRawTransactions(RawTxRequest) returns (TxResponse) {};
-    rpc EstimateGas(EstimateGasReq) returns (EstimateGasResp) {};
-    rpc GetGanacheAccounts(GanacheAccReq) returns (GanacheAccRsp) {};
 }
 
 // ##############################
