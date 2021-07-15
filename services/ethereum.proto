@@ -29,10 +29,6 @@ message ObjResp {
     string respObj = 1;
 }
 
-message GetAccountsResp {
-    repeated string accounts = 1;
-}
-
 // GetBalance -> eth.getBalance -> eth_getBalance
 message GetBalanceReq {
     uint32 networkid = 1;
@@ -101,9 +97,9 @@ message CallRequest {
     string params = 3;
     string abi = 4;
     string address = 5;
-    string fromAddress = 6; // python will not allow .from so it has to be fromAddress
+    string from_address = 6; // python will not allow .from so it has to be fromAddress
     uint64 value = 7;
-    uint64 gasSupply = 8;
+    uint64 gas_supply = 8;
 }
 
 message CallResponse {
@@ -116,9 +112,8 @@ message EstimateGasReq {
     string abi = 2;
     string bytecode = 3;
     string params = 4;
-    string address = 5;
-    string fromAddress = 6;
-    uint64 value = 7;
+    string fromaddress = 5;
+    uint64 value = 6;
 }
 message EstimateGasResp {
     string result = 1;
@@ -144,7 +139,6 @@ service ProtoEthService {
     rpc GetBlockTransactionCount(HashStringOrNumber) returns (CountResp) {};
     rpc GetBlock(HashStringOrNumber) returns (ObjResp) {};
     rpc GetTransactionFromBlock(InfoWithIndex) returns (ObjResp) {};
-    // eth_sendRawTransaction should have simple requests but stream of responses
     rpc SendRawTransactions(RawTxRequest) returns (TxResponse) {};
     rpc EstimateGas(EstimateGasReq) returns (EstimateGasResp) {};
     rpc GetGanacheAccounts(GanacheAccReq) returns (GanacheAccRsp) {};

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as grpc from '@grpc/grpc-js';
 import { ABIParameter } from '../types';
+import { EstimateGasReq } from '../services/ethereum_pb';
 import { clientCallClient } from './proto';
 import { deployUnsignedTx, deployGanacheTx } from './deployUnsignedTransaction';
 
@@ -190,16 +191,15 @@ process.on('message', async (m) => {
   // Gas Estimate
   if (m.command === 'get-gas-estimate') {
     const { abi, bytecode, params, from } = m.payload;
-    const c = {
-      networkid: m.testnetId,
-      abi: JSON.stringify(abi),
-      bytecode,
-      params: JSON.stringify(params),
-      address: from,
-      fromAddress: from,
-      value: 0,
-    };
-    clientCallClient.EstimateGas(c, meta, (err: any, response: any) => {
+    const c = new EstimateGasReq();
+    c.setNetworkid(m.testnetId);
+    c.setAbi(JSON.stringify(abi));
+    c.setBytecode(bytecode);
+    c.setParams(JSON.stringify(params));
+    c.setFromaddress(from);
+    c.setValue(0);
+    console.log(c.toObject());
+    clientCallClient.EstimateGas(c.toObject(), meta, (err: any, response: any) => {
       if (err) {
         // @ts-ignore
         process.send({ error: err });
