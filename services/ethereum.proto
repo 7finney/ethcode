@@ -150,9 +150,10 @@ service ProtoEthService {
     rpc GetBalance(GetBalanceReq) returns (GetBalanceResp) {};
     rpc EstimateGas(EstimateGasReq) returns (EstimateGasResp) {};
     rpc GetGanacheAccounts(GanacheAccReq) returns (GanacheAccRsp) {};
-    // TODO
     rpc BuildRawTransaction(BuildTxRequest) returns (RawTransaction) {};
     rpc SendRawTransactions(SendTxRequest) returns (TxHash) {};
+    rpc Transact(BuildTxRequest) returns (TxHash) {};
+    // TODO
     rpc GetTransaction(GetTxReq) returns (TransactionInfo) {};
     rpc GetTransactionReceipt(TxHash) returns (TxReceipt) {};
     rpc ContractCall(CallRequest) returns (CallResponse) {};

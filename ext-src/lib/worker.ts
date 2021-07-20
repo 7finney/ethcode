@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as grpc from '@grpc/grpc-js';
 import { ABIParameter } from '../types';
-import { EstimateGasReq, BuildTxRequest, RawTransaction } from '../services/ethereum_pb';
+import { EstimateGasReq, BuildTxRequest } from '../services/ethereum_pb';
 import { clientCallClient } from './proto';
 import { deployUnsignedTx, deployGanacheTx } from './deployUnsignedTransaction';
 
@@ -101,11 +101,6 @@ process.on('message', async (m) => {
         process.send({ balance: response.balance });
       }
     });
-  }
-  // Deploy
-  if (m.command === 'deploy-contract') {
-    const { unsignedTx } = m.payload;
-    deployGanacheTx(meta, unsignedTx, m.testnetId);
   }
   // Method call
   if (m.command === 'ganache-contract-method-call') {
@@ -235,6 +230,10 @@ process.on('message', async (m) => {
   if (m.command === 'sign-deploy') {
     const { unsignedTx, pvtKey } = m.payload;
     deployUnsignedTx(meta, unsignedTx, pvtKey, m.testnetId);
+  }
+  // Deploy
+  if (m.command === 'deploy-contract') {
+    deployGanacheTx(meta, m.payload);
   }
   if (m.command === 'create-input-file') {
     const { inputs, path } = m.payload;

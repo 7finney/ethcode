@@ -162,7 +162,30 @@ export function ganacheDeploy(context: ExtensionContext): Promise<any> {
     (async () => {
       try {
         const testNetId = context.workspaceState.get('networkId');
-        const unsignedTx = context.workspaceState.get('unsignedTx');
+        const account = context.workspaceState.get('account');
+        const contract = context.workspaceState.get('contract');
+        const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
+        const gas: number | undefined = context.workspaceState.get('gasEstimate');
+        let payload = {};
+        if (isComContract(contract)) {
+          const { abi, bin } = contract;
+          payload = {
+            abi,
+            bytecode: bin,
+            params: params || [],
+            from: account,
+            gas,
+          };
+        } else if (isStdContract(contract)) {
+          const { abi, evm } = contract;
+          payload = {
+            abi,
+            bytecode: evm.bytecode.object,
+            params: params || [],
+            from: account,
+            gas,
+          };
+        }
         const deployWorker = createWorker();
         deployWorker.on('message', (m: any) => {
           logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
@@ -173,11 +196,10 @@ export function ganacheDeploy(context: ExtensionContext): Promise<any> {
             resolve(m.transactionResult);
           }
         });
+
         deployWorker.send({
           command: 'deploy-contract',
-          payload: {
-            unsignedTx,
-          },
+          payload,
           testnetId: testNetId,
         });
       } catch (error) {

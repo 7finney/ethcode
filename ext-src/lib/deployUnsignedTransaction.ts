@@ -1,6 +1,6 @@
 import { sha3 } from '../hash/sha3';
 import { clientCallClient } from './proto';
-import { SendTxRequest } from '../services/ethereum_pb';
+import { SendTxRequest, BuildTxRequest } from '../services/ethereum_pb';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const EthereumTx = require('ethereumjs-tx').Transaction;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -57,23 +57,18 @@ export function deployUnsignedTx(meta: any, tx: string, privateKey: string, test
 }
 
 // deploy to ganache network
-export function deployGanacheTx(meta: any, tx: any, testnetId: string) {
-  const { from, abi, bytecode, params, gasSupply } = tx;
-  const inp = {
-    from,
-    abi,
-    bytecode,
-    params,
-    gasSupply: typeof gasSupply === 'string' ? parseInt(gasSupply, 10) : gasSupply,
-  };
-  const c = {
-    callInterface: {
-      command: 'deploy-contract',
-      payload: JSON.stringify(inp),
-      testnetId,
-    },
-  };
-  const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
+export function deployGanacheTx(meta: any, tx: any) {
+  const { from, abi, bytecode, params, gas } = tx;
+  const c = new BuildTxRequest();
+  c.setNetworkid(0);
+  c.setAbi(JSON.stringify(abi));
+  c.setBytecode(bytecode);
+  c.setParams(JSON.stringify(params));
+  c.setFromaddress(from);
+  c.setGas(gas);
+  c.setValue(0);
+  console.log(c.toObject());
+  const call = clientCallClient.Transact(c.toObject(), meta, (err: any, response: any) => {
     if (err) {
       // @ts-ignore
       process.send({ error: err });
