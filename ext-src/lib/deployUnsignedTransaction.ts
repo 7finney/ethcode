@@ -67,7 +67,6 @@ export function deployGanacheTx(meta: any, tx: any) {
   c.setFromaddress(from);
   c.setGas(gas);
   c.setValue(0);
-  console.log(c.toObject());
   const call = clientCallClient.Transact(c.toObject(), meta, (err: any, response: any) => {
     if (err) {
       // @ts-ignore
