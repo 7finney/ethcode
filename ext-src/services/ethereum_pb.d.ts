@@ -354,6 +354,30 @@ export namespace RawTransaction {
   }
 }
 
+export class TxHashReq extends jspb.Message {
+  getNetworkid(): number;
+  setNetworkid(value: number): void;
+
+  getTxhash(): string;
+  setTxhash(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TxHashReq.AsObject;
+  static toObject(includeInstance: boolean, msg: TxHashReq): TxHashReq.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: TxHashReq, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TxHashReq;
+  static deserializeBinaryFromReader(message: TxHashReq, reader: jspb.BinaryReader): TxHashReq;
+}
+
+export namespace TxHashReq {
+  export type AsObject = {
+    networkid: number,
+    txhash: string,
+  }
+}
+
 export class TxHash extends jspb.Message {
   getTxhash(): string;
   setTxhash(value: string): void;
@@ -395,8 +419,8 @@ export namespace TransactionInfo {
 }
 
 export class TxReceipt extends jspb.Message {
-  getTxreceipt(): string;
-  setTxreceipt(value: string): void;
+  getReceipt(): string;
+  setReceipt(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): TxReceipt.AsObject;
@@ -410,7 +434,7 @@ export class TxReceipt extends jspb.Message {
 
 export namespace TxReceipt {
   export type AsObject = {
-    txreceipt: string,
+    receipt: string,
   }
 }
 
@@ -471,30 +495,6 @@ export class NumResult extends jspb.Message {
 export namespace NumResult {
   export type AsObject = {
     resultnum: number,
-  }
-}
-
-export class GetTxReq extends jspb.Message {
-  getNetworkid(): number;
-  setNetworkid(value: number): void;
-
-  getTxhash(): string;
-  setTxhash(value: string): void;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetTxReq.AsObject;
-  static toObject(includeInstance: boolean, msg: GetTxReq): GetTxReq.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetTxReq, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetTxReq;
-  static deserializeBinaryFromReader(message: GetTxReq, reader: jspb.BinaryReader): GetTxReq;
-}
-
-export namespace GetTxReq {
-  export type AsObject = {
-    networkid: number,
-    txhash: string,
   }
 }
 

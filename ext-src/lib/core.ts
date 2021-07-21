@@ -21,6 +21,11 @@ const pwdInpOpt: InputBoxOptions = {
   password: true,
   placeHolder: 'Password',
 };
+const txHashInpOpt: InputBoxOptions = {
+  ignoreFocusOut: true,
+  password: false,
+  placeHolder: 'Transaction hash',
+};
 
 // Parse Standard JSON payload
 export function parseJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
@@ -251,6 +256,70 @@ export function signDeploy(context: ExtensionContext): Promise<any> {
           address: account,
           keyStorePath: context.extensionPath,
           password: password || '',
+        });
+      } catch (error) {
+        logger.error(error);
+        reject(error);
+      }
+    })();
+  });
+}
+
+export function getTransactionInfo(context: ExtensionContext): Promise<any> {
+  return new Promise((resolve, reject) => {
+    (async () => {
+      try {
+        const testNetId = context.workspaceState.get('networkId');
+        const txhash = context.workspaceState.get('transactionHash') || (await window.showInputBox(txHashInpOpt));
+        const txWorker = createWorker();
+        txWorker.on('message', (m: any) => {
+          if (m.error) {
+            logger.error(m.error);
+            reject(m.error);
+          } else {
+            context.workspaceState.update('transaction', m.transaction);
+            logger.log(m.transaction);
+            resolve(m.transaction);
+          }
+        });
+        txWorker.send({
+          command: 'get-transaction',
+          payload: {
+            txhash,
+          },
+          testnetId: testNetId,
+        });
+      } catch (error) {
+        logger.error(error);
+        reject(error);
+      }
+    })();
+  });
+}
+
+export function getTransactionReceipt(context: ExtensionContext): Promise<any> {
+  return new Promise((resolve, reject) => {
+    (async () => {
+      try {
+        const testNetId = context.workspaceState.get('networkId');
+        const txhash = context.workspaceState.get('transactionHash') || (await window.showInputBox(txHashInpOpt));
+        const txWorker = createWorker();
+        txWorker.on('message', (m: any) => {
+          if (m.error) {
+            logger.error(m.error);
+            reject(m.error);
+          } else {
+            context.workspaceState.update('transactionReceipt', m.transactionReceipt);
+            logger.log(m.transactionReceipt);
+            resolve(m.transactionReceipt);
+          }
+        });
+        txWorker.send({
+          command: 'get-transaction-receipt',
+          payload: {
+            txhash,
+          },
+          testnetId: testNetId,
         });
       } catch (error) {
         logger.error(error);

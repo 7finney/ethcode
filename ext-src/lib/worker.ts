@@ -3,7 +3,7 @@ import * as grpc from '@grpc/grpc-js';
 import { ABIParameter } from '../types';
 import { EstimateGasReq, BuildTxRequest } from '../services/ethereum_pb';
 import { clientCallClient } from './proto';
-import { deployUnsignedTx, deployGanacheTx } from './deployUnsignedTransaction';
+import { deployUnsignedTx, deployGanacheTx, getTransaction, getTransactionReceipt } from './transactions';
 
 // create constructor input file
 function writeConstrucor(path: string, inputs: Array<ABIParameter>) {
@@ -238,5 +238,13 @@ process.on('message', async (m) => {
   if (m.command === 'create-input-file') {
     const { inputs, path } = m.payload;
     writeConstrucor(path, inputs);
+  }
+  if (m.command === 'get-transaction') {
+    const { txhash } = m.payload;
+    getTransaction(meta, txhash, m.testnetId);
+  }
+  if (m.command === 'get-transaction-receipt') {
+    const { txhash } = m.payload;
+    getTransactionReceipt(meta, txhash, m.testnetId);
   }
 });

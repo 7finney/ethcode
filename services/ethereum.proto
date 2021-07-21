@@ -79,6 +79,10 @@ message RawTransaction {
 
 
 // GetTransaction -> Eth.getTransaction -> eth_getTransactionByHAsh
+message TxHashReq {
+    uint32 networkid = 1;
+    string txhash = 2;
+}
 message TxHash {
     string txhash = 1;
 }
@@ -88,7 +92,7 @@ message TransactionInfo {
 }
 
 message TxReceipt {
-    string txReceipt = 1;
+    string receipt = 1;
 }
 
 message BlockNumber {
@@ -101,11 +105,6 @@ message TxResponse {
 
 message NumResult {
     uint64 resultNum = 1;
-}
-
-message GetTxReq {
-    uint32 networkid = 1;
-    string txhash = 2;
 }
 
 message CallRequest {
@@ -153,10 +152,11 @@ service ProtoEthService {
     rpc BuildRawTransaction(BuildTxRequest) returns (RawTransaction) {};
     rpc SendRawTransactions(SendTxRequest) returns (TxHash) {};
     rpc Transact(BuildTxRequest) returns (TxHash) {};
-    // TODO
-    rpc GetTransaction(GetTxReq) returns (TransactionInfo) {};
-    rpc GetTransactionReceipt(TxHash) returns (TxReceipt) {};
+    rpc GetTransaction(TxHashReq) returns (TransactionInfo) {};
+    // Doing
     rpc ContractCall(CallRequest) returns (CallResponse) {};
+    rpc GetTransactionReceipt(TxHashReq) returns (TxReceipt) {};
+    // TODO
     rpc GetHashrate(google.protobuf.Empty) returns (NumResult) {};
     rpc GetGasPrice(google.protobuf.Empty) returns (NumResult) {};
     rpc GetBlockNumber(google.protobuf.Empty) returns (BlockNumber) {};

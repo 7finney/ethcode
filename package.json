@@ -111,6 +111,16 @@
         "category": "Ethcode"
       },
       {
+        "command": "ethcode.transaction.get",
+        "title": "Get transaction info",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.transaction.receipt.get",
+        "title": "Get transaction receipt",
+        "category": "Ethcode"
+      },
+      {
         "command": "ethcode.combined-json.load",
         "title": "Ethcode: Load combined JSON output"
       },

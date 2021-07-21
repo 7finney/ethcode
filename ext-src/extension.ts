@@ -26,6 +26,8 @@ import {
   createWorker,
   ganacheDeploy,
   signDeploy,
+  getTransactionInfo,
+  getTransactionReceipt,
 } from './lib';
 import { errors } from './utils';
 
@@ -268,6 +270,14 @@ export async function activate(context: vscode.ExtensionContext) {
     // Get gas estimate
     commands.registerCommand('ethcode.transaction.gas.get', async () => {
       return estimateTransactionGas(context);
+    }),
+    // Get transaction info
+    commands.registerCommand('ethcode.transaction.get', async () => {
+      return getTransactionInfo(context);
+    }),
+    // Get transaction receipt
+    commands.registerCommand('ethcode.transaction.receipt.get', async () => {
+      return getTransactionReceipt(context);
     }),
     // Load combined JSON output
     commands.registerCommand('ethcode.combined-json.load', () => {
