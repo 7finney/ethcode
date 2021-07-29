@@ -156,7 +156,7 @@ process.on('message', async (m) => {
     c.setAbi(JSON.stringify(abi));
     c.setAddress(address);
     c.setFn(methodName);
-    c.setParams(params);
+    c.setParams(JSON.stringify(params));
     c.setGas(0);
     c.setValue(0);
     clientCallClient.EthCall(c.toObject(), meta, (err: any, response: any) => {
