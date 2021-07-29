@@ -502,20 +502,20 @@ export class CallRequest extends jspb.Message {
   getNetworkid(): number;
   setNetworkid(value: number): void;
 
-  getFn(): string;
-  setFn(value: string): void;
+  getAbi(): string;
+  setAbi(value: string): void;
 
   getParams(): string;
   setParams(value: string): void;
 
-  getAbi(): string;
-  setAbi(value: string): void;
+  getFn(): string;
+  setFn(value: string): void;
 
   getAddress(): string;
   setAddress(value: string): void;
 
-  getFromAddress(): string;
-  setFromAddress(value: string): void;
+  getFromaddress(): string;
+  setFromaddress(value: string): void;
 
   getValue(): number;
   setValue(value: number): void;
@@ -536,11 +536,11 @@ export class CallRequest extends jspb.Message {
 export namespace CallRequest {
   export type AsObject = {
     networkid: number,
-    fn: string,
-    params: string,
     abi: string,
+    params: string,
+    fn: string,
     address: string,
-    fromAddress: string,
+    fromaddress: string,
     value: number,
     gas: number,
   }

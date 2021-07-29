@@ -58,8 +58,27 @@ export interface IStandardJSONContractsQP extends QuickPickItem {
   contractKey: string;
 }
 
+export interface IFunctionQP extends QuickPickItem {
+  functionKey: string;
+}
+
 export interface ConstructorInputValue extends ABIParameter {
   value: string;
+}
+
+export interface TxReceipt {
+  transactionHash: string;
+  transactionIndex: number;
+  blockHash: string;
+  blockNumber: number;
+  from: string;
+  to?: null;
+  gasUsed: number;
+  cumulativeGasUsed: number;
+  contractAddress: string;
+  logs?: null[] | null;
+  status: number;
+  logsBloom: string;
 }
 
 // Typeguard

@@ -109,11 +109,11 @@ message NumResult {
 
 message CallRequest {
     uint32 networkid = 1;
-    string fn = 2;
+    string abi = 2;
     string params = 3;
-    string abi = 4;
+    string fn = 4;
     string address = 5;
-    string from_address = 6; // python will not allow .from so it has to be fromAddress
+    string fromaddress = 6; // python will not allow .from so it has to be fromAddress
     uint64 value = 7;
     uint64 gas = 8;
 }
@@ -154,7 +154,7 @@ service ProtoEthService {
     rpc Transact(BuildTxRequest) returns (TxHash) {};
     rpc GetTransaction(TxHashReq) returns (TransactionInfo) {};
     // Doing
-    rpc ContractCall(CallRequest) returns (CallResponse) {};
+    rpc EthCall(CallRequest) returns (CallResponse) {};
     rpc GetTransactionReceipt(TxHashReq) returns (TxReceipt) {};
     // TODO
     rpc GetHashrate(google.protobuf.Empty) returns (NumResult) {};

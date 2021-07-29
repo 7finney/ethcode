@@ -1,13 +1,17 @@
 import * as fs from 'fs';
 import * as grpc from '@grpc/grpc-js';
-import { ABIParameter } from '../types';
-import { EstimateGasReq, BuildTxRequest } from '../services/ethereum_pb';
+import { ABIDescription, ABIParameter } from '../types';
+import { EstimateGasReq, BuildTxRequest, CallRequest } from '../services/ethereum_pb';
 import { clientCallClient } from './proto';
 import { deployUnsignedTx, deployGanacheTx, getTransaction, getTransactionReceipt } from './transactions';
 
 // create constructor input file
 function writeConstrucor(path: string, inputs: Array<ABIParameter>) {
   fs.writeFileSync(`${path}/constructor-input.json`, JSON.stringify(inputs, null, 2));
+}
+// create function input file
+function writeFunction(path: string, abiItem: Array<ABIDescription>) {
+  fs.writeFileSync(`${path}/function-input.json`, JSON.stringify(abiItem, null, 2));
 }
 
 process.on('message', async (m) => {
@@ -122,7 +126,7 @@ process.on('message', async (m) => {
         testnetId: m.testnetId,
       },
     };
-    const call = clientCallClient.RunDeploy(c, meta, (err: any, response: any) => {
+    const call = clientCallClient.EthCall(c, meta, (err: any, response: any) => {
       if (err) {
         console.log('err', err);
       } else {
@@ -146,41 +150,24 @@ process.on('message', async (m) => {
   // testnet method call
   if (m.command === 'contract-method-call') {
     const { from, abi, address, methodName, params, gasSupply, value } = m.payload;
-    const inp = {
-      from,
-      abi,
-      address,
-      methodName,
-      params,
-      gasSupply: typeof gasSupply === 'string' ? parseInt(gasSupply, 10) : gasSupply,
-      value,
-    };
-    const c = {
-      callInterface: {
-        command: 'contract-method-call',
-        payload: JSON.stringify(inp),
-        testnetId: m.testnetId,
-      },
-    };
-    const call = clientCallClient.RunDeploy(c, meta, (err: any) => {
+    const c = new CallRequest();
+    c.setNetworkid(m.testnetId);
+    c.setFromaddress(from);
+    c.setAbi(JSON.stringify(abi));
+    c.setAddress(address);
+    c.setFn(methodName);
+    c.setParams(params);
+    c.setGas(0);
+    c.setValue(0);
+    clientCallClient.EthCall(c.toObject(), meta, (err: any, response: any) => {
+      console.log(response);
       if (err) {
         // @ts-ignore
         process.send({ error: err });
+      } else {
+        // @ts-ignore
+        process.send({ callResult: response.result });
       }
-    });
-    call.on('data', (data: any) => {
-      // @ts-ignore
-      process.send({ callResult: data.result });
-      // TODO: only send to unsignedTx is data.result is a transaction
-      // @ts-ignore
-      process.send({ unsignedTx: data.result });
-    });
-    call.on('end', () => {
-      process.exit(0);
-    });
-    call.on('error', (err: Error) => {
-      // @ts-ignore
-      process.send({ error: err });
     });
   }
   // Gas Estimate
@@ -238,6 +225,10 @@ process.on('message', async (m) => {
   if (m.command === 'create-input-file') {
     const { inputs, path } = m.payload;
     writeConstrucor(path, inputs);
+  }
+  if (m.command === 'create-function-input') {
+    const { path, abiItem } = m.payload;
+    writeFunction(path, abiItem);
   }
   if (m.command === 'get-transaction') {
     const { txhash } = m.payload;

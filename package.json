@@ -76,13 +76,13 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.network.set",
-        "title": "Use ethereum network",
+        "command": "ethcode.account.balance",
+        "title": "Get balance",
         "category": "Ethcode"
       },
       {
         "command": "ethcode.account.list",
-        "title": "List ethereum accounts",
+        "title": "List ethereum accounts from keystore",
         "category": "Ethcode"
       },
       {
@@ -91,8 +91,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.account.balance",
-        "title": "Get balance",
+        "command": "ethcode.network.set",
+        "title": "Use ethereum network",
         "category": "Ethcode"
       },
       {
@@ -108,6 +108,11 @@
       {
         "command": "ethcode.transaction.gas.get",
         "title": "Get gas estimate for transaction",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.transaction.gas.set",
+        "title": "Set gas estimate for transaction",
         "category": "Ethcode"
       },
       {
@@ -138,9 +143,13 @@
         "title": "Ethcode: Load constructor inputs from JSON"
       },
       {
-        "command": "ethcode.contract.gas.set",
-        "title": "Set gas estimate for transaction",
+        "command": "ethcode.contract.call.input.create",
+        "title": "Create function input JSON",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.contract.call",
+        "title": "Ethcode: Contract call"
       },
       {
         "command": "ethcode.show",
@@ -169,6 +178,11 @@
         {
           "when": "resourceLangId == json",
           "command": "ethcode.contract.input.load",
+          "group": "Ethcode"
+        },
+        {
+          "when": "resourceLangId == json",
+          "command": "ethcode.contract.call",
           "group": "Ethcode"
         }
       ]

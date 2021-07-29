@@ -309,7 +309,7 @@ export function getTransactionReceipt(context: ExtensionContext): Promise<any> {
             logger.error(m.error);
             reject(m.error);
           } else {
-            context.workspaceState.update('transactionReceipt', m.transactionReceipt);
+            context.workspaceState.update('transaction-receipt', JSON.parse(m.transactionReceipt));
             logger.log(m.transactionReceipt);
             resolve(m.transactionReceipt);
           }

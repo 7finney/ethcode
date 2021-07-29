@@ -3938,11 +3938,11 @@ proto.protoeth.CallRequest.prototype.toObject = function(opt_includeInstance) {
 proto.protoeth.CallRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     networkid: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    fn: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    abi: jspb.Message.getFieldWithDefault(msg, 2, ""),
     params: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    abi: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    fn: jspb.Message.getFieldWithDefault(msg, 4, ""),
     address: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    fromAddress: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    fromaddress: jspb.Message.getFieldWithDefault(msg, 6, ""),
     value: jspb.Message.getFieldWithDefault(msg, 7, 0),
     gas: jspb.Message.getFieldWithDefault(msg, 8, 0)
   };
@@ -3987,7 +3987,7 @@ proto.protoeth.CallRequest.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setFn(value);
+      msg.setAbi(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
@@ -3995,7 +3995,7 @@ proto.protoeth.CallRequest.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
-      msg.setAbi(value);
+      msg.setFn(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
@@ -4003,7 +4003,7 @@ proto.protoeth.CallRequest.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 6:
       var value = /** @type {string} */ (reader.readString());
-      msg.setFromAddress(value);
+      msg.setFromaddress(value);
       break;
     case 7:
       var value = /** @type {number} */ (reader.readUint64());
@@ -4049,7 +4049,7 @@ proto.protoeth.CallRequest.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getFn();
+  f = message.getAbi();
   if (f.length > 0) {
     writer.writeString(
       2,
@@ -4063,7 +4063,7 @@ proto.protoeth.CallRequest.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getAbi();
+  f = message.getFn();
   if (f.length > 0) {
     writer.writeString(
       4,
@@ -4077,7 +4077,7 @@ proto.protoeth.CallRequest.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getFromAddress();
+  f = message.getFromaddress();
   if (f.length > 0) {
     writer.writeString(
       6,
@@ -4120,10 +4120,10 @@ proto.protoeth.CallRequest.prototype.setNetworkid = function(value) {
 
 
 /**
- * optional string fn = 2;
+ * optional string abi = 2;
  * @return {string}
  */
-proto.protoeth.CallRequest.prototype.getFn = function() {
+proto.protoeth.CallRequest.prototype.getAbi = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -4132,7 +4132,7 @@ proto.protoeth.CallRequest.prototype.getFn = function() {
  * @param {string} value
  * @return {!proto.protoeth.CallRequest} returns this
  */
-proto.protoeth.CallRequest.prototype.setFn = function(value) {
+proto.protoeth.CallRequest.prototype.setAbi = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -4156,10 +4156,10 @@ proto.protoeth.CallRequest.prototype.setParams = function(value) {
 
 
 /**
- * optional string abi = 4;
+ * optional string fn = 4;
  * @return {string}
  */
-proto.protoeth.CallRequest.prototype.getAbi = function() {
+proto.protoeth.CallRequest.prototype.getFn = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -4168,7 +4168,7 @@ proto.protoeth.CallRequest.prototype.getAbi = function() {
  * @param {string} value
  * @return {!proto.protoeth.CallRequest} returns this
  */
-proto.protoeth.CallRequest.prototype.setAbi = function(value) {
+proto.protoeth.CallRequest.prototype.setFn = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -4192,10 +4192,10 @@ proto.protoeth.CallRequest.prototype.setAddress = function(value) {
 
 
 /**
- * optional string from_address = 6;
+ * optional string fromaddress = 6;
  * @return {string}
  */
-proto.protoeth.CallRequest.prototype.getFromAddress = function() {
+proto.protoeth.CallRequest.prototype.getFromaddress = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
 };
 
@@ -4204,7 +4204,7 @@ proto.protoeth.CallRequest.prototype.getFromAddress = function() {
  * @param {string} value
  * @return {!proto.protoeth.CallRequest} returns this
  */
-proto.protoeth.CallRequest.prototype.setFromAddress = function(value) {
+proto.protoeth.CallRequest.prototype.setFromaddress = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
 };
 

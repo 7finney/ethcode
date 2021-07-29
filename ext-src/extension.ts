@@ -8,6 +8,7 @@ import Logger from './utils/logger';
 import {
   IAccountQP,
   INetworkQP,
+  IFunctionQP,
   LocalAddressType,
   StandardCompiledContract,
   CombinedCompiledContract,
@@ -17,6 +18,7 @@ import {
   ABIParameter,
   ConstructorInputValue,
   isStdJSONOutput,
+  TxReceipt,
 } from './types';
 import {
   parseCombinedJSONPayload,
@@ -294,11 +296,10 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
     // Create Input JSON
-    commands.registerCommand('ethcode.contract.input.create', async () => {
-      const contract:
-        | CombinedCompiledContract
-        | StandardCompiledContract
-        | undefined = await context.workspaceState.get('contract');
+    commands.registerCommand('ethcode.contract.input.create', () => {
+      const contract: CombinedCompiledContract | StandardCompiledContract | undefined = context.workspaceState.get(
+        'contract'
+      );
       if (contract && workspace.workspaceFolders) {
         const constructor: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type === 'constructor');
         const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
@@ -327,8 +328,82 @@ export async function activate(context: vscode.ExtensionContext) {
         logger.log(`Constructor inputs loaded!`);
       }
     }),
+    // Create call input for method
+    commands.registerCommand('ethcode.contract.call.input.create', () => {
+      const contract: CombinedCompiledContract | StandardCompiledContract | undefined = context.workspaceState.get(
+        'contract'
+      );
+      const quickPick = window.createQuickPick<IFunctionQP>();
+      if (contract) {
+        const functions: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type !== 'constructor');
+        quickPick.items = functions.map((f) => ({
+          label: f.name || '',
+          functionKey: f.name || '',
+        }));
+        quickPick.placeholder = 'Select function';
+        quickPick.onDidChangeActive((selection: Array<IFunctionQP>) => {
+          quickPick.value = selection[0].label;
+        });
+        quickPick.onDidChangeSelection((selection: Array<IFunctionQP>) => {
+          if (selection[0] && workspace.workspaceFolders) {
+            const { functionKey } = selection[0];
+            quickPick.dispose();
+            const abiItem = functions.filter((i: ABIDescription) => i.name === functionKey);
+            const fileWorker = createWorker();
+            fileWorker.send({
+              command: 'create-function-input',
+              payload: {
+                path: workspace.workspaceFolders[0].uri.path,
+                abiItem,
+              },
+            });
+          }
+        });
+        quickPick.onDidHide(() => quickPick.dispose());
+        quickPick.show();
+      } else {
+        logger.error(errors.ContractNotFound);
+      }
+    }),
+    // Load call inputs from JSON
+    // Call contract method
+    commands.registerCommand('ethcode.contract.call', async () => {
+      const networkId = context.workspaceState.get('networkId');
+      const account: string | undefined = context.workspaceState.get('account');
+      const contract:
+        | CombinedCompiledContract
+        | StandardCompiledContract
+        | undefined = await context.workspaceState.get('contract');
+      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
+      const txReceipt: TxReceipt | undefined = context.workspaceState.get('transaction-receipt');
+      if (editorContent && contract && txReceipt) {
+        const abiItem: ABIDescription = JSON.parse(editorContent)[0];
+        const contractWorker = createWorker();
+        contractWorker.on('message', (m: any) => {
+          if (m.error) {
+            logger.error(m.error);
+          } else {
+            console.log(m.callResult);
+            logger.log(m.callResult);
+          }
+        });
+        contractWorker.send({
+          command: 'contract-method-call',
+          payload: {
+            from: account,
+            abi: contract.abi,
+            address: txReceipt.contractAddress,
+            methodName: abiItem.name,
+            params: abiItem.inputs,
+            gasSupply: 0,
+            value: 0,
+          },
+          testnetId: networkId,
+        });
+      }
+    }),
     // Set custom gas estimate
-    commands.registerCommand('ethcode.contract.gas.set', async () => {
+    commands.registerCommand('ethcode.transaction.gas.set', async () => {
       const gas = await window.showInputBox(gasInp);
       context.workspaceState.update('gasEstimate', gas);
     }),
