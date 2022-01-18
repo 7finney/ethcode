@@ -137,14 +137,20 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // Set Network
     commands.registerCommand('ethcode.network.set', () => {
-      const quickPick = window.createQuickPick<INetworkQP>();
-      const options: Array<INetworkQP> = [
+      const defaultOptions: Array<INetworkQP> = [
         { label: 'Main', networkId: 1 },
         { label: 'Ropsten', networkId: 3 },
         { label: 'Rinkeby', networkId: 4 },
         { label: 'Goerli', networkId: 5 },
       ];
-      quickPick.items = options.map((network) => ({ label: network.label, networkId: network.networkId }));
+      const networks: Array<INetworkQP> = workspace.getConfiguration('ethcode').get('networks') || defaultOptions;
+      const options: Array<INetworkQP> = networks.map((nw: any) => ({
+        networkId: nw.networkId,
+        label: nw.label,
+        ...nw,
+      }));
+      const quickPick = window.createQuickPick<INetworkQP>();
+      quickPick.items = options;
       quickPick.placeholder = 'Select network';
       quickPick.onDidChangeActive((selection: Array<INetworkQP>) => {
         quickPick.value = selection[0].label;

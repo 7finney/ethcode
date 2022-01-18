@@ -42,6 +42,12 @@ export interface ICompilationResult {
 
 export interface INetworkQP extends QuickPickItem {
   networkId: number;
+  networkName?: string;
+  rpcUrl?: string;
+  currencySymbol?: string;
+  blockExplorer?: string;
+  port?: string;
+  websocketUrl?: string;
 }
 
 export interface IAccountQP extends QuickPickItem {
