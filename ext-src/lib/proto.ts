@@ -16,7 +16,7 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition) as any;
 // client-call grpc
 const clientCallPB = protoDescriptor.protoeth;
 export const clientCallClient = new clientCallPB.ProtoEthService(
-  // 'cc.ethcode.dev:50053',
-  'localhost:50054',
+  'cc.ethcode.dev:50053',
+  // 'localhost:50054',
   grpc.credentials.createInsecure()
 );

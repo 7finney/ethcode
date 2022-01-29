@@ -23,8 +23,9 @@ export const MainView = () => {
   const [transactionResult, setTransactionResult] = useState('');
   const [testNets] = useState<Array<ITestNet>>([
     { value: 'ganache', label: 'Ganache' },
-    // { value: '3', label: 'Ropsten' },
-    // { value: '4', label: 'Rinkeby' },
+    { value: '1', label: 'Main' },
+    { value: '3', label: 'Ropsten' },
+    { value: '4', label: 'Rinkeby' },
     { value: '5', label: 'Görli' },
   ]);
   const [testNet, setTestNet] = useState<ITestNet>(testNets[0]);
