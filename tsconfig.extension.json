@@ -10,7 +10,8 @@
         "sourceMap": true,
         "rootDir": ".",
         "strict": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "skipLibCheck": true,
 	},
 	"include": [
 		"ext-src"

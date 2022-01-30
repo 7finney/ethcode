@@ -1,8 +1,6 @@
 // @ts-ignore
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { InputBoxOptions, window, commands, workspace } from 'vscode';
-import { fork, ChildProcess } from 'child_process';
 import API from './api';
 import { ReactPanel } from './reactPanel';
 
@@ -10,6 +8,7 @@ import Logger from './utils/logger';
 import {
   IAccountQP,
   INetworkQP,
+  IFunctionQP,
   LocalAddressType,
   StandardCompiledContract,
   CombinedCompiledContract,
@@ -19,8 +18,19 @@ import {
   ABIParameter,
   ConstructorInputValue,
   isStdJSONOutput,
+  TxReceipt,
 } from './types';
-import { parseCombinedJSONPayload, parseJSONPayload } from './lib';
+import {
+  parseCombinedJSONPayload,
+  parseJSONPayload,
+  estimateTransactionGas,
+  createAccWorker,
+  createWorker,
+  ganacheDeploy,
+  signDeploy,
+  getTransactionInfo,
+  getTransactionReceipt,
+} from './lib';
 import { errors } from './utils';
 
 // Create logger
@@ -43,18 +53,6 @@ const gasInp: InputBoxOptions = {
   placeHolder: 'Enter custom gas',
 };
 
-const createAccWorker = (): ChildProcess => {
-  // return fork(path.join(__dirname, 'accWorker.js'), [], {
-  //   execArgv: [`--inspect=${process.debugPort + 1}`],
-  // });
-  return fork(path.join(__dirname, 'accWorker.js'));
-};
-const createWorker = (): ChildProcess => {
-  // return fork(path.join(__dirname, 'accWorker.js'), [], {
-  //   execArgv: [`--inspect=${process.debugPort + 1}`],
-  // });
-  return fork(path.join(__dirname, 'worker.js'));
-};
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -66,7 +64,7 @@ export async function activate(context: vscode.ExtensionContext) {
         accWorker.on('message', (m: any) => {
           if (m.account) {
             logger.success('Account created!');
-            logger.success(JSON.stringify(m.account));
+            logger.log(JSON.stringify(m.account));
           } else if (m.error) {
             logger.error(m.error);
           }
@@ -83,7 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const accWorker = createAccWorker();
         accWorker.on('message', (m: any) => {
           if (m.resp) {
-            logger.success('Account deleted!');
+            logger.log('Account deleted!');
           } else if (m.error) {
             logger.error(m.error);
           }
@@ -95,54 +93,21 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // Sign & deploy a transaction
     commands.registerCommand('ethcode.account.sign-deploy', async () => {
-      try {
-        const testNetId = context.workspaceState.get('networkId');
-        const account = context.workspaceState.get('account');
-        const unsignedTx = context.workspaceState.get('unsignedTx');
-        const password = await window.showInputBox(pwdInpOpt);
-        const accWorker = createAccWorker();
-        const signedDeployWorker = createWorker();
-        accWorker.on('message', (m: any) => {
-          if (m.privateKey) {
-            const { privateKey } = m;
-            signedDeployWorker.on('message', (m: any) => {
-              logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
-              if (m.error) {
-                logger.error(m.error);
-              } else if (m.transactionResult) {
-                logger.success('Contract transaction submitted!');
-              }
-            });
-            signedDeployWorker.send({
-              command: 'sign-deploy',
-              payload: {
-                unsignedTx,
-                pvtKey: privateKey,
-              },
-              testnetId: testNetId,
-            });
-          } else if (m.error) {
-            logger.error(m.error);
-          }
-        });
-        accWorker.send({
-          command: 'extract-privateKey',
-          address: account,
-          keyStorePath: context.extensionPath,
-          password: password || '',
-        });
-      } catch (error) {
-        logger.error(error);
+      const testNetId = context.workspaceState.get('networkId');
+      if (testNetId === 'ganache') {
+        return ganacheDeploy(context);
       }
+      return signDeploy(context);
     }),
     // Set Network
     commands.registerCommand('ethcode.network.set', () => {
       const quickPick = window.createQuickPick<INetworkQP>();
       const options: Array<INetworkQP> = [
         { label: 'Main', networkId: 1 },
-        { label: 'Ropsten', networkId: 3 },
-        { label: 'Rinkeby', networkId: 4 },
+        // { label: 'Ropsten', networkId: 3 },
+        // { label: 'Rinkeby', networkId: 4 },
         { label: 'Goerli', networkId: 5 },
+        { label: 'Ganache', networkId: 'ganache' },
       ];
       quickPick.items = options.map((network) => ({ label: network.label, networkId: network.networkId }));
       quickPick.placeholder = 'Select network';
@@ -163,13 +128,23 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.account.set', () => {
       const quickPick = window.createQuickPick<IAccountQP>();
       const addresses: Array<LocalAddressType> | undefined = context.workspaceState.get('addresses');
-      if (addresses && addresses.length > 0) {
-        const options: Array<IAccountQP> = addresses.map((account) => ({
-          label: account.pubAddress,
-          checksumAddr: account.checksumAddress,
-        }));
+      const ganacheAddresses: Array<string> | undefined = context.workspaceState.get('ganache-addresses');
+      if (addresses && ganacheAddresses) {
+        let options: Array<IAccountQP> = addresses.map(
+          (account) =>
+            <IAccountQP>{
+              label: account.pubAddress,
+              description: 'Local account',
+              checksumAddr: account.checksumAddress,
+            }
+        );
+        const gOpts: Array<IAccountQP> = ganacheAddresses.map(
+          (addr) => <IAccountQP>{ label: addr, description: 'Ganache account', checksumAddr: addr }
+        );
+        options = [...options, ...gOpts];
         quickPick.items = options.map((account) => ({
           label: account.checksumAddr,
+          description: account.description,
           checksumAddr: account.checksumAddr,
         }));
       }
@@ -193,13 +168,42 @@ export async function activate(context: vscode.ExtensionContext) {
       accWorker.on('message', (m) => {
         if (m.localAddresses) {
           context.workspaceState.update('addresses', <Array<LocalAddressType>>m.localAddresses);
-          logger.success(JSON.stringify(m.localAddresses));
+          logger.log(JSON.stringify(m.localAddresses));
         }
       });
       accWorker.send({
         command: 'get-localAccounts',
         keyStorePath: context.extensionPath,
       });
+    }),
+    // List Ganache accounts
+    commands.registerCommand('ethcode.account.ganache.list', () => {
+      const accountsWorker = createWorker();
+      accountsWorker.on('message', (m: any) => {
+        logger.log(`Account worker message: ${JSON.stringify(m)}`);
+        if (m.error) {
+          logger.error(m.error.details);
+        }
+        context.workspaceState.update('ganache-addresses', <Array<string>>m.accounts);
+        logger.log(JSON.stringify(m.accounts));
+      });
+      accountsWorker.send({ command: 'get-accounts', testnetId: 'ganache' });
+    }),
+    // Get account balance
+    commands.registerCommand('ethcode.account.balance', () => {
+      const testNetId = context.workspaceState.get('networkId');
+      const account: string | undefined = context.workspaceState.get('account');
+      const balanceWorker = createWorker();
+      balanceWorker.on('message', (m: any) => {
+        logger.log(`Balance worker message: ${JSON.stringify(m)}`);
+        context.workspaceState.update('balance', m.balance);
+      });
+      const payload = {
+        command: 'get-balance',
+        account,
+        testnetId: testNetId,
+      };
+      if (account && account.length > 0) balanceWorker.send(payload);
     }),
     // Set unsigned transaction
     commands.registerCommand('ethcode.transaction.set', async (tx) => {
@@ -209,7 +213,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Create unsigned transaction
     commands.registerCommand('ethcode.transaction.build', async () => {
       const networkId = context.workspaceState.get('networkId');
-      const account = context.workspaceState.get('account');
+      const account: string | undefined = context.workspaceState.get('account');
       const contract = context.workspaceState.get('contract');
       const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
       const gas: number | undefined = context.workspaceState.get('gasEstimate');
@@ -222,7 +226,7 @@ export async function activate(context: vscode.ExtensionContext) {
             logger.error(m.error);
           } else {
             context.workspaceState.update('unsignedTx', m.buildTxResult);
-            logger.success(m.buildTxResult);
+            logger.log(m.buildTxResult);
           }
         });
         const payload = {
@@ -247,7 +251,7 @@ export async function activate(context: vscode.ExtensionContext) {
             logger.error(m.error);
           } else {
             context.workspaceState.update('unsignedTx', m.buildTxResult);
-            logger.success(m.buildTxResult);
+            logger.log(m.buildTxResult);
           }
         });
         txWorker.send({
@@ -265,6 +269,18 @@ export async function activate(context: vscode.ExtensionContext) {
         logger.error(Error('Could not parse contract.'));
       }
     }),
+    // Get gas estimate
+    commands.registerCommand('ethcode.transaction.gas.get', async () => {
+      return estimateTransactionGas(context);
+    }),
+    // Get transaction info
+    commands.registerCommand('ethcode.transaction.get', async () => {
+      return getTransactionInfo(context);
+    }),
+    // Get transaction receipt
+    commands.registerCommand('ethcode.transaction.receipt.get', async () => {
+      return getTransactionReceipt(context);
+    }),
     // Load combined JSON output
     commands.registerCommand('ethcode.combined-json.load', () => {
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
@@ -280,11 +296,10 @@ export async function activate(context: vscode.ExtensionContext) {
       }
     }),
     // Create Input JSON
-    commands.registerCommand('ethcode.contract.input.create', async () => {
-      const contract:
-        | CombinedCompiledContract
-        | StandardCompiledContract
-        | undefined = await context.workspaceState.get('contract');
+    commands.registerCommand('ethcode.contract.input.create', () => {
+      const contract: CombinedCompiledContract | StandardCompiledContract | undefined = context.workspaceState.get(
+        'contract'
+      );
       if (contract && workspace.workspaceFolders) {
         const constructor: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type === 'constructor');
         const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
@@ -300,6 +315,7 @@ export async function activate(context: vscode.ExtensionContext) {
               inputs,
             },
           });
+          logger.log('Constructor inputs JSON generated');
         }
       } else logger.error(errors.ContractNotFound);
     }),
@@ -309,50 +325,85 @@ export async function activate(context: vscode.ExtensionContext) {
       if (editorContent) {
         const constructorInputs: Array<ConstructorInputValue> = JSON.parse(editorContent);
         context.workspaceState.update('constructor-inputs', constructorInputs);
+        logger.log(`Constructor inputs loaded!`);
       }
     }),
-    // Get gas estimate
-    commands.registerCommand('ethcode.contract.gas.get', async () => {
-      const networkId = context.workspaceState.get('networkId');
-      const account = context.workspaceState.get('account');
-      const contract = context.workspaceState.get('contract');
-      const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
-      let payload = {};
-      if (isComContract(contract)) {
-        const { abi, bin } = contract;
-        payload = {
-          abi,
-          bytecode: bin,
-          params: params || [],
-          from: account,
-        };
-      } else if (isStdContract(contract)) {
-        const { abi, evm } = contract;
-        payload = {
-          abi,
-          bytecode: evm.bytecode.object,
-          params: params || [],
-          from: account,
-        };
+    // Create call input for method
+    commands.registerCommand('ethcode.contract.call.input.create', () => {
+      const contract: CombinedCompiledContract | StandardCompiledContract | undefined = context.workspaceState.get(
+        'contract'
+      );
+      const quickPick = window.createQuickPick<IFunctionQP>();
+      if (contract) {
+        const functions: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type !== 'constructor');
+        quickPick.items = functions.map((f) => ({
+          label: f.name || '',
+          functionKey: f.name || '',
+        }));
+        quickPick.placeholder = 'Select function';
+        quickPick.onDidChangeActive((selection: Array<IFunctionQP>) => {
+          quickPick.value = selection[0].label;
+        });
+        quickPick.onDidChangeSelection((selection: Array<IFunctionQP>) => {
+          if (selection[0] && workspace.workspaceFolders) {
+            const { functionKey } = selection[0];
+            quickPick.dispose();
+            const abiItem = functions.filter((i: ABIDescription) => i.name === functionKey);
+            const fileWorker = createWorker();
+            fileWorker.send({
+              command: 'create-function-input',
+              payload: {
+                path: workspace.workspaceFolders[0].uri.path,
+                abiItem,
+              },
+            });
+          }
+        });
+        quickPick.onDidHide(() => quickPick.dispose());
+        quickPick.show();
+      } else {
+        logger.error(errors.ContractNotFound);
       }
-      const txWorker = createWorker();
-      txWorker.on('message', (m: any) => {
-        logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
-        if (m.error) {
-          logger.error(m.error);
-        } else {
-          context.workspaceState.update('gasEstimate', m.gasEstimate);
-          logger.success(m.gasEstimate);
-        }
-      });
-      txWorker.send({
-        command: 'get-gas-estimate',
-        payload,
-        testnetId: networkId,
-      });
+    }),
+    // Load call inputs from JSON
+    // Call contract method
+    commands.registerCommand('ethcode.contract.call', async () => {
+      const networkId = context.workspaceState.get('networkId');
+      const account: string | undefined = context.workspaceState.get('account');
+      const contract:
+        | CombinedCompiledContract
+        | StandardCompiledContract
+        | undefined = await context.workspaceState.get('contract');
+      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
+      const txReceipt: TxReceipt | undefined = context.workspaceState.get('transaction-receipt');
+      if (editorContent && contract && txReceipt) {
+        const abiItem: ABIDescription = JSON.parse(editorContent)[0];
+        const contractWorker = createWorker();
+        contractWorker.on('message', (m: any) => {
+          if (m.error) {
+            logger.error(m.error);
+          } else {
+            console.log(m.callResult);
+            logger.log(m.callResult);
+          }
+        });
+        contractWorker.send({
+          command: 'contract-method-call',
+          payload: {
+            from: account,
+            abi: contract.abi,
+            address: txReceipt.contractAddress,
+            methodName: abiItem.name,
+            params: abiItem.inputs,
+            gasSupply: 0,
+            value: 0,
+          },
+          testnetId: networkId,
+        });
+      }
     }),
     // Set custom gas estimate
-    commands.registerCommand('ethcode.contract.gas.set', async () => {
+    commands.registerCommand('ethcode.transaction.gas.set', async () => {
       const gas = await window.showInputBox(gasInp);
       context.workspaceState.update('gasEstimate', gas);
     }),
