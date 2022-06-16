@@ -29,7 +29,7 @@ interface ContextInterface {
   deployedResult: TransactionResult | undefined;
   setDeployedResult: (_value: TransactionResult | undefined) => void;
   error: Error | undefined;
-  setError: (_value: Error | undefined) => void;
+  setError: (_value: any) => void;
 }
 export const AppContext = createContext<ContextInterface>({
   unsignedTx: undefined,
@@ -57,5 +57,5 @@ export const AppContext = createContext<ContextInterface>({
   deployedResult: undefined,
   setDeployedResult: (_value: TransactionResult | undefined) => {},
   error: undefined,
-  setError: (_value: Error | undefined) => {},
+  setError: (_value: any) => {},
 });

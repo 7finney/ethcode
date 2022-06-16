@@ -18,7 +18,7 @@ const Deploy: React.FC<IProps> = ({ abi, bytecode, vscode }: IProps) => {
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
   const [gasEstimate, setGasEstimate] = useState(0);
   const [txtHash, setTxtHash] = useState('');
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<any>(null);
   const constructorInputRef = useRef<ConstructorInput[] | null>(null);
 
   // Context
