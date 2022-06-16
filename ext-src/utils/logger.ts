@@ -13,13 +13,13 @@ export default class Logger {
     return date.toLocaleTimeString();
   };
 
-  public log(...m: Array<any>) {
+  public log(...m: any) {
     const now = this.getNow();
     this.outputChannel.appendLine(`[${now}]: ${m}`);
     this.outputChannel.show();
   }
 
-  public error(e: Error) {
+  public error(e: any) {
     const now = this.getNow();
     this.outputChannel.appendLine(`[${now}] Error: ${e.message}`);
     this.outputChannel.appendLine(`[${now}] stack: ${e.stack}`);
