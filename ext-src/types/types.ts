@@ -91,6 +91,10 @@ export function isComContract(obj: any): obj is CombinedCompiledContract {
   return obj.abi !== undefined && obj.bin !== undefined;
 }
 
+export function isSolidityContract(obj: any): obj is CombinedCompiledContract {
+  return obj.ContractName !== undefined;
+}
+
 export function isConstructorInputValue(obj: any): obj is ConstructorInputValue {
   return obj.value !== undefined;
 }

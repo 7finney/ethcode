@@ -27,7 +27,7 @@ export async function verifyUserToken(appId: string, email: string, authtoken: s
     }
     return false;
   } catch (error) {
-    logger.log(error.response.data.Error);
+    logger.log(error);
     return false;
   }
 }
@@ -50,7 +50,7 @@ export async function registerAppToToken() {
     authToken.token = token!;
     return true;
   } catch (e) {
-    if (e.code === 'FileNotFound') {
+    if (e === 'FileNotFound') {
       logger.log("Configuration file doesn't exists");
     }
     return false;

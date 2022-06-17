@@ -21,7 +21,7 @@ export interface SourceWithTarget {
 // RESULT //
 /// /////////
 
-export interface CombinedJSONOutput {
+export interface HardhatJSONOutput {
   /** not present if no errors/warnings were encountered */
   errors?: CompilationError[];
   /** This contains the file-level outputs. In can be limited/filtered by the outputSelection settings */
@@ -32,6 +32,22 @@ export interface CombinedJSONOutput {
   contracts: CombinedJSONContracts;
   sourceList: Array<string>;
   version: string;
+}
+
+export interface RemixJSONOutput {
+  output: {
+    abi: ABIDescription[];
+  },
+
+  sources: {
+    [contractName: string]: CompilationSource;
+  };
+}
+
+export interface CombinedJSONOutput {
+  hardhatOutput?: HardhatJSONOutput;
+  remixOutput?: RemixJSONOutput;
+  contractType: number;  // 1: Hardhat, 2: Remix
 }
 
 export interface StandardJSONOutput {
@@ -208,6 +224,9 @@ export interface CombinedCompiledContract {
   devdoc: DeveloperDocumentation;
   opcodes: string;
   hashes: { [key: string]: string };
+
+  /** Solidity Architecture */
+  ContractName: any;
 }
 
 /// //////
@@ -236,10 +255,10 @@ export interface EventDescription {
   type: 'event';
   name: string;
   inputs: ABIParameter &
-    {
-      /** true if the field is part of the log’s topics, false if it one of the log’s data segment. */
-      indexed: boolean;
-    }[];
+  {
+    /** true if the field is part of the log’s topics, false if it one of the log’s data segment. */
+    indexed: boolean;
+  }[];
   /** true if the event was declared as anonymous. */
   anonymous: boolean;
 }

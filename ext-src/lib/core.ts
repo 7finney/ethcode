@@ -11,6 +11,7 @@ import {
   ICombinedJSONContractsQP,
   CombinedCompiledContract,
   ConstructorInputValue,
+  isSolidityContract,
 } from '../types';
 import { createWorker, createAccWorker } from './workerCreator';
 
@@ -85,27 +86,31 @@ export function parseJSONPayload(context: ExtensionContext, _jsonPayload: any): 
 // Parse Combined JSON payload
 export function parseCombinedJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
   if (_jsonPayload) {
-    const { contracts }: CombinedJSONOutput = JSON.parse(_jsonPayload);
-    const quickPick = window.createQuickPick<ICombinedJSONContractsQP>();
-    quickPick.items = Object.keys(contracts).map((contract) => ({ label: contract, contractKey: contract }));
-    quickPick.placeholder = 'Select contract';
-    quickPick.onDidChangeActive((selection: Array<ICombinedJSONContractsQP>) => {
-      quickPick.value = selection[0].label;
-    });
-    quickPick.onDidChangeSelection((selection: Array<ICombinedJSONContractsQP>) => {
-      if (selection[0]) {
-        const contract: CombinedCompiledContract = contracts[selection[0].contractKey];
-        if (isComContract(contract)) {
-          context.workspaceState.update('contract', contract);
-          logger.log('Contract loaded!');
-        } else {
-          logger.error(Error('Could not parse contract.'));
-        }
-        quickPick.dispose();
-      }
-    });
-    quickPick.onDidHide(() => quickPick.dispose());
-    quickPick.show();
+    const parsedData = JSON.parse(_jsonPayload);
+    let output: CombinedJSONOutput = { contractType: 0 };
+
+    if (parsedData.output !== undefined) {
+
+      // Remix output
+      output.contractType = 2;
+      output.remixOutput = parsedData;
+      logger.log('Contract is loaded! (type: Remix Compiled Version)');
+      context.workspaceState.update('contract', output);
+    } else if (parsedData.contracts !== undefined) {
+
+      // Hardhat output
+      output.contractType = 1;
+      output.hardhatOutput = parsedData;
+      logger.log('Contract is loaded! (type: Hardhat Compiled Version)');
+      context.workspaceState.update('contract', output);
+    } else {
+      output.contractType = 0;
+      logger.error(
+        Error(
+          'Could not load JSON file. Make sure it follows Solidity output description. Know more: https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description.'
+        )
+      );
+    }
   } else {
     logger.error(
       Error(
