@@ -11,5 +11,5 @@ export const createWorker = (): ChildProcess => {
   // return fork(path.join(__dirname, 'accWorker.js'), [], {
   //   execArgv: [`--inspect=${process.debugPort + 1}`],
   // });
-  return fork(path.join(__dirname, 'worker.js'));
+  return fork('./worker');
 };

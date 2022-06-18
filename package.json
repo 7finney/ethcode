@@ -25,8 +25,7 @@
   },
   "activationEvents": [
     "onCommand:ethcode.activate",
-    "onCommand:ethcode.combined-json.load",
-    "onCommand:ethcode.standard-json.load"
+    "onCommand:ethcode.compiled-json.load"
   ],
   "main": "./build/ext-src/extension.js",
   "extensionDependencies": [
@@ -126,12 +125,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.combined-json.load",
-        "title": "Ethcode: Load combined JSON output"
-      },
-      {
-        "command": "ethcode.standard-json.load",
-        "title": "Ethcode: Load standard JSON output"
+        "command": "ethcode.compiled-json.load",
+        "title": "Ethcode: Load compiled JSON output"
       },
       {
         "command": "ethcode.contract.input.create",
@@ -167,12 +162,7 @@
       "editor/context": [
         {
           "when": "resourceLangId == json",
-          "command": "ethcode.combined-json.load",
-          "group": "Ethcode"
-        },
-        {
-          "when": "resourceLangId == json",
-          "command": "ethcode.standard-json.load",
+          "command": "ethcode.compiled-json.load",
           "group": "Ethcode"
         },
         {
@@ -252,6 +242,7 @@
     "style-loader": "0.23.1",
     "styled-components": "^5.2.1",
     "terser-webpack-plugin": "1.2.3",
+    "ts-node": "^10.8.1",
     "ts-pnp": "1.1.2",
     "ts-protoc-gen": "^0.15.0",
     "typescript": "^4.0.5",

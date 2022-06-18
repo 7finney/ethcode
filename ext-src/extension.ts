@@ -10,19 +10,13 @@ import {
   INetworkQP,
   IFunctionQP,
   LocalAddressType,
-  StandardCompiledContract,
-  CombinedCompiledContract,
-  isStdContract,
-  isComContract,
   ABIDescription,
   ABIParameter,
   ConstructorInputValue,
-  isStdJSONOutput,
   TxReceipt,
 } from './types';
 import {
-  parseCombinedJSONPayload,
-  parseJSONPayload,
+  parseCompiledJSONPayload,
   estimateTransactionGas,
   createAccWorker,
   createWorker,
@@ -32,6 +26,7 @@ import {
   getTransactionReceipt,
 } from './lib';
 import { errors } from './utils';
+import { getAbi, getByteCode, CompiledJSONOutput } from './types/output';
 
 // Create logger
 const logger = new Logger();
@@ -214,60 +209,33 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.transaction.build', async () => {
       const networkId = context.workspaceState.get('networkId');
       const account: string | undefined = context.workspaceState.get('account');
-      const contract = context.workspaceState.get('contract');
+      const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
       const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
       const gas: number | undefined = context.workspaceState.get('gasEstimate');
-      if (isComContract(contract)) {
-        const { abi, bin } = contract;
-        const txWorker = createWorker();
-        txWorker.on('message', (m: any) => {
-          logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
-          if (m.error) {
-            logger.error(m.error);
-          } else {
-            context.workspaceState.update('unsignedTx', m.buildTxResult);
-            logger.log(m.buildTxResult);
-          }
-        });
-        const payload = {
-          abi,
-          bytecode: bin,
-          params: params || [],
-          gasSupply: gas || 0,
-          from: account,
-        };
-        txWorker.send({
-          command: 'build-rawtx',
-          payload,
-          testnetId: networkId,
-        });
-      } else if (isStdContract(contract)) {
-        const { abi, evm } = contract;
-        const { bytecode } = evm;
-        const txWorker = createWorker();
-        txWorker.on('message', (m: any) => {
-          logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
-          if (m.error) {
-            logger.error(m.error);
-          } else {
-            context.workspaceState.update('unsignedTx', m.buildTxResult);
-            logger.log(m.buildTxResult);
-          }
-        });
-        txWorker.send({
-          command: 'build-rawtx',
-          payload: {
-            abi,
-            bytecode,
-            params: [],
-            gasSupply: 0,
-            from: account,
-          },
-          testnetId: networkId,
-        });
-      } else {
-        logger.error(Error('Could not parse contract.'));
-      }
+
+      const txWorker = createWorker();
+      txWorker.on('message', (m: any) => {
+        logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
+        if (m.error) {
+          logger.error(m.error);
+        } else {
+          context.workspaceState.update('unsignedTx', m.buildTxResult);
+          logger.log(m.buildTxResult);
+        }
+      });
+
+      const payload = {
+        abi: getAbi(contract),
+        bytecode: getByteCode(contract),
+        params: params || [],
+        gasSupply: gas || 0,
+        from: account,
+      };
+      txWorker.send({
+        command: 'build-rawtx',
+        payload,
+        testnetId: networkId,
+      });
     }),
     // Get gas estimate
     commands.registerCommand('ethcode.transaction.gas.get', async () => {
@@ -282,26 +250,26 @@ export async function activate(context: vscode.ExtensionContext) {
       return getTransactionReceipt(context);
     }),
     // Load combined JSON output
-    commands.registerCommand('ethcode.combined-json.load', () => {
+    commands.registerCommand('ethcode.compiled-json.load', () => {
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-      parseCombinedJSONPayload(context, editorContent);
-    }),
-    // Load combined JSON output
-    commands.registerCommand('ethcode.standard-json.load', (_jsonPayload: any) => {
-      if (_jsonPayload && isStdJSONOutput(_jsonPayload)) {
-        parseJSONPayload(context, JSON.stringify(_jsonPayload));
-      } else {
-        const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-        parseJSONPayload(context, editorContent);
-      }
+      parseCompiledJSONPayload(context, editorContent);
     }),
     // Create Input JSON
     commands.registerCommand('ethcode.contract.input.create', () => {
-      const contract: CombinedCompiledContract | StandardCompiledContract | undefined = context.workspaceState.get(
-        'contract'
-      );
+      const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
+
       if (contract && workspace.workspaceFolders) {
-        const constructor: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type === 'constructor');
+        const constructor = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
+        if (constructor == undefined) {
+          logger.log("Abi doesn't exist on the loaded contract");
+          return;
+        }
+
+        if (constructor.length == 0) {
+          logger.log("This abi doesn't have any constructor");
+          return;
+        }
+
         const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
         if (constInps && constInps.length > 0) {
           const inputs: Array<ConstructorInputValue> = constInps.map(
@@ -330,12 +298,21 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // Create call input for method
     commands.registerCommand('ethcode.contract.call.input.create', () => {
-      const contract: CombinedCompiledContract | StandardCompiledContract | undefined = context.workspaceState.get(
-        'contract'
-      );
+      const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
+
       const quickPick = window.createQuickPick<IFunctionQP>();
       if (contract) {
-        const functions: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type !== 'constructor');
+        const functions = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
+        if (functions == undefined) {
+          logger.log("Abi doesn't exist on the loaded contract");
+          return;
+        }
+
+        if (functions.length == 0) {
+          logger.log("This abi doesn't have any constructor");
+          return;
+        }
+
         quickPick.items = functions.map((f) => ({
           label: f.name || '',
           functionKey: f.name || '',
@@ -370,10 +347,7 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.contract.call', async () => {
       const networkId = context.workspaceState.get('networkId');
       const account: string | undefined = context.workspaceState.get('account');
-      const contract:
-        | CombinedCompiledContract
-        | StandardCompiledContract
-        | undefined = await context.workspaceState.get('contract');
+      const contract = await context.workspaceState.get('contract') as CompiledJSONOutput;
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
       const txReceipt: TxReceipt | undefined = context.workspaceState.get('transaction-receipt');
       if (editorContent && contract && txReceipt) {
@@ -391,7 +365,7 @@ export async function activate(context: vscode.ExtensionContext) {
           command: 'contract-method-call',
           payload: {
             from: account,
-            abi: contract.abi,
+            abi: getAbi(contract),
             address: txReceipt.contractAddress,
             methodName: abiItem.name,
             params: abiItem.inputs,

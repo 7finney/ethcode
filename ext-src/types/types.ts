@@ -83,14 +83,6 @@ export interface TxReceipt {
 
 // Typeguard
 
-export function isStdContract(obj: any): obj is StandardCompiledContract {
-  return obj.abi !== undefined && obj.evm !== undefined;
-}
-
-export function isComContract(obj: any): obj is CombinedCompiledContract {
-  return obj.abi !== undefined && obj.bin !== undefined;
-}
-
 export function isConstructorInputValue(obj: any): obj is ConstructorInputValue {
   return obj.value !== undefined;
 }
