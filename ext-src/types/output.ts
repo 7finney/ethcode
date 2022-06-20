@@ -31,18 +31,12 @@ export interface HardHatCompiledOutput {
 };
 
 export interface RemixCompiledOutput {
-  output: {
-    /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
-    abi: ABIDescription[];
-    /** User documentation (natural specification) */
-    userdoc: UserDocumentation;
-    /** Developer documentation (natural specification) */
-    devdoc: DeveloperDocumentation;
+  data: {
+    bytecode: BytecodeObject;
+    deployedByteCode: BytecodeObject;
   };
-  sources: {
-    [contractName: string]: CompilationSource;
-  };
-  version: number;
+  /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
+  abi: ABIDescription[];
 }
 
 export interface CompiledJSONOutput {
@@ -58,7 +52,7 @@ export const getAbi = (output: CompiledJSONOutput) => {
   if (output.contractType == 1)
     return output.hardhatOutput?.abi;
 
-  return output.remixOutput?.output.abi;
+  return output.remixOutput?.abi;
 }
 
 export const getByteCode = (output: CompiledJSONOutput) => {
@@ -68,7 +62,7 @@ export const getByteCode = (output: CompiledJSONOutput) => {
   if (output.contractType == 1)
     return output.hardhatOutput?.bytecode;
 
-  return "";
+  return output.remixOutput?.data.bytecode.object;
 }
 
 export interface CombinedJSONOutput {

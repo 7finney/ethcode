@@ -30,13 +30,13 @@ export function parseCompiledJSONPayload(context: ExtensionContext, _jsonPayload
     let data = JSON.parse(_jsonPayload);
     let output: CompiledJSONOutput = { contractType: 0 };
 
-    if (data.abi !== undefined) {
+    if (data.bytecode !== undefined) {
       //Hardhat format
 
       output.contractType = 1;
       output.hardhatOutput = data;
       logger.log("Loaded Hardhat compiled json output");
-    } else if (data.output !== undefined) {
+    } else if (data.data !== undefined) {
       //Remix format
 
       output.contractType = 2;
