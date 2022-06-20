@@ -258,34 +258,41 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.contract.input.create', () => {
       const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
 
-      if (contract && workspace.workspaceFolders) {
-        const constructor = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
-        if (constructor == undefined) {
-          logger.log("Abi doesn't exist on the loaded contract");
-          return;
-        }
+      if (contract == undefined || contract == null || workspace.workspaceFolders == undefined) {
+        logger.error(errors.ContractNotFound);
+        return;
+      }
+      
+      const constructor = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
+      if (constructor == undefined) {
+        logger.log("Abi doesn't exist on the loaded contract");
+        return;
+      }
 
-        if (constructor.length == 0) {
-          logger.log("This abi doesn't have any constructor");
-          return;
-        }
+      if (constructor.length == 0) {
+        logger.log("This abi doesn't have any constructor");
+        return;
+      }
 
-        const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
-        if (constInps && constInps.length > 0) {
-          const inputs: Array<ConstructorInputValue> = constInps.map(
-            (inp: ABIParameter) => <ConstructorInputValue>{ ...inp, value: '' }
-          );
-          const fileWorker = createWorker();
-          fileWorker.send({
-            command: 'create-input-file',
-            payload: {
-              path: workspace.workspaceFolders[0].uri.path,
-              inputs,
-            },
-          });
-          logger.log('Constructor inputs JSON generated');
-        }
-      } else logger.error(errors.ContractNotFound);
+      const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
+      if (constInps && constInps.length > 0) {
+        const inputs: Array<ConstructorInputValue> = constInps.map(
+          (inp: ABIParameter) => <ConstructorInputValue>{ ...inp, value: '' }
+        );
+
+        const fileWorker = createWorker();
+        fileWorker.on('message', (m: any) => {
+          logger.log(JSON.stringify(m));
+        });
+
+        fileWorker.send({
+          command: 'create-input-file',
+          payload: {
+            path: workspace.workspaceFolders[0].uri.fsPath,
+            inputs,
+          },
+        });
+      }
     }),
     // Load constructor inputs from JSON
     commands.registerCommand('ethcode.contract.input.load', async () => {

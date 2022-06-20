@@ -4,16 +4,23 @@ import { ABIDescription, ABIParameter } from '../types';
 import { EstimateGasReq, BuildTxRequest, CallRequest } from '../services/ethereum_pb';
 import { clientCallClient } from './proto';
 import { deployUnsignedTx, deployGanacheTx, getTransaction, getTransactionReceipt } from './transactions';
+import * as path from 'path';
 
 // create constructor input file
-function writeConstrucor(path: string, inputs: Array<ABIParameter>) {
-  fs.writeFileSync(`${path}/constructor-input.json`, JSON.stringify(inputs, null, 2));
+function writeConstrucor(path_: string, inputs: Array<ABIParameter>) {
+  let fileName = path.join(path_, 'constructor-input.json');
+  fs.writeFileSync(fileName, JSON.stringify(inputs, null, 2));
+
+  // @ts-ignore
+  process.send("Created constructor json");
 }
 // create function input file
-function writeFunction(path: string, abiItem: Array<ABIDescription>) {
-  fs.writeFileSync(`${path}/function-input.json`, JSON.stringify(abiItem, null, 2));
+function writeFunction(path_: string, abiItem: Array<ABIDescription>) {
+  let fileName = path.join(path_, 'function-input.json');
+  fs.writeFileSync(fileName, JSON.stringify(abiItem, null, 2));
 }
 
+// @ts-ignore
 process.on('message', async (m) => {
   const meta = new grpc.Metadata();
   // Fetch accounts and balance
