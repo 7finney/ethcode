@@ -77,12 +77,22 @@
       },
       {
         "command": "ethcode.account.balance",
-        "title": "Get balance",
+        "title": "Get Local address account balance",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.ganache.balance",
+        "title": "Get Ganache address account Balance",
         "category": "Ethcode"
       },
       {
         "command": "ethcode.account.list",
         "title": "List ethereum accounts from keystore",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.account.ganache.set",
+        "title": "List Gananche account from local machine",
         "category": "Ethcode"
       },
       {
@@ -212,6 +222,7 @@
     "dotenv-expand": "4.2.0",
     "eslint-loader": "^4.0.2",
     "ethereumjs-tx": "^2.1.2",
+    "ethers": "^5.6.9",
     "file-loader": "3.0.1",
     "fs-extra": "^9.0.1",
     "google-protobuf": "^3.17.3",
