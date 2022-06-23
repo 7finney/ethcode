@@ -291,17 +291,13 @@ export async function activate(context: vscode.ExtensionContext) {
         functionKey: f || '',
       }));
       quickPick.placeholder = 'Select a contract';
-      quickPick.onDidChangeActive((selection: Array<IFunctionQP>) => {
-        quickPick.value = selection[0].label;
-      });
       quickPick.onDidChangeSelection((selection: Array<IFunctionQP>) => {
         if (selection[0] && workspace.workspaceFolders) {
           const { functionKey } = selection[0];
           quickPick.dispose();
-          const contract = Object.keys(contracts).filter((i: string) => i === functionKey);
-          context.workspaceState.update('contract', contract);
-
-          logger.log(JSON.stringify(contract));
+          // get selected contract
+          const name = Object.keys(contracts).filter((i: string) => i === functionKey);
+          context.workspaceState.update('contract', contracts[name[0]]);
         }
       });
       quickPick.onDidHide(() => quickPick.dispose());

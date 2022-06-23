@@ -56,17 +56,14 @@ export function parseBatchCompiledJSON(context: ExtensionContext, paths: Array<s
 
     const data = fs.readFileSync(e);
     const output = getCompiledJsonObject(data);
-
     if (output.contractType === 0) return;
 
-    logger.log('<<<<<<<<<<<<<<<<<');
+    logger.log(`Saved ${name} contract to storage`);
     let contracts = context.workspaceState.get('contracts') as any;
 
     if (contracts === undefined || contracts === '') contracts = new Map();
 
     contracts[name] = output;
-    logger.log('Count of contracts: ', Object.keys(contracts).length);
-
     context.workspaceState.update('contracts', contracts);
   });
 }
