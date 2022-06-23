@@ -77,11 +77,7 @@
       },
       {
         "command": "ethcode.account.balance",
-<<<<<<< Updated upstream
-        "title": "Get balance",
-=======
         "title": "Get account balance",
->>>>>>> Stashed changes
         "category": "Ethcode"
       },
       {
@@ -97,11 +93,6 @@
       {
         "command": "ethcode.network.set",
         "title": "Use ethereum network",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.network.ethereum.set",
-        "title": "Set Etherum Networks",
         "category": "Ethcode"
       },
       {
@@ -221,6 +212,7 @@
     "dotenv-expand": "4.2.0",
     "eslint-loader": "^4.0.2",
     "ethereumjs-tx": "^2.1.2",
+    "ethers": "^5.6.9",
     "file-loader": "3.0.1",
     "fs-extra": "^9.0.1",
     "google-protobuf": "^3.17.3",

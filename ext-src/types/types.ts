@@ -26,7 +26,7 @@ export type LocalAddressType = {
   checksumAddress: string;
 };
 
-export type GanacheAddressType = [string];
+export type GanacheAddressType = string;
 
 export interface TokenData {
   appId?: string;
