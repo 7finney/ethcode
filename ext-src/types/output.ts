@@ -28,7 +28,7 @@ export interface HardHatCompiledOutput {
   abi: ABIDescription[];
   bytecode: string;
   deployedBytecode: string;
-};
+}
 
 export interface RemixCompiledOutput {
   data: {
@@ -40,30 +40,26 @@ export interface RemixCompiledOutput {
 }
 
 export interface CompiledJSONOutput {
-  contractType: number; //0: null, 1: hardhat output, 2: remix output
+  contractType: number; // 0: null, 1: hardhat output, 2: remix output
   hardhatOutput?: HardHatCompiledOutput;
   remixOutput?: RemixCompiledOutput;
 }
 
 export const getAbi = (output: CompiledJSONOutput) => {
-  if (output.contractType == 0)
-    return [];
+  if (output.contractType === 0) return [];
 
-  if (output.contractType == 1)
-    return output.hardhatOutput?.abi;
+  if (output.contractType === 1) return output.hardhatOutput?.abi;
 
   return output.remixOutput?.abi;
-}
+};
 
 export const getByteCode = (output: CompiledJSONOutput) => {
-  if (output.contractType == 0)
-    return "";
+  if (output.contractType === 0) return '';
 
-  if (output.contractType == 1)
-    return output.hardhatOutput?.bytecode;
+  if (output.contractType === 1) return output.hardhatOutput?.bytecode;
 
   return output.remixOutput?.data.bytecode.object;
-}
+};
 
 export interface CombinedJSONOutput {
   /** not present if no errors/warnings were encountered */
@@ -278,10 +274,10 @@ export interface EventDescription {
   type: 'event';
   name: string;
   inputs: ABIParameter &
-  {
-    /** true if the field is part of the log’s topics, false if it one of the log’s data segment. */
-    indexed: boolean;
-  }[];
+    {
+      /** true if the field is part of the log’s topics, false if it one of the log’s data segment. */
+      indexed: boolean;
+    }[];
   /** true if the event was declared as anonymous. */
   anonymous: boolean;
 }

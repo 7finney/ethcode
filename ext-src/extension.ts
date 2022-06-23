@@ -17,6 +17,7 @@ import {
 } from './types';
 import {
   parseCompiledJSONPayload,
+  parseBatchCompiledJSON,
   estimateTransactionGas,
   createAccWorker,
   createWorker,
@@ -254,22 +255,74 @@ export async function activate(context: vscode.ExtensionContext) {
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
       parseCompiledJSONPayload(context, editorContent);
     }),
+    // Load all combined JSON output
+    commands.registerCommand('ethcode.compiled-json.load.all', () => {
+      if (workspace.workspaceFolders === undefined) {
+        logger.error(new Error('Please open your solidity project to vscode'));
+        return;
+      }
+
+      logger.log('Loading all compiled jsons...');
+
+      context.workspaceState.update('contracts', ''); // Initialize contracts storage
+      const fileWorker = createWorker();
+      fileWorker.on('message', (m: any) => {
+        if (m.type === 'try-parse-batch-json') {
+          parseBatchCompiledJSON(context, m.paths);
+        }
+      });
+
+      fileWorker.send({
+        command: 'load-all-compiled-json',
+        payload: {
+          path: workspace.workspaceFolders[0].uri.fsPath,
+        },
+      });
+    }),
+    // Select a compiled json from the list
+    commands.registerCommand('ethcode.compiled-json.select', () => {
+      const contracts = context.workspaceState.get('contracts') as Map<string, CompiledJSONOutput>;
+
+      const quickPick = window.createQuickPick<IFunctionQP>();
+      if (contracts === undefined || Object.keys(contracts).length === 0) return;
+
+      quickPick.items = Object.keys(contracts).map((f) => ({
+        label: f || '',
+        functionKey: f || '',
+      }));
+      quickPick.placeholder = 'Select a contract';
+      quickPick.onDidChangeActive((selection: Array<IFunctionQP>) => {
+        quickPick.value = selection[0].label;
+      });
+      quickPick.onDidChangeSelection((selection: Array<IFunctionQP>) => {
+        if (selection[0] && workspace.workspaceFolders) {
+          const { functionKey } = selection[0];
+          quickPick.dispose();
+          const contract = Object.keys(contracts).filter((i: string) => i === functionKey);
+          context.workspaceState.update('contract', contract);
+
+          logger.log(JSON.stringify(contract));
+        }
+      });
+      quickPick.onDidHide(() => quickPick.dispose());
+      quickPick.show();
+    }),
     // Create Input JSON
     commands.registerCommand('ethcode.contract.input.create', () => {
       const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
 
-      if (contract == undefined || contract == null || workspace.workspaceFolders == undefined) {
+      if (contract === undefined || contract == null || workspace.workspaceFolders === undefined) {
         logger.error(errors.ContractNotFound);
         return;
       }
-      
+
       const constructor = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
-      if (constructor == undefined) {
+      if (constructor === undefined) {
         logger.log("Abi doesn't exist on the loaded contract");
         return;
       }
 
-      if (constructor.length == 0) {
+      if (constructor.length === 0) {
         logger.log("This abi doesn't have any constructor");
         return;
       }
@@ -310,12 +363,12 @@ export async function activate(context: vscode.ExtensionContext) {
       const quickPick = window.createQuickPick<IFunctionQP>();
       if (contract) {
         const functions = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
-        if (functions == undefined) {
+        if (functions === undefined) {
           logger.log("Abi doesn't exist on the loaded contract");
           return;
         }
 
-        if (functions.length == 0) {
+        if (functions.length === 0) {
           logger.log("This abi doesn't have any constructor");
           return;
         }
@@ -354,7 +407,7 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.contract.call', async () => {
       const networkId = context.workspaceState.get('networkId');
       const account: string | undefined = context.workspaceState.get('account');
-      const contract = await context.workspaceState.get('contract') as CompiledJSONOutput;
+      const contract = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
       const txReceipt: TxReceipt | undefined = context.workspaceState.get('transaction-receipt');
       if (editorContent && contract && txReceipt) {

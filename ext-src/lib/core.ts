@@ -1,15 +1,10 @@
 import { window, ExtensionContext, InputBoxOptions } from 'vscode';
-
+import * as fs from 'fs';
 import Logger from '../utils/logger';
-import {
-  StandardJSONOutput,
-  IStandardJSONContractsQP,
-  StandardCompiledContract,
-  ConstructorInputValue,
-  CompiledJSONOutput,
-} from '../types';
+import { ConstructorInputValue, CompiledJSONOutput } from '../types';
 import { createWorker, createAccWorker } from './workerCreator';
 import { getAbi, getByteCode } from '../types/output';
+import * as path from 'path';
 
 // Create logger
 const logger = new Logger();
@@ -24,28 +19,63 @@ const txHashInpOpt: InputBoxOptions = {
   placeHolder: 'Transaction hash',
 };
 
-// Parse Combined JSON payload
-export function parseCompiledJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
-  if (_jsonPayload) {
-    let data = JSON.parse(_jsonPayload);
-    let output: CompiledJSONOutput = { contractType: 0 };
+function getCompiledJsonObject(_jsonPayload: any): CompiledJSONOutput {
+  const output: CompiledJSONOutput = { contractType: 0 };
+
+  try {
+    const data = JSON.parse(_jsonPayload);
 
     if (data.bytecode !== undefined) {
-      //Hardhat format
+      // Hardhat format
 
       output.contractType = 1;
       output.hardhatOutput = data;
-      logger.log("Loaded Hardhat compiled json output");
+      logger.log('Loaded Hardhat compiled json output');
     } else if (data.data !== undefined) {
-      //Remix format
+      // Remix format
 
       output.contractType = 2;
       output.remixOutput = data;
-      logger.log("Loaded Remix compiled json output");
+      logger.log('Loaded Remix compiled json output');
     }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+  }
 
-    if (output.contractType != 0)
-      context.workspaceState.update('contract', output);
+  return output;
+}
+
+export function parseBatchCompiledJSON(context: ExtensionContext, paths: Array<string>): void {
+  logger.log(paths);
+
+  paths.forEach((e) => {
+    const name = path.parse(e).base;
+
+    logger.log(`Try to parse the ${name} json file`);
+
+    const data = fs.readFileSync(e);
+    const output = getCompiledJsonObject(data);
+
+    if (output.contractType === 0) return;
+
+    logger.log('<<<<<<<<<<<<<<<<<');
+    let contracts = context.workspaceState.get('contracts') as any;
+
+    if (contracts === undefined || contracts === '') contracts = new Map();
+
+    contracts[name] = output;
+    logger.log('Count of contracts: ', Object.keys(contracts).length);
+
+    context.workspaceState.update('contracts', contracts);
+  });
+}
+
+// Parse Combined JSON payload
+export function parseCompiledJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
+  if (_jsonPayload) {
+    const output = getCompiledJsonObject(_jsonPayload);
+    if (output.contractType !== 0) context.workspaceState.update('contract', output);
   } else {
     logger.error(
       Error(

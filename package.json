@@ -25,7 +25,10 @@
   },
   "activationEvents": [
     "onCommand:ethcode.activate",
-    "onCommand:ethcode.compiled-json.load"
+    "onCommand:ethcode.compiled-json.load",
+    "onCommand:ethcode.compiled-json.load.all",
+    "onCommand:ethcode.compiled-json.select"
+
   ],
   "main": "./build/ext-src/extension.js",
   "extensionDependencies": [
@@ -129,6 +132,16 @@
         "title": "Ethcode: Load compiled JSON output"
       },
       {
+        "command": "ethcode.compiled-json.load.all",
+        "title": "Load all compiled JSON output",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.compiled-json.select",
+        "title": "Select one compiled JSON output",
+        "category": "Ethcode"
+      },
+      {
         "command": "ethcode.contract.input.create",
         "title": "Create constructor input JSON",
         "category": "Ethcode"
@@ -173,6 +186,13 @@
         {
           "when": "resourceLangId == json",
           "command": "ethcode.contract.call",
+          "group": "Ethcode"
+        }
+      ],
+      "commandPalette":[
+        {
+          "when": "false",
+          "command": "ethcode.compiled-json.load",
           "group": "Ethcode"
         }
       ]
@@ -290,7 +310,8 @@
     "build:stats": "node scripts/build.js --json > stats.json",
     "test": "node scripts/test.js",
     "watch": "tsc -watch -p ./",
-    "copy-files": "cp -r ./ext-src/services ./build/ext-src/"
+    "copy-files": "Xcopy .\\ext-src\\services build\\ext-src\\services /E /C /I",
+    "copy-files-linux": "cp -r ./ext-src/services ./build/ext-src/"
   },
   "eslintConfig": {
     "extends": "react-app"
