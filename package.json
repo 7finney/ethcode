@@ -77,7 +77,11 @@
       },
       {
         "command": "ethcode.account.balance",
+<<<<<<< Updated upstream
         "title": "Get balance",
+=======
+        "title": "Get account balance",
+>>>>>>> Stashed changes
         "category": "Ethcode"
       },
       {
@@ -93,6 +97,11 @@
       {
         "command": "ethcode.network.set",
         "title": "Use ethereum network",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.network.ethereum.set",
+        "title": "Set Etherum Networks",
         "category": "Ethcode"
       },
       {

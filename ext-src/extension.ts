@@ -3,11 +3,13 @@ import * as vscode from 'vscode';
 import { InputBoxOptions, window, commands, workspace } from 'vscode';
 import API from './api';
 import { ReactPanel } from './reactPanel';
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 import Logger from './utils/logger';
 import {
   IAccountQP,
-  INetworkQP,
   IFunctionQP,
   LocalAddressType,
   StandardCompiledContract,
@@ -19,6 +21,11 @@ import {
   ConstructorInputValue,
   isStdJSONOutput,
   TxReceipt,
+<<<<<<< Updated upstream
+=======
+  GanacheAddressType,
+  IEthereumNetworkQP,
+>>>>>>> Stashed changes
 } from './types';
 import {
   parseCombinedJSONPayload,
@@ -32,6 +39,9 @@ import {
   getTransactionReceipt,
 } from './lib';
 import { errors } from './utils';
+import { ethers } from 'ethers';
+
+const provider = ethers.providers;
 
 // Create logger
 const logger = new Logger();
@@ -99,8 +109,9 @@ export async function activate(context: vscode.ExtensionContext) {
       }
       return signDeploy(context);
     }),
-    // Set Network
+    // select ethereum networks
     commands.registerCommand('ethcode.network.set', () => {
+<<<<<<< Updated upstream
       const quickPick = window.createQuickPick<INetworkQP>();
       const options: Array<INetworkQP> = [
         { label: 'Main', networkId: 1 },
@@ -118,13 +129,41 @@ export async function activate(context: vscode.ExtensionContext) {
         if (selection[0]) {
           const { networkId } = selection[0];
           context.workspaceState.update('networkId', networkId);
+=======
+      const quickPick = window.createQuickPick<IEthereumNetworkQP>();
+      const options: Array<IEthereumNetworkQP> = [
+        { label: 'Main', networkName: '', chainId: 1 },
+        { label: 'Ganache', networkName: 'ganache', chainId: 3 },
+        { label: 'Ropsten', networkName: 'ropsten', chainId: 3 },
+        { label: 'Rinkeby', networkName: 'rinkeby', chainId: 4 },
+        { label: 'Goerli', networkName: 'goerli', chainId: 5 },
+        { label: 'Kovan', networkName: 'kovan', chainId: 42 },
+      ];
+      quickPick.items = options.map((network) => ({
+        label: network.label,
+        chainId: network.chainId,
+        networkName: network.networkName,
+      }));
+      quickPick.onDidChangeActive(() => {
+        quickPick.placeholder = 'Select network';
+      });
+      quickPick.onDidChangeSelection((selection: Array<IEthereumNetworkQP>) => {
+        if (selection[0]) {
+          const { chainId, networkName } = selection[0];
+          context.workspaceState.update('networkName', networkName);
+          context.workspaceState.update('chainId', chainId);
+>>>>>>> Stashed changes
           quickPick.dispose();
         }
       });
       quickPick.onDidHide(() => quickPick.dispose());
       quickPick.show();
     }),
+<<<<<<< Updated upstream
     // Set Account
+=======
+    // Set Ethereum Account
+>>>>>>> Stashed changes
     commands.registerCommand('ethcode.account.set', () => {
       const quickPick = window.createQuickPick<IAccountQP>();
       const addresses: Array<LocalAddressType> | undefined = context.workspaceState.get('addresses');
@@ -162,7 +201,7 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.onDidHide(() => quickPick.dispose());
       quickPick.show();
     }),
-    // List Accounts
+    // List local Accounts
     commands.registerCommand('ethcode.account.list', () => {
       const accWorker = createAccWorker();
       accWorker.on('message', (m) => {
@@ -186,6 +225,11 @@ export async function activate(context: vscode.ExtensionContext) {
         }
         context.workspaceState.update('ganache-addresses', <Array<string>>m.accounts);
         logger.log(JSON.stringify(m.accounts));
+    commands.registerCommand('ethcode.account.ganache.list', async () => {
+      await new provider.JsonRpcProvider('http://127.0.0.1:7545').listAccounts().then((account: any) => {
+        context.workspaceState.update('ganache-addresses', <Array<GanacheAddressType>>account);
+        const gadd = context.workspaceState.get('ganache-addresses');
+        logger.log(JSON.stringify(gadd));
       });
       accountsWorker.send({ command: 'get-accounts', testnetId: 'ganache' });
     }),
@@ -204,6 +248,37 @@ export async function activate(context: vscode.ExtensionContext) {
         testnetId: testNetId,
       };
       if (account && account.length > 0) balanceWorker.send(payload);
+    commands.registerCommand('ethcode.account.balance', async () => {
+      const networkName: any = await context.workspaceState.get('networkName');
+      const address: any = await context.workspaceState.get('account');
+      if (networkName === 'ganache') {
+        await new provider.JsonRpcProvider('http://127.0.0.1:7545').getBalance(address).then(async (balance) => {
+          const balanceinEth = ethers.utils.formatEther(balance);
+          await context.workspaceState.update('balance', balanceinEth);
+          const bal: any = await context.workspaceState.get('balance');
+          logger.success(`${address} has account Balance: ${bal} Eth`);
+        });
+      } else if (networkName === '') {
+        await provider
+          .getDefaultProvider()
+          .getBalance(address)
+          .then(async (balance) => {
+            const balanceinEth = ethers.utils.formatEther(balance);
+            await context.workspaceState.update('balance', balanceinEth);
+            const bal: any = await context.workspaceState.get('balance');
+            logger.success(`${address} has account Balance: ${bal} Eth`);
+          });
+      } else {
+        await provider
+          .getDefaultProvider(networkName)
+          .getBalance(address)
+          .then(async (balance) => {
+            const balanceinEth = ethers.utils.formatEther(balance);
+            await context.workspaceState.update('balance', balanceinEth);
+            const bal: any = await context.workspaceState.get('balance');
+            logger.success(`${address} has account Balance on ${networkName} network is: ${bal} Eth`);
+          });
+      }
     }),
     // Set unsigned transaction
     commands.registerCommand('ethcode.transaction.set', async (tx) => {
