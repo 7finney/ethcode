@@ -26,7 +26,7 @@ export type LocalAddressType = {
   checksumAddress: string;
 };
 
-export type GanacheAddressType = [string];
+export type GanacheAddressType = string;
 
 export interface TokenData {
   appId?: string;
@@ -43,7 +43,13 @@ export interface ICompilationResult {
 }
 
 export interface INetworkQP extends QuickPickItem {
-  networkId: number | string;
+  label: string;
+}
+export interface IEthereumNetworkQP extends QuickPickItem {
+  networkName?: string;
+  chainId?: number | string;
+  RPCurl?: string | undefined;
+  BlockExplorerUrl?: string | undefined;
 }
 
 export interface IAccountQP extends QuickPickItem {

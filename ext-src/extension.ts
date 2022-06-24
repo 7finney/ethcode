@@ -1,19 +1,20 @@
 // @ts-ignore
+import { ethers } from 'ethers';
 import * as vscode from 'vscode';
 import { InputBoxOptions, window, commands, workspace } from 'vscode';
 import API from './api';
 import { ReactPanel } from './reactPanel';
-
 import Logger from './utils/logger';
 import {
   IAccountQP,
-  INetworkQP,
   IFunctionQP,
   LocalAddressType,
   ABIDescription,
   ABIParameter,
   ConstructorInputValue,
   TxReceipt,
+  GanacheAddressType,
+  IEthereumNetworkQP,
 } from './types';
 import {
   parseCompiledJSONPayload,
@@ -29,6 +30,7 @@ import {
 import { errors } from './utils';
 import { getAbi, getByteCode, CompiledJSONOutput } from './types/output';
 
+const provider = ethers.providers;
 // Create logger
 const logger = new Logger();
 const pwdInpOpt: InputBoxOptions = {
@@ -95,32 +97,37 @@ export async function activate(context: vscode.ExtensionContext) {
       }
       return signDeploy(context);
     }),
-    // Set Network
+    // select ethereum networks
     commands.registerCommand('ethcode.network.set', () => {
-      const quickPick = window.createQuickPick<INetworkQP>();
-      const options: Array<INetworkQP> = [
-        { label: 'Main', networkId: 1 },
-        // { label: 'Ropsten', networkId: 3 },
-        // { label: 'Rinkeby', networkId: 4 },
-        { label: 'Goerli', networkId: 5 },
-        { label: 'Ganache', networkId: 'ganache' },
+      const quickPick = window.createQuickPick<IEthereumNetworkQP>();
+      const options: Array<IEthereumNetworkQP> = [
+        { label: 'Main', networkName: '', chainId: 1 },
+        { label: 'Ganache', networkName: 'ganache', chainId: 3 },
+        { label: 'Ropsten', networkName: 'ropsten', chainId: 3 },
+        { label: 'Rinkeby', networkName: 'rinkeby', chainId: 4 },
+        { label: 'Goerli', networkName: 'goerli', chainId: 5 },
+        { label: 'Kovan', networkName: 'kovan', chainId: 42 },
       ];
-      quickPick.items = options.map((network) => ({ label: network.label, networkId: network.networkId }));
-      quickPick.placeholder = 'Select network';
-      quickPick.onDidChangeActive((selection: Array<INetworkQP>) => {
-        quickPick.value = selection[0].label;
+      quickPick.items = options.map((network) => ({
+        label: network.label,
+        chainId: network.chainId,
+        networkName: network.networkName,
+      }));
+      quickPick.onDidChangeActive(() => {
+        quickPick.placeholder = 'Select network';
       });
-      quickPick.onDidChangeSelection((selection: Array<INetworkQP>) => {
+      quickPick.onDidChangeSelection((selection: Array<IEthereumNetworkQP>) => {
         if (selection[0]) {
-          const { networkId } = selection[0];
-          context.workspaceState.update('networkId', networkId);
+          const { chainId, networkName } = selection[0];
+          context.workspaceState.update('networkName', networkName);
+          context.workspaceState.update('chainId', chainId);
           quickPick.dispose();
         }
       });
       quickPick.onDidHide(() => quickPick.dispose());
       quickPick.show();
     }),
-    // Set Account
+    // Set Ethereum Account
     commands.registerCommand('ethcode.account.set', () => {
       const quickPick = window.createQuickPick<IAccountQP>();
       const addresses: Array<LocalAddressType> | undefined = context.workspaceState.get('addresses');
@@ -144,9 +151,8 @@ export async function activate(context: vscode.ExtensionContext) {
           checksumAddr: account.checksumAddr,
         }));
       }
-      quickPick.placeholder = 'Select account';
-      quickPick.onDidChangeActive((selection: Array<IAccountQP>) => {
-        quickPick.value = selection[0].label;
+      quickPick.onDidChangeActive(() => {
+        quickPick.placeholder = 'Select account';
       });
       quickPick.onDidChangeSelection((selection: Array<IAccountQP>) => {
         if (selection[0]) {
@@ -158,7 +164,7 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.onDidHide(() => quickPick.dispose());
       quickPick.show();
     }),
-    // List Accounts
+    // List local Accounts
     commands.registerCommand('ethcode.account.list', () => {
       const accWorker = createAccWorker();
       accWorker.on('message', (m) => {
@@ -173,33 +179,45 @@ export async function activate(context: vscode.ExtensionContext) {
       });
     }),
     // List Ganache accounts
-    commands.registerCommand('ethcode.account.ganache.list', () => {
-      const accountsWorker = createWorker();
-      accountsWorker.on('message', (m: any) => {
-        logger.log(`Account worker message: ${JSON.stringify(m)}`);
-        if (m.error) {
-          logger.error(m.error.details);
-        }
-        context.workspaceState.update('ganache-addresses', <Array<string>>m.accounts);
-        logger.log(JSON.stringify(m.accounts));
+    commands.registerCommand('ethcode.account.ganache.list', async () => {
+      await new provider.JsonRpcProvider('http://127.0.0.1:7545').listAccounts().then((account: any) => {
+        context.workspaceState.update('ganache-addresses', <Array<GanacheAddressType>>account);
+        const gadd = context.workspaceState.get('ganache-addresses');
+        logger.log(JSON.stringify(gadd));
       });
-      accountsWorker.send({ command: 'get-accounts', testnetId: 'ganache' });
     }),
     // Get account balance
-    commands.registerCommand('ethcode.account.balance', () => {
-      const testNetId = context.workspaceState.get('networkId');
-      const account: string | undefined = context.workspaceState.get('account');
-      const balanceWorker = createWorker();
-      balanceWorker.on('message', (m: any) => {
-        logger.log(`Balance worker message: ${JSON.stringify(m)}`);
-        context.workspaceState.update('balance', m.balance);
-      });
-      const payload = {
-        command: 'get-balance',
-        account,
-        testnetId: testNetId,
-      };
-      if (account && account.length > 0) balanceWorker.send(payload);
+    commands.registerCommand('ethcode.account.balance', async () => {
+      const networkName: any = await context.workspaceState.get('networkName');
+      const address: any = await context.workspaceState.get('account');
+      if (networkName === 'ganache') {
+        await new provider.JsonRpcProvider('http://127.0.0.1:7545').getBalance(address).then(async (balance) => {
+          const balanceinEth = ethers.utils.formatEther(balance);
+          await context.workspaceState.update('balance', balanceinEth);
+          const bal: any = await context.workspaceState.get('balance');
+          logger.success(`${address} has account Balance: ${bal} Eth`);
+        });
+      } else if (networkName === '') {
+        await provider
+          .getDefaultProvider()
+          .getBalance(address)
+          .then(async (balance) => {
+            const balanceinEth = ethers.utils.formatEther(balance);
+            await context.workspaceState.update('balance', balanceinEth);
+            const bal: any = await context.workspaceState.get('balance');
+            logger.success(`${address} has account Balance: ${bal} Eth`);
+          });
+      } else {
+        await provider
+          .getDefaultProvider(networkName)
+          .getBalance(address)
+          .then(async (balance) => {
+            const balanceinEth = ethers.utils.formatEther(balance);
+            await context.workspaceState.update('balance', balanceinEth);
+            const bal: any = await context.workspaceState.get('balance');
+            logger.success(`${address} has account Balance on ${networkName} network is: ${bal} Eth`);
+          });
+      }
     }),
     // Set unsigned transaction
     commands.registerCommand('ethcode.transaction.set', async (tx) => {
@@ -443,6 +461,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');
+      commands.executeCommand('ethcode.account.ganache.list');
       logger.success('Welcome to Ethcode!');
     })
   );

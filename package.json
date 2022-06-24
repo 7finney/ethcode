@@ -79,7 +79,7 @@
       },
       {
         "command": "ethcode.account.balance",
-        "title": "Get balance",
+        "title": "Get account balance",
         "category": "Ethcode"
       },
       {
@@ -222,6 +222,7 @@
     "dotenv-expand": "4.2.0",
     "eslint-loader": "^4.0.2",
     "ethereumjs-tx": "^2.1.2",
+    "ethers": "^5.6.9",
     "file-loader": "3.0.1",
     "fs": "^0.0.1-security",
     "fs-extra": "^9.0.1",
