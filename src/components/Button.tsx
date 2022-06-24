@@ -11,6 +11,7 @@ interface IProps {
   disabled?: boolean;
   onClick?: (_e: FormEvent<HTMLInputElement> | MouseEvent<HTMLElement>) => void;
   style?: CSSProperties;
+  children?: any;
 }
 
 const Button: React.FC<IProps> = (props, { buttonType }: IProps) => {

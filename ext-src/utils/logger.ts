@@ -19,7 +19,7 @@ export default class Logger {
     this.outputChannel.show();
   }
 
-  public error(e: Error) {
+  public error(e: any) {
     const now = this.getNow();
     this.outputChannel.appendLine(`[${now}] Error: ${e.message}`);
     this.outputChannel.appendLine(`[${now}] stack: ${e.stack}`);

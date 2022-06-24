@@ -26,9 +26,13 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
   const [isPayable, setIsPayable] = useState(false);
   const [payableAmount] = useState<number>(0);
 
-  const { control, register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<
-    FormContract
-  >();
+  const {
+    control,
+    register: contractReg,
+    handleSubmit: handleContractSubmit,
+    getValues,
+    setValue,
+  } = useForm<FormContract>();
 
   useEffect(() => {
     window.addEventListener('message', (event) => {

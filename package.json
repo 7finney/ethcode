@@ -28,7 +28,6 @@
     "onCommand:ethcode.compiled-json.load",
     "onCommand:ethcode.compiled-json.load.all",
     "onCommand:ethcode.compiled-json.select"
-
   ],
   "main": "./build/ext-src/extension.js",
   "extensionDependencies": [
@@ -189,7 +188,7 @@
           "group": "Ethcode"
         }
       ],
-      "commandPalette":[
+      "commandPalette": [
         {
           "when": "false",
           "command": "ethcode.compiled-json.load",
@@ -304,7 +303,7 @@
     "vscode": "^1.1.37"
   },
   "scripts": {
-    "vscode:prepublish": "node scripts/build.js && tsc -p tsconfig.extension.json",
+    "vscode:prepublish": "node scripts/build.js && tsc -p tsconfig.extension.json && yarn run copy-files",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "build": "node scripts/build.js && tsc -p tsconfig.extension.json",
     "postbuild": "yarn run copy-files",

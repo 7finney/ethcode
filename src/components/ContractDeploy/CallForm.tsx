@@ -29,9 +29,13 @@ const CallForm: React.FC<IProps> = (props: IProps) => {
 
   const { testNetID } = useContext(AppContext);
 
-  const { control, register: contractReg, handleSubmit: handleContractSubmit, getValues, setValue } = useForm<
-    FormContract
-  >({ shouldUnregister: false });
+  const {
+    control,
+    register: contractReg,
+    handleSubmit: handleContractSubmit,
+    getValues,
+    setValue,
+  } = useForm<FormContract>({ shouldUnregister: false });
 
   useEffect(() => {
     window.addEventListener('message', (event) => {

@@ -64,7 +64,7 @@ const Selector: React.FC<IProps> = (props: IProps) => {
     <Select
       placeholder={props.placeholder}
       value={selectedOption}
-      onChange={(option: ValueType<any>) => handleChange(option as any)}
+      onChange={(option: ValueType<any, false>) => handleChange(option as any)}
       options={options}
       formatGroupLabel={props.formatGroupLabel}
       className="select-width"

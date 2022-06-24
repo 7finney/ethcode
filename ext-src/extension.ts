@@ -180,11 +180,15 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // List Ganache accounts
     commands.registerCommand('ethcode.account.ganache.list', async () => {
-      await new provider.JsonRpcProvider('http://127.0.0.1:7545').listAccounts().then((account: any) => {
-        context.workspaceState.update('ganache-addresses', <Array<GanacheAddressType>>account);
-        const gadd = context.workspaceState.get('ganache-addresses');
-        logger.log(JSON.stringify(gadd));
-      });
+      try {
+        await new provider.JsonRpcProvider('http://127.0.0.1:7545').listAccounts().then((account: any) => {
+          context.workspaceState.update('ganache-addresses', <Array<GanacheAddressType>>account);
+          const gadd = context.workspaceState.get('ganache-addresses');
+          logger.log(JSON.stringify(gadd));
+        });
+      } catch (e) {
+        console.log('error');
+      }
     }),
     // Get account balance
     commands.registerCommand('ethcode.account.balance', async () => {
@@ -299,7 +303,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // Select a compiled json from the list
     commands.registerCommand('ethcode.compiled-json.select', () => {
-      const contracts = context.workspaceState.get('contracts') as Map<string, CompiledJSONOutput>;
+      const contracts = context.workspaceState.get('contracts') as { [name: string]: CompiledJSONOutput };
 
       const quickPick = window.createQuickPick<IFunctionQP>();
       if (contracts === undefined || Object.keys(contracts).length === 0) return;
@@ -315,7 +319,8 @@ export async function activate(context: vscode.ExtensionContext) {
           quickPick.dispose();
           // get selected contract
           const name = Object.keys(contracts).filter((i: string) => i === functionKey);
-          context.workspaceState.update('contract', contracts[name[0]]);
+          const contract: CompiledJSONOutput = contracts[name[0]];
+          context.workspaceState.update('contract', contract);
         }
       });
       quickPick.onDidHide(() => quickPick.dispose());

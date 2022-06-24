@@ -15,7 +15,7 @@ interface IProps {
 
 const ContractDeploy: React.FC<IProps> = ({ bytecode, abi, vscode }: IProps) => {
   const [gasEstimateToggle, setGasEstimateToggle] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<any>(null);
   const constructorInputRef = useRef<ConstructorInput[] | null>(null);
   const [gasEstimate, setGasEstimate] = useState(0);
 
@@ -118,7 +118,7 @@ const ContractDeploy: React.FC<IProps> = ({ bytecode, abi, vscode }: IProps) => 
             </span>
             <div>
               {/* TODO: add better way to show result and error */}
-              {callResult && <pre className="large-code">{callResult}</pre>}
+              {/* callResult */}
             </div>
           </div>
         )}
