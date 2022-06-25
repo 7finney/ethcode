@@ -1,6 +1,5 @@
 import { sha3 } from '../hash/sha3';
 import { clientCallClient } from './proto';
-import { SendTxRequest, BuildTxRequest, TxHashReq } from '../services/ethereum_pb';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const EthereumTx = require('ethereumjs-tx').Transaction;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -8,6 +7,7 @@ const { formatters } = require('web3-core-helpers');
 
 // sign raw transaction and deploy
 export function deployUnsignedTx(meta: any, tx: string, privateKey: string, testnetId: number) {
+  /*
   try {
     // eslint-disable-next-line no-param-reassign
     tx = JSON.parse(tx);
@@ -54,10 +54,12 @@ export function deployUnsignedTx(meta: any, tx: string, privateKey: string, test
     // @ts-ignore
     process.send({ error: error.message });
   }
+  */
 }
 
 // deploy to ganache network
 export function deployGanacheTx(meta: any, tx: any) {
+  /*
   const { from, abi, bytecode, params, gas } = tx;
   const c = new BuildTxRequest();
   c.setNetworkid(0);
@@ -87,10 +89,12 @@ export function deployGanacheTx(meta: any, tx: any) {
     // @ts-ignore
     process.send({ error: err });
   });
+  */
 }
 
 // get transaction info from transaction hash
 export function getTransaction(meta: any, txhash: string, networkId: number) {
+  /*
   const c = new TxHashReq();
   c.setNetworkid(networkId);
   c.setTxhash(txhash);
@@ -103,10 +107,12 @@ export function getTransaction(meta: any, txhash: string, networkId: number) {
       process.send({ transaction: response.transaction });
     }
   });
+  */
 }
 
 // gett ransaction receipt
 export function getTransactionReceipt(meta: any, txhash: string, networkId: number) {
+  /*
   const c = new TxHashReq();
   c.setNetworkid(networkId);
   c.setTxhash(txhash);
@@ -119,4 +125,5 @@ export function getTransactionReceipt(meta: any, txhash: string, networkId: numb
       process.send({ transactionReceipt: response.receipt });
     }
   });
+  */
 }

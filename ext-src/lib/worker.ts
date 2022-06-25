@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as grpc from '@grpc/grpc-js';
 import { ABIDescription, ABIParameter } from '../types';
-import { EstimateGasReq, BuildTxRequest, CallRequest } from '../services/ethereum_pb';
 import { clientCallClient } from './proto';
 import { deployUnsignedTx, deployGanacheTx, getTransaction, getTransactionReceipt } from './transactions';
 import * as path from 'path';
@@ -216,6 +215,7 @@ process.on('message', async (m) => {
 
   // testnet method call
   if (m.command === 'contract-method-call') {
+    /*
     const { from, abi, address, methodName, params, gasSupply, value } = m.payload;
     const c = new CallRequest();
     c.setNetworkid(m.testnetId);
@@ -236,9 +236,11 @@ process.on('message', async (m) => {
         process.send({ callResult: response.result });
       }
     });
+    */
   }
   // Gas Estimate
   if (m.command === 'get-gas-estimate') {
+    /*
     const { abi, bytecode, params, from } = m.payload;
     const c = new EstimateGasReq();
     c.setNetworkid(m.testnetId);
@@ -257,9 +259,11 @@ process.on('message', async (m) => {
         process.send({ gasEstimate: response.result });
       }
     });
+    */
   }
   // Build raw transaction for contract creation
   if (m.command === 'build-rawtx') {
+    /*
     const { abi, bytecode, params, gasSupply, from } = m.payload;
     const c = new BuildTxRequest();
     c.setNetworkid(m.testnetId);
@@ -279,6 +283,7 @@ process.on('message', async (m) => {
         process.send({ buildTxResult: response.transaction });
       }
     });
+    */
   }
   // sign and deploy unsigned transaction
   if (m.command === 'sign-deploy') {

@@ -15,4 +15,4 @@ export const createWorker = (): ChildProcess => {
 };
 export const createContractWorker = (): ChildProcess => {
   return fork(path.join(__dirname, 'contractWorker.js'));
-}
+};
