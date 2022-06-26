@@ -86,7 +86,7 @@ function extractPvtKey(keyStorePath: string, address: string, pswd: string) {
 
 // worker communication
 // @ts-ignore
-process.on('message', (m) => {
+process.on('message', (m: any) => {
   if (m.command === 'create-account') {
     createKeyPair(m.ksPath, m.pswd);
   }

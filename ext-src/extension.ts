@@ -1,9 +1,7 @@
-// @ts-ignore
 import { ethers } from 'ethers';
 import * as vscode from 'vscode';
 import { InputBoxOptions, window, commands, workspace } from 'vscode';
 import API from './api';
-import { ReactPanel } from './reactPanel';
 import Logger from './utils/logger';
 import {
   IAccountQP,
@@ -167,7 +165,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // List local Accounts
     commands.registerCommand('ethcode.account.list', () => {
       const accWorker = createAccWorker();
-      accWorker.on('message', (m) => {
+      accWorker.on('message', (m: any) => {
         if (m.localAddresses) {
           context.workspaceState.update('addresses', <Array<LocalAddressType>>m.localAddresses);
           logger.log(JSON.stringify(m.localAddresses));
@@ -459,9 +457,6 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.transaction.gas.set', async () => {
       const gas = await window.showInputBox(gasInp);
       context.workspaceState.update('gasEstimate', gas);
-    }),
-    commands.registerCommand('ethcode.show', async () => {
-      ReactPanel.createOrShow(context.extensionPath, context.workspaceState);
     }),
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
