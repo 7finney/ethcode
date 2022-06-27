@@ -29,6 +29,7 @@ import {
 } from './lib';
 import { errors } from './utils';
 import { getAbi, getByteCode, CompiledJSONOutput } from './types/output';
+import { getNetworkSettings, updateSelectedNetwork } from './utils/settings';
 
 const provider = ethers.providers;
 // Create logger
@@ -98,18 +99,11 @@ export async function activate(context: vscode.ExtensionContext) {
       return signDeploy(context);
     }),
     // select ethereum networks
-    commands.registerCommand('ethcode.network.set', () => {
+    commands.registerCommand('ethcode.network.select', () => {
       const quickPick = window.createQuickPick<IEthereumNetworkQP>();
-      const options: Array<IEthereumNetworkQP> = [
-        { label: 'Main', networkName: '', chainId: 1 },
-        { label: 'Ganache', networkName: 'ganache', chainId: 3 },
-        { label: 'Ropsten', networkName: 'ropsten', chainId: 3 },
-        { label: 'Rinkeby', networkName: 'rinkeby', chainId: 4 },
-        { label: 'Goerli', networkName: 'goerli', chainId: 5 },
-        { label: 'Kovan', networkName: 'kovan', chainId: 42 },
-      ];
-      quickPick.items = options.map((network) => ({
-        label: network.label,
+
+      quickPick.items = getNetworkSettings().map((network) => ({
+        label: network.networkName,
         chainId: network.chainId,
         networkName: network.networkName,
       }));
@@ -118,10 +112,11 @@ export async function activate(context: vscode.ExtensionContext) {
       });
       quickPick.onDidChangeSelection((selection: Array<IEthereumNetworkQP>) => {
         if (selection[0]) {
-          const { chainId, networkName } = selection[0];
-          context.workspaceState.update('networkName', networkName);
-          context.workspaceState.update('chainId', chainId);
+          const { networkName } = selection[0];
+          updateSelectedNetwork(networkName);
           quickPick.dispose();
+
+          logger.log(networkName);
         }
       });
       quickPick.onDidHide(() => quickPick.dispose());
@@ -467,7 +462,7 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');
       commands.executeCommand('ethcode.account.ganache.list');
-      logger.success('Welcome to Ethcode!');
+      // logger.success('Welcome to Ethcode!')/;
     })
   );
   const api = new API();

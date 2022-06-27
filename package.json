@@ -27,7 +27,8 @@
     "onCommand:ethcode.activate",
     "onCommand:ethcode.compiled-json.load",
     "onCommand:ethcode.compiled-json.load.all",
-    "onCommand:ethcode.compiled-json.select"
+    "onCommand:ethcode.compiled-json.select",
+    "onCommand:ethcode.network.select"
   ],
   "main": "./build/ext-src/extension.js",
   "extensionDependencies": [
@@ -38,6 +39,44 @@
       "type": "object",
       "title": "ΞTHcode",
       "properties": {
+        "ethcode.selectedNetwork": {
+          "scope": "application",
+          "description": "Display Selected Network Name",
+          "networkName": "Ethereum"
+        },
+        "ethcode.networks": {
+          "scope": "application",
+          "type": "object",
+          "description": "List of networks settings including ethereum, polygon etc",
+          "default": [
+            {
+              "networkName": "Ganache",
+              "rpcUrl": "http://127.0.0.1:7545",
+              "chainID": 1337
+            },
+            {
+              "networkName": "Ethereum",
+              "rpcUrl": "https://rpc.ankr.com/eth",
+              "chainID": 1,
+              "symbol": "ETH",
+              "blockExplorer": "https://etherscan.io"
+            },
+            {
+              "networkName": "Polygon",
+              "rpcUrl": "https://polygon-rpc.com",
+              "chainID": 137,
+              "symbol": "MATIC",
+              "blockExplorer": "https://explorer.matic.network/"
+            },
+            {
+              "networkName": "Goerli",
+              "rpcUrl": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+              "chainID": 5,
+              "symbol": "ETH",
+              "blockExplorer": "https://goerli.etherscan.io/"
+            }
+          ]
+        },
         "ethcode.grpc.serviceEndpoints": {
           "type": "object",
           "default": {
@@ -92,8 +131,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.network.set",
-        "title": "Use ethereum network",
+        "command": "ethcode.network.select",
+        "title": "Select ethereum network",
         "category": "Ethcode"
       },
       {
