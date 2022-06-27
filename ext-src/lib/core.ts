@@ -1,18 +1,10 @@
 import { window, ExtensionContext, InputBoxOptions } from 'vscode';
-
+import * as fs from 'fs';
 import Logger from '../utils/logger';
-import {
-  StandardJSONOutput,
-  IStandardJSONContractsQP,
-  StandardCompiledContract,
-  isStdContract,
-  CombinedJSONOutput,
-  isComContract,
-  ICombinedJSONContractsQP,
-  CombinedCompiledContract,
-  ConstructorInputValue,
-} from '../types';
+import { ConstructorInputValue, CompiledJSONOutput } from '../types';
 import { createWorker, createAccWorker } from './workerCreator';
+import { getAbi, getByteCode } from '../types/output';
+import * as path from 'path';
 
 // Create logger
 const logger = new Logger();
@@ -27,85 +19,60 @@ const txHashInpOpt: InputBoxOptions = {
   placeHolder: 'Transaction hash',
 };
 
-// Parse Standard JSON payload
-export function parseJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
+function getCompiledJsonObject(_jsonPayload: any): CompiledJSONOutput {
+  const output: CompiledJSONOutput = { contractType: 0 };
+
   try {
-    const { contracts }: StandardJSONOutput = JSON.parse(_jsonPayload);
-    const quickPick = window.createQuickPick<IStandardJSONContractsQP>();
-    quickPick.items = Object.keys(contracts).map((contract) => ({ label: contract, contractKey: contract }));
-    quickPick.placeholder = 'Select contract file';
-    quickPick.onDidChangeActive((selection: Array<IStandardJSONContractsQP>) => {
-      quickPick.value = selection[0].label;
-    });
-    quickPick.onDidChangeSelection((selection: Array<IStandardJSONContractsQP>) => {
-      if (selection[0]) {
-        const contractFileName = selection[0].contractKey;
-        const contractFile = contracts[contractFileName];
-        if (!isStdContract(contractFile)) {
-          const contractQp = window.createQuickPick<IStandardJSONContractsQP>();
-          contractQp.items = Object.keys(contractFile).map((contract) => ({
-            label: contract,
-            contractKey: contract,
-          }));
-          contractQp.placeholder = 'Select contract';
-          contractQp.onDidChangeActive((selection: Array<IStandardJSONContractsQP>) => {
-            contractQp.value = selection[0].label;
-          });
-          contractQp.onDidChangeSelection((selection: Array<IStandardJSONContractsQP>) => {
-            if (selection[0]) {
-              const contract: StandardCompiledContract = contracts[contractFileName][selection[0].contractKey];
-              if (isStdContract(contract)) {
-                context.workspaceState.update('contract', contract);
-                logger.log('Contract loaded!');
-              } else {
-                logger.error(Error('Could not parse contract.'));
-              }
-              contractQp.dispose();
-            }
-          });
-          contractQp.onDidHide(() => contractQp.dispose());
-          contractQp.show();
-        } else {
-          logger.error(Error('Could not parse contract.'));
-        }
-        quickPick.dispose();
-      }
-    });
-    quickPick.onDidHide(() => quickPick.dispose());
-    quickPick.show();
-  } catch (error) {
-    logger.error(
-      Error(
-        'Could not load JSON file. Make sure it follows Solidity output description. Know more: https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description.'
-      )
-    );
+    const data = JSON.parse(_jsonPayload);
+
+    if (data.bytecode !== undefined) {
+      // Hardhat format
+
+      output.contractType = 1;
+      output.hardhatOutput = data;
+      logger.log('Loaded Hardhat compiled json output');
+    } else if (data.data !== undefined) {
+      // Remix format
+
+      output.contractType = 2;
+      output.remixOutput = data;
+      logger.log('Loaded Remix compiled json output');
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
   }
+
+  return output;
+}
+
+export function parseBatchCompiledJSON(context: ExtensionContext, paths: Array<string>): void {
+  logger.log(paths);
+
+  paths.forEach((e) => {
+    const name = path.parse(e).base;
+
+    logger.log(`Try to parse the ${name} json file`);
+
+    const data = fs.readFileSync(e);
+    const output = getCompiledJsonObject(data);
+    if (output.contractType === 0) return;
+
+    logger.log(`Saved ${name} contract to storage`);
+    let contracts = context.workspaceState.get('contracts') as any;
+
+    if (contracts === undefined || contracts === '') contracts = new Map();
+
+    contracts[name] = output;
+    context.workspaceState.update('contracts', contracts);
+  });
 }
 
 // Parse Combined JSON payload
-export function parseCombinedJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
+export function parseCompiledJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
   if (_jsonPayload) {
-    const { contracts }: CombinedJSONOutput = JSON.parse(_jsonPayload);
-    const quickPick = window.createQuickPick<ICombinedJSONContractsQP>();
-    quickPick.items = Object.keys(contracts).map((contract) => ({ label: contract, contractKey: contract }));
-    quickPick.placeholder = 'Select contract';
-    quickPick.onDidChangeActive((selection: Array<ICombinedJSONContractsQP>) => {
-      quickPick.value = selection[0].label;
-    });
-    quickPick.onDidChangeSelection((selection: Array<ICombinedJSONContractsQP>) => {
-      if (selection[0]) {
-        const contract: CombinedCompiledContract = contracts[selection[0].contractKey];
-        if (isComContract(contract)) {
-          context.workspaceState.update('contract', contract);
-          logger.log('Contract loaded!');
-        } else {
-          logger.error(Error('Could not parse contract.'));
-        }
-        quickPick.dispose();
-      }
-    });
-    quickPick.onDidHide(() => quickPick.dispose());
-    quickPick.show();
+    const output = getCompiledJsonObject(_jsonPayload);
+    if (output.contractType !== 0) context.workspaceState.update('contract', output);
   } else {
     logger.error(
       Error(
@@ -120,26 +87,16 @@ export function estimateTransactionGas(context: ExtensionContext): Promise<numbe
   return new Promise((resolve, reject) => {
     const networkId = context.workspaceState.get('networkId');
     const account: string | undefined = context.workspaceState.get('account');
-    const contract = context.workspaceState.get('contract');
+    const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
     const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
     let payload = {};
-    if (isComContract(contract)) {
-      const { abi, bin } = contract;
-      payload = {
-        abi,
-        bytecode: bin,
-        params: params || [],
-        from: account,
-      };
-    } else if (isStdContract(contract)) {
-      const { abi, evm } = contract;
-      payload = {
-        abi,
-        bytecode: evm.bytecode.object,
-        params: params || [],
-        from: account,
-      };
-    }
+    payload = {
+      abi: getAbi(contract),
+      bytecode: getByteCode(contract),
+      params: params || [],
+      from: account,
+    };
+
     const txWorker = createWorker();
     txWorker.on('message', (m: any) => {
       if (m.error) {
@@ -168,29 +125,18 @@ export function ganacheDeploy(context: ExtensionContext): Promise<any> {
       try {
         const testNetId = context.workspaceState.get('networkId');
         const account = context.workspaceState.get('account');
-        const contract = context.workspaceState.get('contract');
+        const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
         const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
         const gas: number | undefined = context.workspaceState.get('gasEstimate');
         let payload = {};
-        if (isComContract(contract)) {
-          const { abi, bin } = contract;
-          payload = {
-            abi,
-            bytecode: bin,
-            params: params || [],
-            from: account,
-            gas,
-          };
-        } else if (isStdContract(contract)) {
-          const { abi, evm } = contract;
-          payload = {
-            abi,
-            bytecode: evm.bytecode.object,
-            params: params || [],
-            from: account,
-            gas,
-          };
-        }
+        payload = {
+          abi: getAbi(contract),
+          bytecode: getByteCode(contract),
+          params: params || [],
+          from: account,
+          gas,
+        };
+
         const deployWorker = createWorker();
         deployWorker.on('message', (m: any) => {
           logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);

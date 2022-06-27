@@ -21,6 +21,46 @@ export interface SourceWithTarget {
 // RESULT //
 /// /////////
 
+export interface HardHatCompiledOutput {
+  contractName: string;
+  sourceName: string;
+  /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
+  abi: ABIDescription[];
+  bytecode: string;
+  deployedBytecode: string;
+}
+
+export interface RemixCompiledOutput {
+  data: {
+    bytecode: BytecodeObject;
+    deployedByteCode: BytecodeObject;
+  };
+  /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
+  abi: ABIDescription[];
+}
+
+export interface CompiledJSONOutput {
+  contractType: number; // 0: null, 1: hardhat output, 2: remix output
+  hardhatOutput?: HardHatCompiledOutput;
+  remixOutput?: RemixCompiledOutput;
+}
+
+export const getAbi = (output: CompiledJSONOutput) => {
+  if (output.contractType === 0) return [];
+
+  if (output.contractType === 1) return output.hardhatOutput?.abi;
+
+  return output.remixOutput?.abi;
+};
+
+export const getByteCode = (output: CompiledJSONOutput) => {
+  if (output.contractType === 0) return '';
+
+  if (output.contractType === 1) return output.hardhatOutput?.bytecode;
+
+  return output.remixOutput?.data.bytecode.object;
+};
+
 export interface CombinedJSONOutput {
   /** not present if no errors/warnings were encountered */
   errors?: CompilationError[];
@@ -149,8 +189,6 @@ export interface AstNodeAtt {
 // CONTRACT //
 /// ///////////
 export interface StandardCompiledContract {
-  /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
-  abi: ABIDescription[];
   // See the Metadata Output documentation (serialised JSON string)
   metadata: string;
   /** User documentation (natural specification) */

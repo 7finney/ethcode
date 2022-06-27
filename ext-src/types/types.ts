@@ -26,7 +26,7 @@ export type LocalAddressType = {
   checksumAddress: string;
 };
 
-export type GanacheAddressType = [string];
+export type GanacheAddressType = string;
 
 export interface TokenData {
   appId?: string;
@@ -43,7 +43,13 @@ export interface ICompilationResult {
 }
 
 export interface INetworkQP extends QuickPickItem {
-  networkId: number | string;
+  label: string;
+}
+export interface IEthereumNetworkQP extends QuickPickItem {
+  networkName?: string;
+  chainId?: number | string;
+  RPCurl?: string | undefined;
+  BlockExplorerUrl?: string | undefined;
 }
 
 export interface IAccountQP extends QuickPickItem {
@@ -82,14 +88,6 @@ export interface TxReceipt {
 }
 
 // Typeguard
-
-export function isStdContract(obj: any): obj is StandardCompiledContract {
-  return obj.abi !== undefined && obj.evm !== undefined;
-}
-
-export function isComContract(obj: any): obj is CombinedCompiledContract {
-  return obj.abi !== undefined && obj.bin !== undefined;
-}
 
 export function isConstructorInputValue(obj: any): obj is ConstructorInputValue {
   return obj.value !== undefined;

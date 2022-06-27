@@ -1,28 +1,22 @@
-// @ts-ignore
+import { ethers } from 'ethers';
 import * as vscode from 'vscode';
 import { InputBoxOptions, window, commands, workspace } from 'vscode';
 import API from './api';
-import { ReactPanel } from './reactPanel';
-
 import Logger from './utils/logger';
 import {
   IAccountQP,
-  INetworkQP,
   IFunctionQP,
   LocalAddressType,
-  StandardCompiledContract,
-  CombinedCompiledContract,
-  isStdContract,
-  isComContract,
   ABIDescription,
   ABIParameter,
   ConstructorInputValue,
-  isStdJSONOutput,
   TxReceipt,
+  GanacheAddressType,
+  IEthereumNetworkQP,
 } from './types';
 import {
-  parseCombinedJSONPayload,
-  parseJSONPayload,
+  parseCompiledJSONPayload,
+  parseBatchCompiledJSON,
   estimateTransactionGas,
   createAccWorker,
   createWorker,
@@ -32,7 +26,9 @@ import {
   getTransactionReceipt,
 } from './lib';
 import { errors } from './utils';
+import { getAbi, getByteCode, CompiledJSONOutput } from './types/output';
 
+const provider = ethers.providers;
 // Create logger
 const logger = new Logger();
 const pwdInpOpt: InputBoxOptions = {
@@ -99,32 +95,37 @@ export async function activate(context: vscode.ExtensionContext) {
       }
       return signDeploy(context);
     }),
-    // Set Network
+    // select ethereum networks
     commands.registerCommand('ethcode.network.set', () => {
-      const quickPick = window.createQuickPick<INetworkQP>();
-      const options: Array<INetworkQP> = [
-        { label: 'Main', networkId: 1 },
-        // { label: 'Ropsten', networkId: 3 },
-        // { label: 'Rinkeby', networkId: 4 },
-        { label: 'Goerli', networkId: 5 },
-        { label: 'Ganache', networkId: 'ganache' },
+      const quickPick = window.createQuickPick<IEthereumNetworkQP>();
+      const options: Array<IEthereumNetworkQP> = [
+        { label: 'Main', networkName: '', chainId: 1 },
+        { label: 'Ganache', networkName: 'ganache', chainId: 3 },
+        { label: 'Ropsten', networkName: 'ropsten', chainId: 3 },
+        { label: 'Rinkeby', networkName: 'rinkeby', chainId: 4 },
+        { label: 'Goerli', networkName: 'goerli', chainId: 5 },
+        { label: 'Kovan', networkName: 'kovan', chainId: 42 },
       ];
-      quickPick.items = options.map((network) => ({ label: network.label, networkId: network.networkId }));
-      quickPick.placeholder = 'Select network';
-      quickPick.onDidChangeActive((selection: Array<INetworkQP>) => {
-        quickPick.value = selection[0].label;
+      quickPick.items = options.map((network) => ({
+        label: network.label,
+        chainId: network.chainId,
+        networkName: network.networkName,
+      }));
+      quickPick.onDidChangeActive(() => {
+        quickPick.placeholder = 'Select network';
       });
-      quickPick.onDidChangeSelection((selection: Array<INetworkQP>) => {
+      quickPick.onDidChangeSelection((selection: Array<IEthereumNetworkQP>) => {
         if (selection[0]) {
-          const { networkId } = selection[0];
-          context.workspaceState.update('networkId', networkId);
+          const { chainId, networkName } = selection[0];
+          context.workspaceState.update('networkName', networkName);
+          context.workspaceState.update('chainId', chainId);
           quickPick.dispose();
         }
       });
       quickPick.onDidHide(() => quickPick.dispose());
       quickPick.show();
     }),
-    // Set Account
+    // Set Ethereum Account
     commands.registerCommand('ethcode.account.set', () => {
       const quickPick = window.createQuickPick<IAccountQP>();
       const addresses: Array<LocalAddressType> | undefined = context.workspaceState.get('addresses');
@@ -148,9 +149,8 @@ export async function activate(context: vscode.ExtensionContext) {
           checksumAddr: account.checksumAddr,
         }));
       }
-      quickPick.placeholder = 'Select account';
-      quickPick.onDidChangeActive((selection: Array<IAccountQP>) => {
-        quickPick.value = selection[0].label;
+      quickPick.onDidChangeActive(() => {
+        quickPick.placeholder = 'Select account';
       });
       quickPick.onDidChangeSelection((selection: Array<IAccountQP>) => {
         if (selection[0]) {
@@ -162,10 +162,10 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.onDidHide(() => quickPick.dispose());
       quickPick.show();
     }),
-    // List Accounts
+    // List local Accounts
     commands.registerCommand('ethcode.account.list', () => {
       const accWorker = createAccWorker();
-      accWorker.on('message', (m) => {
+      accWorker.on('message', (m: any) => {
         if (m.localAddresses) {
           context.workspaceState.update('addresses', <Array<LocalAddressType>>m.localAddresses);
           logger.log(JSON.stringify(m.localAddresses));
@@ -177,33 +177,49 @@ export async function activate(context: vscode.ExtensionContext) {
       });
     }),
     // List Ganache accounts
-    commands.registerCommand('ethcode.account.ganache.list', () => {
-      const accountsWorker = createWorker();
-      accountsWorker.on('message', (m: any) => {
-        logger.log(`Account worker message: ${JSON.stringify(m)}`);
-        if (m.error) {
-          logger.error(m.error.details);
-        }
-        context.workspaceState.update('ganache-addresses', <Array<string>>m.accounts);
-        logger.log(JSON.stringify(m.accounts));
-      });
-      accountsWorker.send({ command: 'get-accounts', testnetId: 'ganache' });
+    commands.registerCommand('ethcode.account.ganache.list', async () => {
+      try {
+        await new provider.JsonRpcProvider('http://127.0.0.1:7545').listAccounts().then((account: any) => {
+          context.workspaceState.update('ganache-addresses', <Array<GanacheAddressType>>account);
+          const gadd = context.workspaceState.get('ganache-addresses');
+          logger.log(JSON.stringify(gadd));
+        });
+      } catch (e) {
+        console.log('error');
+      }
     }),
     // Get account balance
-    commands.registerCommand('ethcode.account.balance', () => {
-      const testNetId = context.workspaceState.get('networkId');
-      const account: string | undefined = context.workspaceState.get('account');
-      const balanceWorker = createWorker();
-      balanceWorker.on('message', (m: any) => {
-        logger.log(`Balance worker message: ${JSON.stringify(m)}`);
-        context.workspaceState.update('balance', m.balance);
-      });
-      const payload = {
-        command: 'get-balance',
-        account,
-        testnetId: testNetId,
-      };
-      if (account && account.length > 0) balanceWorker.send(payload);
+    commands.registerCommand('ethcode.account.balance', async () => {
+      const networkName: any = await context.workspaceState.get('networkName');
+      const address: any = await context.workspaceState.get('account');
+      if (networkName === 'ganache') {
+        await new provider.JsonRpcProvider('http://127.0.0.1:7545').getBalance(address).then(async (balance) => {
+          const balanceinEth = ethers.utils.formatEther(balance);
+          await context.workspaceState.update('balance', balanceinEth);
+          const bal: any = await context.workspaceState.get('balance');
+          logger.success(`${address} has account Balance: ${bal} Eth`);
+        });
+      } else if (networkName === '') {
+        await provider
+          .getDefaultProvider()
+          .getBalance(address)
+          .then(async (balance) => {
+            const balanceinEth = ethers.utils.formatEther(balance);
+            await context.workspaceState.update('balance', balanceinEth);
+            const bal: any = await context.workspaceState.get('balance');
+            logger.success(`${address} has account Balance: ${bal} Eth`);
+          });
+      } else {
+        await provider
+          .getDefaultProvider(networkName)
+          .getBalance(address)
+          .then(async (balance) => {
+            const balanceinEth = ethers.utils.formatEther(balance);
+            await context.workspaceState.update('balance', balanceinEth);
+            const bal: any = await context.workspaceState.get('balance');
+            logger.success(`${address} has account Balance on ${networkName} network is: ${bal} Eth`);
+          });
+      }
     }),
     // Set unsigned transaction
     commands.registerCommand('ethcode.transaction.set', async (tx) => {
@@ -214,60 +230,33 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.transaction.build', async () => {
       const networkId = context.workspaceState.get('networkId');
       const account: string | undefined = context.workspaceState.get('account');
-      const contract = context.workspaceState.get('contract');
+      const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
       const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
       const gas: number | undefined = context.workspaceState.get('gasEstimate');
-      if (isComContract(contract)) {
-        const { abi, bin } = contract;
-        const txWorker = createWorker();
-        txWorker.on('message', (m: any) => {
-          logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
-          if (m.error) {
-            logger.error(m.error);
-          } else {
-            context.workspaceState.update('unsignedTx', m.buildTxResult);
-            logger.log(m.buildTxResult);
-          }
-        });
-        const payload = {
-          abi,
-          bytecode: bin,
-          params: params || [],
-          gasSupply: gas || 0,
-          from: account,
-        };
-        txWorker.send({
-          command: 'build-rawtx',
-          payload,
-          testnetId: networkId,
-        });
-      } else if (isStdContract(contract)) {
-        const { abi, evm } = contract;
-        const { bytecode } = evm;
-        const txWorker = createWorker();
-        txWorker.on('message', (m: any) => {
-          logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
-          if (m.error) {
-            logger.error(m.error);
-          } else {
-            context.workspaceState.update('unsignedTx', m.buildTxResult);
-            logger.log(m.buildTxResult);
-          }
-        });
-        txWorker.send({
-          command: 'build-rawtx',
-          payload: {
-            abi,
-            bytecode,
-            params: [],
-            gasSupply: 0,
-            from: account,
-          },
-          testnetId: networkId,
-        });
-      } else {
-        logger.error(Error('Could not parse contract.'));
-      }
+
+      const txWorker = createWorker();
+      txWorker.on('message', (m: any) => {
+        logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
+        if (m.error) {
+          logger.error(m.error);
+        } else {
+          context.workspaceState.update('unsignedTx', m.buildTxResult);
+          logger.log(m.buildTxResult);
+        }
+      });
+
+      const payload = {
+        abi: getAbi(contract),
+        bytecode: getByteCode(contract),
+        params: params || [],
+        gasSupply: gas || 0,
+        from: account,
+      };
+      txWorker.send({
+        command: 'build-rawtx',
+        payload,
+        testnetId: networkId,
+      });
     }),
     // Get gas estimate
     commands.registerCommand('ethcode.transaction.gas.get', async () => {
@@ -282,42 +271,98 @@ export async function activate(context: vscode.ExtensionContext) {
       return getTransactionReceipt(context);
     }),
     // Load combined JSON output
-    commands.registerCommand('ethcode.combined-json.load', () => {
+    commands.registerCommand('ethcode.compiled-json.load', () => {
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-      parseCombinedJSONPayload(context, editorContent);
+      parseCompiledJSONPayload(context, editorContent);
     }),
-    // Load combined JSON output
-    commands.registerCommand('ethcode.standard-json.load', (_jsonPayload: any) => {
-      if (_jsonPayload && isStdJSONOutput(_jsonPayload)) {
-        parseJSONPayload(context, JSON.stringify(_jsonPayload));
-      } else {
-        const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-        parseJSONPayload(context, editorContent);
+    // Load all combined JSON output
+    commands.registerCommand('ethcode.compiled-json.load.all', () => {
+      if (workspace.workspaceFolders === undefined) {
+        logger.error(new Error('Please open your solidity project to vscode'));
+        return;
       }
+
+      logger.log('Loading all compiled jsons...');
+
+      context.workspaceState.update('contracts', ''); // Initialize contracts storage
+      const fileWorker = createWorker();
+      fileWorker.on('message', (m: any) => {
+        if (m.type === 'try-parse-batch-json') {
+          parseBatchCompiledJSON(context, m.paths);
+        }
+      });
+
+      fileWorker.send({
+        command: 'load-all-compiled-json',
+        payload: {
+          path: workspace.workspaceFolders[0].uri.fsPath,
+        },
+      });
+    }),
+    // Select a compiled json from the list
+    commands.registerCommand('ethcode.compiled-json.select', () => {
+      const contracts = context.workspaceState.get('contracts') as { [name: string]: CompiledJSONOutput };
+
+      const quickPick = window.createQuickPick<IFunctionQP>();
+      if (contracts === undefined || Object.keys(contracts).length === 0) return;
+
+      quickPick.items = Object.keys(contracts).map((f) => ({
+        label: f || '',
+        functionKey: f || '',
+      }));
+      quickPick.placeholder = 'Select a contract';
+      quickPick.onDidChangeSelection((selection: Array<IFunctionQP>) => {
+        if (selection[0] && workspace.workspaceFolders) {
+          const { functionKey } = selection[0];
+          quickPick.dispose();
+          // get selected contract
+          const name = Object.keys(contracts).filter((i: string) => i === functionKey);
+          const contract: CompiledJSONOutput = contracts[name[0]];
+          context.workspaceState.update('contract', contract);
+        }
+      });
+      quickPick.onDidHide(() => quickPick.dispose());
+      quickPick.show();
     }),
     // Create Input JSON
     commands.registerCommand('ethcode.contract.input.create', () => {
-      const contract: CombinedCompiledContract | StandardCompiledContract | undefined = context.workspaceState.get(
-        'contract'
-      );
-      if (contract && workspace.workspaceFolders) {
-        const constructor: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type === 'constructor');
-        const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
-        if (constInps && constInps.length > 0) {
-          const inputs: Array<ConstructorInputValue> = constInps.map(
-            (inp: ABIParameter) => <ConstructorInputValue>{ ...inp, value: '' }
-          );
-          const fileWorker = createWorker();
-          fileWorker.send({
-            command: 'create-input-file',
-            payload: {
-              path: workspace.workspaceFolders[0].uri.path,
-              inputs,
-            },
-          });
-          logger.log('Constructor inputs JSON generated');
-        }
-      } else logger.error(errors.ContractNotFound);
+      const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
+
+      if (contract === undefined || contract == null || workspace.workspaceFolders === undefined) {
+        logger.error(errors.ContractNotFound);
+        return;
+      }
+
+      const constructor = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
+      if (constructor === undefined) {
+        logger.log("Abi doesn't exist on the loaded contract");
+        return;
+      }
+
+      if (constructor.length === 0) {
+        logger.log("This abi doesn't have any constructor");
+        return;
+      }
+
+      const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
+      if (constInps && constInps.length > 0) {
+        const inputs: Array<ConstructorInputValue> = constInps.map(
+          (inp: ABIParameter) => <ConstructorInputValue>{ ...inp, value: '' }
+        );
+
+        const fileWorker = createWorker();
+        fileWorker.on('message', (m: any) => {
+          logger.log(JSON.stringify(m));
+        });
+
+        fileWorker.send({
+          command: 'create-input-file',
+          payload: {
+            path: workspace.workspaceFolders[0].uri.fsPath,
+            inputs,
+          },
+        });
+      }
     }),
     // Load constructor inputs from JSON
     commands.registerCommand('ethcode.contract.input.load', async () => {
@@ -330,12 +375,21 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     // Create call input for method
     commands.registerCommand('ethcode.contract.call.input.create', () => {
-      const contract: CombinedCompiledContract | StandardCompiledContract | undefined = context.workspaceState.get(
-        'contract'
-      );
+      const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
+
       const quickPick = window.createQuickPick<IFunctionQP>();
       if (contract) {
-        const functions: Array<ABIDescription> = contract.abi.filter((i: ABIDescription) => i.type !== 'constructor');
+        const functions = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
+        if (functions === undefined) {
+          logger.log("Abi doesn't exist on the loaded contract");
+          return;
+        }
+
+        if (functions.length === 0) {
+          logger.log("This abi doesn't have any constructor");
+          return;
+        }
+
         quickPick.items = functions.map((f) => ({
           label: f.name || '',
           functionKey: f.name || '',
@@ -370,10 +424,7 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.contract.call', async () => {
       const networkId = context.workspaceState.get('networkId');
       const account: string | undefined = context.workspaceState.get('account');
-      const contract:
-        | CombinedCompiledContract
-        | StandardCompiledContract
-        | undefined = await context.workspaceState.get('contract');
+      const contract = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
       const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
       const txReceipt: TxReceipt | undefined = context.workspaceState.get('transaction-receipt');
       if (editorContent && contract && txReceipt) {
@@ -391,7 +442,7 @@ export async function activate(context: vscode.ExtensionContext) {
           command: 'contract-method-call',
           payload: {
             from: account,
-            abi: contract.abi,
+            abi: getAbi(contract),
             address: txReceipt.contractAddress,
             methodName: abiItem.name,
             params: abiItem.inputs,
@@ -407,12 +458,10 @@ export async function activate(context: vscode.ExtensionContext) {
       const gas = await window.showInputBox(gasInp);
       context.workspaceState.update('gasEstimate', gas);
     }),
-    commands.registerCommand('ethcode.show', async () => {
-      ReactPanel.createOrShow(context.extensionPath, context.workspaceState);
-    }),
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');
+      commands.executeCommand('ethcode.account.ganache.list');
       logger.success('Welcome to Ethcode!');
     })
   );
