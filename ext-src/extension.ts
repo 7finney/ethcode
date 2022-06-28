@@ -1,7 +1,7 @@
 // @ts-ignore
 import { ethers } from 'ethers';
 import * as vscode from 'vscode';
-import { InputBoxOptions, window, commands, workspace } from 'vscode';
+import { InputBoxOptions, window, commands, workspace, WebviewPanel } from 'vscode';
 import API from './api';
 import { ReactPanel } from './reactPanel';
 import Logger from './utils/logger';
@@ -29,7 +29,7 @@ import {
 } from './lib';
 import { errors } from './utils';
 import { getAbi, getByteCode, CompiledJSONOutput } from './types/output';
-import { getNetworkSettings, updateSelectedNetwork } from './utils/settings';
+import { getNetworkProviders, updateSelectedNetwork } from './utils/networks';
 
 const provider = ethers.providers;
 // Create logger
@@ -102,21 +102,21 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.network.select', () => {
       const quickPick = window.createQuickPick<IEthereumNetworkQP>();
 
-      quickPick.items = getNetworkSettings().map((network) => ({
-        label: network.networkName,
-        chainId: network.chainId,
-        networkName: network.networkName,
+      quickPick.items = getNetworkProviders().map((network) => ({
+        label: network.name,
+        name: network.name,
+        rpc: network.rpc,
       }));
       quickPick.onDidChangeActive(() => {
         quickPick.placeholder = 'Select network';
       });
       quickPick.onDidChangeSelection((selection: Array<IEthereumNetworkQP>) => {
         if (selection[0]) {
-          const { networkName } = selection[0];
-          updateSelectedNetwork(networkName);
+          const { name } = selection[0];
+          updateSelectedNetwork(name);
           quickPick.dispose();
 
-          logger.log(networkName);
+          logger.log(`Selected network is ${name}`);
         }
       });
       quickPick.onDidHide(() => quickPick.dispose());
@@ -462,7 +462,7 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');
       commands.executeCommand('ethcode.account.ganache.list');
-      // logger.success('Welcome to Ethcode!')/;
+      logger.success('Welcome to Ethcode!');
     })
   );
   const api = new API();

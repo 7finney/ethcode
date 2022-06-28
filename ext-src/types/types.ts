@@ -46,11 +46,9 @@ export interface INetworkQP extends QuickPickItem {
   label: string;
 }
 export interface IEthereumNetworkQP extends QuickPickItem {
-  networkName: string;
-  rpcUrl?: string | undefined;
+  name: string;
+  rpc: string;
   chainId?: number | string;
-  symbol?: string;
-  blockExplorer?: string | undefined;
 }
 
 export interface IAccountQP extends QuickPickItem {

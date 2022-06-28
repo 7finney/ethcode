@@ -42,7 +42,7 @@
         "ethcode.selectedNetwork": {
           "scope": "application",
           "description": "Display Selected Network Name",
-          "networkName": "Ethereum"
+          "name": "Ethereum Mainnet"
         },
         "ethcode.networks": {
           "scope": "application",
@@ -50,30 +50,24 @@
           "description": "List of networks settings including ethereum, polygon etc",
           "default": [
             {
-              "networkName": "Ganache",
-              "rpcUrl": "http://127.0.0.1:7545",
-              "chainID": 1337
+              "name": "Ethereum Mainnet",
+              "rpc": "homestead"
             },
             {
-              "networkName": "Ethereum",
-              "rpcUrl": "https://rpc.ankr.com/eth",
-              "chainID": 1,
-              "symbol": "ETH",
-              "blockExplorer": "https://etherscan.io"
+              "name": "Rinkeby Testnet",
+              "rpc": "rinkeby"
             },
             {
-              "networkName": "Polygon",
-              "rpcUrl": "https://polygon-rpc.com",
-              "chainID": 137,
-              "symbol": "MATIC",
-              "blockExplorer": "https://explorer.matic.network/"
+              "name": "Ropsten Testnet",
+              "rpc": "ropsten"
             },
             {
-              "networkName": "Goerli",
-              "rpcUrl": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
-              "chainID": 5,
-              "symbol": "ETH",
-              "blockExplorer": "https://goerli.etherscan.io/"
+              "name": "Kovan Testnet",
+              "rpc": "kovan"
+            },
+            {
+              "name": "Goerli Testnet",
+              "rpc": "goerli"
             }
           ]
         },

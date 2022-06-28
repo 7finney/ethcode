@@ -3,7 +3,7 @@ import { IEthereumNetworkQP } from '../types';
 
 const settings = vscode.workspace.getConfiguration('ethcode');
 
-const getNetworkSettings = (): Array<IEthereumNetworkQP> => {
+const getNetworkProviders = (): Array<IEthereumNetworkQP> => {
   return settings.networks;
 };
 
@@ -16,4 +16,4 @@ const updateSelectedNetwork = async (name: string) => {
   await config.update('selectedNetwork', { networkName: name }, true);
 };
 
-export { settings, getNetworkSettings, getSelectedNetwork, updateSelectedNetwork };
+export { settings, getNetworkProviders, getSelectedNetwork, updateSelectedNetwork };
