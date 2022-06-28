@@ -39,37 +39,26 @@
       "type": "object",
       "title": "ΞTHcode",
       "properties": {
-        "ethcode.selectedNetwork": {
-          "scope": "application",
-          "description": "Display Selected Network Name",
-          "name": "Ethereum Mainnet"
-        },
         "ethcode.networks": {
           "scope": "application",
           "type": "object",
-          "description": "List of networks settings including ethereum, polygon etc",
-          "default": [
-            {
-              "name": "Ethereum Mainnet",
-              "rpc": "homestead"
-            },
-            {
-              "name": "Rinkeby Testnet",
-              "rpc": "rinkeby"
-            },
-            {
-              "name": "Ropsten Testnet",
-              "rpc": "ropsten"
-            },
-            {
-              "name": "Kovan Testnet",
-              "rpc": "kovan"
-            },
-            {
-              "name": "Goerli Testnet",
-              "rpc": "goerli"
-            }
-          ]
+          "additionalProperties": {
+            "type": "string"
+          },
+          "markdownDescription": "List of networks settings including ethereum, polygon etc",
+          "default": {
+            "Ethereum Mainnet": "homestead",
+            "Rinkeby Testnet": "rinkeby",
+            "Ropsten Testnet": "ropsten",
+            "Kovan Testnet": "kovan",
+            "Goerli Testnet": "goerli"
+          }
+        },
+        "ethcode.selectedNetwork": {
+          "type": "string",
+          "scope": "application",
+          "markdownDescription": "Display Selected Network Name",
+          "default": "Ethereum Mainnet"
         },
         "ethcode.grpc.serviceEndpoints": {
           "type": "object",
@@ -105,8 +94,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.account.set",
-        "title": "Use ethereum account",
+        "command": "ethcode.account.select",
+        "title": "Select ethereum account",
         "category": "Ethcode"
       },
       {
