@@ -1,9 +1,8 @@
-import { sha3 } from '../hash/sha3';
-import { clientCallClient } from './proto';
+// import { sha3 } from '../hash/sha3';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const EthereumTx = require('ethereumjs-tx').Transaction;
+// const EthereumTx = require('ethereumjs-tx').Transaction;
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { formatters } = require('web3-core-helpers');
+// const { formatters } = require('web3-core-helpers');
 
 // sign raw transaction and deploy
 export function deployUnsignedTx(meta: any, tx: string, privateKey: string, testnetId: number) {

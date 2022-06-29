@@ -1,8 +1,6 @@
-// @ts-ignore
 import { ethers } from 'ethers';
 import * as vscode from 'vscode';
 import { InputBoxOptions, window, commands, workspace, WebviewPanel } from 'vscode';
-import API from './api';
 import {
   IAccountQP,
   IFunctionQP,
@@ -12,7 +10,6 @@ import {
   ConstructorInputValue,
   TxReceipt,
   GanacheAddressType,
-  IEthereumNetworkQP,
   INetworkQP,
 } from './types';
 import {
@@ -28,7 +25,13 @@ import {
 } from './lib';
 import { errors } from './utils';
 import { getAbi, getByteCode, CompiledJSONOutput } from './types/output';
-import { displayBalance, getNetworkNames, getSelectedNetwork, getSelectedProvider, updateSelectedNetwork } from './utils/networks';
+import {
+  displayBalance,
+  getNetworkNames,
+  getSelectedNetwork,
+  getSelectedProvider,
+  updateSelectedNetwork,
+} from './utils/networks';
 import { logger } from './utils/logger';
 
 const provider = ethers.providers;
@@ -171,7 +174,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // List local Accounts
     commands.registerCommand('ethcode.account.list', () => {
       const accWorker = createAccWorker();
-      accWorker.on('message', (m) => {
+      accWorker.on('message', (m: any) => {
         if (m.localAddresses) {
           context.workspaceState.update('addresses', <Array<LocalAddressType>>m.localAddresses);
           logger.log(JSON.stringify(m.localAddresses));
@@ -439,7 +442,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const gas = await window.showInputBox(gasInp);
       context.workspaceState.update('gasEstimate', gas);
     }),
-    
+
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');
@@ -447,7 +450,4 @@ export async function activate(context: vscode.ExtensionContext) {
       logger.success('Welcome to Ethcode!');
     })
   );
-  const api = new API();
-  return api;
 }
-
