@@ -1,8 +1,7 @@
 /* eslint class-methods-use-this: "warn" */
 
 import { ICompilationResult } from './types';
-import { ExtensionContext, commands } from 'vscode';
-import { ReactPanel } from './reactPanel';
+import { commands } from 'vscode';
 
 export default class API {
   // ctx: ExtensionContext;

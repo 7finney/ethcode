@@ -1,7 +1,5 @@
 import { workspace, ConfigurationTarget } from 'vscode';
-import Logger from './logger';
-
-const logger = new Logger();
+import { logger } from './logger';
 
 export function updateUserSession(valueToAssign: any, keys: string[]): Promise<string> {
   return new Promise((resolve, reject) => {

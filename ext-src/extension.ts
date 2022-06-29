@@ -3,8 +3,6 @@ import { ethers } from 'ethers';
 import * as vscode from 'vscode';
 import { InputBoxOptions, window, commands, workspace, WebviewPanel } from 'vscode';
 import API from './api';
-import { ReactPanel } from './reactPanel';
-import Logger from './utils/logger';
 import {
   IAccountQP,
   IFunctionQP,
@@ -30,11 +28,11 @@ import {
 } from './lib';
 import { errors } from './utils';
 import { getAbi, getByteCode, CompiledJSONOutput } from './types/output';
-import { getNetworkNames, getSelectedNetwork, getSelectedProvider, updateSelectedNetwork } from './utils/networks';
+import { displayBalance, getNetworkNames, getSelectedNetwork, getSelectedProvider, updateSelectedNetwork } from './utils/networks';
+import { logger } from './utils/logger';
 
 const provider = ethers.providers;
 // Create logger
-const logger = new Logger();
 const pwdInpOpt: InputBoxOptions = {
   ignoreFocusOut: true,
   password: true,
@@ -112,7 +110,7 @@ export async function activate(context: vscode.ExtensionContext) {
       quickPick.onDidChangeSelection((selection: Array<INetworkQP>) => {
         if (selection[0]) {
           const { label } = selection[0];
-          updateSelectedNetwork(label);
+          updateSelectedNetwork(context, label);
           quickPick.dispose();
 
           logger.log(`Selected network is ${label}`);
@@ -199,17 +197,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Get account balance
     commands.registerCommand('ethcode.account.balance', async () => {
-      const networkName: any = getSelectedNetwork();
       const address: any = await context.workspaceState.get('account');
-
-      getSelectedProvider()
-        .getBalance(address)
-        .then(async (value) => {
-          const balance = ethers.utils.formatEther(value);
-          context.workspaceState.update('balance', balance);
-
-          logger.success(`${address} has account Balance on ${networkName} network is: ${balance} Eth`);
-        });
+      displayBalance(context, address);
     }),
 
     // Set unsigned transaction
@@ -450,9 +439,7 @@ export async function activate(context: vscode.ExtensionContext) {
       const gas = await window.showInputBox(gasInp);
       context.workspaceState.update('gasEstimate', gas);
     }),
-    commands.registerCommand('ethcode.show', async () => {
-      ReactPanel.createOrShow(context.extensionPath, context.workspaceState);
-    }),
+    
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       commands.executeCommand('ethcode.account.list');
@@ -463,3 +450,4 @@ export async function activate(context: vscode.ExtensionContext) {
   const api = new API();
   return api;
 }
+

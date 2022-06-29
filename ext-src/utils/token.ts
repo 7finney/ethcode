@@ -1,9 +1,7 @@
 import { workspace } from 'vscode';
 import axios from 'axios';
 import { TokenData } from '../types';
-import Logger from './logger';
-
-const logger = new Logger();
+import { logger } from './logger';
 
 export function retrieveUserSettings(accessScope: string, valueToRetreive: string): string | undefined {
   return workspace.getConfiguration(accessScope).get(valueToRetreive);

@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import * as vscode from 'vscode';
+import { logger } from './logger';
 
 const provider = ethers.providers;
 
@@ -13,30 +14,52 @@ const getNetworkNames = (): Array<string> => {
 };
 
 // Selected Network Configuratin Helper
-let selectedNetwork: string = getConfiguration().get('selectedNetwork') as string;
-const getSelectedNetwork = () => {
-  return selectedNetwork;
+const getSelectedNetwork = (context: vscode.ExtensionContext): string => {
+  return context.workspaceState.get('selectedNetwork') as string;
 };
 
-const getSeletedRpcUrl = () => {
+const getSeletedRpcUrl = (context: vscode.ExtensionContext) => {
   const networks = getConfiguration().get('networks') as any;
-  return networks[getSelectedNetwork()];
+  return networks[getSelectedNetwork(context)];
 };
 
-const updateSelectedNetwork = async (name: string) => {
-  const config = getConfiguration();
-  await config.update('selectedNetwork', name, true);
-  selectedNetwork = name;
+const updateSelectedNetwork = async (context: vscode.ExtensionContext, name: string) => {
+  context.workspaceState.update('selectedNetwork', name);
 };
 
-const getSelectedProvider = () => {
-  const networkName = getSelectedNetwork();
-  if (networkName === 'ganache') return new provider.JsonRpcProvider('http://127.0.0.1:7545');
+const isValidHttpUrl = (url_: string): boolean => {
+  let url;
 
-  const rpc = getSeletedRpcUrl(); // default providers have a name with less than 10 chars
-  if (rpc.length < 15) return provider.getDefaultProvider(rpc);
+  try {
+    url = new URL(url_);
+  } catch (_) {
+    return false;
+  }
 
-  return new provider.JsonRpcProvider(rpc);
+  return url.protocol === 'http:' || url.protocol === 'https:';
 };
 
-export { getNetworkNames, getSelectedNetwork, getSelectedProvider, updateSelectedNetwork };
+const getSelectedProvider = (context: vscode.ExtensionContext) => {
+  const rpc = getSeletedRpcUrl(context); // default providers have a name with less than 10 chars
+  if (isValidHttpUrl(rpc)) return new provider.JsonRpcProvider(rpc);
+
+  return provider.getDefaultProvider(rpc);
+};
+
+const displayBalance = (context: vscode.ExtensionContext, address: string) => {
+  try {
+    getSelectedProvider(context)
+      .getBalance(address)
+      .then(async (value) => {
+        const balance = ethers.utils.formatEther(value);
+        context.workspaceState.update('balance', balance);
+
+        const networkName: any = getSelectedNetwork(context);
+        logger.success(`${address} has account Balance on ${networkName} network is: ${balance} Eth`);
+      });
+  } catch (_) {
+    logger.error(new Error("Selected network RPC isn't supported."));
+  }
+};
+
+export { getNetworkNames, getSelectedNetwork, getSelectedProvider, updateSelectedNetwork, displayBalance };
