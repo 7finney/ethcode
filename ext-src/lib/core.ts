@@ -1,13 +1,12 @@
 import { window, ExtensionContext, InputBoxOptions } from 'vscode';
 import * as fs from 'fs';
-import Logger from '../utils/logger';
+import { logger } from '../utils/logger';
 import { ConstructorInputValue, CompiledJSONOutput } from '../types';
 import { createWorker, createAccWorker } from './workerCreator';
 import { getAbi, getByteCode } from '../types/output';
 import * as path from 'path';
 
 // Create logger
-const logger = new Logger();
 const pwdInpOpt: InputBoxOptions = {
   ignoreFocusOut: true,
   password: true,

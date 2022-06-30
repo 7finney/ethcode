@@ -27,7 +27,8 @@
     "onCommand:ethcode.activate",
     "onCommand:ethcode.compiled-json.load",
     "onCommand:ethcode.compiled-json.load.all",
-    "onCommand:ethcode.compiled-json.select"
+    "onCommand:ethcode.compiled-json.select",
+    "onCommand:ethcode.network.select"
   ],
   "main": "./build/ext-src/extension.js",
   "extensionDependencies": [
@@ -38,6 +39,21 @@
       "type": "object",
       "title": "ΞTHcode",
       "properties": {
+        "ethcode.networks": {
+          "scope": "application",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "markdownDescription": "List of networks settings including ethereum, polygon etc",
+          "default": {
+            "Ethereum Mainnet": "homestead",
+            "Rinkeby Testnet": "rinkeby",
+            "Ropsten Testnet": "ropsten",
+            "Kovan Testnet": "kovan",
+            "Goerli Testnet": "goerli"
+          }
+        },
         "ethcode.grpc.serviceEndpoints": {
           "type": "object",
           "default": {
@@ -72,8 +88,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.account.set",
-        "title": "Use ethereum account",
+        "command": "ethcode.account.select",
+        "title": "Select ethereum account",
         "category": "Ethcode"
       },
       {
@@ -92,8 +108,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.network.set",
-        "title": "Use ethereum network",
+        "command": "ethcode.network.select",
+        "title": "Select ethereum network",
         "category": "Ethcode"
       },
       {
