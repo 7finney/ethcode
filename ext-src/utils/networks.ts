@@ -1,6 +1,8 @@
 import { ethers } from 'ethers';
 import * as vscode from 'vscode';
+import { CompiledJSONOutput, getAbi, getByteCode } from '../types/output';
 import { logger } from './logger';
+import { JsonFragment } from '@ethersproject/abi';
 
 const provider = ethers.providers;
 
@@ -46,7 +48,10 @@ const getSelectedProvider = (context: vscode.ExtensionContext) => {
   return provider.getDefaultProvider(rpc);
 };
 
-const displayBalance = (context: vscode.ExtensionContext, address: string) => {
+// Contract function calls
+const displayBalance = async (context: vscode.ExtensionContext) => {
+  const address: any = await context.workspaceState.get('account');
+
   try {
     getSelectedProvider(context)
       .getBalance(address)
@@ -62,4 +67,66 @@ const displayBalance = (context: vscode.ExtensionContext, address: string) => {
   }
 };
 
-export { getNetworkNames, getSelectedNetwork, getSelectedProvider, updateSelectedNetwork, displayBalance };
+const callContractMethod = async (context: vscode.ExtensionContext, abiItem: JsonFragment) => {
+  try {
+    const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
+    const abi = getAbi(compiledOutput);
+    if (abi == undefined)
+      throw new Error("Abi is not defined");
+
+    const provider = getSelectedProvider(context);
+
+    const contractAddres = '0x000';
+
+    const contract = new ethers.Contract(
+      contractAddres,
+      abi,
+      provider,
+    );
+
+    if (abiItem.name == undefined)
+      throw new Error("Function name is required");
+      
+    const result = await contract[abiItem.name](abiItem.inputs);
+    logger.log(JSON.stringify(result));
+  } catch (err) {
+    logger.error(err);
+  }
+}
+
+const deployContract = async (context: vscode.ExtensionContext) => {
+  try {
+    const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
+    const abi = getAbi(compiledOutput);
+    if (abi == undefined)
+      throw new Error("Abi is not defined");
+
+    const byteCode = getByteCode(compiledOutput);
+    if (byteCode == undefined)
+      throw new Error("ByteCode is not defined");
+
+    const provider = getSelectedProvider(context);
+    const mnemonic = "<see-phrase>" // seed phrase for your Metamask account
+    const wallet = ethers.Wallet.fromMnemonic(mnemonic);
+    const account = wallet.connect(provider);
+
+    const myContract = new ethers.ContractFactory(abi, byteCode, account);
+    const contract = await myContract.deploy();
+
+    context.workspaceState.update('contractAddress', contract.address);
+    logger.log(`Contract has been deployed to ${contract.address}`);
+
+  } catch (err) {
+    logger.error(err);
+  }
+}
+
+export {
+  getNetworkNames,
+  getSelectedNetwork,
+  getSelectedProvider,
+  updateSelectedNetwork,
+  displayBalance,
+  callContractMethod,
+  deployContract
+};

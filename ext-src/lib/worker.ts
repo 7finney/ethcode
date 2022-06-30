@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import { ABIDescription, ABIParameter } from '../types';
 import * as path from 'path';
+import { JsonFragment } from "@ethersproject/abi";
 
 function flatten(lists: any) {
   return lists.reduce((a: any, b: any) => a.concat(b), []);
@@ -37,15 +37,16 @@ function getDirectoriesRecursive(srcpath: string, depth: number) {
 }
 
 // create constructor input file
-function writeConstrucor(path_: string, inputs: Array<ABIParameter>) {
+function writeConstrucor(path_: string, inputs: Array<JsonFragment>) {
   const fileName = path.join(path_, 'constructor-input.json');
   fs.writeFileSync(fileName, JSON.stringify(inputs, null, 2));
 
   // @ts-ignore
   process.send('Created constructor json');
 }
+
 // create function input file
-function writeFunction(path_: string, abiItem: Array<ABIDescription>) {
+function writeFunction(path_: string, abiItem: Array<JsonFragment>) {
   const fileName = path.join(path_, 'function-input.json');
   fs.writeFileSync(fileName, JSON.stringify(abiItem, null, 2));
 }

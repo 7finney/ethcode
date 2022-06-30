@@ -1,17 +1,16 @@
 import { ethers } from 'ethers';
 import * as vscode from 'vscode';
+import { JsonFragment } from "@ethersproject/abi";
 import { InputBoxOptions, window, commands, workspace, WebviewPanel } from 'vscode';
 import {
   IAccountQP,
   IFunctionQP,
   LocalAddressType,
-  ABIDescription,
-  ABIParameter,
   ConstructorInputValue,
-  TxReceipt,
   GanacheAddressType,
   INetworkQP,
 } from './types';
+
 import {
   parseCompiledJSONPayload,
   parseBatchCompiledJSON,
@@ -26,10 +25,9 @@ import {
 import { errors } from './utils';
 import { getAbi, getByteCode, CompiledJSONOutput } from './types/output';
 import {
+  callContractMethod,
   displayBalance,
   getNetworkNames,
-  getSelectedNetwork,
-  getSelectedProvider,
   updateSelectedNetwork,
 } from './utils/networks';
 import { logger } from './utils/logger';
@@ -200,8 +198,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Get account balance
     commands.registerCommand('ethcode.account.balance', async () => {
-      const address: any = await context.workspaceState.get('account');
-      displayBalance(context, address);
+      displayBalance(context);
     }),
 
     // Set unsigned transaction
@@ -317,7 +314,7 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const constructor = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
+      const constructor = getAbi(contract)?.filter((i: JsonFragment) => i.type === 'constructor');
       if (constructor === undefined) {
         logger.log("Abi doesn't exist on the loaded contract");
         return;
@@ -328,10 +325,10 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const constInps: Array<ABIParameter> = <Array<ABIParameter>>constructor[0].inputs;
+      const constInps = constructor[0].inputs;
       if (constInps && constInps.length > 0) {
         const inputs: Array<ConstructorInputValue> = constInps.map(
-          (inp: ABIParameter) => <ConstructorInputValue>{ ...inp, value: '' }
+          (inp) => <ConstructorInputValue>{ ...inp, value: '' }
         );
 
         const fileWorker = createWorker();
@@ -363,7 +360,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const quickPick = window.createQuickPick<IFunctionQP>();
       if (contract) {
-        const functions = getAbi(contract)?.filter((i: ABIDescription) => i.type === 'constructor');
+        const functions = getAbi(contract)?.filter((i: JsonFragment) => i.type === 'constructor');
         if (functions === undefined) {
           logger.log("Abi doesn't exist on the loaded contract");
           return;
@@ -386,7 +383,7 @@ export async function activate(context: vscode.ExtensionContext) {
           if (selection[0] && workspace.workspaceFolders) {
             const { functionKey } = selection[0];
             quickPick.dispose();
-            const abiItem = functions.filter((i: ABIDescription) => i.name === functionKey);
+            const abiItem = functions.filter((i: JsonFragment) => i.name === functionKey);
             const fileWorker = createWorker();
             fileWorker.send({
               command: 'create-function-input',
@@ -403,40 +400,18 @@ export async function activate(context: vscode.ExtensionContext) {
         logger.error(errors.ContractNotFound);
       }
     }),
-    // Load call inputs from JSON
+
     // Call contract method
     commands.registerCommand('ethcode.contract.call', async () => {
-      const networkId = context.workspaceState.get('networkId');
-      const account: string | undefined = context.workspaceState.get('account');
-      const contract = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
-      const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-      const txReceipt: TxReceipt | undefined = context.workspaceState.get('transaction-receipt');
-      if (editorContent && contract && txReceipt) {
-        const abiItem: ABIDescription = JSON.parse(editorContent)[0];
-        const contractWorker = createWorker();
-        contractWorker.on('message', (m: any) => {
-          if (m.error) {
-            logger.error(m.error);
-          } else {
-            console.log(m.callResult);
-            logger.log(m.callResult);
-          }
-        });
-        contractWorker.send({
-          command: 'contract-method-call',
-          payload: {
-            from: account,
-            abi: getAbi(contract),
-            address: txReceipt.contractAddress,
-            methodName: abiItem.name,
-            params: abiItem.inputs,
-            gasSupply: 0,
-            value: 0,
-          },
-          testnetId: networkId,
-        });
+      if (!window.activeTextEditor) {
+        logger.error(new Error("Please open a tab and input function name and parameters to call"));
+        return;
       }
+
+      const abiItem: JsonFragment = JSON.parse(window.activeTextEditor.document.getText())[0];
+      callContractMethod(context, abiItem);
     }),
+
     // Set custom gas estimate
     commands.registerCommand('ethcode.transaction.gas.set', async () => {
       const gas = await window.showInputBox(gasInp);

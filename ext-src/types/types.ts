@@ -1,5 +1,5 @@
 import { QuickPickItem } from 'vscode';
-import { StandardCompiledContract, CombinedCompiledContract, ABIParameter, StandardJSONOutput } from './output';
+import { JsonFragment } from '@ethersproject/abi';
 
 export interface ISource {
   content: string | undefined;
@@ -67,7 +67,7 @@ export interface IFunctionQP extends QuickPickItem {
   functionKey: string;
 }
 
-export interface ConstructorInputValue extends ABIParameter {
+export interface ConstructorInputValue extends JsonFragment {
   value: string;
 }
 
@@ -90,8 +90,4 @@ export interface TxReceipt {
 
 export function isConstructorInputValue(obj: any): obj is ConstructorInputValue {
   return obj.value !== undefined;
-}
-
-export function isStdJSONOutput(obj: any): obj is StandardJSONOutput {
-  return obj.contracts !== undefined;
 }
