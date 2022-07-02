@@ -1,8 +1,11 @@
 import { ethers } from 'ethers';
 import * as vscode from 'vscode';
+import { window } from 'vscode';
 import { CompiledJSONOutput, getAbi, getByteCode } from '../types/output';
-import { logger } from './logger';
+import { logger } from '../lib';
 import { JsonFragment } from '@ethersproject/abi';
+import { extractPvtKey } from './wallet';
+import { INetworkQP } from '../types';
 
 const provider = ethers.providers;
 
@@ -25,8 +28,26 @@ const getSeletedRpcUrl = (context: vscode.ExtensionContext) => {
   return networks[getSelectedNetwork(context)];
 };
 
-const updateSelectedNetwork = async (context: vscode.ExtensionContext, name: string) => {
-  context.workspaceState.update('selectedNetwork', name);
+const updateSelectedNetwork = async (context: vscode.ExtensionContext) => {
+  const quickPick = window.createQuickPick<INetworkQP>();
+
+  quickPick.items = getNetworkNames().map((name) => ({
+    label: name,
+  }));
+  quickPick.onDidChangeActive(() => {
+    quickPick.placeholder = 'Select network';
+  });
+  quickPick.onDidChangeSelection((selection: Array<INetworkQP>) => {
+    if (selection[0]) {
+      const { label } = selection[0];
+      context.workspaceState.update('selectedNetwork', label);
+      quickPick.dispose();
+
+      logger.success(`Selected network is ${label}`);
+    }
+  });
+  quickPick.onDidHide(() => quickPick.dispose());
+  quickPick.show();
 };
 
 const isValidHttpUrl = (url_: string): boolean => {
@@ -67,8 +88,14 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
   }
 };
 
-const callContractMethod = async (context: vscode.ExtensionContext, abiItem: JsonFragment) => {
+const callContractMethod = async (context: vscode.ExtensionContext) => {
   try {
+    if (!window.activeTextEditor) {
+      logger.error(new Error('Please open a tab and input function name and parameters to call'));
+      return;
+    }
+
+    const abiItem: JsonFragment = JSON.parse(window.activeTextEditor.document.getText())[0];
     const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
     const abi = getAbi(compiledOutput);
     if (abi == undefined)
@@ -86,7 +113,7 @@ const callContractMethod = async (context: vscode.ExtensionContext, abiItem: Jso
 
     if (abiItem.name == undefined)
       throw new Error("Function name is required");
-      
+
     const result = await contract[abiItem.name](abiItem.inputs);
     logger.log(JSON.stringify(result));
   } catch (err) {
@@ -94,9 +121,15 @@ const callContractMethod = async (context: vscode.ExtensionContext, abiItem: Jso
   }
 }
 
+/**
+ * @dev deploy the contract using the compiled json output and signer wallet
+ */
 const deployContract = async (context: vscode.ExtensionContext) => {
   try {
     const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
+    if (compiledOutput == undefined)
+      throw new Error("Contract isn't selectd yet");
+
     const abi = getAbi(compiledOutput);
     if (abi == undefined)
       throw new Error("Abi is not defined");
@@ -105,12 +138,16 @@ const deployContract = async (context: vscode.ExtensionContext) => {
     if (byteCode == undefined)
       throw new Error("ByteCode is not defined");
 
-    const provider = getSelectedProvider(context);
-    const mnemonic = "<see-phrase>" // seed phrase for your Metamask account
-    const wallet = ethers.Wallet.fromMnemonic(mnemonic);
-    const account = wallet.connect(provider);
+    const account = context.workspaceState.get('account') as string;
+    const privateKey = await extractPvtKey(context.extensionPath, account);
 
-    const myContract = new ethers.ContractFactory(abi, byteCode, account);
+    const provider = getSelectedProvider(context);
+    // const mnemonic = "<see-phrase>" // seed phrase for your Metamask account
+    // const wallet = ethers.Wallet.fromMnemonic(privateKey);
+    const wallet = new ethers.Wallet(privateKey);
+    const signingAccount = wallet.connect(provider);
+
+    const myContract = new ethers.ContractFactory(abi, byteCode, signingAccount);
     const contract = await myContract.deploy();
 
     context.workspaceState.update('contractAddress', contract.address);

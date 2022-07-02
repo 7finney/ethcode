@@ -1,9 +1,6 @@
 import { JsonFragment } from "@ethersproject/abi";
 import * as ethers from "ethers";
-
-/// /////////
-// RESULT //
-/// /////////
+import * as fs from 'fs';
 
 export interface HardHatCompiledOutput {
   contractName: string;
@@ -24,6 +21,8 @@ export interface RemixCompiledOutput {
 }
 
 export interface CompiledJSONOutput {
+  name?: string; // contract name
+  path?: string; // local path of the contract
   contractType: number; // 0: null, 1: hardhat output, 2: remix output
   hardhatOutput?: HardHatCompiledOutput;
   remixOutput?: RemixCompiledOutput;
@@ -37,7 +36,7 @@ export const getAbi = (output: CompiledJSONOutput) => {
   return output.remixOutput?.abi;
 };
 
-export const getByteCode = (output: CompiledJSONOutput) : ethers.utils.BytesLike | undefined => {
+export const getByteCode = (output: CompiledJSONOutput): ethers.utils.BytesLike | undefined => {
   if (output.contractType === 0) return '';
 
   if (output.contractType === 1) return output.hardhatOutput?.bytecode;
@@ -45,9 +44,12 @@ export const getByteCode = (output: CompiledJSONOutput) : ethers.utils.BytesLike
   return output.remixOutput?.data.bytecode.object;
 };
 
-/// ///////////
-// BYTECODE //
-/// ///////////
+export const isHardhatProject = (path_: string) => {
+  return (
+    fs.readdirSync(path_).filter((file) => file === 'hardhat.config.js' || file === 'hardhat.config.ts').length > 0
+  );
+};
+
 export interface BytecodeObject {
   /** The bytecode as a hex string. */
   object: ethers.utils.BytesLike;
@@ -63,3 +65,4 @@ export interface BytecodeObject {
     };
   };
 }
+

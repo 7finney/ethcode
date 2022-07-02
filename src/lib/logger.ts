@@ -1,7 +1,21 @@
 import { window, OutputChannel } from 'vscode';
-import { errorToast, successToast } from './toast';
 
-class Logger {
+const successToast = (msg: string) => {
+  window.showInformationMessage(msg, 'Dismiss');
+}
+
+const warningToast = (msg: string) => {
+  window.showWarningMessage(msg, 'Dismiss');
+}
+const errorToast = (msg: string) => {
+  window.showErrorMessage(msg, 'Dismiss');
+}
+
+const actionToast = (msg: string, actionName: string) => {
+  return window.showInformationMessage(msg, actionName, 'Dismiss');
+}
+
+export class Logger {
   private outputChannel: OutputChannel;
 
   constructor(name?: string) {
@@ -35,4 +49,3 @@ class Logger {
   }
 }
 
-export const logger = new Logger();

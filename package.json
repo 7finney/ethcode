@@ -30,7 +30,7 @@
     "onCommand:ethcode.compiled-json.select",
     "onCommand:ethcode.network.select"
   ],
-  "main": "./build/ext-src/extension.js",
+  "main": "./build/src/extension.js",
   "extensionDependencies": [
     "ibm.output-colorizer"
   ],
@@ -83,8 +83,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.account.sign-deploy",
-        "title": "Sign & Deploy ethereum transaction",
+        "command": "ethcode.contract.deploy",
+        "title": "Deploy a contract",
         "category": "Ethcode"
       },
       {
@@ -225,7 +225,9 @@
     "utf8": "^3.0.0"
   },
   "devDependencies": {
+    "@types/keythereum": "^1.2.1",
     "@types/node": "^18.0.0",
+    "@types/vscode": "^1.68.1",
     "prettier": "^2.1.2",
     "typescript": "^4.7.4",
     "vscode": "^1.1.37"
@@ -233,7 +235,7 @@
   "scripts": {
     "vscode:prepublish": "yarn build",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "build": "tsc -p tsconfig.extension.json",
+    "build": "tsc -p tsconfig.json",
     "watch": "tsc -watch -p ./"
   },
   "author": {

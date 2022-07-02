@@ -1,10 +1,7 @@
 import { window, ExtensionContext, InputBoxOptions } from 'vscode';
-import * as fs from 'fs';
-import { logger } from '../utils/logger';
+import { logger } from './index';
 import { ConstructorInputValue, CompiledJSONOutput } from '../types';
-import { createWorker, createAccWorker } from './workerCreator';
 import { getAbi, getByteCode } from '../types/output';
-import * as path from 'path';
 
 // Create logger
 const pwdInpOpt: InputBoxOptions = {
@@ -17,69 +14,6 @@ const txHashInpOpt: InputBoxOptions = {
   password: false,
   placeHolder: 'Transaction hash',
 };
-
-function getCompiledJsonObject(_jsonPayload: any): CompiledJSONOutput {
-  const output: CompiledJSONOutput = { contractType: 0 };
-
-  try {
-    const data = JSON.parse(_jsonPayload);
-
-    if (data.bytecode !== undefined) {
-      // Hardhat format
-
-      output.contractType = 1;
-      output.hardhatOutput = data;
-      logger.log('Loaded Hardhat compiled json output');
-    } else if (data.data !== undefined) {
-      // Remix format
-
-      output.contractType = 2;
-      output.remixOutput = data;
-      logger.log('Loaded Remix compiled json output');
-    }
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log(e);
-  }
-
-  return output;
-}
-
-export function parseBatchCompiledJSON(context: ExtensionContext, paths: Array<string>): void {
-  logger.log(paths);
-
-  paths.forEach((e) => {
-    const name = path.parse(e).base;
-
-    logger.log(`Try to parse the ${name} json file`);
-
-    const data = fs.readFileSync(e);
-    const output = getCompiledJsonObject(data);
-    if (output.contractType === 0) return;
-
-    logger.log(`Saved ${name} contract to storage`);
-    let contracts = context.workspaceState.get('contracts') as any;
-
-    if (contracts === undefined || contracts === '') contracts = new Map();
-
-    contracts[name] = output;
-    context.workspaceState.update('contracts', contracts);
-  });
-}
-
-// Parse Combined JSON payload
-export function parseCompiledJSONPayload(context: ExtensionContext, _jsonPayload: any): void {
-  if (_jsonPayload) {
-    const output = getCompiledJsonObject(_jsonPayload);
-    if (output.contractType !== 0) context.workspaceState.update('contract', output);
-  } else {
-    logger.error(
-      Error(
-        'Could not load JSON file. Make sure it follows Solidity output description. Know more: https://docs.soliditylang.org/en/latest/using-the-compiler.html#compiler-input-and-output-json-description.'
-      )
-    );
-  }
-}
 
 // Estimate Transaction Gas
 export function estimateTransactionGas(context: ExtensionContext): Promise<number> {
@@ -95,7 +29,7 @@ export function estimateTransactionGas(context: ExtensionContext): Promise<numbe
       params: params || [],
       from: account,
     };
-
+/*
     const txWorker = createWorker();
     txWorker.on('message', (m: any) => {
       if (m.error) {
@@ -113,7 +47,7 @@ export function estimateTransactionGas(context: ExtensionContext): Promise<numbe
       command: 'get-gas-estimate',
       payload,
       testnetId: networkId,
-    });
+    });*/
   });
 }
 
@@ -135,7 +69,7 @@ export function ganacheDeploy(context: ExtensionContext): Promise<any> {
           from: account,
           gas,
         };
-
+/*
         const deployWorker = createWorker();
         deployWorker.on('message', (m: any) => {
           logger.log(`SignDeploy worker message: ${JSON.stringify(m)}`);
@@ -151,7 +85,7 @@ export function ganacheDeploy(context: ExtensionContext): Promise<any> {
           command: 'deploy-contract',
           payload,
           testnetId: testNetId,
-        });
+        });*/
       } catch (error) {
         logger.error(error);
         reject(error);
@@ -168,7 +102,7 @@ export function signDeploy(context: ExtensionContext): Promise<any> {
         const account = context.workspaceState.get('account');
         const unsignedTx = context.workspaceState.get('unsignedTx');
         const password = await window.showInputBox(pwdInpOpt);
-        const accWorker = createAccWorker();
+       /* const accWorker = createAccWorker();
         const signedDeployWorker = createWorker();
         accWorker.on('message', (m: any) => {
           if (m.privateKey) {
@@ -201,7 +135,7 @@ export function signDeploy(context: ExtensionContext): Promise<any> {
           address: account,
           keyStorePath: context.extensionPath,
           password: password || '',
-        });
+        });*/
       } catch (error) {
         logger.error(error);
         reject(error);
@@ -216,7 +150,7 @@ export function getTransactionInfo(context: ExtensionContext): Promise<any> {
       try {
         const testNetId = context.workspaceState.get('networkId');
         const txhash = context.workspaceState.get('transactionHash') || (await window.showInputBox(txHashInpOpt));
-        const txWorker = createWorker();
+       /* const txWorker = createWorker();
         txWorker.on('message', (m: any) => {
           if (m.error) {
             logger.error(m.error);
@@ -233,7 +167,7 @@ export function getTransactionInfo(context: ExtensionContext): Promise<any> {
             txhash,
           },
           testnetId: testNetId,
-        });
+        });*/
       } catch (error) {
         logger.error(error);
         reject(error);
@@ -248,7 +182,7 @@ export function getTransactionReceipt(context: ExtensionContext): Promise<any> {
       try {
         const testNetId = context.workspaceState.get('networkId');
         const txhash = context.workspaceState.get('transactionHash') || (await window.showInputBox(txHashInpOpt));
-        const txWorker = createWorker();
+        /*const txWorker = createWorker();
         txWorker.on('message', (m: any) => {
           if (m.error) {
             logger.error(m.error);
@@ -265,7 +199,7 @@ export function getTransactionReceipt(context: ExtensionContext): Promise<any> {
             txhash,
           },
           testnetId: testNetId,
-        });
+        });*/
       } catch (error) {
         logger.error(error);
         reject(error);

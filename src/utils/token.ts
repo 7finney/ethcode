@@ -1,7 +1,6 @@
 import { workspace } from 'vscode';
-import axios from 'axios';
 import { TokenData } from '../types';
-import { logger } from './logger';
+import { logger } from '../lib';
 
 export function retrieveUserSettings(accessScope: string, valueToRetreive: string): string | undefined {
   return workspace.getConfiguration(accessScope).get(valueToRetreive);
@@ -13,21 +12,22 @@ const authToken: TokenData = {
 };
 
 export async function verifyUserToken(appId: string, email: string, authtoken: string): Promise<boolean> {
-  try {
-    const r = await axios.post('https://auth.ethcode.dev/user/token/app/verify', {
-      email,
-      app_id: appId,
-      token: authtoken,
-    });
-    logger.success(r.data.Status);
-    if (r.status === 200) {
-      return true;
-    }
-    return false;
-  } catch (error) {
-    logger.log(JSON.stringify(error));
-    return false;
-  }
+  // try {
+  //   const r = await axios.post('https://auth.ethcode.dev/user/token/app/verify', {
+  //     email,
+  //     app_id: appId,
+  //     token: authtoken,
+  //   });
+  //   logger.success(r.data.Status);
+  //   if (r.status === 200) {
+  //     return true;
+  //   }
+  //   return false;
+  // } catch (error) {
+  //   logger.log(JSON.stringify(error));
+  //   return false;
+  // }
+  return false;
 }
 
 export async function registerAppToToken() {

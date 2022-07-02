@@ -15,7 +15,7 @@
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
-            "outFiles": ["${workspaceRoot}/build/ext-src"],
+            "outFiles": ["${workspaceRoot}/build/src"],
             "preLaunchTask": "npm: watch"
         },
         {
