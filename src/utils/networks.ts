@@ -6,6 +6,7 @@ import { logger } from '../lib';
 import { JsonFragment } from '@ethersproject/abi';
 import { extractPvtKey } from './wallet';
 import { INetworkQP } from '../types';
+import { getConstructorInputs } from './functions';
 
 const provider = ethers.providers;
 
@@ -142,13 +143,15 @@ const deployContract = async (context: vscode.ExtensionContext) => {
     const privateKey = await extractPvtKey(context.extensionPath, account);
 
     const provider = getSelectedProvider(context);
-    // const mnemonic = "<see-phrase>" // seed phrase for your Metamask account
-    // const wallet = ethers.Wallet.fromMnemonic(privateKey);
     const wallet = new ethers.Wallet(privateKey);
     const signingAccount = wallet.connect(provider);
 
     const myContract = new ethers.ContractFactory(abi, byteCode, signingAccount);
-    const contract = await myContract.deploy();
+
+    const parameters = getConstructorInputs(context);
+    logger.log("parameters");
+    logger.log(JSON.stringify(parameters));
+    const contract = await myContract.deploy(parameters);
 
     context.workspaceState.update('contractAddress', contract.address);
     logger.log(`Contract has been deployed to ${contract.address}`);

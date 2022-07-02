@@ -18,17 +18,17 @@ const txHashInpOpt: InputBoxOptions = {
 // Estimate Transaction Gas
 export function estimateTransactionGas(context: ExtensionContext): Promise<number> {
   return new Promise((resolve, reject) => {
-    const networkId = context.workspaceState.get('networkId');
-    const account: string | undefined = context.workspaceState.get('account');
-    const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
-    const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
-    let payload = {};
-    payload = {
-      abi: getAbi(contract),
-      bytecode: getByteCode(contract),
-      params: params || [],
-      from: account,
-    };
+    // const networkId = context.workspaceState.get('networkId');
+    // const account: string | undefined = context.workspaceState.get('account');
+    // const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
+    // const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
+    // let payload = {};
+    // payload = {
+    //   abi: getAbi(contract),
+    //   bytecode: getByteCode(contract),
+    //   params: params || [],
+    //   from: account,
+    // };
 /*
     const txWorker = createWorker();
     txWorker.on('message', (m: any) => {
@@ -56,19 +56,19 @@ export function ganacheDeploy(context: ExtensionContext): Promise<any> {
   return new Promise((resolve, reject) => {
     (async () => {
       try {
-        const testNetId = context.workspaceState.get('networkId');
-        const account = context.workspaceState.get('account');
-        const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
-        const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
-        const gas: number | undefined = context.workspaceState.get('gasEstimate');
-        let payload = {};
-        payload = {
-          abi: getAbi(contract),
-          bytecode: getByteCode(contract),
-          params: params || [],
-          from: account,
-          gas,
-        };
+        // const testNetId = context.workspaceState.get('networkId');
+        // const account = context.workspaceState.get('account');
+        // const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
+        // const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
+        // const gas: number | undefined = context.workspaceState.get('gasEstimate');
+        // let payload = {};
+        // payload = {
+        //   abi: getAbi(contract),
+        //   bytecode: getByteCode(contract),
+        //   params: params || [],
+        //   from: account,
+        //   gas,
+        // };
 /*
         const deployWorker = createWorker();
         deployWorker.on('message', (m: any) => {

@@ -1,5 +1,7 @@
 import * as vscode from 'vscode'
 import { window, workspace } from 'vscode'
+import * as fs from 'fs';
+import * as path from 'path';
 import { JsonFragment } from '@ethersproject/abi';
 
 import { CompiledJSONOutput, ConstructorInputValue, getAbi, IFunctionQP } from '../types'
@@ -46,12 +48,30 @@ const createFunctionInput = (context: vscode.ExtensionContext) => {
   }
 }
 
-const loadConstructorInput = (context: vscode.ExtensionContext) => {
-  const editorContent = window.activeTextEditor ? window.activeTextEditor.document.getText() : undefined;
-  if (editorContent) {
-    const constructorInputs: Array<ConstructorInputValue> = JSON.parse(editorContent);
-    context.workspaceState.update('constructor-inputs', constructorInputs);
-    logger.log(`Constructor inputs loaded!`);
+const getConstructorInputFullPath = (contract: CompiledJSONOutput) => {
+  if (contract.path == undefined) {
+    throw new Error("Contract Path is empty.");
+  }
+
+  return path.join(contract.path, `${contract.name}_constructor_input.json`);
+}
+
+const getConstructorInputs = (context: vscode.ExtensionContext) => {
+  try {
+    const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
+    const fullPath = getConstructorInputFullPath(contract);
+    let inputs = fs.readFileSync(fullPath).toString();
+
+    logger.log("parameters");
+    logger.log(fullPath);
+    logger.log(JSON.stringify(inputs));
+
+
+    const constructorInputs: Array<ConstructorInputValue> = JSON.parse(inputs);
+    return constructorInputs.map(e => e.value); // flattened parameters of input
+  } catch (e) {
+    logger.log(e);
+    return [];
   }
 }
 
@@ -79,16 +99,16 @@ const createConstructorInput = (context: vscode.ExtensionContext) => {
     logger.error("The constructor have no parameters");
     return;
   }
-  
+
   const inputs: Array<ConstructorInputValue> = constInps.map(
     (inp) => <ConstructorInputValue>{ ...inp, value: '' }
   );
 
-  writeConstructor(contract, inputs);
+  writeConstructor(getConstructorInputFullPath(contract), contract, inputs);
 }
 
 export {
   createFunctionInput,
-  loadConstructorInput,
-  createConstructorInput
+  createConstructorInput,
+  getConstructorInputs
 }

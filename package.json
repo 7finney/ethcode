@@ -195,11 +195,6 @@
         },
         {
           "when": "resourceLangId == json",
-          "command": "ethcode.contract.input.load",
-          "group": "Ethcode"
-        },
-        {
-          "when": "resourceLangId == json",
           "command": "ethcode.contract.call",
           "group": "Ethcode"
         }

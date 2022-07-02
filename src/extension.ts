@@ -18,7 +18,7 @@ import {
 import { logger } from './lib';
 import { createKeyPair, deleteKeyPair, listAddresses, selectAccount } from './utils/wallet';
 import { parseBatchCompiledJSON, parseCompiledJSONPayload, selectContract } from './utils';
-import { createConstructorInput, createFunctionInput, loadConstructorInput } from './utils/functions';
+import { createConstructorInput, createFunctionInput } from './utils/functions';
 
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
@@ -160,11 +160,6 @@ export async function activate(context: vscode.ExtensionContext) {
     // Create Input JSON
     commands.registerCommand('ethcode.contract.input.create', () => {
       createConstructorInput(context);
-    }),
-
-    // Load constructor inputs from JSON
-    commands.registerCommand('ethcode.contract.input.load', async () => {
-      loadConstructorInput(context);
     }),
 
     // Create call input for method

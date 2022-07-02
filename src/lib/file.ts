@@ -39,15 +39,8 @@ const getDirectoriesRecursive = (srcpath: string, depth: number) => {
 }
 
 // create constructor input file
-const writeConstructor = (contract: CompiledJSONOutput, inputs: Array<JsonFragment>) => {
-  if (contract.path == undefined) {
-    logger.error("Contract Path is empty.");
-    return;
-  }
-
-  const fileName = path.join(contract.path, `${contract.name}_constructor_input.json`);
+const writeConstructor = (fileName: string, contract: CompiledJSONOutput, inputs: Array<JsonFragment>) => {
   fs.writeFileSync(fileName, JSON.stringify(inputs, null, 2));
-
   logger.success(`Created constructor json of ${contract.name} contract`);
 }
 
