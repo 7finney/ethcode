@@ -62,11 +62,6 @@ const getConstructorInputs = (context: vscode.ExtensionContext) => {
     const fullPath = getConstructorInputFullPath(contract);
     let inputs = fs.readFileSync(fullPath).toString();
 
-    logger.log("parameters");
-    logger.log(fullPath);
-    logger.log(JSON.stringify(inputs));
-
-
     const constructorInputs: Array<ConstructorInputValue> = JSON.parse(inputs);
     return constructorInputs.map(e => e.value); // flattened parameters of input
   } catch (e) {
@@ -75,9 +70,19 @@ const getConstructorInputs = (context: vscode.ExtensionContext) => {
   }
 }
 
-const createConstructorInput = (context: vscode.ExtensionContext) => {
-  const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
+const shouldCreateFile = (contract: CompiledJSONOutput) => {
+  const fullPath = getConstructorInputFullPath(contract);
+  if (fs.existsSync(fullPath)) {
+    return false;
+  }
+  return true;
+}
 
+const createConstructorInput = (contract: CompiledJSONOutput) => {
+  if (!shouldCreateFile(contract)) {
+    logger.success("Constructor file already exists, remove it to add a empty file");
+    return;
+  }
   if (contract === undefined || contract == null || workspace.workspaceFolders === undefined) {
     logger.error(errors.ContractNotFound);
     return;

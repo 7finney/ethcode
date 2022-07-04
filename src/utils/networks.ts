@@ -151,7 +151,7 @@ const deployContract = async (context: vscode.ExtensionContext) => {
     const parameters = getConstructorInputs(context);
     logger.log("parameters");
     logger.log(JSON.stringify(parameters));
-    const contract = await myContract.deploy(parameters);
+    const contract = await myContract.deploy(...parameters);
 
     context.workspaceState.update('contractAddress', contract.address);
     logger.log(`Contract has been deployed to ${contract.address}`);

@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import { logger } from "../lib";
 import { CompiledJSONOutput, IFunctionQP, isHardhatProject } from "../types";
 import { getDirectoriesRecursive } from "../lib/file";
+import { createConstructorInput } from "./functions";
 
 const parseBatchCompiledJSON = (context: ExtensionContext): void => {
   if (workspace.workspaceFolders === undefined) {
@@ -119,8 +120,12 @@ const selectContract = (context: ExtensionContext) => {
       // get selected contract
       const name = Object.keys(contracts).filter((i: string) => i === functionKey);
       const contract: CompiledJSONOutput = contracts[name[0]];
-      logger.success(`Contract ${name[0]} is selected`);
       context.workspaceState.update('contract', contract);
+
+      // Create a constructor input at the same time
+      createConstructorInput(contract);
+
+      logger.success(`Contract ${name[0]} is selected`);
     }
   });
   quickPick.onDidHide(() => quickPick.dispose());

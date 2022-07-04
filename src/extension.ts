@@ -157,11 +157,6 @@ export async function activate(context: vscode.ExtensionContext) {
       selectContract(context);
     }),
 
-    // Create Input JSON
-    commands.registerCommand('ethcode.contract.input.create', () => {
-      createConstructorInput(context);
-    }),
-
     // Create call input for method
     commands.registerCommand('ethcode.contract.call.input.create', () => {
       createFunctionInput(context);

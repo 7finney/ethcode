@@ -157,11 +157,6 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.contract.input.create",
-        "title": "Create constructor input JSON",
-        "category": "Ethcode"
-      },
-      {
         "command": "ethcode.contract.input.load",
         "title": "Ethcode: Load constructor inputs from JSON"
       },
