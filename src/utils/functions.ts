@@ -65,7 +65,6 @@ const getConstructorInputs = (context: vscode.ExtensionContext) => {
     const constructorInputs: Array<ConstructorInputValue> = JSON.parse(inputs);
     return constructorInputs.map(e => e.value); // flattened parameters of input
   } catch (e) {
-    logger.log(e);
     return [];
   }
 }
@@ -90,18 +89,18 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
 
   const constructor = getAbi(contract)?.filter((i: JsonFragment) => i.type === 'constructor');
   if (constructor === undefined) {
-    logger.error("Abi doesn't exist on the loaded contract");
+    logger.log("Abi doesn't exist on the loaded contract");
     return;
   }
 
   if (constructor.length === 0) {
-    logger.error("This abi doesn't have any constructor");
+    logger.log("This abi doesn't have any constructor");
     return;
   }
 
   const constInps = constructor[0].inputs;
   if (!constInps || constInps.length == 0) {
-    logger.error("The constructor have no parameters");
+    logger.log("The constructor have no parameters");
     return;
   }
 

@@ -139,6 +139,7 @@ const deployContract = async (context: vscode.ExtensionContext) => {
     if (byteCode == undefined)
       throw new Error("ByteCode is not defined");
 
+    logger.log("Deploying the contract...");
     const account = context.workspaceState.get('account') as string;
     const privateKey = await extractPvtKey(context.extensionPath, account);
 
@@ -149,8 +150,6 @@ const deployContract = async (context: vscode.ExtensionContext) => {
     const myContract = new ethers.ContractFactory(abi, byteCode, signingAccount);
 
     const parameters = getConstructorInputs(context);
-    logger.log("parameters");
-    logger.log(JSON.stringify(parameters));
     const contract = await myContract.deploy(...parameters);
 
     context.workspaceState.update('contractAddress', contract.address);

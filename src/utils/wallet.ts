@@ -14,6 +14,11 @@ import { Account, IAccountQP, LocalAddressType } from '../types';
 const listAddresses = (context: vscode.ExtensionContext, keyStorePath: string) => {
   try {
     let localAddresses: LocalAddressType[];
+    
+    if (!fs.existsSync(`${keyStorePath}/keystore`)) {
+      fs.mkdirSync(`${keyStorePath}/keystore`);
+    }
+
     const files = fs.readdirSync(`${keyStorePath}/keystore`);
 
     localAddresses = files.map((file) => {
