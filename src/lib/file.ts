@@ -45,15 +45,19 @@ const writeConstructor = (fileName: string, contract: CompiledJSONOutput, inputs
 }
 
 // create function input file
-const writeFunction = (path_: string, abiItem: Array<JsonFragment>) => {
-  const fileName = path.join(path_, 'function-input.json');
-  fs.writeFileSync(fileName, JSON.stringify(abiItem, null, 2));
+const writeFunction = (fileName: string, contract: CompiledJSONOutput, inputs: Array<JsonFragment>) => {
+  fs.writeFileSync(fileName, JSON.stringify(inputs, null, 2));
+  logger.success(`Created functions input json of ${contract.name} contract`);
 }
 
-
+const createDeployedFile = (fileName: string, contract: CompiledJSONOutput, input: any) => {
+  fs.writeFileSync(fileName, JSON.stringify(input, null, 2));
+  logger.success(`Created deployed json format of ${contract.name} contract`);
+}
 
 export {
   writeConstructor,
   writeFunction,
+  createDeployedFile,
   getDirectoriesRecursive
 }

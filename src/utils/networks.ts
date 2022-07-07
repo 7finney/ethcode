@@ -3,10 +3,9 @@ import * as vscode from 'vscode';
 import { window } from 'vscode';
 import { CompiledJSONOutput, getAbi, getByteCode } from '../types/output';
 import { logger } from '../lib';
-import { JsonFragment } from '@ethersproject/abi';
 import { extractPvtKey } from './wallet';
 import { INetworkQP } from '../types';
-import { getConstructorInputs } from './functions';
+import { getConstructorInputs, getDeployedInputs, getFunctionInputs } from './functions';
 
 const provider = ethers.providers;
 
@@ -91,33 +90,55 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
 
 const callContractMethod = async (context: vscode.ExtensionContext) => {
   try {
-    if (!window.activeTextEditor) {
-      logger.error(new Error('Please open a tab and input function name and parameters to call'));
-      return;
-    }
-
-    const abiItem: JsonFragment = JSON.parse(window.activeTextEditor.document.getText())[0];
     const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
+    if (compiledOutput == undefined)
+      throw new Error("Contract isn't selectd yet");
+
     const abi = getAbi(compiledOutput);
     if (abi == undefined)
       throw new Error("Abi is not defined");
 
+    const abiItem = await getFunctionInputs(context);
+    if (abiItem === undefined)
+      throw new Error("Please select a function to call");
+
     const provider = getSelectedProvider(context);
+    const account = context.workspaceState.get('account') as string;
+    const params_ = abiItem.inputs?.map((e: any) => e.value);
+    const params = params_ === undefined ? [] : params_;
+    
+    logger.success(`Calling the function : ${abiItem.name} of selected contract...`);
 
-    const contractAddres = '0x000';
+    const contractAddres = getDeployedInputs(context).address;
+    if (contractAddres === undefined)
+      throw new Error("Please input deployed address of selected contract");
 
-    const contract = new ethers.Contract(
-      contractAddres,
-      abi,
-      provider,
-    );
+    if (abiItem.stateMutability === 'view') {
+      const contract = new ethers.Contract(
+        contractAddres,
+        abi,
+        provider,
+      );
 
-    if (abiItem.name == undefined)
-      throw new Error("Function name is required");
-
-    const result = await contract[abiItem.name](abiItem.inputs);
-    logger.log(JSON.stringify(result));
-  } catch (err) {
+      const result = await contract[abiItem.name as string](...params);
+      logger.success("Successfully called the function");
+      logger.log(JSON.stringify(result));
+    } else {
+      const privateKey = await extractPvtKey(context.extensionPath, account);
+      const wallet = new ethers.Wallet(privateKey);
+      const signingAccount = wallet.connect(provider);
+      const contract = new ethers.Contract(
+        contractAddres,
+        abi,
+        signingAccount,
+      );
+      const result = await contract[abiItem.name as string](...params);
+      logger.success("Waiting for confirmation...");
+      
+      await result.wait();
+      logger.success("Mutable function was succcessfully called.");
+    }
+  } catch (err: any) {
     logger.error(err);
   }
 }
@@ -139,10 +160,10 @@ const deployContract = async (context: vscode.ExtensionContext) => {
     if (byteCode == undefined)
       throw new Error("ByteCode is not defined");
 
-    logger.log("Deploying the contract...");
     const account = context.workspaceState.get('account') as string;
     const privateKey = await extractPvtKey(context.extensionPath, account);
 
+    logger.success("Deploying the contract...");
     const provider = getSelectedProvider(context);
     const wallet = new ethers.Wallet(privateKey);
     const signingAccount = wallet.connect(provider);

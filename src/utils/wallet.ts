@@ -6,8 +6,7 @@ import { logger } from '../lib';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const keythereum = require('keythereum');
 
-// @ts-ignore
-import { toChecksumAddress } from '../hash/util';
+import { toChecksumAddress } from '../lib/hash/util';
 import { Account, IAccountQP, LocalAddressType } from '../types';
 
 // list all local addresses

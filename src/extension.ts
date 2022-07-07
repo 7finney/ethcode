@@ -5,11 +5,6 @@ import {
   GanacheAddressType,
 } from './types';
 import {
-  estimateTransactionGas,
-  getTransactionInfo,
-  getTransactionReceipt,
-} from './lib';
-import {
   callContractMethod,
   deployContract,
   displayBalance,
@@ -18,7 +13,6 @@ import {
 import { logger } from './lib';
 import { createKeyPair, deleteKeyPair, listAddresses, selectAccount } from './utils/wallet';
 import { parseBatchCompiledJSON, parseCompiledJSONPayload, selectContract } from './utils';
-import { createConstructorInput, createFunctionInput } from './utils/functions';
 
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
@@ -44,7 +38,7 @@ export async function activate(context: vscode.ExtensionContext) {
       deleteKeyPair(context);
     }),
 
-    // Deploy Contract
+    // Deploy ContractcallContractMethod
     commands.registerCommand('ethcode.contract.deploy', async () => {
       deployContract(context);
     }),
@@ -82,63 +76,8 @@ export async function activate(context: vscode.ExtensionContext) {
       displayBalance(context);
     }),
 
-    // Set unsigned transaction
-    commands.registerCommand('ethcode.transaction.set', async (tx: any) => {
-      const unsignedTxInp: InputBoxOptions = {
-        ignoreFocusOut: false,
-        placeHolder: 'Unsigned transaction JSON',
-      };
-
-      const unsignedTx = tx || (await window.showInputBox(unsignedTxInp));
-      context.workspaceState.update('unsignedTx', unsignedTx);
-    }),
-
-    // Create unsigned transaction
-    commands.registerCommand('ethcode.transaction.build', async () => {
-      // const networkId = context.workspaceState.get('networkId');
-      // const account: string | undefined = context.workspaceState.get('account');
-      // const contract = context.workspaceState.get('contract') as CompiledJSONOutput;
-      // const params: Array<ConstructorInputValue> | undefined = context.workspaceState.get('constructor-inputs');
-      // const gas: number | undefined = context.workspaceState.get('gasEstimate');
-
-      // const txWorker = createWorker();
-      // txWorker.on('message', (m: any) => {
-      //   logger.log(`Transaction worker message: ${JSON.stringify(m)}`);
-      //   if (m.error) {
-      //     logger.error(m.error);
-      //   } else {
-      //     context.workspaceState.update('unsignedTx', m.buildTxResult);
-      //     logger.log(m.buildTxResult);
-      //   }
-      // });
-
-      // const payload = {
-      //   abi: getAbi(contract),
-      //   bytecode: getByteCode(contract),
-      //   params: params || [],
-      //   gasSupply: gas || 0,
-      //   from: account,
-      // };
-      // txWorker.send({
-      //   command: 'build-rawtx',
-      //   payload,
-      //   testnetId: networkId,
-      // });
-    }),
-
     // Get gas estimate
     commands.registerCommand('ethcode.transaction.gas.get', async () => {
-      return estimateTransactionGas(context);
-    }),
-
-    // Get transaction info
-    commands.registerCommand('ethcode.transaction.get', async () => {
-      return getTransactionInfo(context);
-    }),
-
-    // Get transaction receipt
-    commands.registerCommand('ethcode.transaction.receipt.get', async () => {
-      return getTransactionReceipt(context);
     }),
 
     // Load combined JSON output
@@ -157,26 +96,21 @@ export async function activate(context: vscode.ExtensionContext) {
       selectContract(context);
     }),
 
-    // Create call input for method
-    commands.registerCommand('ethcode.contract.call.input.create', () => {
-      createFunctionInput(context);
-    }),
-
     // Call contract method
     commands.registerCommand('ethcode.contract.call', async () => {
       callContractMethod(context);
     }),
 
     // Set custom gas estimate
-    commands.registerCommand('ethcode.transaction.gas.set', async () => {
-      const gasInp: InputBoxOptions = {
-        ignoreFocusOut: false,
-        placeHolder: 'Enter custom gas',
-      };
+    // commands.registerCommand('ethcode.transaction.gas.set', async () => {
+      // const gasInp: InputBoxOptions = {
+      //   ignoreFocusOut: false,
+      //   placeHolder: 'Enter custom gas',
+      // };
 
-      const gas = await window.showInputBox(gasInp);
-      context.workspaceState.update('gasEstimate', gas);
-    }),
+      // const gas = await window.showInputBox(gasInp);
+      // context.workspaceState.update('gasEstimate', gas);
+    // }),
 
     // Activate
     commands.registerCommand('ethcode.activate', async () => {

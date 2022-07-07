@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import { logger } from "../lib";
 import { CompiledJSONOutput, IFunctionQP, isHardhatProject } from "../types";
 import { getDirectoriesRecursive } from "../lib/file";
-import { createConstructorInput } from "./functions";
+import { createConstructorInput, createFunctionInput, createDeployed } from "./functions";
 
 const parseBatchCompiledJSON = (context: ExtensionContext): void => {
   if (workspace.workspaceFolders === undefined) {
@@ -26,8 +26,8 @@ const parseBatchCompiledJSON = (context: ExtensionContext): void => {
     logger.log(`Try to parse the ${name} contract output`);
 
     const data = fs.readFileSync(e);
-    const output:CompiledJSONOutput = getCompiledJsonObject(data);
-    
+    const output: CompiledJSONOutput = getCompiledJsonObject(data);
+
     if (output.contractType === 0) return;
     output.path = path.dirname(e);
     output.name = name;
@@ -124,6 +124,8 @@ const selectContract = (context: ExtensionContext) => {
 
       // Create a constructor input at the same time
       createConstructorInput(contract);
+      createFunctionInput(contract);
+      createDeployed(contract);
 
       logger.success(`Contract ${name[0]} is selected`);
     }

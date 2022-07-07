@@ -118,28 +118,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.transaction.build",
-        "title": "Build Ethereum raw transaction",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.gas.get",
-        "title": "Get gas estimate for transaction",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.gas.set",
-        "title": "Set gas estimate for transaction",
-        "category": "Ethcode"
-      },
-      {
         "command": "ethcode.transaction.get",
         "title": "Get transaction info",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.receipt.get",
-        "title": "Get transaction receipt",
         "category": "Ethcode"
       },
       {
@@ -157,22 +137,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.contract.input.load",
-        "title": "Ethcode: Load constructor inputs from JSON"
-      },
-      {
-        "command": "ethcode.contract.call.input.create",
-        "title": "Create function input JSON",
-        "category": "Ethcode"
-      },
-      {
         "command": "ethcode.contract.call",
         "title": "Ethcode: Contract call"
-      },
-      {
-        "command": "ethcode.show",
-        "title": "Open Ethcode Interface",
-        "category": "Ethcode"
       }
     ],
     "keybindings": [
