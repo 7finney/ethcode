@@ -108,6 +108,11 @@ const getConstructorInputs = (context: vscode.ExtensionContext) => {
   }
 }
 
+const getFunctionParmas = (func: JsonFragment) => {
+  const inputs = func.inputs?.map(e => e.type);
+  return inputs?.join(', ');
+}
+
 const getFunctionInputs = async (context: vscode.ExtensionContext): Promise<JsonFragment> => {
   return new Promise((resolve, reject) => {
     try {
@@ -119,7 +124,7 @@ const getFunctionInputs = async (context: vscode.ExtensionContext): Promise<Json
 
       const quickPick = window.createQuickPick<IFunctionQP>();
       quickPick.items = functions.map((f) => ({
-        label: f.name || '',
+        label: `(Contract) ${contract.name} > (Function) ${f.name}(${getFunctionParmas(f)})` || '',
         functionKey: f.name || '',
       }));
       quickPick.placeholder = 'Select function';
