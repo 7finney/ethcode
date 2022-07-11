@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { window, InputBoxOptions } from 'vscode';
@@ -7,13 +8,20 @@ import { logger } from '../lib';
 const keythereum = require('keythereum');
 
 import { toChecksumAddress } from '../lib/hash/util';
-import { Account, IAccountQP, LocalAddressType } from '../types';
+import { Account, GanacheAddressType, IAccountQP, LocalAddressType } from '../types';
+import { getSelectedNetwork, getSelectedProvider } from './networks';
 
 // list all local addresses
-const listAddresses = (context: vscode.ExtensionContext, keyStorePath: string) => {
+const listAddresses = async (context: vscode.ExtensionContext, keyStorePath: string): Promise<string[]> => {
   try {
     let localAddresses: LocalAddressType[];
-    
+
+    if (getSelectedNetwork(context) === 'Ganache Testnet') {
+      const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider;
+      const account = await provider.listAccounts();
+      return account;
+    }
+
     if (!fs.existsSync(`${keyStorePath}/keystore`)) {
       fs.mkdirSync(`${keyStorePath}/keystore`);
     }
@@ -28,10 +36,10 @@ const listAddresses = (context: vscode.ExtensionContext, keyStorePath: string) =
       };
     });
 
-    context.workspaceState.update('addresses', localAddresses);
-    logger.log(JSON.stringify(localAddresses));
+    return localAddresses.map(e => e.pubAddress);
   } catch (err) {
     logger.error(err);
+    return [];
   }
 }
 
@@ -99,46 +107,26 @@ const extractPvtKey = async (keyStorePath: string, address: string) => {
   }
 }
 
-const selectAccount = (context: vscode.ExtensionContext) => {
-  const quickPick = window.createQuickPick<IAccountQP>();
-  const addresses: Array<LocalAddressType> | undefined = context.workspaceState.get('addresses');
-  const ganacheAddresses: Array<string> | undefined = context.workspaceState.get('ganache-addresses');
-  let options: Array<IAccountQP> = [];
+const selectAccount = async (context: vscode.ExtensionContext) => {
 
-  if (addresses) {
-    options = addresses.map(
-      (account) =>
-        <IAccountQP>{
-          label: account.pubAddress,
-          description: 'Local account',
-          checksumAddr: account.checksumAddress,
-        }
-    );
-  }
+  const addresses = await listAddresses(context, context.extensionPath);
 
-  if (ganacheAddresses) {
-    const gOpts: Array<IAccountQP> = ganacheAddresses.map(
-      (addr) => <IAccountQP>{ label: addr, description: 'Ganache account', checksumAddr: addr }
-    );
-    options = [...options, ...gOpts];
-  }
+  const quickPick = window.createQuickPick();
 
-  if (options.length === 0) return;
-
-  quickPick.items = options.map((account) => ({
-    label: account.checksumAddr,
-    description: account.description,
-    checksumAddr: account.checksumAddr,
+  quickPick.items = addresses.map((account) => ({
+    label: account,
+    description: getSelectedNetwork(context) === 'Ganache Testnet' ? 'Ganache account' : 'Local account',
   }));
 
   quickPick.onDidChangeActive(() => {
     quickPick.placeholder = 'Select account';
   });
 
-  quickPick.onDidChangeSelection((selection: Array<IAccountQP>) => {
+  quickPick.onDidChangeSelection((selection) => {
     if (selection[0]) {
-      const { checksumAddr } = selection[0];
-      context.workspaceState.update('account', checksumAddr);
+      const { label } = selection[0];
+      context.workspaceState.update('account', label);
+      logger.success(`Account ${label} is selected.`);
       quickPick.dispose();
     }
   });

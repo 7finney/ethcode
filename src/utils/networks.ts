@@ -102,11 +102,9 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
     if (abiItem === undefined)
       throw new Error("Please select a function to call");
 
-    const provider = getSelectedProvider(context);
-    const account = context.workspaceState.get('account') as string;
     const params_ = abiItem.inputs?.map((e: any) => e.value);
     const params = params_ === undefined ? [] : params_;
-    
+
     logger.success(`Calling the function : ${abiItem.name} of selected contract...`);
 
     const contractAddres = getDeployedInputs(context).address;
@@ -117,24 +115,17 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       const contract = new ethers.Contract(
         contractAddres,
         abi,
-        provider,
+        getSelectedProvider(context),
       );
 
       const result = await contract[abiItem.name as string](...params);
       logger.success("Successfully called the function");
       logger.log(JSON.stringify(result));
     } else {
-      const privateKey = await extractPvtKey(context.extensionPath, account);
-      const wallet = new ethers.Wallet(privateKey);
-      const signingAccount = wallet.connect(provider);
-      const contract = new ethers.Contract(
-        contractAddres,
-        abi,
-        signingAccount,
-      );
+      const contract = await getSignedContract(context, contractAddres);
       const result = await contract[abiItem.name as string](...params);
       logger.success("Waiting for confirmation...");
-      
+
       await result.wait();
       logger.success("Mutable function was succcessfully called.");
     }
@@ -148,37 +139,83 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
  */
 const deployContract = async (context: vscode.ExtensionContext) => {
   try {
-    const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
-    if (compiledOutput == undefined)
-      throw new Error("Contract isn't selectd yet");
-
-    const abi = getAbi(compiledOutput);
-    if (abi == undefined)
-      throw new Error("Abi is not defined");
-
-    const byteCode = getByteCode(compiledOutput);
-    if (byteCode == undefined)
-      throw new Error("ByteCode is not defined");
-
-    const account = context.workspaceState.get('account') as string;
-    const privateKey = await extractPvtKey(context.extensionPath, account);
-
     logger.success("Deploying the contract...");
-    const provider = getSelectedProvider(context);
-    const wallet = new ethers.Wallet(privateKey);
-    const signingAccount = wallet.connect(provider);
 
-    const myContract = new ethers.ContractFactory(abi, byteCode, signingAccount);
-
+    const myContract = await getContractFactoryWithParams(context);
     const parameters = getConstructorInputs(context);
     const contract = await myContract.deploy(...parameters);
 
     context.workspaceState.update('contractAddress', contract.address);
-    logger.log(`Contract has been deployed to ${contract.address}`);
+    logger.success(`Contract has been deployed to ${contract.address}`);
 
   } catch (err) {
     logger.error(err);
   }
+}
+
+const getSignedContract = async (context: vscode.ExtensionContext, contractAddres: string): Promise<ethers.Contract> => {
+  const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
+  if (compiledOutput == undefined)
+    throw new Error("Contract isn't selectd yet");
+
+  const abi = getAbi(compiledOutput);
+  if (abi == undefined)
+    throw new Error("Abi is not defined");
+
+  const byteCode = getByteCode(compiledOutput);
+  if (byteCode == undefined)
+    throw new Error("ByteCode is not defined");
+
+  let contract;
+  if (getSelectedNetwork(context) === 'Ganache Testnet') {
+    // Deploy to ganache network
+    const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider;
+    const signer = provider.getSigner()
+    contract = new ethers.Contract(contractAddres, abi, signer);
+  } else {
+    const account = context.workspaceState.get('account') as string;
+    const privateKey = await extractPvtKey(context.extensionPath, account);
+    const wallet = new ethers.Wallet(privateKey);
+    const provider = getSelectedProvider(context);
+    const signingAccount = wallet.connect(provider);
+    contract = new ethers.Contract(
+      contractAddres,
+      abi,
+      signingAccount,
+    );
+  }
+  return contract;
+}
+
+const getContractFactoryWithParams = async (context: vscode.ExtensionContext): Promise<ethers.ContractFactory> => {
+  const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
+  if (compiledOutput == undefined)
+    throw new Error("Contract isn't selectd yet");
+
+  const abi = getAbi(compiledOutput);
+  if (abi == undefined)
+    throw new Error("Abi is not defined");
+
+  const byteCode = getByteCode(compiledOutput);
+  if (byteCode == undefined)
+    throw new Error("ByteCode is not defined");
+
+  let myContract;
+  if (getSelectedNetwork(context) === 'Ganache Testnet') {
+    // Deploy to ganache network
+    const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider;
+    const signer = provider.getSigner()
+    myContract = new ethers.ContractFactory(abi, byteCode, signer);
+  } else {
+    // Deploy to ethereum network
+    const account = context.workspaceState.get('account') as string;
+    const privateKey = await extractPvtKey(context.extensionPath, account);
+    const provider = getSelectedProvider(context);
+    const wallet = new ethers.Wallet(privateKey);
+    const signingAccount = wallet.connect(provider);
+    myContract = new ethers.ContractFactory(abi, byteCode, signingAccount);
+  }
+  return myContract;
 }
 
 export {

@@ -11,7 +11,7 @@ import {
   updateSelectedNetwork,
 } from './utils/networks';
 import { logger } from './lib';
-import { createKeyPair, deleteKeyPair, listAddresses, selectAccount } from './utils/wallet';
+import { createKeyPair, deleteKeyPair, selectAccount } from './utils/wallet';
 import { parseBatchCompiledJSON, parseCompiledJSONPayload, selectContract } from './utils';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -51,24 +51,6 @@ export async function activate(context: vscode.ExtensionContext) {
     // Select Ethereum Account
     commands.registerCommand('ethcode.account.select', () => {
       selectAccount(context);
-    }),
-
-    // List local Accounts
-    commands.registerCommand('ethcode.account.list', async () => {
-      listAddresses(context, context.extensionPath);
-    }),
-
-    // List Ganache accounts
-    commands.registerCommand('ethcode.account.ganache.list', async () => {
-      try {
-        await new ethers.providers.JsonRpcProvider('http://127.0.0.1:7545').listAccounts().then((account: any) => {
-          context.workspaceState.update('ganache-addresses', <Array<GanacheAddressType>>account);
-          const gadd = context.workspaceState.get('ganache-addresses');
-          logger.log(JSON.stringify(gadd));
-        });
-      } catch (e) {
-        console.log("Ganache isn't registered");
-      }
     }),
 
     // Get account balance
@@ -115,8 +97,6 @@ export async function activate(context: vscode.ExtensionContext) {
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       logger.success('Welcome to Ethcode!');
-      commands.executeCommand('ethcode.account.list');
-      commands.executeCommand('ethcode.account.ganache.list');
     })
   );
 }

@@ -49,6 +49,7 @@
           "default": {
             "Ethereum Mainnet": "homestead",
             "Rinkeby Testnet": "rinkeby",
+            "Ganache Testnet": "http://127.0.0.1:7545",
             "Ropsten Testnet": "ropsten",
             "Kovan Testnet": "kovan",
             "Goerli Testnet": "goerli"
@@ -95,16 +96,6 @@
       {
         "command": "ethcode.account.balance",
         "title": "Get account balance",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.account.list",
-        "title": "List ethereum accounts from keystore",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.account.ganache.list",
-        "title": "List ganache testnet accounts",
         "category": "Ethcode"
       },
       {
