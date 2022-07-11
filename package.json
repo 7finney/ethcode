@@ -50,6 +50,7 @@
             "Ethereum Mainnet": "homestead",
             "Rinkeby Testnet": "rinkeby",
             "Ganache Testnet": "http://127.0.0.1:7545",
+            "Hardhat Testnet": "http://127.0.0.1:8545",
             "Ropsten Testnet": "ropsten",
             "Kovan Testnet": "kovan",
             "Goerli Testnet": "goerli"

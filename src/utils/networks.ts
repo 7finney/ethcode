@@ -88,6 +88,16 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
   }
 };
 
+const isTestingNetwork = (context: vscode.ExtensionContext) => {
+  if (getSelectedNetwork(context) === 'Ganache Testnet')
+    return true;
+
+  if (getSelectedNetwork(context) === 'Hardhat Testnet')
+    return true;
+
+  return false;
+}
+
 const callContractMethod = async (context: vscode.ExtensionContext) => {
   try {
     const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
@@ -167,7 +177,7 @@ const getSignedContract = async (context: vscode.ExtensionContext, contractAddre
     throw new Error("ByteCode is not defined");
 
   let contract;
-  if (getSelectedNetwork(context) === 'Ganache Testnet') {
+  if (isTestingNetwork(context)) {
     // Deploy to ganache network
     const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider;
     const signer = provider.getSigner()
@@ -201,7 +211,7 @@ const getContractFactoryWithParams = async (context: vscode.ExtensionContext): P
     throw new Error("ByteCode is not defined");
 
   let myContract;
-  if (getSelectedNetwork(context) === 'Ganache Testnet') {
+  if (isTestingNetwork(context)) {
     // Deploy to ganache network
     const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider;
     const signer = provider.getSigner()
@@ -225,5 +235,6 @@ export {
   updateSelectedNetwork,
   displayBalance,
   callContractMethod,
-  deployContract
+  deployContract,
+  isTestingNetwork
 };

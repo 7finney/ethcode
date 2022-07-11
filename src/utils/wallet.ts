@@ -9,14 +9,14 @@ const keythereum = require('keythereum');
 
 import { toChecksumAddress } from '../lib/hash/util';
 import { Account, GanacheAddressType, IAccountQP, LocalAddressType } from '../types';
-import { getSelectedNetwork, getSelectedProvider } from './networks';
+import { getSelectedNetwork, getSelectedProvider, isTestingNetwork } from './networks';
 
 // list all local addresses
 const listAddresses = async (context: vscode.ExtensionContext, keyStorePath: string): Promise<string[]> => {
   try {
     let localAddresses: LocalAddressType[];
 
-    if (getSelectedNetwork(context) === 'Ganache Testnet') {
+    if (isTestingNetwork(context)) {
       const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider;
       const account = await provider.listAccounts();
       return account;
@@ -115,7 +115,7 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
 
   quickPick.items = addresses.map((account) => ({
     label: account,
-    description: getSelectedNetwork(context) === 'Ganache Testnet' ? 'Ganache account' : 'Local account',
+    description: isTestingNetwork(context) ? getSelectedNetwork(context) : 'Local account',
   }));
 
   quickPick.onDidChangeActive(() => {
