@@ -23,7 +23,7 @@ const parseBatchCompiledJSON = (context: ExtensionContext): void => {
     let name = path.parse(e).base;
     name = name.substring(0, name.length - 5);
 
-    logger.log(`Try to parse the ${name} contract output`);
+    logger.log(`Trying to parse ${name} contract output...`);
 
     const data = fs.readFileSync(e);
     const output: CompiledJSONOutput = getCompiledJsonObject(data);
@@ -32,7 +32,7 @@ const parseBatchCompiledJSON = (context: ExtensionContext): void => {
     output.path = path.dirname(e);
     output.name = name;
 
-    logger.success(`Loaded ${name} contract and saved to workspace`);
+    logger.success(`Loaded ${name} contract into workspace.`);
     let contracts = context.workspaceState.get('contracts') as any;
 
     if (contracts === undefined || contracts === '') contracts = new Map();
@@ -67,13 +67,13 @@ const getCompiledJsonObject = (_jsonPayload: any): CompiledJSONOutput => {
 
       output.contractType = 1;
       output.hardhatOutput = data;
-      logger.log('Loaded Hardhat compiled json output');
+      logger.log('Loaded Hardhat compiled json outputs.');
     } else if (data.data !== undefined) {
       // Remix format
 
       output.contractType = 2;
       output.remixOutput = data;
-      logger.log('Loaded Remix compiled json output');
+      logger.log('Loaded Remix compiled json output.');
     }
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -112,7 +112,7 @@ const selectContract = (context: ExtensionContext) => {
     label: f || '',
     functionKey: f || '',
   }));
-  quickPick.placeholder = 'Select a contract';
+  quickPick.placeholder = 'Select a contract.';
   quickPick.onDidChangeSelection((selection: Array<IFunctionQP>) => {
     if (selection[0] && workspace.workspaceFolders) {
       const { functionKey } = selection[0];
@@ -127,7 +127,7 @@ const selectContract = (context: ExtensionContext) => {
       createFunctionInput(contract);
       createDeployed(contract);
 
-      logger.success(`Contract ${name[0]} is selected`);
+      logger.success(`Contract ${name[0]} is selected.`);
     }
   });
   quickPick.onDidHide(() => quickPick.dispose());

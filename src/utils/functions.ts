@@ -12,7 +12,7 @@ import { createDeployedFile, writeConstructor, writeFunction } from '../lib/file
 const createDeployed = (contract: CompiledJSONOutput) => {
   const fullPath = getDeployedFullPath(contract);
   if (fs.existsSync(fullPath)) {
-    logger.success("Functions input file already exists, remove it to add a empty file");
+    logger.success("Functions input file already exists, remove it to add a empty file.");
     return;
   }
 
@@ -32,7 +32,7 @@ const createDeployed = (contract: CompiledJSONOutput) => {
 const createFunctionInput = (contract: CompiledJSONOutput) => {
   const fullPath = getFunctionInputFullPath(contract);
   if (fs.existsSync(fullPath)) {
-    logger.success("Functions input file already exists, remove it to add a empty file");
+    logger.success("Functions input file already exists, remove it to add a empty file.");
     return;
   }
 

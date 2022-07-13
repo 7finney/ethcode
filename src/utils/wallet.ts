@@ -8,7 +8,7 @@ import { logger } from '../lib';
 const keythereum = require('keythereum');
 
 import { toChecksumAddress } from '../lib/hash/util';
-import { Account, GanacheAddressType, IAccountQP, LocalAddressType } from '../types';
+import { Account, LocalAddressType } from '../types';
 import { getSelectedNetwork, getSelectedProvider, isTestingNetwork } from './networks';
 
 // list all local addresses
