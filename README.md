@@ -116,7 +116,7 @@ And then press F5, in Extension Development Host session, run `Ethereum: Solidit
 ### Generate Typescript types for protobuf
 ```shell
 PROTOC_GEN_TS_PATH="./node_modules/.bin/protoc-gen-ts"
-OUT_DIR="./ext-src/"
+OUT_DIR="./src/"
 protoc --plugin="protoc-gen-ts=${PROTOC_GEN_TS_PATH}" --js_out="import_style=commonjs,binary:${OUT_DIR}" --ts_out="${OUT_DIR}" services/ethereum.proto
 ```
 
@@ -139,7 +139,7 @@ git push origin v0.1.4
 
 Things we did on top of Create React App TypeScript template
 
-* We inline `index.html` content in `ext-src/extension.ts` when creating the webview
+* We inline `index.html` content in `src/extension.ts` when creating the webview
 * We set strict security policy for accessing resources in the webview.
   * Only resources in `/build` can be accessed
   * Only resources whose scheme is `vscode-resource` can be accessed.

@@ -8,7 +8,7 @@ tsconfig.json
 tsconfig.extension.json
 webpack.config.js
 yarn.lock
-ext-src/**
+src/**
 *.ts
 *.sol
 .gitignore

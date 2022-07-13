@@ -20,7 +20,7 @@
     "url": "https://github.com/ethential/ethcode"
   },
   "engines": {
-    "vscode": "^1.34.0",
+    "vscode": "^1.38.1",
     "node": ">=16.15.0"
   },
   "activationEvents": [
@@ -30,7 +30,7 @@
     "onCommand:ethcode.compiled-json.select",
     "onCommand:ethcode.network.select"
   ],
-  "main": "./build/ext-src/extension.js",
+  "main": "./build/src/extension.js",
   "extensionDependencies": [
     "ibm.output-colorizer"
   ],
@@ -49,6 +49,8 @@
           "default": {
             "Ethereum Mainnet": "homestead",
             "Rinkeby Testnet": "rinkeby",
+            "Ganache Testnet": "http://127.0.0.1:7545",
+            "Hardhat Testnet": "http://127.0.0.1:8545",
             "Ropsten Testnet": "ropsten",
             "Kovan Testnet": "kovan",
             "Goerli Testnet": "goerli"
@@ -83,8 +85,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.account.sign-deploy",
-        "title": "Sign & Deploy ethereum transaction",
+        "command": "ethcode.contract.deploy",
+        "title": "Deploy a contract",
         "category": "Ethcode"
       },
       {
@@ -98,16 +100,6 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.account.list",
-        "title": "List ethereum accounts from keystore",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.account.ganache.list",
-        "title": "List ganache testnet accounts",
-        "category": "Ethcode"
-      },
-      {
         "command": "ethcode.network.select",
         "title": "Select ethereum network",
         "category": "Ethcode"
@@ -118,28 +110,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.transaction.build",
-        "title": "Build Ethereum raw transaction",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.gas.get",
-        "title": "Get gas estimate for transaction",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.gas.set",
-        "title": "Set gas estimate for transaction",
-        "category": "Ethcode"
-      },
-      {
         "command": "ethcode.transaction.get",
         "title": "Get transaction info",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.receipt.get",
-        "title": "Get transaction receipt",
         "category": "Ethcode"
       },
       {
@@ -157,27 +129,8 @@
         "category": "Ethcode"
       },
       {
-        "command": "ethcode.contract.input.create",
-        "title": "Create constructor input JSON",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.contract.input.load",
-        "title": "Ethcode: Load constructor inputs from JSON"
-      },
-      {
-        "command": "ethcode.contract.call.input.create",
-        "title": "Create function input JSON",
-        "category": "Ethcode"
-      },
-      {
         "command": "ethcode.contract.call",
         "title": "Ethcode: Contract call"
-      },
-      {
-        "command": "ethcode.show",
-        "title": "Open Ethcode Interface",
-        "category": "Ethcode"
       }
     ],
     "keybindings": [
@@ -191,11 +144,6 @@
         {
           "when": "resourceLangId == json",
           "command": "ethcode.compiled-json.load",
-          "group": "Ethcode"
-        },
-        {
-          "when": "resourceLangId == json",
-          "command": "ethcode.contract.input.load",
           "group": "Ethcode"
         },
         {
@@ -225,7 +173,9 @@
     "utf8": "^3.0.0"
   },
   "devDependencies": {
+    "@types/keythereum": "^1.2.1",
     "@types/node": "^18.0.0",
+    "@types/vscode": "^1.38.1",
     "prettier": "^2.1.2",
     "typescript": "^4.7.4",
     "vscode": "^1.1.37"
@@ -233,7 +183,7 @@
   "scripts": {
     "vscode:prepublish": "yarn build",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "build": "tsc -p tsconfig.extension.json",
+    "build": "tsc -p tsconfig.json",
     "watch": "tsc -watch -p ./"
   },
   "author": {

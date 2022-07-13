@@ -1,0 +1,14 @@
+{
+  "name": "hardhat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aaron <aaron.porchia16@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "hardhat": "^2.10.0"
+  }
+}
