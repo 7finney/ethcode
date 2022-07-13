@@ -1,3 +1,4 @@
 export const errors = {
-  ContractNotFound: Error('Contract not found!'),
+  ContractNotFound: new Error('Contract not found!'),
+  ContractNotSelected: new Error('No Contract selected!'),
 };

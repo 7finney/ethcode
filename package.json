@@ -20,7 +20,7 @@
     "url": "https://github.com/ethential/ethcode"
   },
   "engines": {
-    "vscode": "^1.68.1",
+    "vscode": "^1.38.1",
     "node": ">=16.15.0"
   },
   "activationEvents": [
@@ -175,7 +175,7 @@
   "devDependencies": {
     "@types/keythereum": "^1.2.1",
     "@types/node": "^18.0.0",
-    "@types/vscode": "^1.68.1",
+    "@types/vscode": "^1.38.1",
     "prettier": "^2.1.2",
     "typescript": "^4.7.4",
     "vscode": "^1.1.37"

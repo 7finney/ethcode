@@ -6,6 +6,7 @@ import { logger } from '../lib';
 import { extractPvtKey } from './wallet';
 import { INetworkQP } from '../types';
 import { getConstructorInputs, getDeployedInputs, getFunctionInputs } from './functions';
+import { errors } from '../config/errors';
 
 const provider = ethers.providers;
 
@@ -102,7 +103,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
   try {
     const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
     if (compiledOutput == undefined)
-      throw new Error("Contract isn't selectd yet");
+      throw errors.ContractNotSelected;
 
     const abi = getAbi(compiledOutput);
     if (abi == undefined)
@@ -149,14 +150,14 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
  */
 const deployContract = async (context: vscode.ExtensionContext) => {
   try {
-    logger.success("Deploying the contract...");
+    logger.success("Deploying contract...");
 
     const myContract = await getContractFactoryWithParams(context);
     const parameters = getConstructorInputs(context);
     const contract = await myContract.deploy(...parameters);
 
     context.workspaceState.update('contractAddress', contract.address);
-    logger.success(`Contract has been deployed to ${contract.address}`);
+    logger.success(`Contract deployed to ${contract.address}`);
 
   } catch (err) {
     logger.error(err);
@@ -166,7 +167,7 @@ const deployContract = async (context: vscode.ExtensionContext) => {
 const getSignedContract = async (context: vscode.ExtensionContext, contractAddres: string): Promise<ethers.Contract> => {
   const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
   if (compiledOutput == undefined)
-    throw new Error("Contract isn't selectd yet");
+    throw errors.ContractNotSelected;
 
   const abi = getAbi(compiledOutput);
   if (abi == undefined)
@@ -200,7 +201,7 @@ const getSignedContract = async (context: vscode.ExtensionContext, contractAddre
 const getContractFactoryWithParams = async (context: vscode.ExtensionContext): Promise<ethers.ContractFactory> => {
   const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
   if (compiledOutput == undefined)
-    throw new Error("Contract isn't selectd yet");
+    throw errors.ContractNotSelected;
 
   const abi = getAbi(compiledOutput);
   if (abi == undefined)

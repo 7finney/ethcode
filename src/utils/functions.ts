@@ -124,7 +124,7 @@ const getFunctionInputs = async (context: vscode.ExtensionContext): Promise<Json
 
       const quickPick = window.createQuickPick<IFunctionQP>();
       quickPick.items = functions.map((f) => ({
-        label: `(Contract) ${contract.name} > (Function) ${f.name}(${getFunctionParmas(f)})` || '',
+        label: `${contract.name} > ${f.name}(${getFunctionParmas(f)})` || '',
         functionKey: f.name || '',
       }));
       quickPick.placeholder = 'Select function';
