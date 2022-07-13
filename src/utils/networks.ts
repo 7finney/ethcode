@@ -107,20 +107,20 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
 
     const abi = getAbi(compiledOutput);
     if (abi == undefined)
-      throw new Error("Abi is not defined");
+      throw new Error("Abi is not defined.");
 
     const abiItem = await getFunctionInputs(context);
     if (abiItem === undefined)
-      throw new Error("Please select a function to call");
+      throw new Error("Function is not defined.");
 
     const params_ = abiItem.inputs?.map((e: any) => e.value);
     const params = params_ === undefined ? [] : params_;
 
-    logger.success(`Calling the function : ${abiItem.name} of selected contract...`);
+    logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} -->`);
 
     const contractAddres = getDeployedInputs(context).address;
     if (contractAddres === undefined)
-      throw new Error("Please input deployed address of selected contract");
+      throw new Error("Enter deployed address of selected contract.");
 
     if (abiItem.stateMutability === 'view') {
       const contract = new ethers.Contract(
@@ -130,7 +130,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       );
 
       const result = await contract[abiItem.name as string](...params);
-      logger.success("Successfully called the function");
+      logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
       logger.log(JSON.stringify(result));
     } else {
       const contract = await getSignedContract(context, contractAddres);
@@ -138,7 +138,8 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       logger.success("Waiting for confirmation...");
 
       await result.wait();
-      logger.success("Mutable function was succcessfully called.");
+      logger.success("Transaction confirmed!");
+      logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
     }
   } catch (err: any) {
     logger.error(err);
@@ -171,11 +172,11 @@ const getSignedContract = async (context: vscode.ExtensionContext, contractAddre
 
   const abi = getAbi(compiledOutput);
   if (abi == undefined)
-    throw new Error("Abi is not defined");
+    throw new Error("Abi is not defined.");
 
   const byteCode = getByteCode(compiledOutput);
   if (byteCode == undefined)
-    throw new Error("ByteCode is not defined");
+    throw new Error("ByteCode is not defined.");
 
   let contract;
   if (isTestingNetwork(context)) {
@@ -205,11 +206,11 @@ const getContractFactoryWithParams = async (context: vscode.ExtensionContext): P
 
   const abi = getAbi(compiledOutput);
   if (abi == undefined)
-    throw new Error("Abi is not defined");
+    throw new Error("Abi is not defined.");
 
   const byteCode = getByteCode(compiledOutput);
   if (byteCode == undefined)
-    throw new Error("ByteCode is not defined");
+    throw new Error("ByteCode is not defined.");
 
   let myContract;
   if (isTestingNetwork(context)) {
