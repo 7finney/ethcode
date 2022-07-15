@@ -1,4 +1,4 @@
-# [Ethereum](https://ethereum.org/) plugin for [VSCode](https://code.visualstudio.com/)
+# Ethcode - Smart Contract Development & Execution Interface
 
 [![Join the chat at https://gitter.im/Ethential/ethcode](https://badges.gitter.im/Ethential/ethcode.svg)](https://gitter.im/Ethential/ethcode?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Discord chat](https://img.shields.io/discord/722971683388129290?color=7389D8&logo=discord&logoColor=ffffff)](https://discord.gg/87sE7Bm)
@@ -84,7 +84,7 @@ VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=e
 
 ![Untitled](https://user-images.githubusercontent.com/87822922/179243298-595ddcaa-86e9-42d8-9a19-d8c0b8d90e5b.png)
 
-- After selecting`Select one compiled JSON output` command
+- After selecting compiled `JSON` output
 
 1. If the contract requires any constructor parameter to be passed then extra 3 files will be created in your `artifacts → contracts → <contract name>` folder
 
