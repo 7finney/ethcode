@@ -1,119 +1,153 @@
 # [Ethereum](https://ethereum.org/) plugin for [VSCode](https://code.visualstudio.com/)
+
 [![Join the chat at https://gitter.im/Ethential/ethcode](https://badges.gitter.im/Ethential/ethcode.svg)](https://gitter.im/Ethential/ethcode?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Discord chat](https://img.shields.io/discord/722971683388129290?color=7389D8&logo=discord&logoColor=ffffff)](https://discord.gg/87sE7Bm)
 
 Ethcode is a vscode extension for compiling, deploy, execute solidity and vyper smart contracts/programs in Ethereum blockchian. It supports multiple test networks. Ethcode has inbuilt support for Remix transaction debug and solidity unit testing.
 
 ## Website
+
 https://ethcode.dev/
+
 ## Docs
+
 https://docs.ethcode.dev/
+
 ## Installation
+
 VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=ethential.ethcode
 
 ## System support
-* Linux, Mac, Windows
+
+- Linux, Mac, Windows
 
 ## Usage instructions
-### Activate plugin with activation command
-* Command: `ethcode.activate`
-* Description: Activates Ethcode extension.
 
-![Screenshot from 2019-09-28 23-04-40](https://user-images.githubusercontent.com/13261372/78938476-e9f22180-7acf-11ea-8705-5a7f755a962a.png)
+### Activate Ethcode
 
-### Load compiled JSON
-* Command: `ethcode.combined-json.load`, `ethcode.standard-json.load`
-* Description: Generate constructor inputs.
+- Keyboard shortcut: `ctrl + alt + e`
+- Command: `ethcode.activate`
+  (`ctrl + shift + P` to open command palette)
 
-![Screenshot from 2021-07-01 19-41-30](https://user-images.githubusercontent.com/13261372/124138953-c7697100-daa4-11eb-9064-5756dba06606.png)
+![Untitled](https://user-images.githubusercontent.com/87822922/179242559-30be9e9a-b961-4bb7-8879-d2fc3842d154.png)
 
-![Screenshot from 2021-07-01 19-41-44](https://user-images.githubusercontent.com/13261372/124138945-c59fad80-daa4-11eb-954a-f47bbf0d0fec.png)
+---
 
-### Create constructor inputs
-* Command: `ethcode.contract.input.create`
-* Description: Generate constructor inputs.
+### Select Ethereum Network
 
-![Screenshot from 2021-07-01 19-55-50](https://user-images.githubusercontent.com/13261372/124141448-10bac000-daa7-11eb-978e-0746a51b4a08.png)
+- Open command palette `ctrl + shift + P`
+- `Select ethereum network` > Select your preferred network
 
-This will create a `constructor-input.json` file inside your workspace.
+![Untitled](https://user-images.githubusercontent.com/87822922/179243285-ac50d6f1-3f21-4f84-b0d4-3f00bd8c1011.png)
 
-```
-[
-  {
-    "internalType": "string",
-    "name": "_greeting",
-    "type": "string",
-    "value": "Hello World!"
-  }
-]
-```
-As the JSON suggests the value for the input is provided with the `value` field.
+![Untitled](https://user-images.githubusercontent.com/87822922/179243288-791e14fd-4336-4ddc-b49e-08418359392e.png)
 
-### Load constructor inpusts
-* Command: `ethcode.contract.input.load`
-* Description: Load constructor inputs.
+---
 
-![Screenshot from 2021-07-01 20-48-35](https://user-images.githubusercontent.com/13261372/124149165-f506e800-daad-11eb-9753-eb1ff58d6ef1.png)
+### Select Ethereum Account
 
-### Build transaction
-* Command: `ethcode.transaction.build`
-* Description: Build raw transaction.
+- Open command palette `ctrl + shift + P`
+- `Select ethereum account` > Select your preferred account
 
-![Screenshot from 2021-07-01 20-06-58](https://user-images.githubusercontent.com/13261372/124142793-2bd9ff80-daa8-11eb-8a72-31e6bde86d79.png)
+![Untitled](https://user-images.githubusercontent.com/87822922/179243280-36a605e1-9702-4e48-b65d-e62f584ed4ce.png)
 
+![Untitled](https://user-images.githubusercontent.com/87822922/179243282-7f867605-ce7d-484f-96d2-a0b6ad5a3021.png)
 
-### Deploy contracts.
-* Command: `ethcode.account.sign-deploy`
-* Description: Deploy transaction to network.
+---
 
-![Screenshot from 2021-07-01 20-29-01](https://user-images.githubusercontent.com/13261372/124146369-52e60080-daab-11eb-99ff-acd46cf0d43d.png)
+### Fetch Account Balance
 
-### Create account
-* Command: `ethcode.account.create`
-* Description: Create ethereum account. You will be prompted for password. Accounts are created inside ethcode extension directory.
+- Open command palette `ctrl + shift + P`
+- `Get account balance`
 
-![Screenshot from 2021-07-01 21-00-45](https://user-images.githubusercontent.com/13261372/124150942-aa866b00-daaf-11eb-9d31-db538c140d23.png)
+![Untitled](https://user-images.githubusercontent.com/87822922/179243306-0f0b6476-8dd3-4506-8737-f9995798d933.png)
 
-![Screenshot from 2021-07-01 21-00-54](https://user-images.githubusercontent.com/13261372/124150937-a9553e00-daaf-11eb-84ab-51a546ad3742.png)
+![Untitled](https://user-images.githubusercontent.com/87822922/179243267-02a57374-7d01-40fb-b0a2-55c2cc830c40.png)
 
-### List accounts
-* Command: `ethcode.account.list`
-* Description: List ethereum accounts.
+---
 
-![Screenshot from 2021-07-01 21-21-22](https://user-images.githubusercontent.com/13261372/124153761-66489a00-dab2-11eb-9d17-a8b97468a556.png)
+### Load All Compiled JSON Output
 
-### Use account
-* Command: `ethcode.account.set`
-* Description: Choose ethereum account for use.
+- Open command palette `ctrl + shift + P`
+- `Load all compiled JSON output`
 
-![Screenshot from 2021-07-01 21-23-05](https://user-images.githubusercontent.com/13261372/124153955-a0b23700-dab2-11eb-955a-9fca6c640a0b.png)
+![Untitled](https://user-images.githubusercontent.com/87822922/179243274-a266417b-ad25-483b-83cb-0ed9a83d1c09.png)
 
-### Use network
-* Command: `ethcode.network.set`
-* Description: Choose ethereum network for use.
+---
 
-![Screenshot from 2021-07-01 21-26-05](https://user-images.githubusercontent.com/13261372/124154347-09011880-dab3-11eb-9e54-eb2952894ef8.png)
+### Select one compiled json output
 
-----------------------------------------------------------------------------
+- Open command palette `ctrl + shift + P`
+- `Select one compiled JSON output`
+
+![Untitled](https://user-images.githubusercontent.com/87822922/179243295-cf801c31-bff0-4e8b-9d9f-e01078a7ad86.png)
+
+![Untitled](https://user-images.githubusercontent.com/87822922/179243298-595ddcaa-86e9-42d8-9a19-d8c0b8d90e5b.png)
+
+- After selecting`Select one compiled JSON output` command
+
+1. If the contract requires any constructor parameter to be passed then extra 3 files will be created in your `artifacts → contracts → <contract name>` folder
+
+   `<contract name>_constructor-input.json`
+
+   `<contract name>_deployed-address.json`
+
+   `<contract name>_functions_input.json`
+
+1. If the contract does not require any constructor parameter to be passed extra then 2 files will be created in your `artifacts → contracts → <contract name>` folder.
+
+   `<contract name>_deployed-address.json`
+
+   `<contract name>_functions_input.json`
+
+---
+
+### Deploy a smart contract
+
+- Open command palette `ctrl + shift + P`
+- `Deploy a Contract`
+- Enter password
+- After successful contract deployment, you will get deployed contract address
+
+![contract address.png](https://user-images.githubusercontent.com/87822922/179243300-29128fb5-2c5d-4898-843b-280a942d08a2.png)
+
+- paste this address in `artifacts → contracts → <contract name> → <contract name>_deployed-address.json` file.
+
+---
+
+### Contract call
+
+- Open command palette `ctrl + shift + P`
+- `Contract call` All Functions or methods of the contract will be shown in the list
+- select preferred method
+
+![call.png](https://user-images.githubusercontent.com/87822922/179247368-0ea2fb12-fcfa-41f3-bfe8-834144648421.png)
+
+## Note: Before selecting methods you should fill required values of that method in `artifacts → contracts → <contract name> → <contract name>_functions_input.json` file.
 
 ## [Vyper](https://vyper.readthedocs.io/) support
+
 Please install vyper compiler for compiling vyper contracts in ethcode. Instructions for vyper compiler installation can be found on official vyper documentation - https://vyper.readthedocs.io/en/latest/installing-vyper.html
 
 ## Help
+
 Please help ethcode developers continue their work.
 
 Ethereum donation address: [0xd22fE4aEFed0A984B1165dc24095728EE7005a36](https://etherscan.io/address/0xd22fE4aEFed0A984B1165dc24095728EE7005a36)
 
 ## Development
+
 ### Run following commands in the terminal
 
 ```shell
 yarn install
 yarn run build
 ```
+
 And then press F5, in Extension Development Host session, run `Ethereum: Solidity compile` command from command palette.
 
 ### Generate Typescript types for protobuf
+
 ```shell
 PROTOC_GEN_TS_PATH="./node_modules/.bin/protoc-gen-ts"
 OUT_DIR="./src/"
@@ -121,14 +155,17 @@ protoc --plugin="protoc-gen-ts=${PROTOC_GEN_TS_PATH}" --js_out="import_style=com
 ```
 
 ## Packaging
+
 ```shell
 vsce package --yarn
 ```
 
 ## Publishing
+
 Step 1: Login to https://dev.azure.com/0mkar/ and generate PAT
 
 Step 2:
+
 ```
 vsce login ethential
 vsce publish 0.1.4 -p <access token> --yarn
@@ -139,16 +176,18 @@ git push origin v0.1.4
 
 Things we did on top of Create React App TypeScript template
 
-* We inline `index.html` content in `src/extension.ts` when creating the webview
-* We set strict security policy for accessing resources in the webview.
-  * Only resources in `/build` can be accessed
-  * Only resources whose scheme is `vscode-resource` can be accessed.
-* For all resources we are going to use in the webview, we change their schemes to `vscode-resource`
-* Since we only allow local resources, absolute path for styles/images (e.g., `/static/media/logo.svg`) will not work. We add a `.env` file which sets `PUBLIC_URL` to `./` and after bundling, resource urls will be relative.
-* We add baseUrl `<base href="${vscode.Uri.file(path.join(this._extensionPath, 'build')).with({ scheme: 'vscode-resource' })}/">` and then all relative paths work.
+- We inline `index.html` content in `src/extension.ts` when creating the webview
+- We set strict security policy for accessing resources in the webview.
+  - Only resources in `/build` can be accessed
+  - Only resources whose scheme is `vscode-resource` can be accessed.
+- For all resources we are going to use in the webview, we change their schemes to `vscode-resource`
+- Since we only allow local resources, absolute path for styles/images (e.g., `/static/media/logo.svg`) will not work. We add a `.env` file which sets `PUBLIC_URL` to `./` and after bundling, resource urls will be relative.
+- We add baseUrl `<base href="${vscode.Uri.file(path.join(this._extensionPath, 'build')).with({ scheme: 'vscode-resource' })}/">` and then all relative paths work.
 
 ## Code formatting
+
 Add following lines in vscode `settings.json`
+
 ```
 "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
 "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
@@ -156,7 +195,8 @@ Add following lines in vscode `settings.json`
 ```
 
 ## References
-* https://github.com/Microsoft/vscode-go/wiki/Building,-Debugging-and-Sideloading-the-extension-in-Visual-Studio-Code
-* https://code.visualstudio.com/api/working-with-extensions/bundling-extension
-* https://stackoverflow.com/questions/50885128/how-can-i-debug-a-child-process-fork-process-from-visual-studio-code
-* https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_automatically-attach-debugger-to-nodejs-subprocesses
+
+- https://github.com/Microsoft/vscode-go/wiki/Building,-Debugging-and-Sideloading-the-extension-in-Visual-Studio-Code
+- https://code.visualstudio.com/api/working-with-extensions/bundling-extension
+- https://stackoverflow.com/questions/50885128/how-can-i-debug-a-child-process-fork-process-from-visual-studio-code
+- https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_automatically-attach-debugger-to-nodejs-subprocesses
