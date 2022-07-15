@@ -123,7 +123,7 @@ VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=e
 
 ![call.png](https://user-images.githubusercontent.com/87822922/179247368-0ea2fb12-fcfa-41f3-bfe8-834144648421.png)
 
-## Note: Before selecting methods you should fill required values of that method in `artifacts → contracts → <contract name> → <contract name>_functions_input.json` file.
+#### Note: Before selecting methods you should fill required values of that method in `artifacts → contracts → <contract name> → <contract name>_functions_input.json` file.
 
 ## [Vyper](https://vyper.readthedocs.io/) support
 
