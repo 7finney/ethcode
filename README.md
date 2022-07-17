@@ -161,7 +161,7 @@ vsce package --yarn
 
 ## Publishing
 
-Step 1: Login to https://dev.azure.com/0mkar/ and generate PAT
+Step 1: Login to https://dev.azure.com/ and generate PAT for your user or organization
 
 Step 2:
 
