@@ -1,4 +1,3 @@
-import * as abiHelpers from './abi';
-import * as ast from './ast';
+import { Logger } from "./logger";
 
-export { abiHelpers, ast };
+export const logger = new Logger();

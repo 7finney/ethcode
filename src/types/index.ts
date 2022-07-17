@@ -1,1 +1,2 @@
-export * from './solidityTypes';
+export * from './output';
+export * from './types';
