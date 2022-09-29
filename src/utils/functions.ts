@@ -9,6 +9,8 @@ import { logger } from '../lib';
 import { errors } from '../config';
 import { createDeployedFile, writeConstructor, writeFunction } from '../lib/file';
 
+const axios = require('axios');
+
 const createDeployed = (contract: CompiledJSONOutput) => {
   const fullPath = getDeployedFullPath(contract);
   if (fs.existsSync(fullPath)) {
@@ -188,11 +190,50 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
   writeConstructor(getConstructorInputFullPath(contract), contract, inputs);
 }
 
+const getGasEstimates = async (condition: string) => {
+  let estimate: any = undefined;
+
+  axios
+    .get('https://api.blocknative.com/gasprices/blockprices', {
+      mode: "cors",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers":
+          "Origin, X-Requested-With, Content-Type, Accept",
+        "Authorization": "ee5d697e-3c35-4482-a842-aa8316b8bb6a"
+      },
+    })
+    .then((res: any) => {
+      if (res.status === 200) {
+        switch (condition) {
+          case "Low": {
+            estimate = res.data.blockPrices[0].estimatedPrices.find((x: any) => x.confidence === 70)
+            break;
+          }
+          case "Medium": {
+            estimate = res.data.blockPrices[0].estimatedPrices.find((x: any) => x.confidence === 90)
+            break;
+          }
+          case "High": {
+            estimate = res.data.blockPrices[0].estimatedPrices.find((x: any) => x.confidence === 99)
+            break;
+          }
+        }
+        return estimate
+      }
+    })
+    .catch((error: any) => {
+      console.error(error);
+    });
+  return "";
+}
+
 export {
   createFunctionInput,
   createDeployed,
   createConstructorInput,
   getConstructorInputs,
   getFunctionInputs,
-  getDeployedInputs
+  getDeployedInputs,
+  getGasEstimates,
 }

@@ -20,6 +20,19 @@ export interface RemixCompiledOutput {
   abi: ReadonlyArray<JsonFragment>;
 }
 
+interface GasEstimate {
+  confidence: number,
+  maxFeePerGas: number,
+  maxPriorityFeePerGas: number,
+  price: number
+}
+
+export interface GasEstimateOutput {
+  low: GasEstimate,
+  medium: GasEstimate,
+  high: GasEstimate
+}
+
 export interface CompiledJSONOutput {
   name?: string; // contract name
   path?: string; // local path of the contract

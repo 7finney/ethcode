@@ -28,7 +28,8 @@
     "onCommand:ethcode.compiled-json.load",
     "onCommand:ethcode.compiled-json.load.all",
     "onCommand:ethcode.compiled-json.select",
-    "onCommand:ethcode.network.select"
+    "onCommand:ethcode.network.select",
+    "onCommand:ethcode.account.import"
   ],
   "main": "./build/src/extension.js",
   "extensionDependencies": [
@@ -131,6 +132,14 @@
       {
         "command": "ethcode.contract.call",
         "title": "Ethcode: Contract call"
+      },
+      {
+        "command": "ethcode.transaction.gas.set",
+        "title": "Ethcode: Set Transaction Gas"
+      },
+      {
+        "command": "ethcode.account.import",
+        "title": "Ethcode: Import Account"
       }
     ],
     "keybindings": [
@@ -164,6 +173,7 @@
   "dependencies": {
     "@types/randombytes": "^2.0.0",
     "@types/underscore": "^1.11.4",
+    "axios": "^0.27.2",
     "bn.js": "^5.2.1",
     "ethers": "^5.6.9",
     "keythereum": "^1.2.0",
