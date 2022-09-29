@@ -12,7 +12,7 @@ import {
   updateSelectedNetwork,
 } from './utils/networks';
 import { logger } from './lib';
-import { createKeyPair, deleteKeyPair, selectAccount, importKeyPair } from './utils/wallet';
+import { createKeyPair, deleteKeyPair, selectAccount, importKeyPair, exportKeyPair } from './utils/wallet';
 import { parseBatchCompiledJSON, parseCompiledJSONPayload, selectContract } from './utils';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -89,8 +89,14 @@ export async function activate(context: vscode.ExtensionContext) {
       setTransactionGas(context)
     }),
 
+    //Import Account
     commands.registerCommand('ethcode.account.import', async() => {
       importKeyPair(context)
+    }),
+
+    //Export Account
+    commands.registerCommand('ethcode.account.export', async() => {
+      exportKeyPair(context);
     }),
 
     // Activate
