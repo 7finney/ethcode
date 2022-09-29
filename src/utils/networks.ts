@@ -5,7 +5,7 @@ import { CompiledJSONOutput, GasEstimateOutput, getAbi, getByteCode } from '../t
 import { logger } from '../lib';
 import { extractPvtKey } from './wallet';
 import { INetworkQP } from '../types';
-import { getConstructorInputs, getDeployedInputs, getFunctionInputs, getGasEstimates } from './functions';
+import { getConstructorInputs, getDeployedInputs, getEtherscanURL, getFunctionInputs, getGasEstimates } from './functions';
 import { errors } from '../config/errors';
 import { selectContract } from './contracts';
 
@@ -182,13 +182,11 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       await result.wait();
       logger.success("Transaction confirmed!");
       logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
+      logger.success(`You can see detail of this transaction here. ${getEtherscanURL(context)}/tx/${result.hash}`)
     }
   } catch (err: any) {
     logger.error(err);
   }
-}
-
-const callContract = async (context: vscode.ExtensionContext) => {
 }
 
 /**
