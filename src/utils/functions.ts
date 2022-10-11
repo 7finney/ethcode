@@ -8,6 +8,7 @@ import { CompiledJSONOutput, ConstructorInputValue, getAbi, IFunctionQP } from '
 import { logger } from '../lib';
 import { errors } from '../config';
 import { createDeployedFile, writeConstructor, writeFunction } from '../lib/file';
+import { getSelectedNetwork } from './networks';
 
 const createDeployed = (contract: CompiledJSONOutput) => {
   const fullPath = getDeployedFullPath(contract);
@@ -93,6 +94,42 @@ const getDeployedInputs = (context: vscode.ExtensionContext) => {
   } catch (e) {
     return undefined;
   }
+}
+
+const getEtherscanURL = (context: vscode.ExtensionContext) => {
+  let url = ""
+  switch(getSelectedNetwork(context)) {
+    case "Ethereum Mainnet": {
+      url = "https://etherscan.io";
+      break;
+    }
+    case "Rinkeby Testnet": {
+      url = "https://rinkeby.etherscan.io";
+      break;
+    }
+    case "Ganache Testnet": {
+      url = "https://etherscan.io";
+      break;
+    }
+    case "Hardhat Testnet": {
+      url = "https://etherscan.io";
+      break;
+    }
+    case "Kovan Testnet": {
+      url = "https://kovan.etherscan.io";
+      break;
+    }
+    case "Ropsten Testnet": {
+      url = "https://ropsten.etherscan.io";
+      break;
+    }
+    case "Goerli Testnet": {
+      url = "https://goerli.etherscan.io";
+      break;
+    }
+  }
+
+  return url;
 }
 
 const getConstructorInputs = (context: vscode.ExtensionContext) => {
@@ -194,5 +231,6 @@ export {
   createConstructorInput,
   getConstructorInputs,
   getFunctionInputs,
-  getDeployedInputs
+  getDeployedInputs,
+  getEtherscanURL
 }
