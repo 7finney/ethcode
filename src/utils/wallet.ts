@@ -90,6 +90,42 @@ const deleteKeyPair = async (context: vscode.ExtensionContext) => {
   }
 }
 
+//Import Key pair
+
+const importKeyPair = async (context: vscode.ExtensionContext) => {
+  try {
+    const options: vscode.OpenDialogOptions = {
+      canSelectMany: false,
+      openLabel: "Open",
+      filters: {
+        "All files": ["*"],
+      },
+    };
+
+    vscode.window.showOpenDialog(options).then((fileUri) => {
+      if (fileUri && fileUri[0]) {
+        const arrFilePath = fileUri[0].fsPath.split("\\");
+        const file = arrFilePath[arrFilePath.length - 1];
+        const arr = file.split("--");
+        const address = toChecksumAddress(`0x${arr[arr.length - 1]}`);
+
+        fs.copyFile(
+          fileUri[0].fsPath,
+          `${context.extensionPath}/keystore/${file}`,
+          (err) => {
+            if (err) throw err;
+          }
+        );
+
+        logger.success(`Account ${address} is successfully imported!`);
+        listAddresses(context, context.extensionPath);
+      }
+    });
+  } catch (error) {
+    logger.error(error);
+  }
+};
+
 // extract privateKey against address
 const extractPvtKey = async (keyStorePath: string, address: string) => {
   try {
@@ -140,5 +176,6 @@ export {
   createKeyPair,
   deleteKeyPair,
   extractPvtKey,
-  selectAccount
+  selectAccount,
+  importKeyPair
 }
