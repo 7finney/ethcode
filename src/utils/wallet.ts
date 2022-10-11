@@ -107,6 +107,71 @@ const extractPvtKey = async (keyStorePath: string, address: string) => {
   }
 }
 
+const exportKeyPair = async (context: vscode.ExtensionContext) => {
+  try {
+    const addresses = await listAddresses(context, context.extensionPath);
+
+    const quickPick = window.createQuickPick();
+  
+    quickPick.items = addresses.map((account) => ({
+      label: account,
+      description: isTestingNetwork(context)
+        ? getSelectedNetwork(context)
+        : "Local account",
+    }));
+  
+    quickPick.onDidChangeActive(() => {
+      quickPick.placeholder = "Select account";
+    });
+  
+    quickPick.onDidChangeSelection((selection) => {
+      if (selection[0]) {
+        const { label } = selection[0];
+
+        const files = fs.readdirSync(`${context.extensionPath}/keystore`);
+        const address = label.slice(2, label.length)
+        let selectedFile = "";
+        files.map((file: string) => {
+          const arr = file.split("--");
+          if(address === arr[arr.length - 1]) {
+            selectedFile = file;
+          }
+        })
+        
+        const options: vscode.OpenDialogOptions = {
+          canSelectMany: false,
+          canSelectFolders: true,
+          openLabel: "Save",
+          filters: {
+            "All files": ["*"],
+          },
+        };
+    
+        vscode.window.showOpenDialog(options).then((fileUri) => {
+          if (fileUri && fileUri[0]) {
+            logger.log('path: ', `${fileUri[0].fsPath}${selectedFile}`)
+            fs.copyFile(
+              `${context.extensionPath}\\keystore\\${selectedFile}`,
+              `${fileUri[0].fsPath}${selectedFile}`,
+              (err) => {
+                if (err) throw err;
+              }
+            );
+    
+            logger.success(`Account ${address} is successfully exported!`);
+          }
+        });
+        quickPick.dispose();
+      }
+    });
+  
+    quickPick.onDidHide(() => quickPick.dispose());
+    quickPick.show();
+  } catch (error) {
+    logger.error(error);
+  }
+}
+
 const selectAccount = async (context: vscode.ExtensionContext) => {
 
   const addresses = await listAddresses(context, context.extensionPath);
@@ -138,6 +203,7 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
 export {
   listAddresses,
   createKeyPair,
+  exportKeyPair,
   deleteKeyPair,
   extractPvtKey,
   selectAccount

@@ -28,7 +28,8 @@
     "onCommand:ethcode.compiled-json.load",
     "onCommand:ethcode.compiled-json.load.all",
     "onCommand:ethcode.compiled-json.select",
-    "onCommand:ethcode.network.select"
+    "onCommand:ethcode.network.select",
+    "onCommand:ethcode.account.export"
   ],
   "main": "./build/src/extension.js",
   "extensionDependencies": [
@@ -131,6 +132,10 @@
       {
         "command": "ethcode.contract.call",
         "title": "Ethcode: Contract call"
+      },
+      {
+        "command": "ethcode.account.export",
+        "title": "Ethcode: Export Account"
       }
     ],
     "keybindings": [
