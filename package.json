@@ -28,8 +28,7 @@
     "onCommand:ethcode.compiled-json.load",
     "onCommand:ethcode.compiled-json.load.all",
     "onCommand:ethcode.compiled-json.select",
-    "onCommand:ethcode.network.select",
-    "onCommand:ethcode.account.import"
+    "onCommand:ethcode.network.select"
   ],
   "main": "./build/src/extension.js",
   "extensionDependencies": [
@@ -136,10 +135,6 @@
       {
         "command": "ethcode.transaction.gas.set",
         "title": "Ethcode: Set Transaction Gas"
-      },
-      {
-        "command": "ethcode.account.import",
-        "title": "Ethcode: Import Account"
       }
     ],
     "keybindings": [
