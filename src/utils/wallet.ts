@@ -102,6 +102,8 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
       },
     };
 
+    const addresses = await listAddresses(context, context.extensionPath);
+
     vscode.window.showOpenDialog(options).then((fileUri) => {
       if (fileUri && fileUri[0]) {
         const arrFilePath = fileUri[0].fsPath.split("\\");
@@ -109,16 +111,22 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
         const arr = file.split("--");
         const address = toChecksumAddress(`0x${arr[arr.length - 1]}`);
 
-        fs.copyFile(
-          fileUri[0].fsPath,
-          `${context.extensionPath}/keystore/${file}`,
-          (err) => {
-            if (err) throw err;
-          }
-        );
+        const already = addresses.find((element: string) => toChecksumAddress(element) === address)
 
-        logger.success(`Account ${address} is successfully imported!`);
-        listAddresses(context, context.extensionPath);
+        if(already !== undefined) {
+          logger.log(`Account ${address} is already exist.`)
+        } else {
+          fs.copyFile(
+            fileUri[0].fsPath,
+            `${context.extensionPath}/keystore/${file}`,
+            (err) => {
+              if (err) throw err;
+            }
+          );
+  
+          logger.success(`Account ${address} is successfully imported!`);
+          listAddresses(context, context.extensionPath);
+        }
       }
     });
   } catch (error) {
