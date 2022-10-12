@@ -154,39 +154,41 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
 
     const gasCondition = (await context.workspaceState.get('gas')) as string;
 
-    const gasEstimate: EstimateGas | null = (await getGasEstimates(gasCondition));
+    const gasEstimate = (await getGasEstimates(gasCondition)) as any;
 
-    if(gasEstimate === null) {
-      logger.log('Gas estimation is not fetched from server.')
+    if (abiItem.stateMutability === 'view') {
+      selectContract(context);
+
+      const contract = new ethers.Contract(
+        contractAddres,
+        abi,
+        getSelectedProvider(context),
+      );
+
+      const result = await contract[abiItem.name as string](...params);
+      logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
+      logger.log(JSON.stringify(result));
     } else {
-      if (abiItem.stateMutability === 'view') {
-        selectContract(context);
-  
-        const contract = new ethers.Contract(
-          contractAddres,
-          abi,
-          getSelectedProvider(context),
-        );
-  
-        const result = await contract[abiItem.name as string](...params);
-        logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
-        logger.log(JSON.stringify(result));
+      const contract = await getSignedContract(context, contractAddres);
+
+      let result;
+
+      if (abiItem.stateMutability === 'nonpayable') {
+        result = await contract[abiItem.name as string](...params);
       } else {
-        const contract = await getSignedContract(context, contractAddres);
-  
         const found: any = abiItem.inputs?.find((e: any) => e.type === "uint256")
-  
-        const result = await contract[abiItem.name as string](...params, {
+
+        result = await contract[abiItem.name as string](...params, {
           value: found.value,
           gasPrice: (gasEstimate as EstimateGas).price
         });
-  
-        logger.success("Waiting for confirmation...");
-  
-        await result.wait();
-        logger.success("Transaction confirmed!");
-        logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
       }
+
+      logger.success("Waiting for confirmation...");
+
+      await result.wait();
+      logger.success("Transaction confirmed!");
+      logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
     }
   } catch (err: any) {
     logger.error(err);

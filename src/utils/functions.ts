@@ -239,7 +239,6 @@ const getGasEstimates = async (condition: string) => {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers":
           "Origin, X-Requested-With, Content-Type, Accept",
-        Authorization: "ee5d697e-3c35-4482-a842-aa8316b8bb6a",
       },
     })
     .then((res: any) => {
@@ -248,29 +247,31 @@ const getGasEstimates = async (condition: string) => {
           case "Low": {
             estimate = res.data.blockPrices[0].estimatedPrices.find(
               (x: any) => x.confidence === 70
-            );
+            ) as EstimateGas;
             break;
           }
           case "Medium": {
             estimate = res.data.blockPrices[0].estimatedPrices.find(
               (x: any) => x.confidence === 90
-            );
+            ) as EstimateGas;
             break;
           }
           case "High": {
             estimate = res.data.blockPrices[0].estimatedPrices.find(
               (x: any) => x.confidence === 99
-            );
+            ) as EstimateGas;
             break;
           }
         }
+
         return estimate;
       }
     })
     .catch((error: any) => {
       console.error(error);
     });
-    return null;
+
+  return "";
 };
 
 export {
