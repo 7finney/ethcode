@@ -71,6 +71,13 @@ export interface ConstructorInputValue extends JsonFragment {
   value: string;
 }
 
+export interface EstimateGas {
+  confidence: number;
+  price: number;
+  maxPriorityFeePerGas: number;
+  maxFeePerGas: number;
+}
+
 export interface TxReceipt {
   transactionHash: string;
   transactionIndex: number;
