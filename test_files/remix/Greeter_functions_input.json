@@ -1,0 +1,31 @@
+[
+  {
+    "name": "getGreetPublic",
+    "stateMutability": "view",
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_greeting",
+        "type": "string",
+        "value": "asdf"
+      }
+    ]
+  },
+  {
+    "name": "greet",
+    "stateMutability": "view",
+    "inputs": []
+  },
+  {
+    "name": "setGreetPublic",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_greeting",
+        "type": "string",
+        "value": ""
+      }
+    ]
+  }
+]

@@ -131,6 +131,10 @@
       {
         "command": "ethcode.contract.call",
         "title": "Ethcode: Contract call"
+      },
+      {
+        "command": "ethcode.transaction.gas.set",
+        "title": "Ethcode: Set Transaction Gas"
       }
     ],
     "keybindings": [
@@ -164,6 +168,7 @@
   "dependencies": {
     "@types/randombytes": "^2.0.0",
     "@types/underscore": "^1.11.4",
+    "axios": "^0.27.2",
     "bn.js": "^5.2.1",
     "ethers": "^5.6.9",
     "keythereum": "^1.2.0",

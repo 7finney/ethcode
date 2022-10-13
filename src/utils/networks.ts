@@ -1,12 +1,15 @@
 import { ethers } from 'ethers';
 import * as vscode from 'vscode';
 import { window } from 'vscode';
-import { CompiledJSONOutput, getAbi, getByteCode } from '../types/output';
+import { CompiledJSONOutput, GasEstimateOutput, getAbi, getByteCode } from '../types/output';
 import { logger } from '../lib';
 import { extractPvtKey } from './wallet';
-import { INetworkQP } from '../types';
-import { getConstructorInputs, getDeployedInputs, getEtherscanURL, getFunctionInputs } from './functions';
+import { INetworkQP, EstimateGas } from '../types';
+import { getConstructorInputs, getDeployedInputs, getFunctionInputs, getGasEstimates } from './functions';
+
 import { errors } from '../config/errors';
+import { selectContract } from './contracts';
+import { stringify } from 'querystring';
 
 const provider = ethers.providers;
 
@@ -99,9 +102,37 @@ const isTestingNetwork = (context: vscode.ExtensionContext) => {
   return false;
 }
 
+const setTransactionGas = async (context: vscode.ExtensionContext) => {
+  const quickPick = window.createQuickPick();
+
+  const gasConditions = ["Low", "Medium", "High"];
+
+  quickPick.items = gasConditions.map((condition) => ({
+    label: condition,
+  }));
+
+  quickPick.onDidChangeActive(() => {
+    quickPick.placeholder = 'Select Gas estimation';
+  });
+
+  quickPick.onDidChangeSelection((selection) => {
+    if (selection[0]) {
+      const { label } = selection[0];
+      context.workspaceState.update('gas', label);
+      logger.success(`${label} gas is selected.`);
+      quickPick.dispose();
+    }
+  });
+
+  quickPick.onDidHide(() => quickPick.dispose());
+  quickPick.show();
+}
+
 const callContractMethod = async (context: vscode.ExtensionContext) => {
+
   try {
     const compiledOutput = (await context.workspaceState.get('contract')) as CompiledJSONOutput;
+
     if (compiledOutput == undefined)
       throw errors.ContractNotSelected;
 
@@ -122,7 +153,13 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
     if (contractAddres === undefined)
       throw new Error("Enter deployed address of selected contract.");
 
+    const gasCondition = (await context.workspaceState.get('gas')) as string;
+
+    const gasEstimate = (await getGasEstimates(gasCondition)) as any;
+
     if (abiItem.stateMutability === 'view') {
+      selectContract(context);
+
       const contract = new ethers.Contract(
         contractAddres,
         abi,
@@ -135,7 +172,20 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       logger.success(`You can see detail of this transaction here. ${getEtherscanURL(context)}/tx/${result.hash}`)
     } else {
       const contract = await getSignedContract(context, contractAddres);
-      const result = await contract[abiItem.name as string](...params);
+
+      let result;
+
+      if (abiItem.stateMutability === 'nonpayable') {
+        result = await contract[abiItem.name as string](...params);
+      } else {
+        const found: any = abiItem.inputs?.find((e: any) => e.type === "uint256")
+
+        result = await contract[abiItem.name as string](...params, {
+          value: found.value,
+          gasPrice: (gasEstimate as EstimateGas).price
+        });
+      }
+
       logger.success("Waiting for confirmation...");
 
       await result.wait();
@@ -157,6 +207,7 @@ const deployContract = async (context: vscode.ExtensionContext) => {
 
     const myContract = await getContractFactoryWithParams(context);
     const parameters = getConstructorInputs(context);
+
     const contract = await myContract.deploy(...parameters);
 
     context.workspaceState.update('contractAddress', contract.address);
@@ -240,5 +291,6 @@ export {
   displayBalance,
   callContractMethod,
   deployContract,
-  isTestingNetwork
+  isTestingNetwork,
+  setTransactionGas
 };

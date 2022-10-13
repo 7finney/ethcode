@@ -8,6 +8,7 @@ import {
   callContractMethod,
   deployContract,
   displayBalance,
+  setTransactionGas,
   updateSelectedNetwork,
 } from './utils/networks';
 import { logger } from './lib';
@@ -83,16 +84,10 @@ export async function activate(context: vscode.ExtensionContext) {
       callContractMethod(context);
     }),
 
-    // Set custom gas estimate
-    // commands.registerCommand('ethcode.transaction.gas.set', async () => {
-      // const gasInp: InputBoxOptions = {
-      //   ignoreFocusOut: false,
-      //   placeHolder: 'Enter custom gas',
-      // };
-
-      // const gas = await window.showInputBox(gasInp);
-      // context.workspaceState.update('gasEstimate', gas);
-    // }),
+    //Set custom gas estimate
+    commands.registerCommand('ethcode.transaction.gas.set', async () => {
+      setTransactionGas(context)
+    }),
 
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
