@@ -6,6 +6,7 @@ import { logger } from '../lib';
 import { extractPvtKey } from './wallet';
 import { INetworkQP, EstimateGas } from '../types';
 import { getConstructorInputs, getDeployedInputs, getFunctionInputs, getGasEstimates } from './functions';
+
 import { errors } from '../config/errors';
 import { selectContract } from './contracts';
 import { stringify } from 'querystring';
@@ -168,6 +169,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       const result = await contract[abiItem.name as string](...params);
       logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
       logger.log(JSON.stringify(result));
+      logger.success(`You can see detail of this transaction here. ${getEtherscanURL(context)}/tx/${result.hash}`)
     } else {
       const contract = await getSignedContract(context, contractAddres);
 
@@ -189,6 +191,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       await result.wait();
       logger.success("Transaction confirmed!");
       logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
+      logger.success(`You can see detail of this transaction here. ${getEtherscanURL(context)}/tx/${result.hash}`)
     }
   } catch (err: any) {
     logger.error(err);

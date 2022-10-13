@@ -151,6 +151,7 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
       const { label } = selection[0];
       context.workspaceState.update("account", label);
       logger.success(`Account ${label} is selected.`);
+      logger.success(`You can see detail of this account here. ${getEtherscanURL(context)}/address/${label}`)
       quickPick.dispose();
     }
   });

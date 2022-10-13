@@ -119,6 +119,42 @@ const getDeployedInputs = (context: vscode.ExtensionContext) => {
   }
 };
 
+const getEtherscanURL = (context: vscode.ExtensionContext) => {
+  let url = ""
+  switch(getSelectedNetwork(context)) {
+    case "Ethereum Mainnet": {
+      url = "https://etherscan.io";
+      break;
+    }
+    case "Rinkeby Testnet": {
+      url = "https://rinkeby.etherscan.io";
+      break;
+    }
+    case "Ganache Testnet": {
+      url = "https://etherscan.io";
+      break;
+    }
+    case "Hardhat Testnet": {
+      url = "https://etherscan.io";
+      break;
+    }
+    case "Kovan Testnet": {
+      url = "https://kovan.etherscan.io";
+      break;
+    }
+    case "Ropsten Testnet": {
+      url = "https://ropsten.etherscan.io";
+      break;
+    }
+    case "Goerli Testnet": {
+      url = "https://goerli.etherscan.io";
+      break;
+    }
+  }
+
+  return url;
+}
+
 const getConstructorInputs = (context: vscode.ExtensionContext) => {
   try {
     const contract = context.workspaceState.get(
