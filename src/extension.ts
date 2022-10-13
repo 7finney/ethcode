@@ -8,6 +8,7 @@ import {
   callContractMethod,
   deployContract,
   displayBalance,
+  setTransactionGas,
   updateSelectedNetwork,
 } from './utils/networks';
 import { logger } from './lib';
