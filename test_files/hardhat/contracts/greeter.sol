@@ -27,4 +27,8 @@ contract Greeter {
     function setGreetPublic(string memory _greeting) public {
         greeting = _greeting;
     }
+
+    function sendEther(address payable _to, uint amount) public payable {
+        _to.transfer(amount);
+    }
 }
