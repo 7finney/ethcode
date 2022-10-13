@@ -5,7 +5,7 @@ import { CompiledJSONOutput, getAbi, getByteCode } from '../types/output';
 import { logger } from '../lib';
 import { extractPvtKey } from './wallet';
 import { INetworkQP } from '../types';
-import { getConstructorInputs, getDeployedInputs, getFunctionInputs } from './functions';
+import { getConstructorInputs, getDeployedInputs, getEtherscanURL, getFunctionInputs } from './functions';
 import { errors } from '../config/errors';
 
 const provider = ethers.providers;
@@ -132,6 +132,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       const result = await contract[abiItem.name as string](...params);
       logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
       logger.log(JSON.stringify(result));
+      logger.success(`You can see detail of this transaction here. ${getEtherscanURL(context)}/tx/${result.hash}`)
     } else {
       const contract = await getSignedContract(context, contractAddres);
       const result = await contract[abiItem.name as string](...params);
@@ -140,6 +141,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       await result.wait();
       logger.success("Transaction confirmed!");
       logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`);
+      logger.success(`You can see detail of this transaction here. ${getEtherscanURL(context)}/tx/${result.hash}`)
     }
   } catch (err: any) {
     logger.error(err);
