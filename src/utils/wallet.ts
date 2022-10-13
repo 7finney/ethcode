@@ -149,10 +149,10 @@ const exportKeyPair = async (context: vscode.ExtensionContext) => {
     
         vscode.window.showOpenDialog(options).then((fileUri) => {
           if (fileUri && fileUri[0]) {
-            logger.log('path: ', `${fileUri[0].fsPath}${selectedFile}`)
+            logger.log('path: ', `${fileUri[0].fsPath}\\${selectedFile}\\${selectedFile}`)
             fs.copyFile(
               `${context.extensionPath}\\keystore\\${selectedFile}`,
-              `${fileUri[0].fsPath}${selectedFile}`,
+              `${fileUri[0].fsPath}\\${selectedFile}`,
               (err) => {
                 if (err) throw err;
               }
