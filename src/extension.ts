@@ -12,7 +12,7 @@ import {
   updateSelectedNetwork,
 } from './utils/networks';
 import { logger } from './lib';
-import { createKeyPair, deleteKeyPair, selectAccount } from './utils/wallet';
+import { createKeyPair, deleteKeyPair, selectAccount, exportKeyPair } from './utils/wallet';
 import { parseBatchCompiledJSON, parseCompiledJSONPayload, selectContract } from './utils';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -84,10 +84,21 @@ export async function activate(context: vscode.ExtensionContext) {
       callContractMethod(context);
     }),
 
-    //Set custom gas estimate
-    commands.registerCommand('ethcode.transaction.gas.set', async () => {
-      setTransactionGas(context)
+    //Export Account
+    commands.registerCommand('ethcode.account.export', async() => {
+      exportKeyPair(context);
     }),
+
+    // Set custom gas estimate
+    // commands.registerCommand('ethcode.transaction.gas.set', async () => {
+      // const gasInp: InputBoxOptions = {
+      //   ignoreFocusOut: false,
+      //   placeHolder: 'Enter custom gas',
+      // };
+
+      // const gas = await window.showInputBox(gasInp);
+      // context.workspaceState.update('gasEstimate', gas);
+    // }),
 
     // Activate
     commands.registerCommand('ethcode.activate', async () => {

@@ -28,7 +28,8 @@
     "onCommand:ethcode.compiled-json.load",
     "onCommand:ethcode.compiled-json.load.all",
     "onCommand:ethcode.compiled-json.select",
-    "onCommand:ethcode.network.select"
+    "onCommand:ethcode.network.select",
+    "onCommand:ethcode.account.export"
   ],
   "main": "./build/src/extension.js",
   "extensionDependencies": [
@@ -133,8 +134,8 @@
         "title": "Ethcode: Contract call"
       },
       {
-        "command": "ethcode.transaction.gas.set",
-        "title": "Ethcode: Set Transaction Gas"
+        "command": "ethcode.account.export",
+        "title": "Ethcode: Export Account"
       }
     ],
     "keybindings": [
