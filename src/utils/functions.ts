@@ -18,6 +18,7 @@ import {
   writeConstructor,
   writeFunction,
 } from "../lib/file";
+import { getSelectedNetwork } from "./networks";
 
 const axios = require("axios");
 
@@ -119,7 +120,7 @@ const getDeployedInputs = (context: vscode.ExtensionContext) => {
   }
 };
 
-const getEtherscanURL = (context: vscode.ExtensionContext) => {
+export const getEtherscanURL = (context: vscode.ExtensionContext) => {
   let url = ""
   switch(getSelectedNetwork(context)) {
     case "Ethereum Mainnet": {

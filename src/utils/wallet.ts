@@ -14,6 +14,7 @@ import {
   getSelectedProvider,
   isTestingNetwork,
 } from "./networks";
+import { getEtherscanURL } from './functions';
 
 // list all local addresses
 const listAddresses = async (
