@@ -29,7 +29,8 @@
     "onCommand:ethcode.compiled-json.load.all",
     "onCommand:ethcode.compiled-json.select",
     "onCommand:ethcode.network.select",
-    "onCommand:ethcode.account.export"
+    "onCommand:ethcode.account.export",
+    "onCommand:ethcode.account.import"
   ],
   "main": "./build/src/extension.js",
   "extensionDependencies": [
@@ -116,6 +117,11 @@
         "category": "Ethcode"
       },
       {
+        "command": "ethcode.transaction.gas.set",
+        "title": "Set transaction gas strategy",
+        "category": "Ethcode"
+      },
+      {
         "command": "ethcode.compiled-json.load",
         "title": "Ethcode: Load compiled JSON output"
       },
@@ -136,6 +142,10 @@
       {
         "command": "ethcode.account.export",
         "title": "Ethcode: Export Account"
+      },
+      {
+        "command": "ethcode.account.import",
+        "title": "Ethcode: Import Account"
       }
     ],
     "keybindings": [
