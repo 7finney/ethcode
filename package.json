@@ -117,6 +117,11 @@
         "category": "Ethcode"
       },
       {
+        "command": "ethcode.transaction.gas.set",
+        "title": "Set transaction gas strategy",
+        "category": "Ethcode"
+      },
+      {
         "command": "ethcode.compiled-json.load",
         "title": "Ethcode: Load compiled JSON output"
       },
