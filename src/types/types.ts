@@ -1,5 +1,5 @@
-import { QuickPickItem } from 'vscode';
-import { JsonFragment } from '@ethersproject/abi';
+import { QuickPickItem } from "vscode";
+import { JsonFragment } from "@ethersproject/abi";
 
 export interface ISource {
   content: string | undefined;
@@ -93,8 +93,14 @@ export interface TxReceipt {
   logsBloom: string;
 }
 
+export interface NetworkConfig {
+  rpc: string;
+  blockScanner: string;
+}
 // Typeguard
 
-export function isConstructorInputValue(obj: any): obj is ConstructorInputValue {
+export function isConstructorInputValue(
+  obj: any
+): obj is ConstructorInputValue {
   return obj.value !== undefined;
 }

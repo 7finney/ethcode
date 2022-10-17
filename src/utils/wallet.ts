@@ -12,9 +12,9 @@ import { Account, LocalAddressType } from "../types";
 import {
   getSelectedNetwork,
   getSelectedProvider,
+  getSeletedRpcUrl,
   isTestingNetwork,
 } from "./networks";
-import { getEtherscanURL } from './functions';
 
 // list all local addresses
 const listAddresses = async (
@@ -136,32 +136,32 @@ const exportKeyPair = async (context: vscode.ExtensionContext) => {
     const addresses = await listAddresses(context, context.extensionPath);
 
     const quickPick = window.createQuickPick();
-  
+
     quickPick.items = addresses.map((account) => ({
       label: account,
       description: isTestingNetwork(context)
         ? getSelectedNetwork(context)
         : "Local account",
     }));
-  
+
     quickPick.onDidChangeActive(() => {
       quickPick.placeholder = "Select account";
     });
-  
+
     quickPick.onDidChangeSelection((selection) => {
       if (selection[0]) {
         const { label } = selection[0];
 
         const files = fs.readdirSync(`${context.extensionPath}/keystore`);
-        const address = label.slice(2, label.length)
+        const address = label.slice(2, label.length);
         let selectedFile = "";
         files.map((file: string) => {
           const arr = file.split("--");
-          if(address === arr[arr.length - 1]) {
+          if (address === arr[arr.length - 1]) {
             selectedFile = file;
           }
-        })
-        
+        });
+
         const options: vscode.OpenDialogOptions = {
           canSelectMany: false,
           canSelectFolders: true,
@@ -170,10 +170,13 @@ const exportKeyPair = async (context: vscode.ExtensionContext) => {
             "All files": ["*"],
           },
         };
-    
+
         vscode.window.showOpenDialog(options).then((fileUri) => {
           if (fileUri && fileUri[0]) {
-            logger.log('path: ', `${fileUri[0].fsPath}\\${selectedFile}\\${selectedFile}`)
+            logger.log(
+              "path: ",
+              `${fileUri[0].fsPath}\\${selectedFile}\\${selectedFile}`
+            );
             fs.copyFile(
               `${context.extensionPath}\\keystore\\${selectedFile}`,
               `${fileUri[0].fsPath}\\${selectedFile}`,
@@ -181,20 +184,20 @@ const exportKeyPair = async (context: vscode.ExtensionContext) => {
                 if (err) throw err;
               }
             );
-    
+
             logger.success(`Account ${address} is successfully exported!`);
           }
         });
         quickPick.dispose();
       }
     });
-  
+
     quickPick.onDidHide(() => quickPick.dispose());
     quickPick.show();
   } catch (error) {
     logger.error(error);
   }
-}
+};
 
 const selectAccount = async (context: vscode.ExtensionContext) => {
   const addresses = await listAddresses(context, context.extensionPath);
@@ -217,7 +220,11 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
       const { label } = selection[0];
       context.workspaceState.update("account", label);
       logger.success(`Account ${label} is selected.`);
-      logger.success(`You can see detail of this account here. ${getEtherscanURL(context)}/address/${label}`)
+      logger.success(
+        `You can see detail of this account here. ${
+          getSeletedRpcUrl(context).blockScanner
+        }/address/${label}`
+      );
       quickPick.dispose();
     }
   });
@@ -232,5 +239,5 @@ export {
   exportKeyPair,
   deleteKeyPair,
   extractPvtKey,
-  selectAccount
+  selectAccount,
 };
