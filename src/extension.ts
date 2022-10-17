@@ -12,7 +12,7 @@ import {
   updateSelectedNetwork,
 } from './utils/networks';
 import { logger } from './lib';
-import { createKeyPair, deleteKeyPair, selectAccount, exportKeyPair } from './utils/wallet';
+import { createKeyPair, deleteKeyPair, selectAccount, importKeyPair, exportKeyPair } from './utils/wallet';
 import { parseBatchCompiledJSON, parseCompiledJSONPayload, selectContract } from './utils';
 
 // eslint-disable-next-line import/prefer-default-export
@@ -87,6 +87,10 @@ export async function activate(context: vscode.ExtensionContext) {
     //Export Account
     commands.registerCommand('ethcode.account.export', async() => {
       exportKeyPair(context);
+    }),
+    //Import Key pair
+    commands.registerCommand('ethcode.account.import', async() => {
+      importKeyPair(context)
     }),
 
     // Set custom gas estimate

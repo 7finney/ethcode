@@ -29,7 +29,8 @@
     "onCommand:ethcode.compiled-json.load.all",
     "onCommand:ethcode.compiled-json.select",
     "onCommand:ethcode.network.select",
-    "onCommand:ethcode.account.export"
+    "onCommand:ethcode.account.export",
+    "onCommand:ethcode.account.import"
   ],
   "main": "./build/src/extension.js",
   "extensionDependencies": [
@@ -136,6 +137,10 @@
       {
         "command": "ethcode.account.export",
         "title": "Ethcode: Export Account"
+      },
+      {
+        "command": "ethcode.account.import",
+        "title": "Ethcode: Import Account"
       }
     ],
     "keybindings": [
