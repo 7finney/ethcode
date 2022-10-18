@@ -14,7 +14,7 @@ https://docs.ethcode.dev/
 
 ## Installation
 
-VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=ethential.ethcode
+VisualStudio Marketplace - https://marketplace.visualstudio.com/items?itemName=7finney.ethcode
 
 ## System support
 
@@ -166,7 +166,7 @@ Step 1: Login to https://dev.azure.com/ and generate PAT for your user or organi
 Step 2:
 
 ```
-vsce login ethential
+vsce login <publisher>
 vsce publish 0.1.4 -p <access token> --yarn
 git push origin v0.1.4
 ```
