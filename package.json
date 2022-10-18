@@ -49,13 +49,13 @@
           },
           "markdownDescription": "List of networks settings including ethereum, polygon etc",
           "default": {
-            "Ethereum Mainnet": {"rpc": "homestead","blockScanner":"https://etherscan.io"},
-            "Rinkeby Testnet": {"rpc": "rinkeby","blockScanner": "https://rinkeby.etherscan.io"},
-            "Ganache Testnet": {"rpc": "http://127.0.0.1:8545", "blockScanner": "https://etherscan.io"},
-            "Hardhat Testnet": {"rpc": "http://127.0.0.1:7545", "blockScanner": "https://etherscan.io"},
-            "Ropsten Testnet": {"rpc": "ropsten","blockScanner": "https://ropsten.etherscan.io"},
-            "Kovan Testnet": {"rpc": "kovan", "blockScanner": "https://kovan.etherscan.io"},
-            "Goerli Testnet": {"rpc": "goerli", "blockScanner": "https://goerli.etherscan.io"}
+            "Ethereum Mainnet": "{\"rpc\": \"homestead\",\"blockScanner\":\"https://etherscan.io\"}",
+            "Rinkeby Testnet": "{\"rpc\": \"rinkeby\",\"blockScanner\": \"https://rinkeby.etherscan.io\"}",
+            "Ganache Testnet": "{\"rpc\": \"http://127.0.0.1:8545\", \"blockScanner\": \"https://etherscan.io\"}",
+            "Hardhat Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\"}",
+            "Ropsten Testnet": "{\"rpc\": \"ropsten\",\"blockScanner\": \"https://ropsten.etherscan.io\"}",
+            "Kovan Testnet": "{\"rpc\": \"kovan\", \"blockScanner\": \"https://kovan.etherscan.io\"}",
+            "Goerli Testnet": "{\"rpc\": \"goerli\", \"blockScanner\": \"https://goerli.etherscan.io\"}"
           }
         },
         "ethcode.grpc.serviceEndpoints": {
