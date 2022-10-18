@@ -3,7 +3,7 @@
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
   "version": "0.2.9",
-  "publisher": "ethential",
+  "publisher": "7finney",
   "categories": [
     "Debuggers",
     "Programming Languages"
@@ -17,7 +17,7 @@
   "icon": "images/ethcode_tsp.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ethential/ethcode"
+    "url": "https://github.com/7fny/ethcode"
   },
   "engines": {
     "vscode": "^1.38.1",
@@ -210,15 +210,5 @@
   "author": {
     "name": "0mkara",
     "email": "0mkar@protonmail.com"
-  },
-  "contributors": [
-    {
-      "name": "Ayan Banerjee",
-      "email": "ayanb1999@gmail.com"
-    },
-    {
-      "name": "Soumyanil Jana",
-      "email": "soumyaniljana@gmail.com"
-    }
-  ]
+  }
 }
