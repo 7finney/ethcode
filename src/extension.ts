@@ -18,6 +18,7 @@ import {
   exportKeyPair,
 } from "./utils/wallet";
 import {
+  createERC4907Contract,
   parseBatchCompiledJSON,
   parseCompiledJSONPayload,
   selectContract,
@@ -87,6 +88,11 @@ export async function activate(context: vscode.ExtensionContext) {
     // Select a compiled json from the list
     commands.registerCommand("ethcode.compiled-json.select", () => {
       selectContract(context);
+    }),
+
+    //Create ERC4907 contract
+    commands.registerCommand("ethcode.ERC4907.create", () => {
+      createERC4907Contract(context);
     }),
 
     // Call contract method

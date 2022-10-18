@@ -1,6 +1,6 @@
 import { JsonFragment } from "@ethersproject/abi";
 import * as ethers from "ethers";
-import * as fs from 'fs';
+import * as fs from "fs";
 
 export interface HardHatCompiledOutput {
   contractName: string;
@@ -20,17 +20,23 @@ export interface RemixCompiledOutput {
   abi: ReadonlyArray<JsonFragment>;
 }
 
+export interface ERCCompiledOutput {
+  abi: ReadonlyArray<JsonFragment>;
+  bytecode: string;
+  deployedBytecode?: string;
+}
+
 interface GasEstimate {
-  confidence: number,
-  maxFeePerGas: number,
-  maxPriorityFeePerGas: number,
-  price: number
+  confidence: number;
+  maxFeePerGas: number;
+  maxPriorityFeePerGas: number;
+  price: number;
 }
 
 export interface GasEstimateOutput {
-  low: GasEstimate,
-  medium: GasEstimate,
-  high: GasEstimate
+  low: GasEstimate;
+  medium: GasEstimate;
+  high: GasEstimate;
 }
 
 export interface CompiledJSONOutput {
@@ -39,6 +45,7 @@ export interface CompiledJSONOutput {
   contractType: number; // 0: null, 1: hardhat output, 2: remix output
   hardhatOutput?: HardHatCompiledOutput;
   remixOutput?: RemixCompiledOutput;
+  ERCOutput?: ERCCompiledOutput;
 }
 
 export const getAbi = (output: CompiledJSONOutput) => {
@@ -46,20 +53,30 @@ export const getAbi = (output: CompiledJSONOutput) => {
 
   if (output.contractType === 1) return output.hardhatOutput?.abi;
 
+  if (output.contractType === 3) return output.ERCOutput?.abi;
+
   return output.remixOutput?.abi;
 };
 
-export const getByteCode = (output: CompiledJSONOutput): ethers.utils.BytesLike | undefined => {
-  if (output.contractType === 0) return '';
+export const getByteCode = (
+  output: CompiledJSONOutput
+): ethers.utils.BytesLike | undefined => {
+  if (output.contractType === 0) return "";
 
   if (output.contractType === 1) return output.hardhatOutput?.bytecode;
+
+  if (output.contractType === 3) return output.ERCOutput?.bytecode;
 
   return output.remixOutput?.data.bytecode.object;
 };
 
 export const isHardhatProject = (path_: string) => {
   return (
-    fs.readdirSync(path_).filter((file) => file === 'hardhat.config.js' || file === 'hardhat.config.ts').length > 0
+    fs
+      .readdirSync(path_)
+      .filter(
+        (file) => file === "hardhat.config.js" || file === "hardhat.config.ts"
+      ).length > 0
   );
 };
 
@@ -78,4 +95,3 @@ export interface BytecodeObject {
     };
   };
 }
-
