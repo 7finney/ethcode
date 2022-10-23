@@ -97,6 +97,12 @@ export interface NetworkConfig {
   rpc: string;
   blockScanner: string;
 }
+
+export interface ERC4907ContractType {
+  interface: string;
+  contract: (arg0: string) => string;
+  ERC4907Contract: string;
+}
 // Typeguard
 
 export function isConstructorInputValue(

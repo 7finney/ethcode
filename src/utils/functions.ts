@@ -120,6 +120,7 @@ const getDeployedInputs = (context: vscode.ExtensionContext) => {
   }
 };
 
+
 const getConstructorInputs = (context: vscode.ExtensionContext) => {
   try {
     const contract = context.workspaceState.get(

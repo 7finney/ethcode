@@ -146,6 +146,11 @@
       {
         "command": "ethcode.account.import",
         "title": "Ethcode: Import Account"
+      },
+      {
+        "command": "ethcode.rental.create",
+        "title": "Create new ERC4907 contract",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
