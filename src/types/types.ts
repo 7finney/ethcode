@@ -100,7 +100,7 @@ export interface NetworkConfig {
 
 export interface ERC4907ContractType {
   interface: string;
-  contract: (arg0: string) => string;
+  contract: string;
   ERC4907Contract: string;
 }
 // Typeguard

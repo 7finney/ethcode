@@ -15,7 +15,7 @@ import {
   createFunctionInput,
   createDeployed,
 } from "./functions";
-import { ERC4907Contract } from "../contracts/ERC4907/ERC4907";
+import { ERC4907ContractUrls } from "../contracts/ERC4907/ERC4907";
 import axios from "axios";
 
 const parseBatchCompiledJSON = (context: ExtensionContext): void => {
@@ -173,15 +173,18 @@ const createERC4907Contract = async (context: ExtensionContext) => {
   const contractPath = path.join(dir, `${contractName}.sol`);
   const interfacepath = path.join(dir, "IERC4907.sol");
   const ERC4907ContractPath = path.join(dir, "ERC4907.sol");
-  createUserERC4907ContractFile(
+  await createUserERC4907ContractFile(
     contractPath,
-    ERC4907Contract.contract(contractName as string),
+    ERC4907ContractUrls.contract,
     contractName as string
   );
-  createERC4907ContractInterface(interfacepath, ERC4907Contract.interface);
-  createERC4907ContractFile(
+  await createERC4907ContractInterface(
+    interfacepath,
+    ERC4907ContractUrls.interface
+  );
+  await createERC4907ContractFile(
     ERC4907ContractPath,
-    ERC4907Contract.ERC4907Contract
+    ERC4907ContractUrls.ERC4907Contract
   );
 };
 
