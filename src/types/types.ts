@@ -93,9 +93,22 @@ export interface TxReceipt {
   logsBloom: string;
 }
 
+interface NativeCurrencyType {
+  name: string;
+  symbol: string;
+  decimal: string;
+}
+
 export interface NetworkConfig {
   rpc: string;
   blockScanner: string;
+  nativeCurrency: NativeCurrencyType;
+}
+
+export interface ERC4907ContractType {
+  interface: string;
+  contract: string;
+  ERC4907Contract: string;
 }
 // Typeguard
 

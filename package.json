@@ -49,15 +49,15 @@
           },
           "markdownDescription": "List of networks settings including ethereum, polygon etc",
           "default": {
-            "Ethereum Mainnet": "{\"rpc\": \"homestead\",\"blockScanner\":\"https://etherscan.io\"}",
-            "Rinkeby Testnet": "{\"rpc\": \"rinkeby\",\"blockScanner\": \"https://rinkeby.etherscan.io\"}",
-            "Ganache Testnet": "{\"rpc\": \"http://127.0.0.1:8545\", \"blockScanner\": \"https://etherscan.io\"}",
-            "Hardhat Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\"}",
-            "Ropsten Testnet": "{\"rpc\": \"ropsten\",\"blockScanner\": \"https://ropsten.etherscan.io\"}",
-            "Kovan Testnet": "{\"rpc\": \"kovan\", \"blockScanner\": \"https://kovan.etherscan.io\"}",
-            "Goerli Testnet": "{\"rpc\": \"goerli\", \"blockScanner\": \"https://goerli.etherscan.io\"}"
+            "Ethereum": "{\"rpc\": \"homestead\",\"blockScanner\":\"https://etherscan.io\", \"nativeCurrency\": {\"name\": \"Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Ganache Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\", \"nativeCurrency\": {\"name\": \"Ganache Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Hardhat Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\", \"nativeCurrency\": {\"name\": \"Hardhat Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Goerli Testnet": "{\"rpc\": \"goerli\", \"blockScanner\": \"https://goerli.etherscan.io\", \"nativeCurrency\": {\"name\": \"Görli Ether\",\"symbol\":\"görETH\",\"decimals\": \"18\"}}",
+            "Polygon": "{\"rpc\": \"https://polygon-rpc.com\", \"blockScanner\": \"https://polygonscan.com\", \"nativeCurrency\": {\"name\": \"Polygon Matic\",\"symbol\":\"MATIC\",\"decimals\": \"18\"}}",
+            "Sepolia Testnet": "{\"rpc\": \"https://rpc.sepolia.dev\", \"blockScanner\": \"https://sepolia.etherscan.io\", \"nativeCurrency\": {\"name\": \"Sepolia Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Polygon Mumbai": "{\"rpc\": \"https://rpc-mumbai.maticvigil.com\", \"blockScanner\": \"https://mumbai.polygonscan.com\", \"nativeCurrency\": {\"name\": \"Polygon Mumbai Matic\",\"symbol\":\"mMATIC\",\"decimals\": \"18\"}}"
           }
-        },
+        }, 
         "ethcode.grpc.serviceEndpoints": {
           "type": "object",
           "default": {
@@ -146,6 +146,11 @@
       {
         "command": "ethcode.account.import",
         "title": "Ethcode: Import Account"
+      },
+      {
+        "command": "ethcode.rental.create",
+        "title": "Create new ERC4907 contract",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [

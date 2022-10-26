@@ -12,7 +12,7 @@ import { Account, LocalAddressType } from "../types";
 import {
   getSelectedNetwork,
   getSelectedProvider,
-  getSeletedRpcUrl,
+  getSelectedNetConf,
   isTestingNetwork,
 } from "./networks";
 
@@ -266,7 +266,7 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
       logger.success(`Account ${label} is selected.`);
       logger.success(
         `You can see detail of this account here. ${
-          getSeletedRpcUrl(context).blockScanner
+          getSelectedNetConf(context).blockScanner
         }/address/${label}`
       );
       quickPick.dispose();

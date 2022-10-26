@@ -36,7 +36,7 @@ const getSelectedNetwork = (context: vscode.ExtensionContext): string => {
   return context.workspaceState.get("selectedNetwork") as string;
 };
 
-const getSeletedRpcUrl = (context: vscode.ExtensionContext) => {
+const getSelectedNetConf = (context: vscode.ExtensionContext) => {
   const networks = getConfiguration().get("networks") as any;
   const selectedNetworkConfig = networks[getSelectedNetwork(context)];
   const parsedConfig: NetworkConfig = JSON.parse(selectedNetworkConfig);
@@ -78,7 +78,7 @@ const isValidHttpUrl = (url_: string): boolean => {
 };
 
 const getSelectedProvider = (context: vscode.ExtensionContext) => {
-  const rpc = getSeletedRpcUrl(context).rpc; // default providers have a name with less than 10 chars
+  const rpc = getSelectedNetConf(context).rpc; // default providers have a name with less than 10 chars
   if (isValidHttpUrl(rpc)) return new provider.JsonRpcProvider(rpc);
 
   return provider.getDefaultProvider(rpc);
@@ -87,6 +87,7 @@ const getSelectedProvider = (context: vscode.ExtensionContext) => {
 // Contract function calls
 const displayBalance = async (context: vscode.ExtensionContext) => {
   const address: any = await context.workspaceState.get("account");
+  const nativeCurrencySymbol = getSelectedNetConf(context).nativeCurrency.symbol;
 
   try {
     getSelectedProvider(context)
@@ -97,7 +98,7 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
 
         const networkName: any = getSelectedNetwork(context);
         logger.success(
-          `${address} has account Balance on ${networkName} network is: ${balance} Eth`
+          `${address} has account Balance on ${networkName} network is: ${balance} ${nativeCurrencySymbol}`
         );
       });
   } catch (_) {
@@ -207,7 +208,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       );
       logger.success(
         `You can see detail of this transaction here. ${
-          getSeletedRpcUrl(context).blockScanner
+          getSelectedNetConf(context).blockScanner
         }/tx/${result.hash}`
       );
     }
@@ -305,7 +306,7 @@ const getContractFactoryWithParams = async (
 
 export {
   getNetworkNames,
-  getSeletedRpcUrl,
+  getSelectedNetConf,
   getSelectedNetwork,
   getSelectedProvider,
   updateSelectedNetwork,
