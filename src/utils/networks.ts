@@ -87,7 +87,8 @@ const getSelectedProvider = (context: vscode.ExtensionContext) => {
 // Contract function calls
 const displayBalance = async (context: vscode.ExtensionContext) => {
   const address: any = await context.workspaceState.get("account");
-  const nativeCurrencySymbol = getSelectedNetConf(context).nativeCurrency.symbol;
+  const nativeCurrencySymbol =
+    getSelectedNetConf(context).nativeCurrency.symbol;
 
   try {
     getSelectedProvider(context)
