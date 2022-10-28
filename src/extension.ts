@@ -18,6 +18,7 @@ import {
   exportKeyPair,
 } from "./utils/wallet";
 import {
+  createERC4907Contract,
   parseBatchCompiledJSON,
   parseCompiledJSONPayload,
   selectContract,
@@ -56,6 +57,9 @@ export async function activate(context: vscode.ExtensionContext) {
       updateSelectedNetwork(context);
     }),
 
+    commands.registerCommand("ethcode.rental.create", () => {
+      createERC4907Contract(context);
+    }),
     // Select Ethereum Account
     commands.registerCommand("ethcode.account.select", () => {
       selectAccount(context);

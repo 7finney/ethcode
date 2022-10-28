@@ -20,7 +20,7 @@ import {
 } from "../lib/file";
 import { getSelectedNetwork } from "./networks";
 
-const axios = require("axios");
+import axios from "axios";
 
 const createDeployed = (contract: CompiledJSONOutput) => {
   const fullPath = getDeployedFullPath(contract);
@@ -235,7 +235,6 @@ const getGasEstimates = async (condition: string) => {
 
   axios
     .get("https://api.blocknative.com/gasprices/blockprices", {
-      mode: "cors",
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers":
@@ -275,6 +274,19 @@ const getGasEstimates = async (condition: string) => {
   return "";
 };
 
+const fetchERC4907Contracts = async (uri: string) => {
+  const response = await axios
+    .get(uri)
+    .then((res) => {
+      console.log(res);
+      return res.data;
+    })
+    .catch((err) => {
+      console.log("an error occoured while fetch files:", err);
+    });
+  return response;
+};
+
 export {
   createFunctionInput,
   createDeployed,
@@ -283,4 +295,5 @@ export {
   getFunctionInputs,
   getDeployedInputs,
   getGasEstimates,
+  fetchERC4907Contracts,
 };
