@@ -115,7 +115,7 @@ const createNewGelatoTask = async (
       execSelector: selector,
       execAbi: abi.toString(),
       execData: functionData,
-      interval: 60,
+      interval: 30,
       startTime: 0,
     };
     logger.log("creating gelato automation task...");
