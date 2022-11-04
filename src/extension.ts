@@ -23,6 +23,11 @@ import {
   parseCompiledJSONPayload,
   selectContract,
 } from "./utils";
+import {
+  cancelGelatoTask,
+  createGelatoAutomation,
+  getActiveGelatoTasks,
+} from "./utils/gelato";
 
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
@@ -105,6 +110,15 @@ export async function activate(context: vscode.ExtensionContext) {
     //Import Key pair
     commands.registerCommand("ethcode.account.import", async () => {
       importKeyPair(context);
+    }),
+    commands.registerCommand("ethcode.gelato.create", async () => {
+      await createGelatoAutomation(context);
+    }),
+    commands.registerCommand("ethcode.gelato.cancel", async () => {
+      await cancelGelatoTask(context);
+    }),
+    commands.registerCommand("ethcode.gelato.active-tasks", async () => {
+      await getActiveGelatoTasks(context);
     }),
 
     // Set custom gas estimate
