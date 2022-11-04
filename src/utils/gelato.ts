@@ -8,6 +8,7 @@ import {
   CreateTaskOptions,
   GelatoOpsSDK,
   TaskTransaction,
+  OPS_TASKS_API,
 } from "@gelatonetwork/ops-sdk";
 import { getSelectedProvider } from "./networks";
 import { ethers } from "ethers";
@@ -87,6 +88,25 @@ const getNewAutomationName = async () => {
   return automationName;
 };
 
+const getAutomationInterval = async () => {
+  const opts: InputBoxOptions = {
+    ignoreFocusOut: true,
+    placeHolder: "Automation interval",
+  };
+  const automationInterval = await window.showInputBox(opts);
+  const automationInNumber = parseInt(automationInterval as string);
+  return automationInNumber;
+};
+
+const getGelatotaskID = async () => {
+  const opts: InputBoxOptions = {
+    ignoreFocusOut: true,
+    placeHolder: "Enter Task ID",
+  };
+  const taskID = await window.showInputBox(opts);
+  return taskID;
+};
+
 const createNewGelatoTask = async (
   context: ExtensionContext,
   abi: JsonFragment[],
@@ -94,14 +114,15 @@ const createNewGelatoTask = async (
   params: any[]
 ) => {
   try {
+    // data for options
+    const automationName = await getNewAutomationName();
+    const automationInterval = await getAutomationInterval();
     const contractAddress = getDeployedInputs(context).address;
     const contract = new ethers.Contract(contractAddress, abi);
     const signingAccount = await getContractSigner(context);
     const chainId = await (await signingAccount.provider.getNetwork()).chainId;
     const gelatoOps = new GelatoOpsSDK(chainId, signingAccount);
 
-    // data for options
-    const automationName = await getNewAutomationName();
     const selector = contract.interface.getSighash(
       `${abiItem.name as string}(${getFunctionParmas(abiItem)})`
     );
@@ -115,11 +136,11 @@ const createNewGelatoTask = async (
       execSelector: selector,
       execAbi: abi.toString(),
       execData: functionData,
-      interval: 30,
+      interval: automationInterval,
       startTime: 0,
     };
     logger.log("creating gelato automation task...");
-    const { taskId, tx }: TaskTransaction = await gelatoOps.createTask(options);
+    const { taskId }: TaskTransaction = await gelatoOps.createTask(options);
     logger.log(`gelato automation task ID is: ${taskId}`);
   } catch (error) {
     logger.log(error);
@@ -140,4 +161,51 @@ const createGelatoAutomation = async (context: ExtensionContext) => {
   await createNewGelatoTask(context, abi as JsonFragment[], abiItem, params);
 };
 
-export { createGelatoAutomation };
+const cancelGelatoTask = async (context: ExtensionContext) => {
+  const taskID = await getGelatotaskID();
+  const signingAccount = await getContractSigner(context);
+  const chainId = await (await signingAccount.provider.getNetwork()).chainId;
+  const gelatoOps = new GelatoOpsSDK(chainId, signingAccount);
+  logger.log(
+    `cancelling gelato task ${taskID?.slice(0, 6)}...${taskID?.slice(-6)}`
+  );
+  await gelatoOps
+    .cancelTask(taskID as string)
+    .then(() => {
+      logger.log(
+        `gelato task ${taskID?.slice(0, 6)}...${taskID?.slice(-6)} is cancelled`
+      );
+    })
+    .catch((err) => {
+      logger.log(err);
+    });
+};
+
+const getActiveGelatoTasks = async (context: ExtensionContext) => {
+  const signingAccount = await getContractSigner(context);
+  const chainId = await (await signingAccount.provider.getNetwork()).chainId;
+  const gelatoOps = new GelatoOpsSDK(chainId, signingAccount);
+  logger.log("fetching active gelato tasks...");
+  await gelatoOps
+    .getActiveTasks()
+    .then((tasks) => {
+      if (tasks.length === 0) {
+        logger.log("no active gelato task.");
+      } else {
+        logger.log("Active gelato tasks:");
+        tasks.map((task, index) => {
+          logger.log(
+            `${index + 1}. taskID: ${task.taskId
+              .slice(0, 6)
+              .toString()}...${task.taskId
+              .slice(-6)
+              .toString()} | Name: ${task.name.toString()}`
+          );
+        });
+      }
+    })
+    .catch((err) => {
+      logger.log(err);
+    });
+};
+export { createGelatoAutomation, cancelGelatoTask, getActiveGelatoTasks };
