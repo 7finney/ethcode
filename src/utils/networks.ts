@@ -87,7 +87,8 @@ const getSelectedProvider = (context: vscode.ExtensionContext) => {
 // Contract function calls
 const displayBalance = async (context: vscode.ExtensionContext) => {
   const address: any = await context.workspaceState.get("account");
-  const nativeCurrencySymbol = getSelectedNetConf(context).nativeCurrency.symbol;
+  const nativeCurrencySymbol =
+    getSelectedNetConf(context).nativeCurrency.symbol;
 
   try {
     getSelectedProvider(context)
@@ -163,10 +164,6 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
     if (contractAddres === undefined)
       throw new Error("Enter deployed address of selected contract.");
 
-    const gasCondition = (await context.workspaceState.get("gas")) as string;
-
-    const gasEstimate = (await getGasEstimates(gasCondition)) as any;
-
     if (abiItem.stateMutability === "view") {
       selectContract(context);
 
@@ -187,15 +184,26 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       let result;
 
       if (abiItem.stateMutability === "nonpayable") {
-        result = await contract[abiItem.name as string](...params);
+        const gasCondition = (await context.workspaceState.get(
+          "gas"
+        )) as string;
+
+        const gasEstimate = await getGasEstimates(gasCondition, context);
+        if (gasEstimate !== undefined) {
+          const maxFeePerGas = (gasEstimate as EstimateGas).price;
+          result = await contract[abiItem.name as string](...params, {
+            gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), "gwei"),
+            gasLimit: 15000000,
+          });
+        } else {
+          result = await contract[abiItem.name as string](...params);
+        }
       } else {
         const found: any = abiItem.inputs?.find(
           (e: any) => e.type === "uint256"
         );
-
         result = await contract[abiItem.name as string](...params, {
           value: found.value,
-          gasPrice: (gasEstimate as EstimateGas).price,
         });
       }
 
@@ -226,11 +234,24 @@ const deployContract = async (context: vscode.ExtensionContext) => {
 
     const myContract = await getContractFactoryWithParams(context);
     const parameters = getConstructorInputs(context);
+    const gasCondition = (await context.workspaceState.get("gas")) as string;
+    const gasEstimate = await getGasEstimates(gasCondition, context);
+    if (gasEstimate !== undefined) {
+      const maxFeePerGas = (gasEstimate as EstimateGas).price;
 
-    const contract = await myContract.deploy(...parameters);
+      const contract = await myContract.deploy(...parameters, {
+        gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), "gwei"),
+        gasLimit: 15000000,
+      });
 
-    context.workspaceState.update("contractAddress", contract.address);
-    logger.success(`Contract deployed to ${contract.address}`);
+      context.workspaceState.update("contractAddress", contract.address);
+      logger.success(`Contract deployed to ${contract.address}`);
+    } else {
+      const contract = await myContract.deploy(...parameters);
+
+      context.workspaceState.update("contractAddress", contract.address);
+      logger.success(`Contract deployed to ${contract.address}`);
+    }
   } catch (err) {
     logger.error(err);
   }
