@@ -38,7 +38,6 @@
   ],
   "contributes": {
     "configuration": {
-      "type": "object",
       "title": "ΞTHcode",
       "properties": {
         "ethcode.networks": {
@@ -57,17 +56,13 @@
             "Sepolia Testnet": "{\"rpc\": \"https://rpc.sepolia.dev\", \"blockScanner\": \"https://sepolia.etherscan.io\", \"nativeCurrency\": {\"name\": \"Sepolia Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
             "Polygon Mumbai": "{\"rpc\": \"https://rpc-mumbai.maticvigil.com\", \"blockScanner\": \"https://mumbai.polygonscan.com\", \"nativeCurrency\": {\"name\": \"Polygon Mumbai Matic\",\"symbol\":\"mMATIC\",\"decimals\": \"18\"}}"
           }
-        }, 
-        "ethcode.grpc.serviceEndpoints": {
-          "type": "object",
-          "default": {
-            "client-call": "cc.ethcode.dev:50053",
-            "remix-tests": "rt.ethco.de:50051",
-            "remix-debug": "rd.ethco.de:50052"
-          },
-          "description": "List of links to connect to ethcode backend.",
-          "scope": "application"
-        }
+        },
+        "ethcode.gasLimit": {
+          "scope": "application",
+          "type":"number",
+          "default": 3000000,
+          "description": "Set gas limit value for transactions."
+        }  
       }
     },
     "commands": [

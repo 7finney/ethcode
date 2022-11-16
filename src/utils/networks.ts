@@ -189,11 +189,14 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
         )) as string;
 
         const gasEstimate = await getGasEstimates(gasCondition, context);
+        const settingsGasLimit = (await getConfiguration().get(
+          "gasLimit"
+        )) as number;
         if (gasEstimate !== undefined) {
           const maxFeePerGas = (gasEstimate as EstimateGas).price;
           result = await contract[abiItem.name as string](...params, {
             gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), "gwei"),
-            gasLimit: 15000000,
+            gasLimit: settingsGasLimit,
           });
         } else {
           result = await contract[abiItem.name as string](...params);
@@ -238,10 +241,13 @@ const deployContract = async (context: vscode.ExtensionContext) => {
     const gasEstimate = await getGasEstimates(gasCondition, context);
     if (gasEstimate !== undefined) {
       const maxFeePerGas = (gasEstimate as EstimateGas).price;
+      const settingsGasLimit = (await getConfiguration().get(
+        "gasLimit"
+      )) as number;
 
       const contract = await myContract.deploy(...parameters, {
         gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), "gwei"),
-        gasLimit: 15000000,
+        gasLimit: settingsGasLimit,
       });
 
       context.workspaceState.update("contractAddress", contract.address);
@@ -326,6 +332,7 @@ const getContractFactoryWithParams = async (
 };
 
 export {
+  getConfiguration,
   getNetworkNames,
   getSelectedNetConf,
   getSelectedNetwork,
