@@ -48,13 +48,13 @@
           },
           "markdownDescription": "List of networks settings including ethereum, polygon etc",
           "default": {
-            "Ethereum": "{\"rpc\": \"homestead\",\"blockScanner\":\"https://etherscan.io\", \"nativeCurrency\": {\"name\": \"Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
-            "Ganache Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\", \"nativeCurrency\": {\"name\": \"Ganache Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
-            "Hardhat Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\", \"nativeCurrency\": {\"name\": \"Hardhat Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
-            "Goerli Testnet": "{\"rpc\": \"goerli\", \"blockScanner\": \"https://goerli.etherscan.io\", \"nativeCurrency\": {\"name\": \"Görli Ether\",\"symbol\":\"görETH\",\"decimals\": \"18\"}}",
-            "Polygon": "{\"rpc\": \"https://polygon-rpc.com\", \"blockScanner\": \"https://polygonscan.com\", \"nativeCurrency\": {\"name\": \"Polygon Matic\",\"symbol\":\"MATIC\",\"decimals\": \"18\"}}",
-            "Sepolia Testnet": "{\"rpc\": \"https://rpc.sepolia.dev\", \"blockScanner\": \"https://sepolia.etherscan.io\", \"nativeCurrency\": {\"name\": \"Sepolia Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
-            "Polygon Mumbai": "{\"rpc\": \"https://rpc-mumbai.maticvigil.com\", \"blockScanner\": \"https://mumbai.polygonscan.com\", \"nativeCurrency\": {\"name\": \"Polygon Mumbai Matic\",\"symbol\":\"mMATIC\",\"decimals\": \"18\"}}"
+            "Ethereum": "{\"rpc\": \"homestead\",\"blockScanner\":\"https://etherscan.io\", \"chainID\": \"1\", \"nativeCurrency\": {\"name\": \"Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Ganache Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\", \"chainID\": \"1337\", \"nativeCurrency\": {\"name\": \"Ganache Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Hardhat Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\", \"chainID\": \"1337\", \"nativeCurrency\": {\"name\": \"Hardhat Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Goerli Testnet": "{\"rpc\": \"goerli\", \"blockScanner\": \"https://goerli.etherscan.io\", \"chainID\": \"5\", \"nativeCurrency\": {\"name\": \"Görli Ether\",\"symbol\":\"görETH\",\"decimals\": \"18\"}}",
+            "Polygon": "{\"rpc\": \"https://polygon-rpc.com\", \"blockScanner\": \"https://polygonscan.com\", \"chainID\": \"137\", \"nativeCurrency\": {\"name\": \"Polygon Matic\",\"symbol\":\"MATIC\",\"decimals\": \"18\"}}",
+            "Sepolia Testnet": "{\"rpc\": \"https://rpc.sepolia.dev\", \"blockScanner\": \"https://sepolia.etherscan.io\",\"chainID\": \"11155111\", \"nativeCurrency\": {\"name\": \"Sepolia Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Polygon Mumbai": "{\"rpc\": \"https://rpc-mumbai.maticvigil.com\", \"blockScanner\": \"https://mumbai.polygonscan.com\",\"chainID\": \"80001\", \"nativeCurrency\": {\"name\": \"Polygon Mumbai Matic\",\"symbol\":\"mMATIC\",\"decimals\": \"18\"}}"
           }
         },
         "ethcode.gasLimit": {

@@ -18,7 +18,7 @@ import {
   writeConstructor,
   writeFunction,
 } from "../lib/file";
-import { getSelectedNetwork } from "./networks";
+import { getSelectedNetConf, getSelectedNetwork } from "./networks";
 
 import axios from "axios";
 
@@ -231,11 +231,11 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
 };
 
 const getNetworkBlockpriceUrl = (context: vscode.ExtensionContext) => {
-  const selectedNetwork = getSelectedNetwork(context);
-  if (selectedNetwork === "Polygon") {
-    return "https://api.blocknative.com/gasprices/blockprices?chainid=137";
-  } else if (selectedNetwork === "Ethereum") {
-    return "https://api.blocknative.com/gasprices/blockprices";
+  const chainID = getSelectedNetConf(context).chainID;
+  logger.log("chain id is:", chainID);
+  logger.log("type of chainid is:", typeof chainID);
+  if (chainID === "137" || chainID === "1") {
+    return `https://api.blocknative.com/gasprices/blockprices?chainid=${chainID}`;
   } else {
     return;
   }
@@ -249,7 +249,7 @@ const getGasEstimates = async (
   const blockPriceUri = getNetworkBlockpriceUrl(context);
   if (blockPriceUri !== undefined) {
     await axios
-      .get("https://api.blocknative.com/gasprices/blockprices?chainid=137", {
+      .get(blockPriceUri, {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Headers":

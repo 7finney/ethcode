@@ -102,6 +102,7 @@ interface NativeCurrencyType {
 export interface NetworkConfig {
   rpc: string;
   blockScanner: string;
+  chainID: string;
   nativeCurrency: NativeCurrencyType;
 }
 
