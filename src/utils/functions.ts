@@ -18,7 +18,7 @@ import {
   writeConstructor,
   writeFunction,
 } from "../lib/file";
-import { getSelectedNetwork } from "./networks";
+import { getSelectedNetConf, getSelectedNetwork } from "./networks";
 
 import axios from "axios";
 
@@ -230,48 +230,64 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
   writeConstructor(getConstructorInputFullPath(contract), contract, inputs);
 };
 
-const getGasEstimates = async (condition: string) => {
-  let estimate: EstimateGas;
+const getNetworkBlockpriceUrl = (context: vscode.ExtensionContext) => {
+  const chainID = getSelectedNetConf(context).chainID;
+  logger.log("chain id is:", chainID);
+  logger.log("type of chainid is:", typeof chainID);
+  if (chainID === "137" || chainID === "1") {
+    return `https://api.blocknative.com/gasprices/blockprices?chainid=${chainID}`;
+  } else {
+    return;
+  }
+};
 
-  axios
-    .get("https://api.blocknative.com/gasprices/blockprices", {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers":
-          "Origin, X-Requested-With, Content-Type, Accept",
-      },
-    })
-    .then((res: any) => {
-      if (res.status === 200) {
-        switch (condition) {
-          case "Low": {
-            estimate = res.data.blockPrices[0].estimatedPrices.find(
-              (x: any) => x.confidence === 70
-            ) as EstimateGas;
-            break;
+const getGasEstimates = async (
+  condition: string,
+  context: vscode.ExtensionContext
+) => {
+  let estimate: EstimateGas | undefined;
+  const blockPriceUri = getNetworkBlockpriceUrl(context);
+  if (blockPriceUri !== undefined) {
+    await axios
+      .get(blockPriceUri, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers":
+            "Origin, X-Requested-With, Content-Type, Accept",
+        },
+      })
+      .then((res: any) => {
+        if (res.status === 200) {
+          switch (condition) {
+            case "Low": {
+              estimate = res.data.blockPrices[0].estimatedPrices.find(
+                (x: any) => x.confidence === 70
+              ) as EstimateGas;
+              break;
+            }
+            case "Medium": {
+              estimate = res.data.blockPrices[0].estimatedPrices.find(
+                (x: any) => x.confidence === 90
+              ) as EstimateGas;
+              break;
+            }
+            case "High": {
+              estimate = res.data.blockPrices[0].estimatedPrices.find(
+                (x: any) => x.confidence === 99
+              ) as EstimateGas;
+              break;
+            }
           }
-          case "Medium": {
-            estimate = res.data.blockPrices[0].estimatedPrices.find(
-              (x: any) => x.confidence === 90
-            ) as EstimateGas;
-            break;
-          }
-          case "High": {
-            estimate = res.data.blockPrices[0].estimatedPrices.find(
-              (x: any) => x.confidence === 99
-            ) as EstimateGas;
-            break;
-          }
+
+          return estimate;
         }
+      })
+      .catch((error: any) => {
+        console.error(error);
+      });
+  }
 
-        return estimate;
-      }
-    })
-    .catch((error: any) => {
-      console.error(error);
-    });
-
-  return "";
+  return estimate;
 };
 
 const fetchERC4907Contracts = async (uri: string) => {
