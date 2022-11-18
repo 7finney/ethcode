@@ -232,8 +232,6 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
 
 const getNetworkBlockpriceUrl = (context: vscode.ExtensionContext) => {
   const chainID = getSelectedNetConf(context).chainID;
-  logger.log("chain id is:", chainID);
-  logger.log("type of chainid is:", typeof chainID);
   if (chainID === "137" || chainID === "1") {
     return `https://api.blocknative.com/gasprices/blockprices?chainid=${chainID}`;
   } else {
