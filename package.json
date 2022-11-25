@@ -14,7 +14,7 @@
     "eth2.0",
     "remix ide"
   ],
-  "icon": "images/ethcode_tsp.png",
+  "icon": "images/ethcode.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/7fny/ethcode"
