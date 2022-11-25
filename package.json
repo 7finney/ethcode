@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "7finney",
   "categories": [
     "Debuggers",
@@ -59,10 +59,10 @@
         },
         "ethcode.gasLimit": {
           "scope": "application",
-          "type":"number",
+          "type": "number",
           "default": 3000000,
           "description": "Set gas limit value for transactions."
-        }  
+        }
       }
     },
     "commands": [
