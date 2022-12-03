@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "7finney",
   "categories": [
     "Debuggers",
@@ -145,6 +145,16 @@
       {
         "command": "ethcode.rental.create",
         "title": "Create new ERC4907 contract",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.verifypaymaster.create",
+        "title": "Create new ERC4337 VerifyPaymaster contracts",
+        "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.tokenpaymaster.create",
+        "title": "Create new ERC4337 TokenPaymaster contracts",
         "category": "Ethcode"
       }
     ],

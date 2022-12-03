@@ -117,6 +117,29 @@ export interface ERC4907ContractType {
   contract: string;
   ERC4907Contract: string;
 }
+
+export interface ERC4337TokenPaymaterType {
+  SimpleAccount: string;
+  BaseAccount: string;
+  BasePaymaster: string;
+  TokenPaymaster: string;
+  IAccount: string;
+  IEntryPoint: string;
+  IPaymaster: string;
+  UserOption: string;
+  IStakeManager: string;
+  IAggregator: string;
+}
+
+export interface ERC4337VerifyPaymaterType {
+  UserOption: string;
+  IStakeManager: string;
+  IPaymaster: string;
+  IEntrypoint: string;
+  IAggregator: string;
+  VerifyingPaymaster: string;
+  BasePaymaster: string;
+}
 // Typeguard
 
 export function isConstructorInputValue(

@@ -18,6 +18,8 @@ import {
   exportKeyPair,
 } from "./utils/wallet";
 import {
+  createERC4337TokenPaymaster,
+  createERC4337VerifyPaymaster,
   createERC4907Contract,
   parseBatchCompiledJSON,
   parseCompiledJSONPayload,
@@ -57,9 +59,21 @@ export async function activate(context: vscode.ExtensionContext) {
       updateSelectedNetwork(context);
     }),
 
+    // create ERC4907 contract
     commands.registerCommand("ethcode.rental.create", () => {
       createERC4907Contract(context);
     }),
+
+    //create ERC4337 VerifyPaymaster contracts
+    commands.registerCommand("ethcode.verifypaymaster.create", () => {
+      createERC4337VerifyPaymaster(context);
+    }),
+
+    //create ERC4337 TokenPaymaster contracts
+    commands.registerCommand("ethcode.tokenpaymaster.create", () => {
+      createERC4337TokenPaymaster(context);
+    }),
+
     // Select Ethereum Account
     commands.registerCommand("ethcode.account.select", () => {
       selectAccount(context);

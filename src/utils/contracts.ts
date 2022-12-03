@@ -7,7 +7,9 @@ import { CompiledJSONOutput, IFunctionQP, isHardhatProject } from "../types";
 import {
   createERC4907ContractFile,
   createERC4907ContractInterface,
+  createTokenPaymasterFile,
   createUserERC4907ContractFile,
+  createVerifyPaymasterFile,
   getDirectoriesRecursive,
 } from "../lib/file";
 import {
@@ -16,6 +18,14 @@ import {
   createDeployed,
 } from "./functions";
 import { ERC4907ContractUrls } from "../contracts/ERC4907/ERC4907";
+import {
+  ERC4337TokenPaymaster,
+  TokenPaymasterMessages,
+} from "../contracts/ERC4337/ERC4337TokenPaymaster";
+import {
+  ERC4337VerifyPaymaster,
+  VerifyPaymasterMessages,
+} from "../contracts/ERC4337/ERC4337VerifyPaymaster";
 import axios from "axios";
 
 const parseBatchCompiledJSON = (context: ExtensionContext): void => {
@@ -157,6 +167,8 @@ const selectContract = (context: ExtensionContext) => {
   quickPick.show();
 };
 
+//ERC4907 contract creation
+
 const createERC4907Contract = async (context: ExtensionContext) => {
   const path_ =
     workspace.workspaceFolders !== undefined &&
@@ -188,9 +200,227 @@ const createERC4907Contract = async (context: ExtensionContext) => {
   );
 };
 
+const createERC4337VerifyPaymaster = async (context: ExtensionContext) => {
+  const path_ =
+    workspace.workspaceFolders !== undefined &&
+    workspace.workspaceFolders[0].uri.fsPath;
+  const dir_interface = path.join(
+    path_.toString(),
+    "contracts",
+    "VerifyPaymaster/interfaces"
+  );
+  const dir_core = path.join(
+    path_.toString(),
+    "contracts",
+    "VerifyPaymaster/core"
+  );
+  const dir_paymaster = path.join(
+    path_.toString(),
+    "contracts",
+    "VerifyPaymaster/paymaster"
+  );
+  if (!fs.existsSync(dir_interface)) {
+    fs.mkdirSync(dir_interface, { recursive: true });
+  }
+  if (!fs.existsSync(dir_paymaster)) {
+    fs.mkdirSync(dir_paymaster, { recursive: true });
+  }
+  if (!fs.existsSync(dir_core)) {
+    fs.mkdirSync(dir_core, { recursive: true });
+  }
+  //interfaces folder path
+  const userOptionPath = path.join(dir_interface, "UserOperation.sol");
+  const IStakeManagerPath = path.join(dir_interface, "IStakeManager.sol");
+  const IPaymasterPath = path.join(dir_interface, "IPaymaster.sol");
+  const IEntrypointPath = path.join(dir_interface, "IEntryPoint.sol");
+  const IAggregatorPath = path.join(dir_interface, "IAggregator.sol");
+
+  // paymaster folder path
+  const VerifyingPaymasterPath = path.join(
+    dir_paymaster,
+    "VerifyingPaymaster.sol"
+  );
+  // core folder path
+  const BasePaymaster = path.join(dir_core, "BasePaymaster.sol");
+  //file creation , async process
+
+  //creating useroption contract
+  await createVerifyPaymasterFile(
+    userOptionPath,
+    ERC4337VerifyPaymaster.UserOption,
+    VerifyPaymasterMessages.UserOperation
+  );
+
+  // creating IStakeManager interface
+  await createVerifyPaymasterFile(
+    IStakeManagerPath,
+    ERC4337VerifyPaymaster.IStakeManager,
+    VerifyPaymasterMessages.IStakeManager
+  );
+
+  // creating IPaymasterPath interface
+  await createVerifyPaymasterFile(
+    IPaymasterPath,
+    ERC4337VerifyPaymaster.IPaymaster,
+    VerifyPaymasterMessages.IPaymaster
+  );
+
+  // creating IEntrypointPath interface
+  await createVerifyPaymasterFile(
+    IEntrypointPath,
+    ERC4337VerifyPaymaster.IEntrypoint,
+    VerifyPaymasterMessages.IEntryPoint
+  );
+
+  // creating IAggregatorPath interface
+  await createVerifyPaymasterFile(
+    IAggregatorPath,
+    ERC4337VerifyPaymaster.IAggregator,
+    VerifyPaymasterMessages.IAggregator
+  );
+
+  // creating VerifyingPaymaster contract
+  await createVerifyPaymasterFile(
+    VerifyingPaymasterPath,
+    ERC4337VerifyPaymaster.VerifyingPaymaster,
+    VerifyPaymasterMessages.VerifyingPaymaster
+  );
+
+  // creating BasePaymaster contract
+  await createVerifyPaymasterFile(
+    BasePaymaster,
+    ERC4337VerifyPaymaster.BasePaymaster,
+    VerifyPaymasterMessages.BasePaymaster
+  );
+};
+
+const createERC4337TokenPaymaster = async (context: ExtensionContext) => {
+  const path_ =
+    workspace.workspaceFolders !== undefined &&
+    workspace.workspaceFolders[0].uri.fsPath;
+  const dir_interface = path.join(
+    path_.toString(),
+    "contracts",
+    "TokenPaymaster/interfaces"
+  );
+  const dir_core = path.join(
+    path_.toString(),
+    "contracts",
+    "TokenPaymaster/core"
+  );
+  const dir_paymaster = path.join(
+    path_.toString(),
+    "contracts",
+    "TokenPaymaster/paymaster"
+  );
+  if (!fs.existsSync(dir_paymaster)) {
+    fs.mkdirSync(dir_paymaster, { recursive: true });
+  }
+  if (!fs.existsSync(dir_core)) {
+    fs.mkdirSync(dir_core, { recursive: true });
+  }
+  if (!fs.existsSync(dir_interface)) {
+    fs.mkdirSync(dir_interface, { recursive: true });
+  }
+
+  // paymaster folder path
+  const SimpleAccountPath = path.join(dir_paymaster, "SimpleAccount.sol");
+  const TokenPaymasterPath = path.join(dir_paymaster, "TokenPaymaster.sol");
+  // core folder path
+  const BasePaymasterPath = path.join(dir_core, "BasePaymaster.sol");
+  const BaseAccountPath = path.join(dir_core, "BaseAccount.sol");
+  // interfaces folder path
+  const IAccountPath = path.join(dir_interface, "IAccount.sol");
+  const IEntryPointPath = path.join(dir_interface, "IEntryPoint.sol");
+  const IPaymasterPath = path.join(dir_interface, "IPaymaster.sol");
+  const userOptionPath = path.join(dir_interface, "UserOperation.sol");
+  const IStakeManagerPath = path.join(dir_interface, "IStakeManager.sol");
+  const IAggregatorPath = path.join(dir_interface, "IAggregator.sol");
+  //file creation , async process
+
+  // creating SimpleAccount contract
+  await createTokenPaymasterFile(
+    SimpleAccountPath,
+    ERC4337TokenPaymaster.SimpleAccount,
+    TokenPaymasterMessages.SimpleAccount
+  );
+
+  // creating TokenPaymaster contract
+  await createTokenPaymasterFile(
+    TokenPaymasterPath,
+    ERC4337TokenPaymaster.TokenPaymaster,
+    TokenPaymasterMessages.TokenPaymaster
+  );
+
+  // creating BaseAccount contract
+  await createTokenPaymasterFile(
+    BaseAccountPath,
+    ERC4337TokenPaymaster.BaseAccount,
+    TokenPaymasterMessages.BaseAccount
+  );
+
+  // creating BasePaymaster contract
+  await createTokenPaymasterFile(
+    BasePaymasterPath,
+    ERC4337TokenPaymaster.BasePaymaster,
+    TokenPaymasterMessages.BasePaymaster
+  );
+
+  // creating IAccount interface
+  await createTokenPaymasterFile(
+    IAccountPath,
+    ERC4337TokenPaymaster.IAccount,
+    TokenPaymasterMessages.IAccount
+  );
+
+  // creating IEntryPoint interface
+  await createTokenPaymasterFile(
+    IEntryPointPath,
+    ERC4337TokenPaymaster.IEntryPoint,
+    TokenPaymasterMessages.IEntryPoint
+  );
+
+  // creating IPaymaster interface
+  await createTokenPaymasterFile(
+    IPaymasterPath,
+    ERC4337TokenPaymaster.IPaymaster,
+    TokenPaymasterMessages.IPaymaster
+  );
+
+  // creating IPaymaster interface
+  await createTokenPaymasterFile(
+    IPaymasterPath,
+    ERC4337TokenPaymaster.IPaymaster,
+    TokenPaymasterMessages.IPaymaster
+  );
+
+  //creating useroption contract
+  await createTokenPaymasterFile(
+    userOptionPath,
+    ERC4337VerifyPaymaster.UserOption,
+    VerifyPaymasterMessages.UserOperation
+  );
+
+  // creating IStakeManager interface
+  await createTokenPaymasterFile(
+    IStakeManagerPath,
+    ERC4337VerifyPaymaster.IStakeManager,
+    VerifyPaymasterMessages.IStakeManager
+  );
+
+  // creating IAggregator interface
+  await createTokenPaymasterFile(
+    IAggregatorPath,
+    ERC4337VerifyPaymaster.IAggregator,
+    VerifyPaymasterMessages.IAggregator
+  );
+};
+
 export {
   parseBatchCompiledJSON,
   parseCompiledJSONPayload,
   selectContract,
   createERC4907Contract,
+  createERC4337VerifyPaymaster,
+  createERC4337TokenPaymaster,
 };
