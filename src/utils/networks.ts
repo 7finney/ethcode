@@ -201,12 +201,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
           result = await contract[abiItem.name as string](...params);
         }
       } else {
-        const found: any = abiItem.inputs?.find(
-          (e: any) => e.type === "uint256"
-        );
-        result = await contract[abiItem.name as string](...params, {
-          value: found.value,
-        });
+        result = await contract[abiItem.name as string](...params);
       }
 
       logger.success("Waiting for confirmation...");
