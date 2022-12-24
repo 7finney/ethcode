@@ -94,8 +94,11 @@ const deleteKeyPair = async (context: vscode.ExtensionContext) => {
       placeHolder: "Public key",
     };
     const publicKey = await window.showInputBox(pubkeyInp);
-    if (publicKey == undefined) throw new Error("Please input public address");
-
+    // if (publicKey == undefined) throw new Error("Please input public address");
+    if(publicKey === undefined) {
+      logger.log("Please input public address");
+      return;
+    }
     fs.readdir(`${context.extensionPath}/keystore`, (err, files) => {
       if (err) throw new Error(`Unable to scan directory: ${err}`);
 
