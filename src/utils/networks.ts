@@ -164,7 +164,8 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
     if (contractAddres === undefined)
       throw new Error("Enter deployed address of selected contract.");
 
-    if (abiItem.stateMutability === "view") {
+    if (
+      abiItem.stateMutability === "view" || abiItem.stateMutability === "pure") {
       selectContract(context);
 
       const contract = new ethers.Contract(
@@ -183,7 +184,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
 
       let result;
 
-      if (abiItem.stateMutability === "nonpayable") {
+      if (abiItem.stateMutability === "nonpayable" || abiItem.stateMutability === "payable") {
         const gasCondition = (await context.workspaceState.get(
           "gas"
         )) as string;
@@ -202,12 +203,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
           result = await contract[abiItem.name as string](...params);
         }
       } else {
-        const found: any = abiItem.inputs?.find(
-          (e: any) => e.type === "uint256"
-        );
-        result = await contract[abiItem.name as string](...params, {
-          value: found.value,
-        });
+        result = await contract[abiItem.name as string](...params);
       }
 
       logger.success("Waiting for confirmation...");
