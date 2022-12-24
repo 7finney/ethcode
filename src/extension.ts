@@ -35,12 +35,6 @@ export async function activate(context: vscode.ExtensionContext) {
           ignoreFocusOut: true,
           password: true,
           placeHolder: "Password",
-          validateInput: (value) => {
-            if (value === null) {
-              return "";
-            }
-            return value;
-          }
         };
         const password = await window.showInputBox(pwdInpOpt);
         if (password === undefined) {
