@@ -31,11 +31,22 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand("ethcode.account.create", async () => {
       try {
         const pwdInpOpt: InputBoxOptions = {
+          title: "Enter Password for New Account",
           ignoreFocusOut: true,
           password: true,
           placeHolder: "Password",
+          validateInput: (value) => {
+            if (value === null) {
+              return "";
+            }
+            return value;
+          }
         };
         const password = await window.showInputBox(pwdInpOpt);
+        if (password === undefined) {
+          logger.log("Account not created");
+          return;
+        }
         createKeyPair(context, context.extensionPath, password || "");
       } catch (error) {
         logger.error(error);
