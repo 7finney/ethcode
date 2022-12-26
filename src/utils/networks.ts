@@ -202,9 +202,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
         } else {
           result = await contract[abiItem.name as string](...params);
         }
-      } else {
-        result = await contract[abiItem.name as string](...params);
-      }
+      } 
 
       logger.success("Waiting for confirmation...");
 
@@ -214,8 +212,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
         `Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`
       );
       logger.success(
-        `You can see detail of this transaction here. ${
-          getSelectedNetConf(context).blockScanner
+        `You can see detail of this transaction here. ${getSelectedNetConf(context).blockScanner
         }/tx/${result.hash}`
       );
     }
