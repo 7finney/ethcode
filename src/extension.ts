@@ -31,7 +31,7 @@ export async function activate(context: vscode.ExtensionContext) {
     commands.registerCommand("ethcode.account.create", async () => {
       try {
         const pwdInpOpt: InputBoxOptions = {
-          title: "Enter Password for New Account",
+          title: "Password",
           ignoreFocusOut: true,
           password: true,
           placeHolder: "Password",
