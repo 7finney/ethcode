@@ -93,10 +93,11 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
   }
 
   const address: any = await context.workspaceState.get("account");
-  const nativeCurrencySymbol =
-    getSelectedNetConf(context).nativeCurrency.symbol;
-  
-    try {
+  const nativeCurrencySymbol = getSelectedNetConf(context).nativeCurrency.symbol;
+
+ logger.log("Fetching balance...");
+
+  try {
     getSelectedProvider(context)
       .getBalance(address)
       .then(async (value) => {
@@ -104,9 +105,11 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
         context.workspaceState.update("balance", balance);
 
         const networkName: any = getSelectedNetwork(context);
-        logger.success(
-          `${address} has account Balance on ${networkName} network is: ${balance} ${nativeCurrencySymbol}`
-        );
+        // logger.success(
+        //   `${address} has account Balance on ${networkName} network is: ${balance} ${nativeCurrencySymbol}`
+        // );
+        logger.success(`\nAccount: ${address} \nBalance: ${balance} ${nativeCurrencySymbol} \nNetwork: ${networkName}`);
+
       });
   } catch (_) {
     logger.error(new Error("Selected network RPC isn't supported."));
