@@ -87,7 +87,7 @@ const getSelectedProvider = (context: vscode.ExtensionContext) => {
 // Contract function calls
 const displayBalance = async (context: vscode.ExtensionContext) => {
   
-  if(context.workspaceState.get("selectedNetwork") === undefined) {
+  if(getSelectedNetwork(context) === undefined) {
     logger.log("No network selected. Please select a network.");
     return;
   }
