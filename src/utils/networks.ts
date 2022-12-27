@@ -105,9 +105,6 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
         context.workspaceState.update("balance", balance);
 
         const networkName: any = getSelectedNetwork(context);
-        // logger.success(
-        //   `${address} has account Balance on ${networkName} network is: ${balance} ${nativeCurrencySymbol}`
-        // );
         logger.success(`\nAccount: ${address} \nBalance: ${balance} ${nativeCurrencySymbol} \nNetwork: ${networkName}`);
 
       });
