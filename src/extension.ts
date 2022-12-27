@@ -6,6 +6,7 @@ import {
   callContractMethod,
   deployContract,
   displayBalance,
+  setPayableValue,
   setTransactionGas,
   updateSelectedNetwork,
 } from "./utils/networks";
@@ -110,6 +111,11 @@ export async function activate(context: vscode.ExtensionContext) {
     //Import Key pair
     commands.registerCommand("ethcode.account.import", async () => {
       importKeyPair(context);
+    }),
+
+    //set payable value
+    commands.registerCommand("ethcode.payable.set", async () => {
+      setPayableValue(context);
     }),
 
     // Set custom gas estimate

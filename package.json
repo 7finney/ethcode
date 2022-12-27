@@ -146,6 +146,11 @@
         "command": "ethcode.rental.create",
         "title": "Create new ERC4907 contract",
         "category": "Ethcode"
+      },
+      {
+        "command": "ethcode.payable.set",
+        "title": "Set payable value",
+        "category": "Ethcode"
       }
     ],
     "keybindings": [
