@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import * as vscode from "vscode";
-import { window } from "vscode";
+import { window, InputBoxOptions } from "vscode";
 import {
   CompiledJSONOutput,
   GasEstimateOutput,
@@ -86,8 +86,7 @@ const getSelectedProvider = (context: vscode.ExtensionContext) => {
 
 // Contract function calls
 const displayBalance = async (context: vscode.ExtensionContext) => {
-  
-  if(getSelectedNetwork(context) === undefined) {
+  if (getSelectedNetwork(context) === undefined) {
     logger.log("No network selected. Please select a network.");
     return;
   }
@@ -95,8 +94,8 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
   const address: any = await context.workspaceState.get("account");
   const nativeCurrencySymbol =
     getSelectedNetConf(context).nativeCurrency.symbol;
-  
-    try {
+
+  try {
     getSelectedProvider(context)
       .getBalance(address)
       .then(async (value) => {
@@ -170,7 +169,12 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
     if (contractAddres === undefined)
       throw new Error("Enter deployed address of selected contract.");
 
-    if (abiItem.stateMutability === "view") {
+    let result: any;
+
+    if (
+      abiItem.stateMutability === "view" ||
+      abiItem.stateMutability === "pure"
+    ) {
       selectContract(context);
 
       const contract = new ethers.Contract(
@@ -179,41 +183,58 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
         getSelectedProvider(context)
       );
 
-      const result = await contract[abiItem.name as string](...params);
+      result = await contract[abiItem.name as string](...params);
       logger.success(
         `Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`
       );
-      logger.log(JSON.stringify(result));
-    } else {
+      if (result) {
+        logger.log(JSON.stringify(result));
+      }
+    }
+
+    if (
+      abiItem.stateMutability === "nonpayable" ||
+      abiItem.stateMutability === "payable"
+    ) {
       const contract = await getSignedContract(context, contractAddres);
+      const gasCondition = (await context.workspaceState.get("gas")) as string;
 
-      let result;
+      const gasEstimate = await getGasEstimates(gasCondition, context);
+      const settingsGasLimit = (await getConfiguration().get(
+        "gasLimit"
+      )) as number;
 
-      if (abiItem.stateMutability === "nonpayable") {
-        const gasCondition = (await context.workspaceState.get(
-          "gas"
-        )) as string;
-
-        const gasEstimate = await getGasEstimates(gasCondition, context);
-        const settingsGasLimit = (await getConfiguration().get(
-          "gasLimit"
-        )) as number;
-        if (gasEstimate !== undefined) {
-          const maxFeePerGas = (gasEstimate as EstimateGas).price;
+      // check for mainnets and testnets...
+      // execute if mainnet
+      if (gasEstimate !== undefined) {
+        const maxFeePerGas = (gasEstimate as EstimateGas).price;
+        // if method statemutability is payable
+        if (abiItem.stateMutability === "payable") {
+          const value = context.workspaceState.get("payableValue");
           result = await contract[abiItem.name as string](...params, {
+            value: value,
             gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), "gwei"),
             gasLimit: settingsGasLimit,
           });
         } else {
-          result = await contract[abiItem.name as string](...params);
+          // if method statemutability is non-payble
+          result = await contract[abiItem.name as string](...params, {
+            gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), "gwei"),
+            gasLimit: settingsGasLimit,
+          });
         }
       } else {
-        const found: any = abiItem.inputs?.find(
-          (e: any) => e.type === "uint256"
-        );
-        result = await contract[abiItem.name as string](...params, {
-          value: found.value,
-        });
+        // execute if testnet
+        if (abiItem.stateMutability === "payable") {
+          // if method statemutability is payable
+          const value = context.workspaceState.get("payableValue");
+          result = await contract[abiItem.name as string](...params, {
+            value: value,
+          });
+        } else {
+          // if method statemutability is payable
+          result = await contract[abiItem.name as string](...params);
+        }
       }
 
       logger.success("Waiting for confirmation...");
@@ -337,6 +358,23 @@ const getContractFactoryWithParams = async (
   return myContract;
 };
 
+const setPayableValue = async (context: vscode.ExtensionContext) => {
+  try {
+    const inputBoxOpts: InputBoxOptions = {
+      placeHolder: "value",
+      ignoreFocusOut: true,
+    };
+    const value = await window.showInputBox(inputBoxOpts);
+    if (value === undefined) {
+      return;
+    }
+    await context.workspaceState.update("payableValue", value);
+    logger.log(`payable value set to: ${value} wei`);
+  } catch (error) {
+    logger.log("Error: payable value is not saved");
+  }
+};
+
 export {
   getConfiguration,
   getNetworkNames,
@@ -349,4 +387,5 @@ export {
   deployContract,
   isTestingNetwork,
   setTransactionGas,
+  setPayableValue,
 };
