@@ -117,6 +117,12 @@ export interface ERC4907ContractType {
   contract: string;
   ERC4907Contract: string;
 }
+
+export interface useContractType {
+  contractName: string;
+  abiItemName: string;
+  contractAddress: any;
+}
 // Typeguard
 
 export function isConstructorInputValue(
