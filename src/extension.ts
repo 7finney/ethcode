@@ -128,4 +128,12 @@ export async function activate(context: vscode.ExtensionContext) {
       logger.success("Welcome to Ethcode!");
     })
   );
+
+  // api for extensions
+  const api = {
+    sum: (a: number, b: number) => a + b,
+    selectNetwork : (context : vscode.ExtensionContext) => updateSelectedNetwork(context)
+  };
+  return api;
+  
 }
