@@ -250,6 +250,11 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
 
   const quickPick = window.createQuickPick();
 
+  if(addresses.length === 0) {
+    logger.log("No account found. Please create account first.")
+    return;
+  }
+  
   quickPick.items = addresses.map((account) => ({
     label: account,
     description: isTestingNetwork(context)
