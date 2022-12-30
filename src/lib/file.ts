@@ -3,7 +3,11 @@ import * as path from "path";
 import { JsonFragment } from "@ethersproject/abi";
 import { logger } from "./index";
 import { CompiledJSONOutput } from "../types/output";
-import { fetchERC4907Contracts } from "../utils/functions";
+import {
+  fetchERC4907Contracts,
+  fetchTokenPaymasterContracts,
+  fetchVerifyPaymasterContracts,
+} from "../utils/functions";
 
 const flatten = (lists: any) => {
   return lists.reduce((a: any, b: any) => a.concat(b), []);
@@ -70,6 +74,7 @@ const createDeployedFile = (
   logger.success(`Created deployed json format of ${contract.name} contract`);
 };
 
+// Create file functions for ERC4907 contract
 const createUserERC4907ContractFile = async (
   fileName: string,
   uri: string,
@@ -94,6 +99,29 @@ const createERC4907ContractFile = async (fileName: string, uri: string) => {
   fs.writeFileSync(fileName, filedata);
   logger.success(`ERC4907 contract file is created successfully.`);
 };
+
+//create file function for ERC4337 VerifyPaymaster contract
+const createVerifyPaymasterFile = async (
+  fileName: string,
+  uri: string,
+  message: string
+) => {
+  const filedata = await fetchVerifyPaymasterContracts(uri);
+  fs.writeFileSync(fileName, filedata);
+  logger.log(message);
+};
+
+//create file function for ERC4337 TokenPaymaster contract
+const createTokenPaymasterFile = async (
+  fileName: string,
+  uri: string,
+  message: string
+) => {
+  const filedata = await fetchTokenPaymasterContracts(uri);
+  fs.writeFileSync(fileName, filedata);
+  logger.log(message);
+};
+
 export {
   writeConstructor,
   writeFunction,
@@ -102,4 +130,6 @@ export {
   createUserERC4907ContractFile,
   createERC4907ContractInterface,
   createERC4907ContractFile,
+  createVerifyPaymasterFile,
+  createTokenPaymasterFile,
 };

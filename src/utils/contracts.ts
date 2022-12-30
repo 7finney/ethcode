@@ -7,7 +7,9 @@ import { CompiledJSONOutput, IFunctionQP, isHardhatProject } from "../types";
 import {
   createERC4907ContractFile,
   createERC4907ContractInterface,
+  createTokenPaymasterFile,
   createUserERC4907ContractFile,
+  createVerifyPaymasterFile,
   getDirectoriesRecursive,
 } from "../lib/file";
 import {
@@ -16,6 +18,14 @@ import {
   createDeployed,
 } from "./functions";
 import { ERC4907ContractUrls } from "../contracts/ERC4907/ERC4907";
+import {
+  ERC4337TokenPaymaster,
+  TokenPaymasterMessages,
+} from "../contracts/ERC4337/ERC4337TokenPaymaster";
+import {
+  ERC4337VerifyPaymaster,
+  VerifyPaymasterMessages,
+} from "../contracts/ERC4337/ERC4337VerifyPaymaster";
 import axios from "axios";
 
 const parseBatchCompiledJSON = (context: ExtensionContext): void => {
@@ -157,6 +167,8 @@ const selectContract = (context: ExtensionContext) => {
   quickPick.show();
 };
 
+//ERC4907 contract creation
+
 const createERC4907Contract = async (context: ExtensionContext) => {
   const path_ =
     workspace.workspaceFolders !== undefined &&
@@ -188,9 +200,53 @@ const createERC4907Contract = async (context: ExtensionContext) => {
   );
 };
 
+const createERC4337VerifyPaymaster = async (context: ExtensionContext) => {
+  const path_ =
+    workspace.workspaceFolders !== undefined &&
+    workspace.workspaceFolders[0].uri.fsPath;
+  const dir = path.join(path_.toString(), "contracts", "VerifyPaymaster");
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+
+    // paymaster folder path
+    const VerifyingPaymasterPath = path.join(dir, "VerifyingPaymaster.sol");
+    //file creation , async process
+
+    // creating VerifyingPaymaster contract
+    await createVerifyPaymasterFile(
+      VerifyingPaymasterPath,
+      ERC4337VerifyPaymaster.VerifyingPaymaster,
+      VerifyPaymasterMessages.VerifyingPaymaster
+    );
+  }
+};
+
+const createERC4337TokenPaymaster = async (context: ExtensionContext) => {
+  const path_ =
+    workspace.workspaceFolders !== undefined &&
+    workspace.workspaceFolders[0].uri.fsPath;
+  const dir = path.join(path_.toString(), "contracts", "TokenPaymaster");
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const TokenPaymasterPath = path.join(dir, "TokenPaymaster.sol");
+  //file creation , async process
+
+  // creating TokenPaymaster contract
+  await createTokenPaymasterFile(
+    TokenPaymasterPath,
+    ERC4337TokenPaymaster.TokenPaymaster,
+    TokenPaymasterMessages.TokenPaymaster
+  );
+};
+
 export {
   parseBatchCompiledJSON,
   parseCompiledJSONPayload,
   selectContract,
   createERC4907Contract,
+  createERC4337VerifyPaymaster,
+  createERC4337TokenPaymaster,
 };

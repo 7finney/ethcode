@@ -288,19 +288,49 @@ const getGasEstimates = async (
   return estimate;
 };
 
+// fetch contracts of ERC4907
 const fetchERC4907Contracts = async (uri: string) => {
   const response = await axios
     .get(uri)
     .then((res) => {
-      console.log(res);
       return res.data;
     })
     .catch((err) => {
-      console.log("an error occoured while fetch files:", err);
+      logger.log("An error occoured while creating ERC4907 contract:");
     });
   return response;
 };
 
+//fetch contracts for ERC4337 verifyPaymaster
+const fetchVerifyPaymasterContracts = async (uri: string) => {
+  const response = await axios
+    .get(uri)
+    .then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      logger.log(
+        "An error occoured while creating VerifyPaymaster contract:",
+        err
+      );
+    });
+  return response;
+};
+
+const fetchTokenPaymasterContracts = async (uri: string) => {
+  const response = await axios
+    .get(uri)
+    .then((res) => {
+      return res.data;
+    })
+    .catch((err) => {
+      logger.log(
+        "An error occoured while creating TokenPaymaster contract:",
+        err
+      );
+    });
+  return response;
+};
 export {
   createFunctionInput,
   createDeployed,
@@ -310,4 +340,6 @@ export {
   getDeployedInputs,
   getGasEstimates,
   fetchERC4907Contracts,
+  fetchVerifyPaymasterContracts,
+  fetchTokenPaymasterContracts,
 };
