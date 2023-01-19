@@ -310,5 +310,6 @@ export {
   getDeployedInputs,
   getGasEstimates,
   fetchERC4907Contracts,
-  getDeployedFullPath
+  getDeployedFullPath,
+  getFunctionInputFullPath
 };

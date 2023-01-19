@@ -5,7 +5,7 @@ import { extractPvtKey, listAddresses } from "./wallet";
 
 import { getNetworkNames, getSelectedNetConf, getSelectedProvider } from "./networks";
 import { CompiledJSONOutput } from "../types";
-import { getDeployedFullPath, getFunctionInputs } from "./functions";
+import { getDeployedFullPath, getFunctionInputFullPath, getFunctionInputs } from "./functions";
 
 // PROVIDER
 
@@ -109,6 +109,21 @@ const getDeployedContractAddress = async (context: vscode.ExtensionContext, name
   }
 }
 
+const getFunctionInputFile = async (context: vscode.ExtensionContext, name: string) => {
+  const contracts = context.workspaceState.get("contracts") as {
+    [name: string]: CompiledJSONOutput;
+  };
+  if (contracts === undefined || Object.keys(contracts).length === 0) return;
+  for (let i = 0; i < Object.keys(contracts).length; i++) {
+    let contract : CompiledJSONOutput = contracts[Object.keys(contracts)[i]];
+    if (contract.name === name) {
+      let link = getFunctionInputFullPath(contract);
+      let json = require(link);console.log(json);
+      return json
+    }
+  }
+}
+
 export {
   getNetwork,
   setNetwork,
@@ -120,5 +135,6 @@ export {
   listFunctions,
   executeContractMethod,
   exportABI,
-  getDeployedContractAddress
+  getDeployedContractAddress,
+  getFunctionInputFile
 }
