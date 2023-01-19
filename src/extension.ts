@@ -25,7 +25,7 @@ import {
   parseCompiledJSONPayload,
   selectContract,
 } from "./utils";
-import { getNetwork, getWallet, getAvailableNetwork, providerDefault, setNetwork, listAllWallet, getContract, listFunctions, executeContractMethod, exportABI } from "./utils/api";
+import { getNetwork, getWallet, getAvailableNetwork, providerDefault, setNetwork, listAllWallet, getContract, listFunctions, executeContractMethod, exportABI, getDeployedContractAddress } from "./utils/api";
 
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
@@ -158,6 +158,7 @@ export async function activate(context: vscode.ExtensionContext) {
       list:(abi:any)=>listFunctions(abi),
       execute:(contract:any,method:string,args:any[])=>executeContractMethod(contract,method,args),
       abi:(name:string)=>exportABI(context,name),
+      geContractAddress : (name:string)=>getDeployedContractAddress(context,name),
       //
       // getABI return json 
       // return contract array 
