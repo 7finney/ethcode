@@ -311,5 +311,6 @@ export {
   getGasEstimates,
   fetchERC4907Contracts,
   getDeployedFullPath,
-  getFunctionInputFullPath
+  getFunctionInputFullPath,
+  getConstructorInputFullPath
 };
