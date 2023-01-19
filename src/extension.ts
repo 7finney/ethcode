@@ -25,7 +25,7 @@ import {
   parseCompiledJSONPayload,
   selectContract,
 } from "./utils";
-import { getNetwork, getWallet, getAvailableNetwork, providerDefault, setNetwork, listAllWallet, getContract, listFunctions, executeContractMethod } from "./utils/api";
+import { getNetwork, getWallet, getAvailableNetwork, providerDefault, setNetwork, listAllWallet, getContract, listFunctions, executeContractMethod, exportABI } from "./utils/api";
 
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
@@ -57,7 +57,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // Deploy ContractcallContractMethod
     commands.registerCommand("ethcode.contract.deploy", async () => {
-      deployContract(context);
+      deployContract(context); //*
     }),
 
     // select ethereum networks
@@ -88,12 +88,12 @@ export async function activate(context: vscode.ExtensionContext) {
       const editorContent = window.activeTextEditor
         ? window.activeTextEditor.document.getText()
         : undefined;
-      parseCompiledJSONPayload(context, editorContent);
+      parseCompiledJSONPayload(context, editorContent); //*
     }),
 
     // Load all combined JSON output
     commands.registerCommand("ethcode.compiled-json.load.all", async () => {
-      parseBatchCompiledJSON(context);
+      parseBatchCompiledJSON(context); //*
     }),
 
     // Select a compiled json from the list
@@ -157,7 +157,12 @@ export async function activate(context: vscode.ExtensionContext) {
       get:(address:string,abi:any,wallet:ethers.Signer)=>getContract(context,address,abi,wallet),
       list:(abi:any)=>listFunctions(abi),
       execute:(contract:any,method:string,args:any[])=>executeContractMethod(contract,method,args),
-    }
+      abi:(name:string)=>exportABI(context,name),
+      //
+      // getABI return json 
+      // return contract array 
+    },
+    
   };
 
   return api;

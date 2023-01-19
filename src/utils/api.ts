@@ -4,6 +4,8 @@ import * as vscode from "vscode";
 import { extractPvtKey, listAddresses } from "./wallet";
 
 import { getNetworkNames, getSelectedNetConf, getSelectedProvider } from "./networks";
+import { CompiledJSONOutput } from "../types";
+import { getFunctionInputs } from "./functions";
 
 // PROVIDER
 
@@ -20,7 +22,7 @@ const getNetwork = (context: vscode.ExtensionContext) => {
 }
 
 const setNetwork = (context: vscode.ExtensionContext, network: string) => {
-  if(network === null){
+  if (network === null) {
     return "Network parameter not given";
   }
   if (!getNetworkNames().includes(network)) {
@@ -35,10 +37,10 @@ const setNetwork = (context: vscode.ExtensionContext, network: string) => {
 
 const getWallet = async (context: vscode.ExtensionContext, account: string) => {
   const address: any = await context.workspaceState.get("account");
-  account  = account || address;
+  account = account || address;
   let provider = getSelectedProvider(context);
   let privateKey = await extractPvtKey(context.extensionPath, account);
-  const wallet = new ethers.Wallet(privateKey,provider)
+  const wallet = new ethers.Wallet(privateKey, provider)
   return wallet;
 }
 
@@ -69,6 +71,30 @@ const executeContractMethod = async (contract: any, method: string, args: any[])
   return result;
 }
 
+const exportABI = async (context: vscode.ExtensionContext, selectSpecific: string = "") => {
+  const contracts = context.workspaceState.get("contracts") as {
+    [name: string]: CompiledJSONOutput;
+  };
+  if (contracts === undefined || Object.keys(contracts).length === 0) return;
+  // return all abi if name is not specified else return abi of specific contract
+
+  const contractABIS = Object.keys(contracts).map((name) => {
+    return {
+      name,
+      abi: contracts[name].hardhatOutput?.abi,
+    };
+  });
+
+  for (let i = 0; i < contractABIS.length; i++) {
+    if (contractABIS[i].name === selectSpecific) {
+      return contractABIS[i].abi;
+    }
+  }
+  return contractABIS;
+
+}
+
+
 export {
   getNetwork,
   setNetwork,
@@ -78,5 +104,6 @@ export {
   getWallet,
   getContract,
   listFunctions,
-  executeContractMethod
+  executeContractMethod,
+  exportABI
 }
