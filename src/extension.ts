@@ -25,7 +25,21 @@ import {
   parseCompiledJSONPayload,
   selectContract,
 } from "./utils";
-import { getNetwork, getWallet, getAvailableNetwork, providerDefault, setNetwork, listAllWallet, getContract, listFunctions, executeContractMethod, exportABI, getDeployedContractAddress, getFunctionInputFile, getConstructorInputFile } from "./utils/api";
+import {
+  getNetwork,
+  getWallet,
+  getAvailableNetwork,
+  providerDefault,
+  setNetwork,
+  listAllWallet,
+  getContract,
+  listFunctions,
+  executeContractMethod,
+  exportABI,
+  getDeployedContractAddress,
+  getFunctionInputFile,
+  getConstructorInputFile,
+} from "./utils/api";
 
 // eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
@@ -115,17 +129,6 @@ export async function activate(context: vscode.ExtensionContext) {
       importKeyPair(context);
     }),
 
-    // Set custom gas estimate
-    // commands.registerCommand('ethcode.transaction.gas.set', async () => {
-    // const gasInp: InputBoxOptions = {
-    //   ignoreFocusOut: false,
-    //   placeHolder: 'Enter custom gas',
-    // };
-
-    // const gas = await window.showInputBox(gasInp);
-    // context.workspaceState.update('gasEstimate', gas);
-    // }),
-
     // Activate
     commands.registerCommand("ethcode.activate", async () => {
       logger.success("Welcome to Ethcode!");
@@ -136,38 +139,39 @@ export async function activate(context: vscode.ExtensionContext) {
   const api = {
     // STATUS
     status: () => {
-      return "ok"
+      return "ok";
     },
     // WALLET
     wallet: {
-      get:(account : string)=>getWallet(context,account),
+      get: (account: string) => getWallet(context, account),
       list: () => listAllWallet(context),
     },
     // PROVIDER
     provider: {
       get: () => providerDefault(context),
       network: {
-        get:()=>getNetwork(context),
-        set:(network:string)=>setNetwork(context,network),
-        list:()=>getAvailableNetwork(),
+        get: () => getNetwork(context),
+        set: (network: string) => setNetwork(context, network),
+        list: () => getAvailableNetwork(),
       },
     },
     // CONTRACT
-    contract:{
-      get:(address:string,abi:any,wallet:ethers.Signer)=>getContract(context,address,abi,wallet),
-      list:(abi:any)=>listFunctions(abi),
-      execute:(contract:any,method:string,args:any[])=>executeContractMethod(contract,method,args),
-      abi:(name:string)=>exportABI(context,name),
-      geContractAddress : (name:string)=>getDeployedContractAddress(context,name),
-      getFunctionInput : (name:string)=>getFunctionInputFile(context,name),
-      getConstructorInput : (name:string)=>getConstructorInputFile(context,name),
-      //
-      // getABI return json 
-      // return contract array 
+    contract: {
+      get: (address: string, abi: any, wallet: ethers.Signer) =>
+        getContract(context, address, abi, wallet),
+      list: (abi: any) => listFunctions(abi),
+      execute: (contract: any, method: string, args: any[]) =>
+        executeContractMethod(contract, method, args),
+      abi: (name: string) => exportABI(context, name),
+      geContractAddress: (name: string) =>
+        getDeployedContractAddress(context, name),
+      getFunctionInput: (name: string) => getFunctionInputFile(context, name),
+      getConstructorInput: (name: string) =>
+        getConstructorInputFile(context, name),
+      // getABI return json
+      // return contract array
     },
-    
   };
 
   return api;
-  
-} 
+}

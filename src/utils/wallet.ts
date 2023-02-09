@@ -136,10 +136,12 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
         const arr = file.split("--");
         const address = toChecksumAddress(`0x${arr[arr.length - 1]}`);
 
-        const already = addresses.find((element: string) => toChecksumAddress(element) === address)
+        const already = addresses.find(
+          (element: string) => toChecksumAddress(element) === address
+        );
 
         if (already !== undefined) {
-          logger.log(`Account ${address} is already exist.`)
+          logger.log(`Account ${address} is already exist.`);
         } else {
           fs.copyFile(
             fileUri[0].fsPath,
@@ -252,7 +254,7 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
   const quickPick = window.createQuickPick();
 
   if (addresses.length === 0) {
-    logger.log("No account found. Please create account first.")
+    logger.log("No account found. Please create account first.");
     return;
   }
 
@@ -273,7 +275,8 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
       context.workspaceState.update("account", label);
       logger.success(`Account ${label} is selected.`);
       logger.success(
-        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner
+        `You can see detail of this account here. ${
+          getSelectedNetConf(context).blockScanner
         }/address/${label}`
       );
       quickPick.dispose();
@@ -291,5 +294,5 @@ export {
   deleteKeyPair,
   extractPvtKey,
   selectAccount,
-  importKeyPair
-}
+  importKeyPair,
+};

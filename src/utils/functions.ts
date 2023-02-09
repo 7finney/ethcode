@@ -312,5 +312,5 @@ export {
   fetchERC4907Contracts,
   getDeployedFullPath,
   getFunctionInputFullPath,
-  getConstructorInputFullPath
+  getConstructorInputFullPath,
 };
