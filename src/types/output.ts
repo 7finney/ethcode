@@ -1,6 +1,6 @@
 import { JsonFragment } from "@ethersproject/abi";
 import * as ethers from "ethers";
-import * as fs from 'fs';
+import * as fs from "fs";
 
 export interface HardHatCompiledOutput {
   contractName: string;
@@ -21,16 +21,16 @@ export interface RemixCompiledOutput {
 }
 
 interface GasEstimate {
-  confidence: number,
-  maxFeePerGas: number,
-  maxPriorityFeePerGas: number,
-  price: number
+  confidence: number;
+  maxFeePerGas: number;
+  maxPriorityFeePerGas: number;
+  price: number;
 }
 
 export interface GasEstimateOutput {
-  low: GasEstimate,
-  medium: GasEstimate,
-  high: GasEstimate
+  low: GasEstimate;
+  medium: GasEstimate;
+  high: GasEstimate;
 }
 
 export interface CompiledJSONOutput {
@@ -49,8 +49,10 @@ export const getAbi = (output: CompiledJSONOutput) => {
   return output.remixOutput?.abi;
 };
 
-export const getByteCode = (output: CompiledJSONOutput): ethers.utils.BytesLike | undefined => {
-  if (output.contractType === 0) return '';
+export const getByteCode = (
+  output: CompiledJSONOutput
+): ethers.utils.BytesLike | undefined => {
+  if (output.contractType === 0) return "";
 
   if (output.contractType === 1) return output.hardhatOutput?.bytecode;
 
@@ -59,7 +61,11 @@ export const getByteCode = (output: CompiledJSONOutput): ethers.utils.BytesLike 
 
 export const isHardhatProject = (path_: string) => {
   return (
-    fs.readdirSync(path_).filter((file) => file === 'hardhat.config.js' || file === 'hardhat.config.ts').length > 0
+    fs
+      .readdirSync(path_)
+      .filter(
+        (file) => file === "hardhat.config.js" || file === "hardhat.config.ts"
+      ).length > 0
   );
 };
 
@@ -78,4 +84,3 @@ export interface BytecodeObject {
     };
   };
 }
-

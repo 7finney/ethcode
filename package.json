@@ -15,22 +15,19 @@
     "remix ide"
   ],
   "icon": "images/ethcode.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/7fny/ethcode"
-  },
+  "repository": "https://github.com/7fny/ethcode",
   "engines": {
     "vscode": "^1.38.1",
     "node": ">=16.15.0"
   },
   "activationEvents": [
-    "onCommand:ethcode.activate",
-    "onCommand:ethcode.compiled-json.load",
-    "onCommand:ethcode.compiled-json.load.all",
-    "onCommand:ethcode.compiled-json.select",
-    "onCommand:ethcode.network.select",
-    "onCommand:ethcode.account.export",
-    "onCommand:ethcode.account.import"
+    "onCommand: ethcode.activate",
+    "onCommand: ethcode.compiled-json.load",
+    "onCommand: ethcode.compiled-json.load.all",
+    "onCommand: ethcode.compiled-json.select",
+    "onCommand: ethcode.network.select",
+    "onCommand: ethcode.account.export",
+    "onCommand: ethcode.account.import"
   ],
   "main": "./build/src/extension.js",
   "extensionDependencies": [
@@ -186,6 +183,7 @@
     "@types/underscore": "^1.11.4",
     "axios": "^0.27.2",
     "bn.js": "^5.2.1",
+    "eslint": "^8.0.1",
     "ethers": "^5.6.9",
     "keythereum": "^1.2.0",
     "number-to-bn": "^1.7.0",
@@ -197,8 +195,13 @@
     "@types/keythereum": "^1.2.1",
     "@types/node": "^18.0.0",
     "@types/vscode": "^1.38.1",
-    "prettier": "^2.1.2",
-    "typescript": "^4.7.4",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "eslint-config-standard-with-typescript": "^34.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "prettier": "^2.8.4",
+    "typescript": "*",
     "vscode": "^1.1.37"
   },
   "scripts": {
@@ -207,8 +210,6 @@
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -watch -p ./"
   },
-  "author": {
-    "name": "0mkara",
-    "email": "0mkar@protonmail.com"
-  }
+  "author": "0mkara <0mkar@protonmail.com>",
+  "license": "MIT"
 }

@@ -3,23 +3,32 @@ import * as vscode from "vscode";
 
 import { extractPvtKey, listAddresses } from "./wallet";
 
-import { getNetworkNames, getSelectedNetConf, getSelectedProvider } from "./networks";
+import {
+  getNetworkNames,
+  getSelectedNetConf,
+  getSelectedProvider,
+} from "./networks";
 import { CompiledJSONOutput } from "../types";
-import { getConstructorInputFullPath, getDeployedFullPath, getFunctionInputFullPath, getFunctionInputs } from "./functions";
+import {
+  getConstructorInputFullPath,
+  getDeployedFullPath,
+  getFunctionInputFullPath,
+  getFunctionInputs,
+} from "./functions";
 
 // PROVIDER
 
 const providerDefault = (context: vscode.ExtensionContext) => {
   return getSelectedProvider(context);
-}
+};
 
 const getAvailableNetwork = () => {
   return getNetworkNames();
-}
+};
 
 const getNetwork = (context: vscode.ExtensionContext) => {
   return getSelectedNetConf(context);
-}
+};
 
 const setNetwork = (context: vscode.ExtensionContext, network: string) => {
   if (network === null) {
@@ -31,7 +40,7 @@ const setNetwork = (context: vscode.ExtensionContext, network: string) => {
     context.workspaceState.update("selectedNetwork", network);
     return "Network changed to " + network;
   }
-}
+};
 
 // WALLET
 
@@ -40,21 +49,26 @@ const getWallet = async (context: vscode.ExtensionContext, account: string) => {
   account = account || address;
   let provider = getSelectedProvider(context);
   let privateKey = await extractPvtKey(context.extensionPath, account);
-  const wallet = new ethers.Wallet(privateKey, provider)
+  const wallet = new ethers.Wallet(privateKey, provider);
   return wallet;
-}
+};
 
 const listAllWallet = async (context: vscode.ExtensionContext) => {
   let result = await listAddresses(context, context.extensionPath);
   return result;
-}
+};
 
 // CONTRACT
 
-const getContract = async (context: vscode.ExtensionContext, address: string, abi: any, wallet: ethers.Signer) => {
+const getContract = async (
+  context: vscode.ExtensionContext,
+  address: string,
+  abi: any,
+  wallet: ethers.Signer
+) => {
   let contract = new ethers.Contract(address, abi, wallet);
   return contract;
-}
+};
 
 const listFunctions = (abi: any) => {
   let result = [];
@@ -64,14 +78,21 @@ const listFunctions = (abi: any) => {
     }
   }
   return result;
-}
+};
 
-const executeContractMethod = async (contract: any, method: string, args: any[]) => {
+const executeContractMethod = async (
+  contract: any,
+  method: string,
+  args: any[]
+) => {
   let result = await contract[method](...args);
   return result;
-}
+};
 
-const exportABI = async (context: vscode.ExtensionContext, selectSpecific: string = "") => {
+const exportABI = async (
+  context: vscode.ExtensionContext,
+  selectSpecific: string = ""
+) => {
   const contracts = context.workspaceState.get("contracts") as {
     [name: string]: CompiledJSONOutput;
   };
@@ -91,53 +112,64 @@ const exportABI = async (context: vscode.ExtensionContext, selectSpecific: strin
     }
   }
   return contractABIS;
+};
 
-}
-
-const getDeployedContractAddress = async (context: vscode.ExtensionContext, name: string) => {
+const getDeployedContractAddress = async (
+  context: vscode.ExtensionContext,
+  name: string
+) => {
   const contracts = context.workspaceState.get("contracts") as {
     [name: string]: CompiledJSONOutput;
   };
   if (contracts === undefined || Object.keys(contracts).length === 0) return;
   for (let i = 0; i < Object.keys(contracts).length; i++) {
-    let contract : CompiledJSONOutput = contracts[Object.keys(contracts)[i]];
+    let contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]];
     if (contract.name === name) {
       let link = getDeployedFullPath(contract);
-      let json = require(link);console.log(json);
-      return json
+      let json = require(link);
+      console.log(json);
+      return json;
     }
   }
-}
+};
 
-const getFunctionInputFile = async (context: vscode.ExtensionContext, name: string) => {
+const getFunctionInputFile = async (
+  context: vscode.ExtensionContext,
+  name: string
+) => {
   const contracts = context.workspaceState.get("contracts") as {
     [name: string]: CompiledJSONOutput;
   };
   if (contracts === undefined || Object.keys(contracts).length === 0) return;
   for (let i = 0; i < Object.keys(contracts).length; i++) {
-    let contract : CompiledJSONOutput = contracts[Object.keys(contracts)[i]];
+    let contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]];
     if (contract.name === name) {
       let link = getFunctionInputFullPath(contract);
-      let json = require(link);console.log(json);
-      return json
+      let json = require(link);
+      console.log(json);
+      return json;
     }
   }
-}
+};
 
-const getConstructorInputFile = async (context: vscode.ExtensionContext, name: string) => {
+const getConstructorInputFile = async (
+  context: vscode.ExtensionContext,
+  name: string
+) => {
   const contracts = context.workspaceState.get("contracts") as {
     [name: string]: CompiledJSONOutput;
   };
   if (contracts === undefined || Object.keys(contracts).length === 0) return;
   for (let i = 0; i < Object.keys(contracts).length; i++) {
-    let contract : CompiledJSONOutput = contracts[Object.keys(contracts)[i]];
+    let contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]];
     if (contract.name === name) {
       let link = getConstructorInputFullPath(contract);
-      let json = require(link);console.log(json);
-      return json
+      let json = require(link);
+      console.log(json);
+      return json;
     }
   }
-}
+};
 
 export {
   getNetwork,
@@ -152,5 +184,5 @@ export {
   exportABI,
   getDeployedContractAddress,
   getFunctionInputFile,
-  getConstructorInputFile
-}
+  getConstructorInputFile,
+};

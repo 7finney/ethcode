@@ -1,25 +1,25 @@
-import { window, OutputChannel } from 'vscode';
+import { window, OutputChannel } from "vscode";
 
 const successToast = (msg: string) => {
-  window.showInformationMessage(msg, 'Dismiss');
-}
+  window.showInformationMessage(msg, "Dismiss");
+};
 
 const warningToast = (msg: string) => {
-  window.showWarningMessage(msg, 'Dismiss');
-}
+  window.showWarningMessage(msg, "Dismiss");
+};
 const errorToast = (msg: string) => {
-  window.showErrorMessage(msg, 'Dismiss');
-}
+  window.showErrorMessage(msg, "Dismiss");
+};
 
 const actionToast = (msg: string, actionName: string) => {
-  return window.showInformationMessage(msg, actionName, 'Dismiss');
-}
+  return window.showInformationMessage(msg, actionName, "Dismiss");
+};
 
 export class Logger {
   private outputChannel: OutputChannel;
 
   constructor(name?: string) {
-    this.outputChannel = window.createOutputChannel(name || 'Ethcode');
+    this.outputChannel = window.createOutputChannel(name || "Ethcode");
   }
 
   private getNow = (): string => {
@@ -48,4 +48,3 @@ export class Logger {
     successToast(m);
   }
 }
-
