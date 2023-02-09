@@ -84,6 +84,7 @@ const createKeyPair = (
   }
   keythereum.exportToFile(keyObject, `${path}/keystore`);
   listAddresses(context, path);
+  return keyObject.address;
 };
 
 // delete privateKey against address
@@ -94,7 +95,7 @@ const deleteKeyPair = async (context: vscode.ExtensionContext) => {
       placeHolder: "Public key",
     };
     const publicKey = await window.showInputBox(pubkeyInp);
-    if(publicKey === undefined) {
+    if (publicKey === undefined) {
       logger.log("Please input public address");
       return;
     }
@@ -135,10 +136,12 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
         const arr = file.split("--");
         const address = toChecksumAddress(`0x${arr[arr.length - 1]}`);
 
-        const already = addresses.find((element: string) => toChecksumAddress(element) === address)
+        const already = addresses.find(
+          (element: string) => toChecksumAddress(element) === address
+        );
 
-        if(already !== undefined) {
-          logger.log(`Account ${address} is already exist.`)
+        if (already !== undefined) {
+          logger.log(`Account ${address} is already exist.`);
         } else {
           fs.copyFile(
             fileUri[0].fsPath,
@@ -147,7 +150,7 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
               if (err) throw err;
             }
           );
-  
+
           logger.success(`Account ${address} is successfully imported!`);
           listAddresses(context, context.extensionPath);
         }
@@ -250,11 +253,11 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
 
   const quickPick = window.createQuickPick();
 
-  if(addresses.length === 0) {
-    logger.log("No account found. Please create account first.")
+  if (addresses.length === 0) {
+    logger.log("No account found. Please create account first.");
     return;
   }
-  
+
   quickPick.items = addresses.map((account) => ({
     label: account,
     description: isTestingNetwork(context)
@@ -291,5 +294,5 @@ export {
   deleteKeyPair,
   extractPvtKey,
   selectAccount,
-  importKeyPair
-}
+  importKeyPair,
+};

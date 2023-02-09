@@ -5,7 +5,7 @@ import { sha3, isHexStrict } from "./sha3";
 function toChecksumAddress(address: any) {
   if (typeof address === undefined) return "";
 
-  if (!(/^(0x)?[0-9a-f]{40}$/i.test(address))) {
+  if (!/^(0x)?[0-9a-f]{40}$/i.test(address)) {
     throw new Error(
       'Given address "' + address + '" is not a valid Ethereum address.'
     );
@@ -28,38 +28,32 @@ function toChecksumAddress(address: any) {
 
 function asciiToHex(str: any) {
   if (!str) {
-    return "0x00"
+    return "0x00";
   }
   var hex: string = "";
   for (let i in str) {
     var charCode = str[i].charCodeAt(0).toString(16);
-    hex += charCode.length < 2 ? '0' + charCode : charCode;
+    hex += charCode.length < 2 ? "0" + charCode : charCode;
   }
   return "0x" + hex;
 }
 
 function hexToAscii(hex: string) {
   var i: number = 0;
-  var str: String = '';
+  var str: String = "";
   if (!isHexStrict(hex)) {
-    throw new Error('The parameter must be a valid HEX string.');
+    throw new Error("The parameter must be a valid HEX string.");
   }
-  if (hex.substring(0, 2) === '0x') {
+  if (hex.substring(0, 2) === "0x") {
     i = 2;
   }
   for (; i < hex.length; i += 2) {
-    str += String.fromCharCode(parseInt(hex.substring(i, 2), 16))
+    str += String.fromCharCode(parseInt(hex.substring(i, 2), 16));
   }
 }
 
 function randomHex(size: any) {
-  return '0x' + randomBytes(size).toString('hex');
+  return "0x" + randomBytes(size).toString("hex");
 }
 
-export {
-  toChecksumAddress,
-  asciiToHex,
-  hexToAscii,
-  randomHex,
-  sha3
-};
+export { toChecksumAddress, asciiToHex, hexToAscii, randomHex, sha3 };
