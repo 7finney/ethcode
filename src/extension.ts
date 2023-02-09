@@ -41,7 +41,6 @@ import {
   getConstructorInputFile,
 } from "./utils/api";
 
-// eslint-disable-next-line import/prefer-default-export
 export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     // Create new account with password
@@ -102,12 +101,12 @@ export async function activate(context: vscode.ExtensionContext) {
       const editorContent = window.activeTextEditor
         ? window.activeTextEditor.document.getText()
         : undefined;
-      parseCompiledJSONPayload(context, editorContent); //*
+      parseCompiledJSONPayload(context, editorContent);
     }),
 
     // Load all combined JSON output
     commands.registerCommand("ethcode.compiled-json.load.all", async () => {
-      parseBatchCompiledJSON(context); //*
+      parseBatchCompiledJSON(context);
     }),
 
     // Select a compiled json from the list
@@ -168,8 +167,6 @@ export async function activate(context: vscode.ExtensionContext) {
       getFunctionInput: (name: string) => getFunctionInputFile(context, name),
       getConstructorInput: (name: string) =>
         getConstructorInputFile(context, name),
-      // getABI return json
-      // return contract array
     },
   };
 
