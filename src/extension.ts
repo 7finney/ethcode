@@ -134,7 +134,8 @@ export async function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // api for extensions
+  // API for extensions
+  // ref: https://code.visualstudio.com/api/references/vscode-api#extensions
   const api = {
     // STATUS
     status: () => {
