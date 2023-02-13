@@ -2,7 +2,7 @@
 
 [![Discord chat](https://img.shields.io/discord/722971683388129290?color=7389D8&logo=discord&logoColor=ffffff)](https://discord.gg/yBBmtqGvxK)
 
-Ethcode is a vscode extension that helps deploy and execute solidity smart contracts in EVM based blockchians. It supports multiple test networks.
+Ethcode is a vscode extension that helps deploy and execute solidity smart contracts in EVM based blockchains. It supports multiple test networks.
 
 ## Website
 
