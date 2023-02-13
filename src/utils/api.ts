@@ -42,6 +42,13 @@ const setNetwork = (context: vscode.ExtensionContext, network: string) => {
   }
 };
 
+// ACCOUNT
+const getAccount = async (context: vscode.ExtensionContext) => {
+  const address: any = await context.workspaceState.get("account");
+  return address;
+};
+
+
 // WALLET
 
 const getWallet = async (context: vscode.ExtensionContext, account: string) => {
@@ -185,4 +192,5 @@ export {
   getDeployedContractAddress,
   getFunctionInputFile,
   getConstructorInputFile,
+  getAccount,
 };

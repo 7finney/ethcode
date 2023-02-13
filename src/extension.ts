@@ -39,6 +39,7 @@ import {
   getDeployedContractAddress,
   getFunctionInputFile,
   getConstructorInputFile,
+  getAccount
 } from "./utils/api";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -140,6 +141,10 @@ export async function activate(context: vscode.ExtensionContext) {
     // STATUS
     status: () => {
       return "ok";
+    },
+    // ACCOUNT
+    account: {
+      get: () => getAccount(context)
     },
     // WALLET
     wallet: {
