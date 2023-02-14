@@ -20,6 +20,8 @@ import {
 import { errors } from "../config/errors";
 import { selectContract } from "./contracts";
 
+import {ethcode} from "./api";
+
 const provider = ethers.providers;
 
 const getConfiguration = () => {
@@ -57,7 +59,7 @@ const updateSelectedNetwork = async (context: vscode.ExtensionContext) => {
       const { label } = selection[0];
       context.workspaceState.update("selectedNetwork", label);
       quickPick.dispose();
-
+      ethcode.emit("networkChanged", label);
       logger.success(`Selected network is ${label}`);
     }
   });

@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import * as vscode from "vscode";
-
+import {EventEmitter} from "events";
 import { extractPvtKey, listAddresses } from "./wallet";
 
 import {
@@ -15,6 +15,13 @@ import {
   getFunctionInputFullPath,
   getFunctionInputs,
 } from "./functions";
+
+// EVENTS
+const ethcode = new EventEmitter();
+// create a new event emitter for network change
+ethcode.on("networkChanged", (network: string) => {
+  console.log("Network changed to " + network);
+});
 
 // PROVIDER
 
@@ -178,6 +185,9 @@ const getConstructorInputFile = async (
   }
 };
 
+
+
+
 export {
   getNetwork,
   setNetwork,
@@ -193,4 +203,5 @@ export {
   getFunctionInputFile,
   getConstructorInputFile,
   getAccount,
+  ethcode
 };

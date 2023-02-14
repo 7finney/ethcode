@@ -6,6 +6,7 @@ import {
   callContractMethod,
   deployContract,
   displayBalance,
+  getSelectedNetwork,
   getSelectedProvider,
   setTransactionGas,
   updateSelectedNetwork,
@@ -39,7 +40,8 @@ import {
   getDeployedContractAddress,
   getFunctionInputFile,
   getConstructorInputFile,
-  getAccount
+  getAccount,
+  ethcode
 } from "./utils/api";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -143,8 +145,14 @@ export async function activate(context: vscode.ExtensionContext) {
       return "ok";
     },
     // ACCOUNT
-    account: {
-      get: () => getAccount(context)
+    env: {
+      account:{
+        get: () => getAccount(context)
+      },
+      network: {
+        get: () => getSelectedNetwork(context),
+      },
+      ethcode: () => ethcode,
     },
     // WALLET
     wallet: {
