@@ -37,7 +37,7 @@ import {
   getFunctionInputFile,
   getConstructorInputFile
 } from './utils/api'
-import { status, Wallet } from './api'
+import { status, wallet } from './api'
 
 export async function activate (context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -166,12 +166,7 @@ export async function activate (context: vscode.ExtensionContext) {
   // ref: https://code.visualstudio.com/api/references/vscode-api#extensions
   const api = {
     status,
-    // WALLET
-    // wallet: {
-    //   get: async (account: string) => await getWallet(context, account),
-    //   list: async () => await listAllWallet(context)
-    // },
-    wallet: new Wallet(context),
+    wallet: wallet(context),
     // PROVIDER
     provider: {
       get: () => providerDefault(context),

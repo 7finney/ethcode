@@ -1,6 +1,6 @@
 import { status } from './status'
-import { Wallet } from './wallet'
+import { wallet } from './wallet'
 export {
   status,
-  Wallet
+  wallet
 }
