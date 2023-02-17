@@ -26,11 +26,9 @@ import {
 } from './utils'
 import {
   getNetwork,
-  getWallet,
   getAvailableNetwork,
   providerDefault,
   setNetwork,
-  listAllWallet,
   getContract,
   listFunctions,
   executeContractMethod,
@@ -39,6 +37,7 @@ import {
   getFunctionInputFile,
   getConstructorInputFile
 } from './utils/api'
+import { status, Wallet } from './api'
 
 export async function activate (context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -166,15 +165,13 @@ export async function activate (context: vscode.ExtensionContext) {
   // API for extensions
   // ref: https://code.visualstudio.com/api/references/vscode-api#extensions
   const api = {
-    // STATUS
-    status: () => {
-      return 'ok'
-    },
+    status,
     // WALLET
-    wallet: {
-      get: async (account: string) => await getWallet(context, account),
-      list: async () => await listAllWallet(context)
-    },
+    // wallet: {
+    //   get: async (account: string) => await getWallet(context, account),
+    //   list: async () => await listAllWallet(context)
+    // },
+    wallet: new Wallet(context),
     // PROVIDER
     provider: {
       get: () => providerDefault(context),
