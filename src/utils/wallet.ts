@@ -9,6 +9,7 @@ const keythereum = require("keythereum");
 
 import { toChecksumAddress } from "../lib/hash/util";
 import { Account, LocalAddressType } from "../types";
+import { ethcode } from "./api";
 import {
   getSelectedNetwork,
   getSelectedProvider,
@@ -273,6 +274,10 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
     if (selection[0]) {
       const { label } = selection[0];
       context.workspaceState.update("account", label);
+
+      // Event emmiter for network change event
+      ethcode.account.fire(label); 
+
       logger.success(`Account ${label} is selected.`);
       logger.success(
         `You can see detail of this account here. ${

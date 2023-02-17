@@ -59,7 +59,10 @@ const updateSelectedNetwork = async (context: vscode.ExtensionContext) => {
       const { label } = selection[0];
       context.workspaceState.update("selectedNetwork", label);
       quickPick.dispose();
-      ethcode.emit("networkChanged", label);
+      
+      // Event emmiter for network change event
+      ethcode.network.fire(label);
+
       logger.success(`Selected network is ${label}`);
     }
   });

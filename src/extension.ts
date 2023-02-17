@@ -41,7 +41,8 @@ import {
   getFunctionInputFile,
   getConstructorInputFile,
   getAccount,
-  ethcode
+  ethcode,
+  // getEventEmitter
 } from "./utils/api";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -152,7 +153,7 @@ export async function activate(context: vscode.ExtensionContext) {
       network: {
         get: () => getSelectedNetwork(context),
       },
-      ethcode: () => ethcode,
+      ethcode: ethcode
     },
     // WALLET
     wallet: {
