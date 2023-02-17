@@ -22,8 +22,6 @@ const listAddresses = async (
   keyStorePath: string
 ): Promise<string[]> => {
   try {
-    let localAddresses: LocalAddressType[]
-
     if (isTestingNetwork(context)) {
       const provider = getSelectedProvider(
         context
@@ -38,7 +36,7 @@ const listAddresses = async (
 
     const files = fs.readdirSync(`${keyStorePath}/keystore`)
 
-    localAddresses = files.map((file) => {
+    const localAddresses: LocalAddressType[] = files.map((file) => {
       const arr = file.split('--')
       return {
         pubAddress: `0x${arr[arr.length - 1]}`,
@@ -103,7 +101,7 @@ const deleteKeyPair = async (context: vscode.ExtensionContext) => {
       return
     }
     fs.readdir(`${context.extensionPath}/keystore`, (err, files) => {
-      if (err != null) throw new Error(`Unable to scan directory: ${err}`)
+      if (err != null) throw new Error(`Unable to scan directory: ${err.message}`)
 
       files.forEach((file) => {
         if (file.includes(publicKey.replace('0x', ''))) {
@@ -135,8 +133,8 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
 
     const addresses = await listAddresses(context, context.extensionPath)
 
-    vscode.window.showOpenDialog(options).then((fileUri) => {
-      if ((fileUri != null) && fileUri[0]) {
+    void vscode.window.showOpenDialog(options).then((fileUri) => {
+      if ((fileUri?.[0]) != null) {
         const arrFilePath = fileUri[0].fsPath.split('\\')
         const file = arrFilePath[arrFilePath.length - 1]
         const arr = file.split('--')
@@ -159,6 +157,9 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
 
           logger.success(`Account ${address} is successfully imported!`)
           listAddresses(context, context.extensionPath)
+            .catch((error) => {
+              logger.error(error)
+            })
         }
       }
     })
@@ -178,7 +179,7 @@ const extractPvtKey = async (keyStorePath: string, address: string) => {
     const password = await window.showInputBox(pwdInpOpt)
 
     const keyObject = keythereum.importFromFile(address, keyStorePath)
-    return keythereum.recover(Buffer.from(password || '', 'utf-8'), keyObject)
+    return keythereum.recover(Buffer.from(password ?? '', 'utf-8'), keyObject)
   } catch (e) {
     throw new Error(
       "Password is wrong or such address doesn't exist in wallet lists"
@@ -204,18 +205,13 @@ const exportKeyPair = async (context: vscode.ExtensionContext) => {
     })
 
     quickPick.onDidChangeSelection((selection) => {
-      if (selection[0]) {
+      if (selection[0] != null) {
         const { label } = selection[0]
-
         const files = fs.readdirSync(`${context.extensionPath}/keystore`)
         const address = label.slice(2, label.length)
-        let selectedFile = ''
-        files.map((file: string) => {
-          const arr = file.split('--')
-          if (address === arr[arr.length - 1]) {
-            selectedFile = file
-          }
-        })
+        const selectedFile = files.filter((file: string) => {
+          return file.includes(address)
+        })[0]
 
         const options: vscode.OpenDialogOptions = {
           canSelectMany: false,
@@ -226,8 +222,8 @@ const exportKeyPair = async (context: vscode.ExtensionContext) => {
           }
         }
 
-        vscode.window.showOpenDialog(options).then((fileUri) => {
-          if ((fileUri != null) && fileUri[0]) {
+        void vscode.window.showOpenDialog(options).then((fileUri) => {
+          if (fileUri?.[0] != null) {
             logger.log(
               'path: ',
               `${fileUri[0].fsPath}\\${selectedFile}\\${selectedFile}`
@@ -276,9 +272,9 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
   })
 
   quickPick.onDidChangeSelection((selection) => {
-    if (selection[0]) {
+    if (selection[0] != null) {
       const { label } = selection[0]
-      context.workspaceState.update('account', label)
+      void context.workspaceState.update('account', label)
       logger.success(`Account ${label} is selected.`)
       logger.success(
         `You can see detail of this account here. ${
