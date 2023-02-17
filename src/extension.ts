@@ -1,30 +1,29 @@
-import { ethers } from "ethers";
-import * as vscode from "vscode";
-import { InputBoxOptions, window, commands } from "vscode";
-import { GanacheAddressType } from "./types";
+import { type ethers } from 'ethers'
+// eslint-disable-next-line import/no-duplicates
+import type * as vscode from 'vscode'
+// eslint-disable-next-line import/no-duplicates
+import { type InputBoxOptions, window, commands } from 'vscode'
 import {
   callContractMethod,
   deployContract,
   displayBalance,
-  getSelectedProvider,
   setTransactionGas,
-  updateSelectedNetwork,
-} from "./utils/networks";
-import { logger } from "./lib";
+  updateSelectedNetwork
+} from './utils/networks'
+import { logger } from './lib'
 import {
   createKeyPair,
   deleteKeyPair,
   selectAccount,
   importKeyPair,
-  exportKeyPair,
-  listAddresses,
-} from "./utils/wallet";
+  exportKeyPair
+} from './utils/wallet'
 import {
   createERC4907Contract,
   parseBatchCompiledJSON,
   parseCompiledJSONPayload,
-  selectContract,
-} from "./utils";
+  selectContract
+} from './utils'
 import {
   getNetwork,
   getWallet,
@@ -38,113 +37,143 @@ import {
   exportABI,
   getDeployedContractAddress,
   getFunctionInputFile,
-  getConstructorInputFile,
-} from "./utils/api";
+  getConstructorInputFile
+} from './utils/api'
 
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate (context: vscode.ExtensionContext) {
   context.subscriptions.push(
     // Create new account with password
-    commands.registerCommand("ethcode.account.create", async () => {
+    commands.registerCommand('ethcode.account.create', async () => {
       try {
         const pwdInpOpt: InputBoxOptions = {
-          title: "Password",
+          title: 'Password',
           ignoreFocusOut: true,
           password: true,
-          placeHolder: "Password",
-        };
-        const password = await window.showInputBox(pwdInpOpt);
-        if (password === undefined) {
-          logger.log("Account not created");
-          return;
+          placeHolder: 'Password'
         }
-        createKeyPair(context, context.extensionPath, password || "");
+        const password = await window.showInputBox(pwdInpOpt)
+        if (password === undefined) {
+          logger.log('Account not created')
+          return
+        }
+        createKeyPair(context, context.extensionPath, password ?? '')
       } catch (error) {
-        logger.error(error);
+        logger.error(error)
       }
     }),
 
     // Delete selected account with password
-    commands.registerCommand("ethcode.account.delete", async () => {
-      deleteKeyPair(context);
+    commands.registerCommand('ethcode.account.delete', async () => {
+      deleteKeyPair(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
 
     // Deploy ContractcallContractMethod
-    commands.registerCommand("ethcode.contract.deploy", async () => {
-      deployContract(context); //*
+    commands.registerCommand('ethcode.contract.deploy', async () => {
+      deployContract(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
 
     // select ethereum networks
-    commands.registerCommand("ethcode.network.select", () => {
-      updateSelectedNetwork(context);
+    commands.registerCommand('ethcode.network.select', () => {
+      updateSelectedNetwork(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
 
-    commands.registerCommand("ethcode.rental.create", () => {
-      createERC4907Contract(context);
+    commands.registerCommand('ethcode.rental.create', () => {
+      createERC4907Contract(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
     // Select Ethereum Account
-    commands.registerCommand("ethcode.account.select", () => {
-      selectAccount(context);
+    commands.registerCommand('ethcode.account.select', () => {
+      selectAccount(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
 
     // Get account balance
-    commands.registerCommand("ethcode.account.balance", async () => {
-      displayBalance(context);
+    commands.registerCommand('ethcode.account.balance', async () => {
+      displayBalance(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
 
     // Set gas strategy
-    commands.registerCommand("ethcode.transaction.gas.set", async () => {
-      setTransactionGas(context);
+    commands.registerCommand('ethcode.transaction.gas.set', async () => {
+      setTransactionGas(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
 
     // Load combined JSON output
-    commands.registerCommand("ethcode.compiled-json.load", () => {
-      const editorContent = window.activeTextEditor
+    commands.registerCommand('ethcode.compiled-json.load', () => {
+      const editorContent = (window.activeTextEditor != null)
         ? window.activeTextEditor.document.getText()
-        : undefined;
-      parseCompiledJSONPayload(context, editorContent);
+        : undefined
+      parseCompiledJSONPayload(context, editorContent)
     }),
 
     // Load all combined JSON output
-    commands.registerCommand("ethcode.compiled-json.load.all", async () => {
-      parseBatchCompiledJSON(context);
+    commands.registerCommand('ethcode.compiled-json.load.all', async () => {
+      parseBatchCompiledJSON(context)
     }),
 
     // Select a compiled json from the list
-    commands.registerCommand("ethcode.compiled-json.select", () => {
-      selectContract(context);
+    commands.registerCommand('ethcode.compiled-json.select', () => {
+      selectContract(context)
     }),
 
     // Call contract method
-    commands.registerCommand("ethcode.contract.call", async () => {
-      callContractMethod(context);
+    commands.registerCommand('ethcode.contract.call', async () => {
+      callContractMethod(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
 
-    //Export Account
-    commands.registerCommand("ethcode.account.export", async () => {
-      exportKeyPair(context);
+    // Export Account
+    commands.registerCommand('ethcode.account.export', async () => {
+      exportKeyPair(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
-    //Import Key pair
-    commands.registerCommand("ethcode.account.import", async () => {
-      importKeyPair(context);
+    // Import Key pair
+    commands.registerCommand('ethcode.account.import', async () => {
+      importKeyPair(context)
+        .catch((error) => {
+          logger.error(error)
+        })
     }),
 
     // Activate
-    commands.registerCommand("ethcode.activate", async () => {
-      logger.success("Welcome to Ethcode!");
+    commands.registerCommand('ethcode.activate', async () => {
+      logger.success('Welcome to Ethcode!')
     })
-  );
+  )
 
   // API for extensions
   // ref: https://code.visualstudio.com/api/references/vscode-api#extensions
   const api = {
     // STATUS
     status: () => {
-      return "ok";
+      return 'ok'
     },
     // WALLET
     wallet: {
-      get: (account: string) => getWallet(context, account),
-      list: () => listAllWallet(context),
+      get: async (account: string) => await getWallet(context, account),
+      list: async () => await listAllWallet(context)
     },
     // PROVIDER
     provider: {
@@ -152,24 +181,24 @@ export async function activate(context: vscode.ExtensionContext) {
       network: {
         get: () => getNetwork(context),
         set: (network: string) => setNetwork(context, network),
-        list: () => getAvailableNetwork(),
-      },
+        list: () => getAvailableNetwork()
+      }
     },
     // CONTRACT
     contract: {
-      get: (address: string, abi: any, wallet: ethers.Signer) =>
-        getContract(context, address, abi, wallet),
+      get: async (address: string, abi: any, wallet: ethers.Signer) =>
+        await getContract(context, address, abi, wallet),
       list: (abi: any) => listFunctions(abi),
-      execute: (contract: any, method: string, args: any[]) =>
-        executeContractMethod(contract, method, args),
-      abi: (name: string) => exportABI(context, name),
-      geContractAddress: (name: string) =>
-        getDeployedContractAddress(context, name),
-      getFunctionInput: (name: string) => getFunctionInputFile(context, name),
-      getConstructorInput: (name: string) =>
-        getConstructorInputFile(context, name),
-    },
-  };
+      execute: async (contract: any, method: string, args: any[]) =>
+        await executeContractMethod(contract, method, args),
+      abi: async (name: string) => await exportABI(context, name),
+      geContractAddress: async (name: string) =>
+        await getDeployedContractAddress(context, name),
+      getFunctionInput: async (name: string) => await getFunctionInputFile(context, name),
+      getConstructorInput: async (name: string) =>
+        await getConstructorInputFile(context, name)
+    }
+  }
 
-  return api;
+  return api
 }
