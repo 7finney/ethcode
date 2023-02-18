@@ -3,13 +3,12 @@ import * as vscode from 'vscode'
 import { window } from 'vscode'
 import {
   type CompiledJSONOutput,
-  GasEstimateOutput,
   getAbi,
   getByteCode
 } from '../types/output'
 import { logger } from '../lib'
 import { extractPvtKey } from './wallet'
-import { type INetworkQP, type EstimateGas, type NetworkConfig } from '../types'
+import { type INetworkQP, type NetworkConfig } from '../types'
 import {
   getConstructorInputs,
   getDeployedInputs,
@@ -53,9 +52,9 @@ const updateSelectedNetwork = async (context: vscode.ExtensionContext) => {
     quickPick.placeholder = 'Select network'
   })
   quickPick.onDidChangeSelection((selection: INetworkQP[]) => {
-    if (selection[0]) {
+    if (selection[0] != null) {
       const { label } = selection[0]
-      context.workspaceState.update('selectedNetwork', label)
+      void context.workspaceState.update('selectedNetwork', label)
       quickPick.dispose()
 
       logger.success(`Selected network is ${label}`)
@@ -91,20 +90,20 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
     return
   }
 
-  const address: any = await context.workspaceState.get('account')
+  const address: string = await context.workspaceState.get('account') as string
   const nativeCurrencySymbol =
     getSelectedNetConf(context).nativeCurrency.symbol
 
   logger.log('Fetching balance...')
 
   try {
-    getSelectedProvider(context)
+    void getSelectedProvider(context)
       .getBalance(address)
       .then(async (value) => {
         const balance = ethers.utils.formatEther(value)
-        context.workspaceState.update('balance', balance)
+        void context.workspaceState.update('balance', balance)
 
-        const networkName: any = getSelectedNetwork(context)
+        const networkName: string = getSelectedNetwork(context)
         logger.success(
           `\nAccount: ${address} \nBalance: ${balance} ${nativeCurrencySymbol} \nNetwork: ${networkName}`
         )
@@ -136,9 +135,9 @@ const setTransactionGas = async (context: vscode.ExtensionContext) => {
   })
 
   quickPick.onDidChangeSelection((selection) => {
-    if (selection[0]) {
+    if (selection[0] != null) {
       const { label } = selection[0]
-      context.workspaceState.update('gas', label)
+      void context.workspaceState.update('gas', label)
       logger.success(`${label} gas is selected.`)
       quickPick.dispose()
     }
@@ -150,14 +149,14 @@ const setTransactionGas = async (context: vscode.ExtensionContext) => {
 
 const callContractMethod = async (context: vscode.ExtensionContext) => {
   try {
-    const compiledOutput = (await context.workspaceState.get(
+    const compiledOutput: CompiledJSONOutput = (await context.workspaceState.get(
       'contract'
     )) as CompiledJSONOutput
 
-    if (compiledOutput == undefined) throw errors.ContractNotSelected
+    if (compiledOutput === undefined) throw errors.ContractNotSelected
 
     const abi = getAbi(compiledOutput)
-    if (abi == undefined) throw new Error('Abi is not defined.')
+    if (abi === undefined) throw new Error('Abi is not defined.')
 
     const abiItem = await getFunctionInputs(context)
     if (abiItem === undefined) throw new Error('Function is not defined.')
@@ -165,7 +164,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
     const params_ = abiItem.inputs?.map((e: any) => e.value)
     const params = params_ === undefined ? [] : params_
 
-    logger.success(`Calling ${compiledOutput.name} : ${abiItem.name} -->`)
+    logger.success(`Calling ${compiledOutput.name as string} : ${abiItem.name as string} -->`)
 
     const contractAddres = getDeployedInputs(context).address
     if (contractAddres === undefined) { throw new Error('Enter deployed address of selected contract.') }
@@ -181,7 +180,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
 
       const result = await contract[abiItem.name as string](...params)
       logger.success(
-        `Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`
+        `Calling ${compiledOutput.name as string} : ${abiItem.name as string} --> Success!`
       )
       logger.log(JSON.stringify(result))
     } else {
@@ -221,12 +220,12 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       await result.wait()
       logger.success('Transaction confirmed!')
       logger.success(
-        `Calling ${compiledOutput.name} : ${abiItem.name} --> Success!`
+        `Calling ${compiledOutput.name as string} : ${abiItem.name as string} --> Success!`
       )
       logger.success(
         `You can see detail of this transaction here. ${
           getSelectedNetConf(context).blockScanner
-        }/tx/${result.hash}`
+        }/tx/${result.hash as string}`
       )
     }
   } catch (err: any) {
@@ -256,12 +255,12 @@ const deployContract = async (context: vscode.ExtensionContext) => {
         gasLimit: settingsGasLimit
       })
 
-      context.workspaceState.update('contractAddress', contract.address)
+      void context.workspaceState.update('contractAddress', contract.address)
       logger.success(`Contract deployed to ${contract.address}`)
     } else {
       const contract = await myContract.deploy(...parameters)
 
-      context.workspaceState.update('contractAddress', contract.address)
+      void context.workspaceState.update('contractAddress', contract.address)
       logger.success(`Contract deployed to ${contract.address}`)
     }
   } catch (err) {
@@ -276,13 +275,13 @@ const getSignedContract = async (
   const compiledOutput = (await context.workspaceState.get(
     'contract'
   )) as CompiledJSONOutput
-  if (compiledOutput == undefined) throw errors.ContractNotSelected
+  if (compiledOutput === undefined) throw errors.ContractNotSelected
 
   const abi = getAbi(compiledOutput)
-  if (abi == undefined) throw new Error('Abi is not defined.')
+  if (abi === undefined) throw new Error('Abi is not defined.')
 
   const byteCode = getByteCode(compiledOutput)
-  if (byteCode == undefined) throw new Error('ByteCode is not defined.')
+  if (byteCode === undefined) throw new Error('ByteCode is not defined.')
 
   let contract
   if (isTestingNetwork(context)) {
@@ -309,13 +308,13 @@ const getContractFactoryWithParams = async (
   const compiledOutput = (await context.workspaceState.get(
     'contract'
   )) as CompiledJSONOutput
-  if (compiledOutput == undefined) throw errors.ContractNotSelected
+  if (compiledOutput === undefined) throw errors.ContractNotSelected
 
   const abi = getAbi(compiledOutput)
-  if (abi == undefined) throw new Error('Abi is not defined.')
+  if (abi === undefined) throw new Error('Abi is not defined.')
 
   const byteCode = getByteCode(compiledOutput)
-  if (byteCode == undefined) throw new Error('ByteCode is not defined.')
+  if (byteCode === undefined) throw new Error('ByteCode is not defined.')
 
   let myContract
   if (isTestingNetwork(context)) {

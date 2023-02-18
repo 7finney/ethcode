@@ -18,7 +18,7 @@ import {
   writeConstructor,
   writeFunction
 } from '../lib/file'
-import { getSelectedNetConf, getSelectedNetwork } from './networks'
+import { getSelectedNetConf } from './networks'
 
 import axios from 'axios'
 
@@ -84,27 +84,27 @@ const createFunctionInput = (contract: CompiledJSONOutput) => {
 }
 
 const getDeployedFullPath = (contract: CompiledJSONOutput) => {
-  if (contract.path == undefined) {
+  if (contract.path === undefined) {
     throw new Error('Contract Path is empty.')
   }
 
-  return path.join(contract.path, `${contract.name}_deployed_address.json`)
+  return path.join(contract.path, `${contract.name as string}_deployed_address.json`)
 }
 
 const getFunctionInputFullPath = (contract: CompiledJSONOutput) => {
-  if (contract.path == undefined) {
+  if (contract.path === undefined) {
     throw new Error('Contract Path is empty.')
   }
 
-  return path.join(contract.path, `${contract.name}_functions_input.json`)
+  return path.join(contract.path, `${contract.name as string}_functions_input.json`)
 }
 
 const getConstructorInputFullPath = (contract: CompiledJSONOutput) => {
-  if (contract.path == undefined) {
+  if (contract.path === undefined) {
     throw new Error('Contract Path is empty.')
   }
 
-  return path.join(contract.path, `${contract.name}_constructor_input.json`)
+  return path.join(contract.path, `${contract.name as string}_constructor_input.json`)
 }
 
 const getDeployedInputs = (context: vscode.ExtensionContext) => {
@@ -155,12 +155,12 @@ const getFunctionInputs = async (
 
       const quickPick = window.createQuickPick<IFunctionQP>()
       quickPick.items = functions.map((f) => ({
-        label: `${contract.name} > ${f.name}(${getFunctionParmas(f)})` || '',
-        functionKey: f.name || ''
-      }))
+        label: ((`${contract.name as string} > ${f.name as string}(${getFunctionParmas(f) as string})`).length > 0) || '',
+        functionKey: (f.name != null) || ''
+      })) as IFunctionQP[]
       quickPick.placeholder = 'Select function'
       quickPick.onDidChangeSelection((selection: IFunctionQP[]) => {
-        if (selection[0] && (workspace.workspaceFolders != null)) {
+        if ((selection[0] != null) && (workspace.workspaceFolders != null)) {
           const { functionKey } = selection[0]
           quickPick.dispose()
           const abiItem = functions.filter(
@@ -218,7 +218,7 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
   }
 
   const constInps = constructor[0].inputs
-  if ((constInps == null) || constInps.length == 0) {
+  if ((constInps == null) || constInps.length === 0) {
     logger.log('The constructor have no parameters')
     return
   }
@@ -234,9 +234,7 @@ const getNetworkBlockpriceUrl = (context: vscode.ExtensionContext) => {
   const chainID = getSelectedNetConf(context).chainID
   if (chainID === '137' || chainID === '1') {
     return `https://api.blocknative.com/gasprices/blockprices?chainid=${chainID}`
-  } else {
-
-  }
+  } else { /* empty */ }
 }
 
 const getGasEstimates = async (

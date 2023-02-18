@@ -52,11 +52,7 @@ const listAddresses = async (
 }
 
 // create keypair
-const createKeyPair = (
-  context: vscode.ExtensionContext,
-  path: string,
-  pswd: string
-) => {
+const createKeyPair = (context: vscode.ExtensionContext, path: string, pswd: string) => {
   const params = { keyBytes: 32, ivBytes: 16 }
   const bareKey = keythereum.create(params)
   const options = {
@@ -277,8 +273,7 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
       void context.workspaceState.update('account', label)
       logger.success(`Account ${label} is selected.`)
       logger.success(
-        `You can see detail of this account here. ${
-          getSelectedNetConf(context).blockScanner
+        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner
         }/address/${label}`
       )
       quickPick.dispose()
