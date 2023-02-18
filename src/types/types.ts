@@ -110,13 +110,7 @@ export interface ERC4907ContractType {
   ERC4907Contract: string
 }
 
-export interface ERC4907ContractType {
-  interface: string
-  contract: string
-  ERC4907Contract: string
-}
 // Typeguard
-
 export function isConstructorInputValue (
   obj: any
 ): obj is ConstructorInputValue {

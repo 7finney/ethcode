@@ -224,7 +224,9 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
   }
 
   const inputs: ConstructorInputValue[] = constInps.map(
-    (inp) => <ConstructorInputValue>{ ...inp, value: '' }
+    (inp) => {
+      return { ...inp, value: '' }
+    }
   )
 
   writeConstructor(getConstructorInputFullPath(contract), contract, inputs)
