@@ -1,8 +1,5 @@
 import { type ethers } from 'ethers'
-// eslint-disable-next-line import/no-duplicates
-import type * as vscode from 'vscode'
-// eslint-disable-next-line import/no-duplicates
-import { type InputBoxOptions, window, commands } from 'vscode'
+import { type InputBoxOptions, window, commands, type ExtensionContext } from 'vscode'
 import {
   callContractMethod,
   deployContract,
@@ -39,7 +36,7 @@ import {
 } from './utils/api'
 import { status, wallet } from './api'
 
-export async function activate (context: vscode.ExtensionContext) {
+export async function activate (context: ExtensionContext) {
   context.subscriptions.push(
     // Create new account with password
     commands.registerCommand('ethcode.account.create', async () => {
