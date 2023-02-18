@@ -48,7 +48,7 @@ const writeConstructor = (
   inputs: JsonFragment[]
 ) => {
   fs.writeFileSync(fileName, JSON.stringify(inputs, null, 2))
-  logger.success(`Created constructor json of ${contract.name} contract`)
+  logger.success(`Created constructor json of ${contract.name as string} contract`)
 }
 
 // create function input file
@@ -58,7 +58,7 @@ const writeFunction = (
   inputs: JsonFragment[]
 ) => {
   fs.writeFileSync(fileName, JSON.stringify(inputs, null, 2))
-  logger.success(`Created functions input json of ${contract.name} contract`)
+  logger.success(`Created functions input json of ${contract.name as string} contract`)
 }
 
 const createDeployedFile = (
@@ -67,7 +67,7 @@ const createDeployedFile = (
   input: any
 ) => {
   fs.writeFileSync(fileName, JSON.stringify(input, null, 2))
-  logger.success(`Created deployed json format of ${contract.name} contract`)
+  logger.success(`Created deployed json format of ${contract.name as string} contract`)
 }
 
 const createUserERC4907ContractFile = async (

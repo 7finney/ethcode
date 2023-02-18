@@ -184,9 +184,8 @@ export async function activate (context: vscode.ExtensionContext) {
       execute: async (contract: any, method: string, args: any[]) =>
         await executeContractMethod(contract, method, args),
       abi: async (name: string) => await exportABI(context, name),
-      geContractAddress: async (name: string) =>
-        await getDeployedContractAddress(context, name),
-      getFunctionInput: async (name: string) => await getFunctionInputFile(context, name),
+      geContractAddress: async (name: string) => getDeployedContractAddress(context, name),
+      getFunctionInput: async (name: string) => getFunctionInputFile(context, name),
       getConstructorInput: async (name: string) =>
         await getConstructorInputFile(context, name)
     }

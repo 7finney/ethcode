@@ -126,12 +126,12 @@ const selectContract = (context: ExtensionContext) => {
   if (contracts === undefined || Object.keys(contracts).length === 0) return
 
   quickPick.items = Object.keys(contracts).map((f) => ({
-    label: f || '',
-    functionKey: f || ''
+    label: f,
+    functionKey: f
   }))
   quickPick.placeholder = 'Select a contract.'
   quickPick.onDidChangeSelection((selection: IFunctionQP[]) => {
-    if (selection[0] && (workspace.workspaceFolders != null)) {
+    if ((selection[0] != null) && (workspace.workspaceFolders != null)) {
       const { functionKey } = selection[0]
       quickPick.dispose()
       // get selected contract
@@ -165,7 +165,7 @@ const createERC4907Contract = async (context: ExtensionContext) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true })
   }
-  const contractPath = path.join(dir, `${contractName}.sol`)
+  const contractPath = path.join(dir, `${contractName as string}.sol`)
   const interfacepath = path.join(dir, 'IERC4907.sol')
   const ERC4907ContractPath = path.join(dir, 'ERC4907.sol')
   await createUserERC4907ContractFile(

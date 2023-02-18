@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 /*
  This file is part of web3.js.
@@ -21,11 +22,11 @@
  * @date 2017
  */
 
-const _ = require('underscore')
-const BN = require('bn.js')
-const numberToBN = require('number-to-bn')
-const utf8 = require('utf8')
-const hash = require('./keccak')
+import _ from 'underscore'
+import { BN } from 'bn.js'
+import numberToBN from 'number-to-bn'
+import utf8 from 'utf8'
+import { hash } from './keccak'
 
 /**
  * Returns true if object is BN, otherwise false
@@ -47,7 +48,7 @@ const isBN = function (object: any) {
  */
 const isBigNumber = function (object: any) {
   return (
-    object && object.constructor && object.constructor.name === 'BigNumber'
+    (Boolean((object?.constructor))) && object.constructor.name === 'BigNumber'
   )
 }
 
@@ -62,7 +63,7 @@ const toBN = function (number: any) {
   try {
     return numberToBN.apply(null, arguments)
   } catch (e) {
-    throw new Error(e + ' Given value: "' + number + '"')
+    throw new Error(`${e as string} Given value: ${number as string} `)
   }
 }
 
@@ -73,8 +74,10 @@ const toBN = function (number: any) {
  * @param {Number|String|BN} number
  * @return {String}
  */
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const toTwosComplement = function (number: any) {
-  return '0x' + toBN(number).toTwos(256).toString(16, 64)
+  return `0x${toBN(number).toTwos(256).toString(16, 64) as string}`
 }
 
 /**
@@ -135,6 +138,7 @@ var checkAddressChecksum = function (address: string) {
  * @param {String} sign, by default 0
  * @returns {String} right aligned string
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const leftPad = function (string: string, chars: number, sign: string) {
   const hasPrefix = /^0x/i.test(string) || typeof string === 'number'
   string = string.toString().replace(/^0x/i, '')
@@ -143,7 +147,7 @@ const leftPad = function (string: string, chars: number, sign: string) {
 
   return (
     (hasPrefix ? '0x' : '') +
-    new Array(padding).join(sign || '0') +
+    new Array(padding).join(sign !== '' ? sign : '0') +
     string
   )
 }
@@ -157,6 +161,7 @@ const leftPad = function (string: string, chars: number, sign: string) {
  * @param {String} sign, by default 0
  * @returns {String} right aligned string
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const rightPad = function (string: string, chars: number, sign: string) {
   const hasPrefix = /^0x/i.test(string) || typeof string === 'number'
   string = string.toString().replace(/^0x/i, '')
@@ -166,7 +171,7 @@ const rightPad = function (string: string, chars: number, sign: string) {
   return (
     (hasPrefix ? '0x' : '') +
     string +
-    new Array(padding).join(sign || '0')
+    new Array(padding).join(sign !== '' ? sign : '0')
   )
 }
 
@@ -182,9 +187,9 @@ const utf8ToHex = function (str: string) {
   let hex = ''
 
   // remove \u0000 padding from either side
-  str = str.replace(/^(?:\u0000)*/, '')
+  str = str.replace(/^(?:\\u0000)*/, '')
   str = str.split('').reverse().join('')
-  str = str.replace(/^(?:\u0000)*/, '')
+  str = str.replace(/^(?:\\u0000)*/, '')
   str = str.split('').reverse().join('')
 
   for (let i = 0; i < str.length; i++) {
@@ -205,8 +210,9 @@ const utf8ToHex = function (str: string) {
  * @param {String} hex
  * @returns {String} ascii string representation of hex value
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const hexToUtf8 = function (hex: string) {
-  if (!isHexStrict(hex)) { throw new Error('The parameter "' + hex + '" must be a valid HEX string.') }
+  if (!(isHexStrict(hex))) { throw new Error('The parameter "' + hex + '" must be a valid HEX string.') }
 
   let str = ''
   let code = 0
@@ -237,13 +243,14 @@ const hexToUtf8 = function (hex: string) {
  * @param {String|Number|BN} value
  * @return {String}
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const hexToNumber = function (value: any) {
-  if (!value) {
+  if (value === null || typeof value === 'undefined') {
     return value
   }
 
-  if (_.isString(value) && !isHexStrict(value)) {
-    throw new Error('Given value "' + value + '" is not a valid hex string.')
+  if ((Boolean(_.isString(value))) && !(isHexStrict(value))) {
+    throw new Error(`Given value ${value.toString() as string} is not a valid hex string.`)
   }
 
   return toBN(value).toNumber()
@@ -256,11 +263,12 @@ const hexToNumber = function (value: any) {
  * @param {String|Number|BN} value
  * @return {String}
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const hexToNumberString = function (value: any) {
-  if (!value) return value
+  if (value === null || typeof value === 'undefined') return value
 
-  if (_.isString(value) && !isHexStrict(value)) {
-    throw new Error('Given value "' + value + '" is not a valid hex string.')
+  if ((Boolean(_.isString(value))) && !(isHexStrict(value))) {
+    throw new Error(`Given value ${value.toString() as string} is not a valid hex string.`)
   }
 
   return toBN(value).toString(10)
@@ -274,18 +282,18 @@ const hexToNumberString = function (value: any) {
  * @return {String}
  */
 const numberToHex = function (value: any) {
-  if (_.isNull(value) || _.isUndefined(value)) {
+  if ((Boolean(_.isNull(value))) || (Boolean(_.isUndefined(value)))) {
     return value
   }
 
-  if (!isFinite(value) && !isHexStrict(value)) {
-    throw new Error('Given input "' + value + '" is not a number.')
+  if (!isFinite(value) && !(isHexStrict(value))) {
+    throw new Error(`Given value ${value.toString() as string} is not a number.`)
   }
 
   const number = toBN(value)
   const result = number.toString(16)
 
-  return number.lt(new BN(0)) ? '-0x' + result.substr(1) : '0x' + result
+  return (number.lt(new BN(0))) as boolean ? `-0x${result.substr(1) as string}` : `0x${result as string}`
 }
 
 /**
@@ -297,14 +305,15 @@ const numberToHex = function (value: any) {
  * @param {Array} bytes
  * @return {String} the hex string
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const bytesToHex = function (bytes: any[]) {
-  for (var hex = [], i = 0; i < bytes.length; i++) {
+  for (let hex = [], i = 0; i < bytes.length; i++) {
     /* jshint ignore:start */
     hex.push((bytes[i] >>> 4).toString(16))
     hex.push((bytes[i] & 0xf).toString(16))
     /* jshint ignore:end */
   }
-  return '0x' + hex.join('')
+  return `0x${hex.join('') as string}`
 }
 
 /**
@@ -319,13 +328,13 @@ const bytesToHex = function (bytes: any[]) {
 const hexToBytes = function (hex: string) {
   hex = hex.toString()
 
-  if (!isHexStrict(hex)) {
+  if (!(isHexStrict(hex))) {
     throw new Error('Given value "' + hex + '" is not a valid hex string.')
   }
 
   hex = hex.replace(/^0x/i, '')
 
-  for (var bytes = [], c = 0; c < hex.length; c += 2) { bytes.push(parseInt(hex.substr(c, 2), 16)) }
+  for (let bytes = [], c = 0; c < hex.length; c += 2) { bytes.push(parseInt(hex.substr(c, 2), 16)) }
   return bytes
 }
 
@@ -345,23 +354,23 @@ const toHex = function (value: any, returnType: boolean) {
   if (isAddress(value)) {
     return returnType
       ? 'address'
-      : '0x' + value.toLowerCase().replace(/^0x/i, '')
+      : `0x${value.toLowerCase().replace(/^0x/i, '') as string}`
   }
 
-  if (_.isBoolean(value)) {
-    return returnType ? 'bool' : value ? '0x01' : '0x00'
+  if (_.isBoolean(value) === true) {
+    return returnType ? 'bool' : (value != null) ? '0x01' : '0x00'
   }
 
   if (Buffer.isBuffer(value)) {
     return '0x' + value.toString('hex')
   }
 
-  if (_.isObject(value) && !isBigNumber(value) && !isBN(value)) {
+  if ((Boolean(_.isObject(value))) && !isBigNumber(value) && !isBN(value)) {
     return returnType ? 'string' : utf8ToHex(JSON.stringify(value))
   }
 
   // if its a negative number, pass it through numberToHex
-  if (_.isString(value)) {
+  if (_.isString(value) === true) {
     if (value.indexOf('-0x') === 0 || value.indexOf('-0X') === 0) {
       return returnType ? 'int256' : numberToHex(value)
     } else if (value.indexOf('0x') === 0 || value.indexOf('0X') === 0) {
@@ -381,8 +390,8 @@ const toHex = function (value: any, returnType: boolean) {
  * @param {String} hex to be checked
  * @returns {Boolean}
  */
-var isHexStrict = function (hex: string) {
-  return (_.isString(hex) || _.isNumber(hex)) && /^(-)?0x[0-9a-f]*$/i.test(hex)
+const isHexStrict = function (hex: string) {
+  return ((Boolean(_.isString(hex))) || (Boolean(_.isNumber(hex)))) && /^(-)?0x[0-9a-f]*$/i.test(hex)
 }
 
 /**
@@ -394,7 +403,7 @@ var isHexStrict = function (hex: string) {
  */
 const isHex = function (hex: string) {
   return (
-    (_.isString(hex) || _.isNumber(hex)) && /^(-0x|0x)?[0-9a-f]*$/i.test(hex)
+    ((Boolean(_.isString(hex))) || (Boolean(_.isNumber(hex)))) && /^(-0x|0x)?[0-9a-f]*$/i.test(hex)
   )
 }
 

@@ -48,7 +48,7 @@ const update = (state: any, message: any) => {
   const length = message.length
   const blocks = state.blocks
   const byteCount = state.blockCount << 2
-  const blockCount = state.blockCount
+  const blockCount = state.blockCount as number
   const outputBlocks = state.outputBlocks
   const s = state.s
   let index = 0
@@ -57,7 +57,7 @@ const update = (state: any, message: any) => {
 
   // update
   while (index < length) {
-    if (state.reset) {
+    if (state.reset === true) {
       state.reset = false
       blocks[0] = state.block
       for (i = 1; i < blockCount + 1; ++i) {

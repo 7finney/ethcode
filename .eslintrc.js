@@ -11,6 +11,7 @@ module.exports = {
     sourceType: 'module',
     project: './tsconfig.json'
   },
+  ignorePatterns: ['/build/*', '/node_modules/*'],
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'warn',
     'space-before-function-paren': 'off'

@@ -1,6 +1,5 @@
 import { ethers, type Wallet } from 'ethers'
 import { type ExtensionContext } from 'vscode'
-import type * as vscode from 'vscode'
 import { extractPvtKey, listAddresses } from './wallet'
 
 import {
@@ -36,7 +35,7 @@ const setNetwork = (context: ExtensionContext, network: string) => {
   if (!getNetworkNames().includes(network)) {
     return 'Network not found'
   } else {
-    context.workspaceState.update('selectedNetwork', network)
+    void context.workspaceState.update('selectedNetwork', network)
     return 'Network changed to ' + network
   }
 }
@@ -60,7 +59,7 @@ const listAllWallet = async (context: ExtensionContext) => {
 // CONTRACT
 
 const getContract = async (
-  context: vscode.ExtensionContext,
+  context: ExtensionContext,
   address: string,
   abi: any,
   wallet: ethers.Signer
@@ -89,7 +88,7 @@ const executeContractMethod = async (
 }
 
 const exportABI = async (
-  context: vscode.ExtensionContext,
+  context: ExtensionContext,
   selectSpecific: string = ''
 ) => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
@@ -111,7 +110,7 @@ const exportABI = async (
   return contractABIS
 }
 
-const getDeployedContractAddress = async (
+const getDeployedContractAddress: any = async (
   context: ExtensionContext,
   name: string
 ) => {
@@ -121,15 +120,15 @@ const getDeployedContractAddress = async (
     const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
     if (contract.name === name) {
       const link = getDeployedFullPath(contract)
-      const json = require(link)
+      const json = await require(link)
       console.log(json)
       return json
     }
   }
 }
 
-const getFunctionInputFile = async (
-  context: vscode.ExtensionContext,
+const getFunctionInputFile: any = async (
+  context: ExtensionContext,
   name: string
 ) => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
@@ -138,7 +137,7 @@ const getFunctionInputFile = async (
     const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
     if (contract.name === name) {
       const link = getFunctionInputFullPath(contract)
-      const json = require(link)
+      const json = await require(link)
       console.log(json)
       return json
     }
@@ -155,7 +154,7 @@ const getConstructorInputFile = async (
     const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
     if (contract.name === name) {
       const link = getConstructorInputFullPath(contract)
-      const json = require(link)
+      const json = await require(link)
       console.log(json)
       return json
     }
