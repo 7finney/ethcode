@@ -11,10 +11,10 @@ export function wallet (context: ExtensionContext): WalletInterface {
   async function get (account: string): Promise<Wallet> {
     return await getWallet(context, account)
   }
-  async function list () {
+  async function list (): Promise<string[]> {
     return await listAllWallet(context)
   }
-  function onAccountUpdate () {
+  function onAccountUpdate (): EventEmitter<string> {
     return new EventEmitter<string>()
   }
   return {

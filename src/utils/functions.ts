@@ -22,7 +22,7 @@ import { getSelectedNetConf } from './networks'
 
 import axios from 'axios'
 
-const createDeployed = (contract: CompiledJSONOutput) => {
+const createDeployed: any = (contract: CompiledJSONOutput) => {
   const fullPath = getDeployedFullPath(contract)
   if (fs.existsSync(fullPath)) {
     logger.success(
@@ -48,7 +48,7 @@ const createDeployed = (contract: CompiledJSONOutput) => {
   createDeployedFile(getDeployedFullPath(contract), contract, input)
 }
 
-const createFunctionInput = (contract: CompiledJSONOutput) => {
+const createFunctionInput: any = (contract: CompiledJSONOutput) => {
   const fullPath = getFunctionInputFullPath(contract)
   if (fs.existsSync(fullPath)) {
     logger.success(
@@ -74,7 +74,7 @@ const createFunctionInput = (contract: CompiledJSONOutput) => {
     return
   }
 
-  const functions = functionsAbi.map((e) => ({
+  const functions = functionsAbi.map((e: { name: any, stateMutability: any, inputs: any[] }) => ({
     name: e.name,
     stateMutability: e.stateMutability,
     inputs: e.inputs?.map((c) => ({ ...c, value: '' }))
@@ -83,7 +83,7 @@ const createFunctionInput = (contract: CompiledJSONOutput) => {
   writeFunction(getFunctionInputFullPath(contract), contract, functions)
 }
 
-const getDeployedFullPath = (contract: CompiledJSONOutput) => {
+const getDeployedFullPath: any = (contract: CompiledJSONOutput) => {
   if (contract.path === undefined) {
     throw new Error('Contract Path is empty.')
   }
@@ -91,7 +91,7 @@ const getDeployedFullPath = (contract: CompiledJSONOutput) => {
   return path.join(contract.path, `${contract.name as string}_deployed_address.json`)
 }
 
-const getFunctionInputFullPath = (contract: CompiledJSONOutput) => {
+const getFunctionInputFullPath: any = (contract: CompiledJSONOutput) => {
   if (contract.path === undefined) {
     throw new Error('Contract Path is empty.')
   }
@@ -99,7 +99,7 @@ const getFunctionInputFullPath = (contract: CompiledJSONOutput) => {
   return path.join(contract.path, `${contract.name as string}_functions_input.json`)
 }
 
-const getConstructorInputFullPath = (contract: CompiledJSONOutput) => {
+const getConstructorInputFullPath: any = (contract: CompiledJSONOutput) => {
   if (contract.path === undefined) {
     throw new Error('Contract Path is empty.')
   }
@@ -107,7 +107,7 @@ const getConstructorInputFullPath = (contract: CompiledJSONOutput) => {
   return path.join(contract.path, `${contract.name as string}_constructor_input.json`)
 }
 
-const getDeployedInputs = (context: vscode.ExtensionContext) => {
+const getDeployedInputs: any = (context: vscode.ExtensionContext) => {
   try {
     const contract = context.workspaceState.get(
       'contract'
@@ -120,7 +120,7 @@ const getDeployedInputs = (context: vscode.ExtensionContext) => {
   }
 }
 
-const getConstructorInputs = (context: vscode.ExtensionContext) => {
+const getConstructorInputs: any = (context: vscode.ExtensionContext) => {
   try {
     const contract = context.workspaceState.get(
       'contract'
@@ -135,12 +135,12 @@ const getConstructorInputs = (context: vscode.ExtensionContext) => {
   }
 }
 
-const getFunctionParmas = (func: JsonFragment) => {
+const getFunctionParmas: any = (func: JsonFragment) => {
   const inputs = func.inputs?.map((e) => e.type)
   return inputs?.join(', ')
 }
 
-const getFunctionInputs = async (
+const getFunctionInputs: any = async (
   context: vscode.ExtensionContext
 ): Promise<JsonFragment> => {
   return await new Promise((resolve, reject) => {
@@ -180,7 +180,7 @@ const getFunctionInputs = async (
   })
 }
 
-const shouldCreateFile = (contract: CompiledJSONOutput) => {
+const shouldCreateFile = (contract: CompiledJSONOutput): boolean => {
   const fullPath = getConstructorInputFullPath(contract)
   if (fs.existsSync(fullPath)) {
     return false
@@ -188,7 +188,7 @@ const shouldCreateFile = (contract: CompiledJSONOutput) => {
   return true
 }
 
-const createConstructorInput = (contract: CompiledJSONOutput) => {
+const createConstructorInput: any = (contract: CompiledJSONOutput) => {
   if (!shouldCreateFile(contract)) {
     logger.success(
       'Constructor file already exists, remove it to add a empty file'
@@ -224,7 +224,7 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
   }
 
   const inputs: ConstructorInputValue[] = constInps.map(
-    (inp) => {
+    (inp: any) => {
       return { ...inp, value: '' }
     }
   )
@@ -232,14 +232,14 @@ const createConstructorInput = (contract: CompiledJSONOutput) => {
   writeConstructor(getConstructorInputFullPath(contract), contract, inputs)
 }
 
-const getNetworkBlockpriceUrl = (context: vscode.ExtensionContext) => {
-  const chainID = getSelectedNetConf(context).chainID
+const getNetworkBlockpriceUrl: any = (context: vscode.ExtensionContext) => {
+  const chainID = getSelectedNetConf(context).chainID as string
   if (chainID === '137' || chainID === '1') {
     return `https://api.blocknative.com/gasprices/blockprices?chainid=${chainID}`
   } else { /* empty */ }
 }
 
-const getGasEstimates = async (
+const getGasEstimates: any = async (
   condition: string,
   context: vscode.ExtensionContext
 ) => {
@@ -288,7 +288,7 @@ const getGasEstimates = async (
   return estimate
 }
 
-const fetchERC4907Contracts = async (uri: string) => {
+const fetchERC4907Contracts: any = async (uri: string) => {
   const response = await axios
     .get(uri)
     .then((res) => {

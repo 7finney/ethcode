@@ -17,12 +17,12 @@ import {
 const keythereum = require('keythereum')
 
 // list all local addresses
-const listAddresses = async (
+const listAddresses: any = async (
   context: vscode.ExtensionContext,
   keyStorePath: string
 ): Promise<string[]> => {
   try {
-    if (isTestingNetwork(context)) {
+    if (isTestingNetwork(context) === true) {
       const provider = getSelectedProvider(
         context
       ) as ethers.providers.JsonRpcProvider
@@ -52,7 +52,7 @@ const listAddresses = async (
 }
 
 // create keypair
-const createKeyPair = (context: vscode.ExtensionContext, path: string, pswd: string) => {
+const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd: string) => {
   const params = { keyBytes: 32, ivBytes: 16 }
   const bareKey = keythereum.create(params)
   const options = {
@@ -78,14 +78,14 @@ const createKeyPair = (context: vscode.ExtensionContext, path: string, pswd: str
   }
   keythereum.exportToFile(keyObject, `${path}/keystore`)
   listAddresses(context, path)
-    .catch((error) => {
+    .catch((error: any) => {
       logger.error(error)
     })
   return keyObject.address
 }
 
 // delete privateKey against address
-const deleteKeyPair = async (context: vscode.ExtensionContext) => {
+const deleteKeyPair: any = async (context: vscode.ExtensionContext) => {
   try {
     const pubkeyInp: InputBoxOptions = {
       ignoreFocusOut: true,
@@ -103,7 +103,7 @@ const deleteKeyPair = async (context: vscode.ExtensionContext) => {
         if (file.includes(publicKey.replace('0x', ''))) {
           fs.unlinkSync(`${context.extensionPath}/keystore/${file}`)
           listAddresses(context, context.extensionPath)
-            .catch((error) => {
+            .catch((error: any) => {
               logger.error(error)
             })
           logger.log('Account deleted!')
@@ -117,7 +117,7 @@ const deleteKeyPair = async (context: vscode.ExtensionContext) => {
 
 // Import Key pair
 
-const importKeyPair = async (context: vscode.ExtensionContext) => {
+const importKeyPair: any = async (context: vscode.ExtensionContext) => {
   try {
     const options: vscode.OpenDialogOptions = {
       canSelectMany: false,
@@ -153,7 +153,7 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
 
           logger.success(`Account ${address} is successfully imported!`)
           listAddresses(context, context.extensionPath)
-            .catch((error) => {
+            .catch((error: any) => {
               logger.error(error)
             })
         }
@@ -165,7 +165,7 @@ const importKeyPair = async (context: vscode.ExtensionContext) => {
 }
 
 // extract privateKey against address
-const extractPvtKey = async (keyStorePath: string, address: string) => {
+const extractPvtKey: any = async (keyStorePath: string, address: string) => {
   try {
     const pwdInpOpt: vscode.InputBoxOptions = {
       ignoreFocusOut: true,
@@ -183,15 +183,15 @@ const extractPvtKey = async (keyStorePath: string, address: string) => {
   }
 }
 
-const exportKeyPair = async (context: vscode.ExtensionContext) => {
+const exportKeyPair: any = async (context: vscode.ExtensionContext) => {
   try {
     const addresses = await listAddresses(context, context.extensionPath)
 
     const quickPick = window.createQuickPick()
 
-    quickPick.items = addresses.map((account) => ({
+    quickPick.items = addresses.map((account: any) => ({
       label: account,
-      description: isTestingNetwork(context)
+      description: (isTestingNetwork(context) === true)
         ? getSelectedNetwork(context)
         : 'Local account'
     }))
@@ -246,7 +246,7 @@ const exportKeyPair = async (context: vscode.ExtensionContext) => {
   }
 }
 
-const selectAccount = async (context: vscode.ExtensionContext) => {
+const selectAccount: any = async (context: vscode.ExtensionContext) => {
   const addresses = await listAddresses(context, context.extensionPath)
 
   const quickPick = window.createQuickPick()
@@ -256,9 +256,9 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
     return
   }
 
-  quickPick.items = addresses.map((account) => ({
+  quickPick.items = addresses.map((account: any) => ({
     label: account,
-    description: isTestingNetwork(context)
+    description: (isTestingNetwork(context) === true)
       ? getSelectedNetwork(context)
       : 'Local account'
   }))
@@ -273,7 +273,7 @@ const selectAccount = async (context: vscode.ExtensionContext) => {
       void context.workspaceState.update('account', label)
       logger.success(`Account ${label} is selected.`)
       logger.success(
-        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner
+        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner as string
         }/address/${label}`
       )
       quickPick.dispose()

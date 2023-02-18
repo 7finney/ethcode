@@ -41,7 +41,7 @@ export interface CompiledJSONOutput {
   remixOutput?: RemixCompiledOutput
 }
 
-export const getAbi = (output: CompiledJSONOutput) => {
+export const getAbi = (output: CompiledJSONOutput): any => {
   if (output.contractType === 0) return []
 
   if (output.contractType === 1) return output.hardhatOutput?.abi
@@ -59,7 +59,7 @@ export const getByteCode = (
   return output.remixOutput?.data.bytecode.object
 }
 
-export const isHardhatProject = (path_: string) => {
+export const isHardhatProject = (path_: string): boolean => {
   return (
     fs
       .readdirSync(path_)

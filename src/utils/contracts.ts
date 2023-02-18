@@ -99,7 +99,7 @@ const getCompiledJsonObject = (_jsonPayload: any): CompiledJSONOutput => {
 /**
  * @dev return file paths with possibility of solidity compiled output jsons
  */
-const loadAllCompiledJsonOutputs = (path_: string) => {
+const loadAllCompiledJsonOutputs: any = (path_: string) => {
   let allFiles
 
   if (isHardhatProject(path_)) {
@@ -119,7 +119,7 @@ const loadAllCompiledJsonOutputs = (path_: string) => {
   return changedFiles
 }
 
-const selectContract = (context: ExtensionContext) => {
+const selectContract: any = (context: ExtensionContext) => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
 
   const quickPick = window.createQuickPick<IFunctionQP>()
@@ -153,7 +153,7 @@ const selectContract = (context: ExtensionContext) => {
   quickPick.show()
 }
 
-const createERC4907Contract = async (context: ExtensionContext) => {
+const createERC4907Contract: any = async (context: ExtensionContext) => {
   const path_: any =
     workspace.workspaceFolders?.[0].uri.fsPath
   const inputOptions: InputBoxOptions = {

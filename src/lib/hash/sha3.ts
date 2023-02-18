@@ -35,7 +35,7 @@ import { hash } from './keccak'
  * @param {Object} object
  * @return {Boolean}
  */
-const isBN = function (object: any) {
+const isBN = function (object: any): boolean {
   return BN.isBN(object)
 }
 
@@ -46,7 +46,7 @@ const isBN = function (object: any) {
  * @param {Object} object
  * @return {Boolean}
  */
-const isBigNumber = function (object: any) {
+const isBigNumber = function (object: any): boolean {
   return (
     (Boolean((object?.constructor))) && object.constructor.name === 'BigNumber'
   )
@@ -59,7 +59,7 @@ const isBigNumber = function (object: any) {
  * @param {Number|String|BN} number, string, HEX string or BN
  * @return {BN} BN
  */
-const toBN = function (number: any) {
+const toBN = function (number: any): any {
   try {
     return numberToBN.apply(null, arguments)
   } catch (e) {
@@ -87,7 +87,7 @@ const toBN = function (number: any) {
  * @param {String} address the given HEX address
  * @return {Boolean}
  */
-const isAddress = function (address: string) {
+const isAddress = function (address: string): boolean {
   // check if it has the basic requirements of an address
   if (!/^(0x)?[0-9a-f]{40}$/i.test(address)) {
     return false
@@ -110,7 +110,7 @@ const isAddress = function (address: string) {
  * @param {String} address the given HEX address
  * @return {Boolean}
  */
-var checkAddressChecksum = function (address: string) {
+const checkAddressChecksum = function (address: string): boolean {
   // Check each case
   address = address.replace(/^0x/i, '')
   const addressHash = sha3(address.toLowerCase()).replace(/^0x/i, '')
@@ -182,7 +182,7 @@ var checkAddressChecksum = function (address: string) {
  * @param {String} str
  * @returns {String} hex representation of input string
  */
-const utf8ToHex = function (str: string) {
+const utf8ToHex = function (str: string): any {
   str = utf8.encode(str)
   let hex = ''
 
@@ -281,7 +281,7 @@ const utf8ToHex = function (str: string) {
  * @param {String|Number|BN} value
  * @return {String}
  */
-const numberToHex = function (value: any) {
+const numberToHex = function (value: any): any {
   if ((Boolean(_.isNull(value))) || (Boolean(_.isUndefined(value)))) {
     return value
   }
@@ -325,7 +325,7 @@ const numberToHex = function (value: any) {
  * @param {string} hex
  * @return {Array} the byte array
  */
-const hexToBytes = function (hex: string) {
+const hexToBytes = function (hex: string): any {
   hex = hex.toString()
 
   if (!(isHexStrict(hex))) {
@@ -348,7 +348,7 @@ const hexToBytes = function (hex: string) {
  * @param {Boolean} returnType
  * @return {String}
  */
-const toHex = function (value: any, returnType: boolean) {
+const toHex = function (value: any, returnType: boolean): any {
   /* jshint maxcomplexity: false */
 
   if (isAddress(value)) {
@@ -365,7 +365,7 @@ const toHex = function (value: any, returnType: boolean) {
     return '0x' + value.toString('hex')
   }
 
-  if ((Boolean(_.isObject(value))) && !isBigNumber(value) && !isBN(value)) {
+  if ((Boolean(_.isObject(value))) && !isBigNumber(value) && !(isBN(value))) {
     return returnType ? 'string' : utf8ToHex(JSON.stringify(value))
   }
 
@@ -390,7 +390,7 @@ const toHex = function (value: any, returnType: boolean) {
  * @param {String} hex to be checked
  * @returns {Boolean}
  */
-const isHexStrict = function (hex: string) {
+const isHexStrict = function (hex: string): boolean {
   return ((Boolean(_.isString(hex))) || (Boolean(_.isNumber(hex)))) && /^(-)?0x[0-9a-f]*$/i.test(hex)
 }
 
@@ -401,7 +401,7 @@ const isHexStrict = function (hex: string) {
  * @param {String} hex to be checked
  * @returns {Boolean}
  */
-const isHex = function (hex: string) {
+const isHex = function (hex: string): boolean {
   return (
     ((Boolean(_.isString(hex))) || (Boolean(_.isNumber(hex)))) && /^(-0x|0x)?[0-9a-f]*$/i.test(hex)
   )
@@ -418,7 +418,7 @@ const isHex = function (hex: string) {
 const SHA3_NULL_S =
   '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
 
-var sha3 = function (value: any) {
+const sha3 = function (value: any): any {
   if (isBN(value)) {
     value = value.toString()
   }

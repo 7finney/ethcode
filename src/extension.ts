@@ -36,7 +36,7 @@ import {
 } from './utils/api'
 import { status, wallet } from './api'
 
-export async function activate (context: ExtensionContext) {
+export async function activate (context: ExtensionContext): Promise<any> {
   context.subscriptions.push(
     // Create new account with password
     commands.registerCommand('ethcode.account.create', async () => {
@@ -61,7 +61,7 @@ export async function activate (context: ExtensionContext) {
     // Delete selected account with password
     commands.registerCommand('ethcode.account.delete', async () => {
       deleteKeyPair(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
@@ -69,7 +69,7 @@ export async function activate (context: ExtensionContext) {
     // Deploy ContractcallContractMethod
     commands.registerCommand('ethcode.contract.deploy', async () => {
       deployContract(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
@@ -77,21 +77,21 @@ export async function activate (context: ExtensionContext) {
     // select ethereum networks
     commands.registerCommand('ethcode.network.select', () => {
       updateSelectedNetwork(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
 
     commands.registerCommand('ethcode.rental.create', () => {
       createERC4907Contract(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
     // Select Ethereum Account
     commands.registerCommand('ethcode.account.select', () => {
       selectAccount(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
@@ -99,7 +99,7 @@ export async function activate (context: ExtensionContext) {
     // Get account balance
     commands.registerCommand('ethcode.account.balance', async () => {
       displayBalance(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
@@ -107,7 +107,7 @@ export async function activate (context: ExtensionContext) {
     // Set gas strategy
     commands.registerCommand('ethcode.transaction.gas.set', async () => {
       setTransactionGas(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
@@ -133,7 +133,7 @@ export async function activate (context: ExtensionContext) {
     // Call contract method
     commands.registerCommand('ethcode.contract.call', async () => {
       callContractMethod(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
@@ -141,14 +141,14 @@ export async function activate (context: ExtensionContext) {
     // Export Account
     commands.registerCommand('ethcode.account.export', async () => {
       exportKeyPair(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
     // Import Key pair
     commands.registerCommand('ethcode.account.import', async () => {
       importKeyPair(context)
-        .catch((error) => {
+        .catch((error: any) => {
           logger.error(error)
         })
     }),
@@ -161,7 +161,7 @@ export async function activate (context: ExtensionContext) {
 
   // API for extensions
   // ref: https://code.visualstudio.com/api/references/vscode-api#extensions
-  const api = {
+  const api: any = {
     status,
     wallet: wallet(context),
     // PROVIDER

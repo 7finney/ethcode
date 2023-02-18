@@ -1,4 +1,4 @@
-import { ethers, type Wallet } from 'ethers'
+import { ethers, type Wallet, type Contract } from 'ethers'
 import { type ExtensionContext } from 'vscode'
 import { extractPvtKey, listAddresses } from './wallet'
 
@@ -16,23 +16,23 @@ import {
 
 // PROVIDER
 
-const providerDefault = (context: ExtensionContext) => {
+const providerDefault = (context: ExtensionContext): any => {
   return getSelectedProvider(context)
 }
 
-const getAvailableNetwork = () => {
+const getAvailableNetwork = (): any => {
   return getNetworkNames()
 }
 
-const getNetwork = (context: ExtensionContext) => {
+const getNetwork = (context: ExtensionContext): any => {
   return getSelectedNetConf(context)
 }
 
-const setNetwork = (context: ExtensionContext, network: string) => {
+const setNetwork = (context: ExtensionContext, network: string): any => {
   if (network === null) {
     return 'Network parameter not given'
   }
-  if (!getNetworkNames().includes(network)) {
+  if (getNetworkNames().includes(network) != null) {
     return 'Network not found'
   } else {
     void context.workspaceState.update('selectedNetwork', network)
@@ -51,7 +51,7 @@ const getWallet = async (context: ExtensionContext, account: string): Promise<Wa
   return wallet
 }
 
-const listAllWallet = async (context: ExtensionContext) => {
+const listAllWallet = async (context: ExtensionContext): Promise<string[]> => {
   const result = await listAddresses(context, context.extensionPath)
   return result
 }
@@ -63,12 +63,12 @@ const getContract = async (
   address: string,
   abi: any,
   wallet: ethers.Signer
-) => {
+): Promise<Contract> => {
   const contract = new ethers.Contract(address, abi, wallet)
   return contract
 }
 
-const listFunctions = (abi: any) => {
+const listFunctions = (abi: any): any => {
   const result = []
   for (let i = 0; i < abi.length; i++) {
     if (abi[i].type === 'function') {
@@ -82,7 +82,7 @@ const executeContractMethod = async (
   contract: any,
   method: string,
   args: any[]
-) => {
+): Promise<any> => {
   const result = await contract[method](...args)
   return result
 }
@@ -90,7 +90,7 @@ const executeContractMethod = async (
 const exportABI = async (
   context: ExtensionContext,
   selectSpecific: string = ''
-) => {
+): Promise<any> => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
   if (contracts === undefined || Object.keys(contracts).length === 0) return
   // return all abi if name is not specified else return abi of specific contract
@@ -147,7 +147,7 @@ const getFunctionInputFile: any = async (
 const getConstructorInputFile = async (
   context: ExtensionContext,
   name: string
-) => {
+): Promise<any> => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
   if (contracts === undefined || Object.keys(contracts).length === 0) return
   for (let i = 0; i < Object.keys(contracts).length; i++) {

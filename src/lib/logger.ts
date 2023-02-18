@@ -1,13 +1,13 @@
 import { window, type OutputChannel } from 'vscode'
 
-const successToast = (msg: string) => {
+const successToast = (msg: string): any => {
   void window.showInformationMessage(msg, 'Dismiss')
 }
 
 // const warningToast = (msg: string) => {
 //   void window.showWarningMessage(msg, 'Dismiss')
 // }
-const errorToast = (msg: string) => {
+const errorToast = (msg: string): any => {
   void window.showErrorMessage(msg, 'Dismiss')
 }
 
@@ -27,13 +27,13 @@ export class Logger {
     return date.toLocaleTimeString()
   }
 
-  public log (...m: any[]) {
+  public log (...m: any[]): any {
     const now = this.getNow()
     this.outputChannel.appendLine(`[${now}]: ${m.join('')}`)
     this.outputChannel.show()
   }
 
-  public error (e: any) {
+  public error (e: any): any {
     const now = this.getNow()
     this.outputChannel.appendLine(`[${now}] Error: ${e.message as string}`)
     this.outputChannel.appendLine(`[${now}] stack: ${e.stack as string}`)
@@ -41,7 +41,7 @@ export class Logger {
     errorToast(`Error: ${e.message as string}`)
   }
 
-  public success (m: string) {
+  public success (m: string): any {
     const now = this.getNow()
     this.outputChannel.appendLine(`[${now}]: ${m}`)
     this.outputChannel.show()

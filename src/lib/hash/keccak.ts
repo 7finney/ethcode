@@ -34,7 +34,7 @@ const RC = [
   0, 2147516424, 2147483648
 ]
 
-const Keccak = (bits: any) => ({
+const Keccak = (bits: any): any => ({
   blocks: [],
   reset: true,
   block: 0,
@@ -44,7 +44,7 @@ const Keccak = (bits: any) => ({
   s: ((s: any) => [].concat(s, s, s, s, s))([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 })
 
-const update = (state: any, message: any) => {
+const update = (state: any, message: any): any => {
   const length = message.length
   const blocks = state.blocks
   const byteCount = state.blockCount << 2
@@ -145,7 +145,7 @@ const update = (state: any, message: any) => {
   return '0x' + hex
 }
 
-const f = (s: any) => {
+const f = (s: any): any => {
   let h,
     l,
     n,

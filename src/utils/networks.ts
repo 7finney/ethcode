@@ -21,7 +21,7 @@ import { selectContract } from './contracts'
 
 const provider = ethers.providers
 
-const getConfiguration = () => {
+const getConfiguration: any = () => {
   return vscode.workspace.getConfiguration('ethcode')
 }
 
@@ -31,21 +31,21 @@ const getNetworkNames = (): string[] => {
 }
 
 // Selected Network Configuratin Helper
-const getSelectedNetwork = (context: vscode.ExtensionContext): string => {
+const getSelectedNetwork: any = (context: vscode.ExtensionContext): string => {
   return context.workspaceState.get('selectedNetwork') as string
 }
 
-const getSelectedNetConf = (context: vscode.ExtensionContext) => {
+const getSelectedNetConf: any = (context: vscode.ExtensionContext) => {
   const networks: any = getConfiguration().get('networks')
   const selectedNetworkConfig = networks[getSelectedNetwork(context)]
   const parsedConfig: NetworkConfig = JSON.parse(selectedNetworkConfig)
   return parsedConfig
 }
 
-const updateSelectedNetwork = async (context: vscode.ExtensionContext) => {
+const updateSelectedNetwork: any = async (context: vscode.ExtensionContext) => {
   const quickPick = window.createQuickPick<INetworkQP>()
 
-  quickPick.items = getNetworkNames().map((name) => ({
+  quickPick.items = getNetworkNames().map((name: any) => ({
     label: name
   }))
   quickPick.onDidChangeActive(() => {
@@ -64,7 +64,7 @@ const updateSelectedNetwork = async (context: vscode.ExtensionContext) => {
   quickPick.show()
 }
 
-const isValidHttpUrl = (url_: string): boolean => {
+const isValidHttpUrl: any = (url_: string) => {
   let url
 
   try {
@@ -76,15 +76,15 @@ const isValidHttpUrl = (url_: string): boolean => {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-const getSelectedProvider = (context: vscode.ExtensionContext) => {
+const getSelectedProvider: any = (context: vscode.ExtensionContext) => {
   const rpc = getSelectedNetConf(context).rpc // default providers have a name with less than 10 chars
-  if (isValidHttpUrl(rpc)) return new provider.JsonRpcProvider(rpc)
+  if (isValidHttpUrl(rpc) === true) return new provider.JsonRpcProvider(rpc)
 
   return provider.getDefaultProvider(rpc)
 }
 
 // Contract function calls
-const displayBalance = async (context: vscode.ExtensionContext) => {
+const displayBalance: any = async (context: vscode.ExtensionContext) => {
   if (getSelectedNetwork(context) === undefined) {
     logger.log('No network selected. Please select a network.')
     return
@@ -99,13 +99,13 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
   try {
     void getSelectedProvider(context)
       .getBalance(address)
-      .then(async (value) => {
+      .then(async (value: any) => {
         const balance = ethers.utils.formatEther(value)
         void context.workspaceState.update('balance', balance)
 
         const networkName: string = getSelectedNetwork(context)
         logger.success(
-          `\nAccount: ${address} \nBalance: ${balance} ${nativeCurrencySymbol} \nNetwork: ${networkName}`
+          `\nAccount: ${address} \nBalance: ${balance} ${nativeCurrencySymbol as string} \nNetwork: ${networkName}`
         )
       })
   } catch (_) {
@@ -113,7 +113,7 @@ const displayBalance = async (context: vscode.ExtensionContext) => {
   }
 }
 
-const isTestingNetwork = (context: vscode.ExtensionContext) => {
+const isTestingNetwork: any = (context: vscode.ExtensionContext) => {
   if (getSelectedNetwork(context) === 'Ganache Testnet') return true
 
   if (getSelectedNetwork(context) === 'Hardhat Testnet') return true
@@ -121,7 +121,7 @@ const isTestingNetwork = (context: vscode.ExtensionContext) => {
   return false
 }
 
-const setTransactionGas = async (context: vscode.ExtensionContext) => {
+const setTransactionGas: any = async (context: vscode.ExtensionContext) => {
   const quickPick = window.createQuickPick()
 
   const gasConditions = ['Low', 'Medium', 'High']
@@ -147,7 +147,7 @@ const setTransactionGas = async (context: vscode.ExtensionContext) => {
   quickPick.show()
 }
 
-const callContractMethod = async (context: vscode.ExtensionContext) => {
+const callContractMethod: any = async (context: vscode.ExtensionContext) => {
   try {
     const compiledOutput: CompiledJSONOutput = (await context.workspaceState.get(
       'contract'
@@ -224,7 +224,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
       )
       logger.success(
         `You can see detail of this transaction here. ${
-          getSelectedNetConf(context).blockScanner
+          getSelectedNetConf(context).blockScanner as string
         }/tx/${result.hash as string}`
       )
     }
@@ -236,7 +236,7 @@ const callContractMethod = async (context: vscode.ExtensionContext) => {
 /**
  * @dev deploy the contract using the compiled json output and signer wallet
  */
-const deployContract = async (context: vscode.ExtensionContext) => {
+const deployContract: any = async (context: vscode.ExtensionContext) => {
   try {
     logger.success('Deploying contract...')
 
@@ -256,19 +256,19 @@ const deployContract = async (context: vscode.ExtensionContext) => {
       })
 
       void context.workspaceState.update('contractAddress', contract.address)
-      logger.success(`Contract deployed to ${contract.address}`)
+      logger.success(`Contract deployed to ${contract.address as string}`)
     } else {
       const contract = await myContract.deploy(...parameters)
 
       void context.workspaceState.update('contractAddress', contract.address)
-      logger.success(`Contract deployed to ${contract.address}`)
+      logger.success(`Contract deployed to ${contract.address as string}`)
     }
   } catch (err) {
     logger.error(err)
   }
 }
 
-const getSignedContract = async (
+const getSignedContract: any = async (
   context: vscode.ExtensionContext,
   contractAddres: string
 ): Promise<ethers.Contract> => {
@@ -284,7 +284,7 @@ const getSignedContract = async (
   if (byteCode === undefined) throw new Error('ByteCode is not defined.')
 
   let contract
-  if (isTestingNetwork(context)) {
+  if (isTestingNetwork(context) === true) {
     // Deploy to ganache network
     const provider = getSelectedProvider(
       context
@@ -302,7 +302,7 @@ const getSignedContract = async (
   return contract
 }
 
-const getContractFactoryWithParams = async (
+const getContractFactoryWithParams: any = async (
   context: vscode.ExtensionContext
 ): Promise<ethers.ContractFactory> => {
   const compiledOutput = (await context.workspaceState.get(
@@ -317,7 +317,7 @@ const getContractFactoryWithParams = async (
   if (byteCode === undefined) throw new Error('ByteCode is not defined.')
 
   let myContract
-  if (isTestingNetwork(context)) {
+  if (isTestingNetwork(context) === true) {
     // Deploy to ganache network
     const provider = getSelectedProvider(
       context

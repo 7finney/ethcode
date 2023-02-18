@@ -1,7 +1,7 @@
 import * as randomBytes from 'randombytes'
 import { sha3, isHexStrict } from './sha3'
 
-function toChecksumAddress (address: any) {
+function toChecksumAddress (address: any): string {
   if (address == null) return ''
 
   if (!/^(0x)?[0-9a-f]{40}$/i.test(address)) {
@@ -25,7 +25,7 @@ function toChecksumAddress (address: any) {
   return checksumAddress
 }
 
-function asciiToHex (str: any) {
+function asciiToHex (str: any): any {
   if (str === null || str === undefined) {
     return '0x00'
   }
@@ -37,7 +37,7 @@ function asciiToHex (str: any) {
   return '0x' + hex
 }
 
-function hexToAscii (hex: string) {
+function hexToAscii (hex: string): any {
   let i: number = 0
   let str: string = ''
   if (!(isHexStrict(hex))) {
@@ -52,7 +52,7 @@ function hexToAscii (hex: string) {
   return str
 }
 
-function randomHex (size: any) {
+function randomHex (size: any): any {
   return '0x' + randomBytes(size).toString('hex')
 }
 
