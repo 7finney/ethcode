@@ -1,6 +1,6 @@
 import { ethers, type Wallet } from 'ethers'
 import { type ExtensionContext } from 'vscode'
-
+import type * as vscode from 'vscode'
 import { extractPvtKey, listAddresses } from './wallet'
 
 import {
