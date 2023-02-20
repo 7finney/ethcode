@@ -20,7 +20,7 @@ import {
   parseCompiledJSONPayload,
   selectContract
 } from './utils'
-import { provider, status, wallet, contract } from './api'
+import { provider, status, wallet, contract, ethcode } from './api'
 
 export async function activate (context: ExtensionContext): Promise<any> {
   context.subscriptions.push(
@@ -153,7 +153,9 @@ export async function activate (context: ExtensionContext): Promise<any> {
     // PROVIDER
     provider: provider(context),
     // CONTRACT
-    contract: contract(context)
+    contract: contract(context),
+    // UTILS
+    ethcode: ethcode()
   }
 
   return api
