@@ -1,4 +1,3 @@
-import { type ethers } from 'ethers'
 import { type InputBoxOptions, window, commands, type ExtensionContext } from 'vscode'
 import {
   callContractMethod,
@@ -21,16 +20,7 @@ import {
   parseCompiledJSONPayload,
   selectContract
 } from './utils'
-import {
-  getContract,
-  listFunctions,
-  executeContractMethod,
-  exportABI,
-  getDeployedContractAddress,
-  getFunctionInputFile,
-  getConstructorInputFile
-} from './utils/api'
-import { provider, status, wallet } from './api'
+import { provider, status, wallet, contract } from './api'
 
 export async function activate (context: ExtensionContext): Promise<any> {
   context.subscriptions.push(
@@ -163,18 +153,7 @@ export async function activate (context: ExtensionContext): Promise<any> {
     // PROVIDER
     provider: provider(context),
     // CONTRACT
-    contract: {
-      get: async (address: string, abi: any, wallet: ethers.Signer) =>
-        await getContract(context, address, abi, wallet),
-      list: (abi: any) => listFunctions(abi),
-      execute: async (contract: any, method: string, args: any[]) =>
-        await executeContractMethod(contract, method, args),
-      abi: async (name: string) => await exportABI(context, name),
-      geContractAddress: async (name: string) => getDeployedContractAddress(context, name),
-      getFunctionInput: async (name: string) => getFunctionInputFile(context, name),
-      getConstructorInput: async (name: string) =>
-        await getConstructorInputFile(context, name)
-    }
+    contract: contract(context)
   }
 
   return api

@@ -1,5 +1,12 @@
-import { getNetwork, providerDefault, setNetwork, getAvailableNetwork } from '../utils/api'
-import { type ExtensionContext } from 'vscode'
+import {
+  getNetwork,
+  providerDefault,
+  setNetwork,
+  getAvailableNetwork
+} from '../utils/api'
+import {
+  type ExtensionContext
+} from 'vscode'
 
 interface ProviderInterface {
   get: () => any
