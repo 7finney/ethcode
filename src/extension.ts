@@ -22,10 +22,6 @@ import {
   selectContract
 } from './utils'
 import {
-  getNetwork,
-  getAvailableNetwork,
-  providerDefault,
-  setNetwork,
   getContract,
   listFunctions,
   executeContractMethod,
@@ -34,7 +30,7 @@ import {
   getFunctionInputFile,
   getConstructorInputFile
 } from './utils/api'
-import { status, wallet } from './api'
+import { provider, status, wallet } from './api'
 
 export async function activate (context: ExtensionContext): Promise<any> {
   context.subscriptions.push(
@@ -165,14 +161,7 @@ export async function activate (context: ExtensionContext): Promise<any> {
     status,
     wallet: wallet(context),
     // PROVIDER
-    provider: {
-      get: () => providerDefault(context),
-      network: {
-        get: () => getNetwork(context),
-        set: (network: string) => setNetwork(context, network),
-        list: () => getAvailableNetwork()
-      }
-    },
+    provider: provider(context),
     // CONTRACT
     contract: {
       get: async (address: string, abi: any, wallet: ethers.Signer) =>
