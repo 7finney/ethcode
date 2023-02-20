@@ -1,7 +1,7 @@
 import {
   getWallet,
   listAllWallet
-} from '../utils/api'
+} from './api'
 import {
   type ExtensionContext,
   EventEmitter

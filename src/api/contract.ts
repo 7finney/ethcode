@@ -6,7 +6,7 @@ import {
   getDeployedContractAddress,
   getFunctionInputFile,
   getConstructorInputFile
-} from '../utils/api'
+} from './api'
 import {
   type ExtensionContext
 } from 'vscode'

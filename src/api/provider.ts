@@ -3,7 +3,7 @@ import {
   providerDefault,
   setNetwork,
   getAvailableNetwork
-} from '../utils/api'
+} from './api'
 import {
   type ExtensionContext
 } from 'vscode'

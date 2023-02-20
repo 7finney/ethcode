@@ -1,21 +1,28 @@
 import { ethers, type Wallet, type Contract } from 'ethers'
 import { type ExtensionContext } from 'vscode'
-import { extractPvtKey, listAddresses } from './wallet'
-
+import { extractPvtKey, listAddresses } from '../utils/wallet'
+import * as vscode from 'vscode'
 import {
   getNetworkNames,
   getSelectedNetConf,
   getSelectedProvider
-} from './networks'
+} from '../utils/networks'
 import { type CompiledJSONOutput } from '../types'
 import {
   getConstructorInputFullPath,
   getDeployedFullPath,
   getFunctionInputFullPath
-} from './functions'
+} from '../utils/functions'
+
+const event: {
+  network: vscode.EventEmitter<string>
+  account: vscode.EventEmitter<string>
+} = {
+  network: new vscode.EventEmitter<string>(),
+  account: new vscode.EventEmitter<string>()
+}
 
 // PROVIDER
-
 const providerDefault = (context: ExtensionContext): any => {
   return getSelectedProvider(context)
 }
@@ -40,8 +47,7 @@ const setNetwork = (context: ExtensionContext, network: string): any => {
   }
 }
 
-// WALLET
-
+// WALLETS
 const getWallet = async (context: ExtensionContext, account: string): Promise<Wallet> => {
   const address: any = await context.workspaceState.get('account')
   account = account ?? address
@@ -174,5 +180,6 @@ export {
   exportABI,
   getDeployedContractAddress,
   getFunctionInputFile,
-  getConstructorInputFile
+  getConstructorInputFile,
+  event
 }
