@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { type ethers } from 'ethers'
 import * as fs from 'fs'
 import * as vscode from 'vscode'
@@ -13,7 +14,6 @@ import {
   isTestingNetwork
 } from './networks'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const keythereum = require('keythereum')
 
 // list all local addresses
@@ -57,7 +57,12 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
   const bareKey = keythereum.create(params)
   const options = {
     kdf: 'scrypt',
-    cipher: 'aes-128-ctr'
+    cipher: 'aes-128-ctr',
+    kdfparams: {
+      c: 262144,
+      dklen: 32,
+      prf: 'hmac-sha256'
+    }
   }
   const keyObject = keythereum.dump(
     Buffer.from(pswd, 'utf-8'),
