@@ -179,20 +179,20 @@
     }
   },
   "dependencies": {
+    "@types/keythereum": "^1.2.1",
     "@types/randombytes": "^2.0.0",
     "@types/underscore": "^1.11.4",
     "axios": "^0.27.2",
     "bn.js": "^5.2.1",
     "eslint": "^8.34.0",
     "ethers": "^5.6.9",
-    "keythereum": "^1.2.0",
+    "keythereum": "^2.0.0",
     "number-to-bn": "^1.7.0",
     "randombytes": "^2.1.0",
     "underscore": "^1.13.4",
     "utf8": "^3.0.0"
   },
   "devDependencies": {
-    "@types/keythereum": "^1.2.1",
     "@types/node": "^18.0.0",
     "@types/utf8": "^3.0.1",
     "@types/vscode": "^1.38.1",

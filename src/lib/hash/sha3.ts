@@ -68,19 +68,6 @@ const toBN = function (number: any): any {
 }
 
 /**
- * Takes and input transforms it into BN and if it is negative value, into two's complement
- *
- * @method toTwosComplement
- * @param {Number|String|BN} number
- * @return {String}
- */
-
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const toTwosComplement = function (number: any) {
-//   return `0x${toBN(number).toTwos(256).toString(16, 64) as string}`
-// }
-
-/**
  * Checks if the given string is an address
  *
  * @method isAddress
@@ -130,52 +117,6 @@ const checkAddressChecksum = function (address: string): boolean {
 }
 
 /**
- * Should be called to pad string to expected length
- *
- * @method leftPad
- * @param {String} string to be padded
- * @param {Number} chars that result string should have
- * @param {String} sign, by default 0
- * @returns {String} right aligned string
- */
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const leftPad = function (string: string, chars: number, sign: string) {
-//   const hasPrefix = /^0x/i.test(string) || typeof string === 'number'
-//   string = string.toString().replace(/^0x/i, '')
-
-//   const padding = chars - string.length + 1 >= 0 ? chars - string.length + 1 : 0
-
-//   return (
-//     (hasPrefix ? '0x' : '') +
-//     new Array(padding).join(sign !== '' ? sign : '0') +
-//     string
-//   )
-// }
-
-/**
- * Should be called to pad string to expected length
- *
- * @method rightPad
- * @param {String} string to be padded
- * @param {Number} chars that result string should have
- * @param {String} sign, by default 0
- * @returns {String} right aligned string
- */
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const rightPad = function (string: string, chars: number, sign: string) {
-//   const hasPrefix = /^0x/i.test(string) || typeof string === 'number'
-//   string = string.toString().replace(/^0x/i, '')
-
-//   const padding = chars - string.length + 1 >= 0 ? chars - string.length + 1 : 0
-
-//   return (
-//     (hasPrefix ? '0x' : '') +
-//     string +
-//     new Array(padding).join(sign !== '' ? sign : '0')
-//   )
-// }
-
-/**
  * Should be called to get hex representation (prefixed by 0x) of utf8 string
  *
  * @method utf8ToHex
@@ -204,77 +145,6 @@ const utf8ToHex = function (str: string): any {
 }
 
 /**
- * Should be called to get utf8 from it's hex representation
- *
- * @method hexToUtf8
- * @param {String} hex
- * @returns {String} ascii string representation of hex value
- */
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const hexToUtf8 = function (hex: string) {
-//   if (!(isHexStrict(hex))) { throw new Error('The parameter "' + hex + '" must be a valid HEX string.') }
-
-//   let str = ''
-//   let code = 0
-//   hex = hex.replace(/^0x/i, '')
-
-//   // remove 00 padding from either side
-//   hex = hex.replace(/^(?:00)*/, '')
-//   hex = hex.split('').reverse().join('')
-//   hex = hex.replace(/^(?:00)*/, '')
-//   hex = hex.split('').reverse().join('')
-
-//   const l = hex.length
-
-//   for (let i = 0; i < l; i += 2) {
-//     code = parseInt(hex.substr(i, 2), 16)
-//     // if (code !== 0) {
-//     str += String.fromCharCode(code)
-//     // }
-//   }
-
-//   return utf8.decode(str)
-// }
-
-/**
- * Converts value to it's number representation
- *
- * @method hexToNumber
- * @param {String|Number|BN} value
- * @return {String}
- */
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const hexToNumber = function (value: any) {
-//   if (value === null || typeof value === 'undefined') {
-//     return value
-//   }
-
-//   if ((Boolean(_.isString(value))) && !(isHexStrict(value))) {
-//     throw new Error(`Given value ${value.toString() as string} is not a valid hex string.`)
-//   }
-
-//   return toBN(value).toNumber()
-// }
-
-/**
- * Converts value to it's decimal representation in string
- *
- * @method hexToNumberString
- * @param {String|Number|BN} value
- * @return {String}
- */
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const hexToNumberString = function (value: any) {
-//   if (value === null || typeof value === 'undefined') return value
-
-//   if ((Boolean(_.isString(value))) && !(isHexStrict(value))) {
-//     throw new Error(`Given value ${value.toString() as string} is not a valid hex string.`)
-//   }
-
-//   return toBN(value).toString(10)
-// }
-
-/**
  * Converts value to it's hex representation
  *
  * @method numberToHex
@@ -295,26 +165,6 @@ const numberToHex = function (value: any): any {
 
   return (number.lt(new BN(0))) as boolean ? `-0x${result.substr(1) as string}` : `0x${result as string}`
 }
-
-/**
- * Convert a byte array to a hex string
- *
- * Note: Implementation from crypto-js
- *
- * @method bytesToHex
- * @param {Array} bytes
- * @return {String} the hex string
- */
-// // eslint-disable-next-line @typescript-eslint/no-unused-vars
-// const bytesToHex = function (bytes: any[]) {
-//   for (let hex = [], i = 0; i < bytes.length; i++) {
-//     /* jshint ignore:start */
-//     hex.push((bytes[i] >>> 4).toString(16))
-//     hex.push((bytes[i] & 0xf).toString(16))
-//     /* jshint ignore:end */
-//   }
-//   return `0x${hex.join('') as string}`
-// }
 
 /**
  * Convert a hex string to a byte array
