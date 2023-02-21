@@ -2,6 +2,7 @@ import { type ethers } from 'ethers'
 import * as fs from 'fs'
 import * as vscode from 'vscode'
 import { window, type InputBoxOptions } from 'vscode'
+import { event } from '../api/api'
 import { logger } from '../lib'
 
 import { toChecksumAddress } from '../lib/hash/util'
@@ -271,6 +272,9 @@ const selectAccount: any = async (context: vscode.ExtensionContext) => {
     if (selection[0] != null) {
       const { label } = selection[0]
       void context.workspaceState.update('account', label)
+
+      event.account.fire(label)
+
       logger.success(`Account ${label} is selected.`)
       logger.success(
         `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner as string

@@ -18,6 +18,7 @@ import {
 
 import { errors } from '../config/errors'
 import { selectContract } from './contracts'
+import { event } from '../api/api'
 
 const provider = ethers.providers
 
@@ -56,6 +57,8 @@ const updateSelectedNetwork: any = async (context: vscode.ExtensionContext) => {
       const { label } = selection[0]
       void context.workspaceState.update('selectedNetwork', label)
       quickPick.dispose()
+
+      event.network.fire(label)
 
       logger.success(`Selected network is ${label}`)
     }
