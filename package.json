@@ -186,7 +186,7 @@
     "bn.js": "^5.2.1",
     "eslint": "^8.34.0",
     "ethers": "^5.6.9",
-    "keythereum": "^2.0.0",
+    "keythereum": "^1.2.0",
     "number-to-bn": "^1.7.0",
     "randombytes": "^2.1.0",
     "underscore": "^1.13.4",

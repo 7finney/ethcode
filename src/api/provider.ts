@@ -19,7 +19,8 @@ interface ProviderInterface {
 
 export function provider (context: ExtensionContext): ProviderInterface {
   async function get (): Promise<any> {
-    return providerDefault(context)
+    const provider = await providerDefault(context)
+    return provider
   }
 
   function networkGet (): any {

@@ -34,6 +34,7 @@ export async function activate (context: ExtensionContext): Promise<any> {
           placeHolder: 'Password'
         }
         const password = await window.showInputBox(pwdInpOpt)
+        console.log('password is:', password)
         if (password === undefined) {
           logger.log('Account not created')
           return

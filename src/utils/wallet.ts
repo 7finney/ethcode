@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { type ethers } from 'ethers'
+import { ethers } from 'ethers'
 import * as fs from 'fs'
 import * as vscode from 'vscode'
 import { window, type InputBoxOptions } from 'vscode'
 import { event } from '../api/api'
 import { logger } from '../lib'
-
-import { toChecksumAddress } from '../lib/hash/util'
 import { type Account, type LocalAddressType } from '../types'
 import {
   getSelectedNetwork,
@@ -41,7 +39,7 @@ const listAddresses: any = async (
       const arr = file.split('--')
       return {
         pubAddress: `0x${arr[arr.length - 1]}`,
-        checksumAddress: toChecksumAddress(`0x${arr[arr.length - 1]}`)
+        checksumAddress: ethers.utils.getAddress(`0x${arr[arr.length - 1]}`)
       }
     })
 
@@ -58,12 +56,7 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
   const bareKey = keythereum.create(params)
   const options = {
     kdf: 'scrypt',
-    cipher: 'aes-128-ctr',
-    kdfparams: {
-      c: 262144,
-      dklen: 32,
-      prf: 'hmac-sha256'
-    }
+    cipher: 'aes-128-ctr'
   }
   const keyObject = keythereum.dump(
     Buffer.from(pswd, 'utf-8'),
@@ -74,7 +67,7 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
   )
   const account: Account = {
     pubAddr: keyObject.address,
-    checksumAddr: toChecksumAddress(keyObject.address)
+    checksumAddr: ethers.utils.getAddress(keyObject.address)
   }
   logger.success('Account created!')
   logger.log(JSON.stringify(account))
@@ -135,15 +128,15 @@ const importKeyPair: any = async (context: vscode.ExtensionContext) => {
 
     const addresses = await listAddresses(context, context.extensionPath)
 
-    void vscode.window.showOpenDialog(options).then((fileUri) => {
+    await vscode.window.showOpenDialog(options).then((fileUri) => {
       if ((fileUri?.[0]) != null) {
         const arrFilePath = fileUri[0].fsPath.split('\\')
         const file = arrFilePath[arrFilePath.length - 1]
         const arr = file.split('--')
-        const address = toChecksumAddress(`0x${arr[arr.length - 1]}`)
+        const address = ethers.utils.getAddress(`0x${arr[arr.length - 1]}`)
 
         const already = addresses.find(
-          (element: string) => toChecksumAddress(element) === address
+          (element: string) => ethers.utils.getAddress(element) === address
         )
 
         if (already !== undefined) {
