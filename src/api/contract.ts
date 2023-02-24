@@ -1,7 +1,4 @@
 import {
-  getContract,
-  listFunctions,
-  executeContractMethod,
   exportABI,
   getDeployedContractAddress,
   getFunctionInputFile,
@@ -10,15 +7,8 @@ import {
 import {
   type ExtensionContext
 } from 'vscode'
-import {
-  type ethers,
-  type Contract
-} from 'ethers'
 
 interface ContractInterface {
-  get: (address: string, abi: any, wallet: ethers.Signer) => Promise<Contract>
-  list: (abi: any) => any
-  execute: (contract: any, method: string, args: any[]) => Promise<any>
   abi: (name: string) => Promise<any>
   getContractAddress: (name: string) => Promise<any>
   getFunctionInput: (name: string) => Promise<any>
@@ -26,18 +16,6 @@ interface ContractInterface {
 }
 
 export function contract (context: ExtensionContext): ContractInterface {
-  async function get (address: string, abi: any, wallet: ethers.Signer): Promise<Contract> {
-    return await getContract(context, address, abi, wallet)
-  }
-
-  function list (abi: any): any {
-    return listFunctions(abi)
-  }
-
-  async function execute (contract: any, method: string, args: any[]): Promise<any> {
-    return await executeContractMethod(contract, method, args)
-  }
-
   async function abi (name: string): Promise<any> {
     return await exportABI(context, name)
   }
@@ -55,9 +33,6 @@ export function contract (context: ExtensionContext): ContractInterface {
   }
 
   return {
-    get,
-    list,
-    execute,
     abi,
     getContractAddress,
     getFunctionInput,
