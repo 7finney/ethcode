@@ -3,8 +3,7 @@ import {
   listAllWallet
 } from './api'
 import {
-  type ExtensionContext,
-  EventEmitter
+  type ExtensionContext
 } from 'vscode'
 import {
   type Wallet
@@ -13,7 +12,6 @@ import {
 interface WalletInterface {
   get: (account: string) => Promise<Wallet>
   list: () => Promise<any>
-  onAccountUpdate: () => EventEmitter<string>
 }
 
 export function wallet (context: ExtensionContext): WalletInterface {
@@ -23,12 +21,9 @@ export function wallet (context: ExtensionContext): WalletInterface {
   async function list (): Promise<string[]> {
     return await listAllWallet(context)
   }
-  function onAccountUpdate (): EventEmitter<string> {
-    return new EventEmitter<string>()
-  }
+
   return {
     get,
-    list,
-    onAccountUpdate
+    list
   }
 }
