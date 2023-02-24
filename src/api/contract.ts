@@ -9,6 +9,7 @@ import {
 } from 'vscode'
 
 interface ContractInterface {
+  list: () => string[]
   abi: (name: string) => Promise<any>
   getContractAddress: (name: string) => Promise<any>
   getFunctionInput: (name: string) => Promise<any>
@@ -16,6 +17,11 @@ interface ContractInterface {
 }
 
 export function contract (context: ExtensionContext): ContractInterface {
+  function list (): string[] {
+    const contracts = context.workspaceState.get('contracts') as string[]
+    if (contracts === undefined || contracts.length === 0) return []
+    return Object.keys(contracts)
+  }
   async function abi (name: string): Promise<any> {
     return await exportABI(context, name)
   }
@@ -33,6 +39,7 @@ export function contract (context: ExtensionContext): ContractInterface {
   }
 
   return {
+    list,
     abi,
     getContractAddress,
     getFunctionInput,
