@@ -39,7 +39,7 @@ const setNetwork = (context: ExtensionContext, network: string): any => {
   if (network === null) {
     return 'Network parameter not given'
   }
-  if (getNetworkNames().includes(network) != null) {
+  if (!getNetworkNames().includes(network)) {
     return 'Network not found'
   } else {
     void context.workspaceState.update('selectedNetwork', network)
