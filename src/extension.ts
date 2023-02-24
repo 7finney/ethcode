@@ -156,7 +156,7 @@ export async function activate (context: ExtensionContext): Promise<any> {
     // CONTRACT
     contract: contract(context),
     // UTILS
-    ethcode: ethcode()
+    events: ethcode()
   }
 
   return api
