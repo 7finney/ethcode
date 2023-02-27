@@ -233,7 +233,7 @@ const createConstructorInput: any = (contract: CompiledJSONOutput) => {
 }
 
 const getNetworkBlockpriceUrl: any = (context: vscode.ExtensionContext) => {
-  const chainID = getSelectedNetConf(context).chainID as string
+  const chainID = getSelectedNetConf(context).chainID
   if (chainID === '137' || chainID === '1') {
     return `https://api.blocknative.com/gasprices/blockprices?chainid=${chainID}`
   } else { /* empty */ }

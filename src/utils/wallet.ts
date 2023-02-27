@@ -275,7 +275,7 @@ const selectAccount: any = async (context: vscode.ExtensionContext) => {
 
       logger.success(`Account ${label} is selected.`)
       logger.success(
-        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner as string
+        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner
         }/address/${label}`
       )
       quickPick.dispose()
