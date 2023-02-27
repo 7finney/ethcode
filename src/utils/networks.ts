@@ -32,11 +32,11 @@ const getNetworkNames = (): string[] => {
 }
 
 // Selected Network Configuratin Helper
-const getSelectedNetwork: any = (context: vscode.ExtensionContext): string => {
+const getSelectedNetwork = (context: vscode.ExtensionContext): string => {
   return context.workspaceState.get('selectedNetwork') as string
 }
 
-const getSelectedNetConf: any = (context: vscode.ExtensionContext) => {
+const getSelectedNetConf = (context: vscode.ExtensionContext): NetworkConfig => {
   const networks: any = getConfiguration().get('networks')
   const selectedNetworkConfig = networks[getSelectedNetwork(context)]
   const parsedConfig: NetworkConfig = JSON.parse(selectedNetworkConfig)
@@ -108,7 +108,7 @@ const displayBalance: any = async (context: vscode.ExtensionContext) => {
 
         const networkName: string = getSelectedNetwork(context)
         logger.success(
-          `\nAccount: ${address} \nBalance: ${balance} ${nativeCurrencySymbol as string} \nNetwork: ${networkName}`
+          `\nAccount: ${address} \nBalance: ${balance} ${nativeCurrencySymbol} \nNetwork: ${networkName}`
         )
       })
   } catch (_) {
@@ -227,7 +227,7 @@ const callContractMethod: any = async (context: vscode.ExtensionContext) => {
       )
       logger.success(
         `You can see detail of this transaction here. ${
-          getSelectedNetConf(context).blockScanner as string
+          getSelectedNetConf(context).blockScanner
         }/tx/${result.hash as string}`
       )
     }

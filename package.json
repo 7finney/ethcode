@@ -179,6 +179,7 @@
     }
   },
   "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
     "@types/keythereum": "^1.2.1",
     "@types/randombytes": "^2.0.0",
     "@types/underscore": "^1.11.4",

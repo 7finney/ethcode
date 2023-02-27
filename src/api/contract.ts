@@ -7,13 +7,16 @@ import {
 import {
   type ExtensionContext
 } from 'vscode'
+import { type ContractABI } from '../types/api'
 
-interface ContractInterface {
+import { type JsonFragment } from '@ethersproject/abi'
+
+export interface ContractInterface {
   list: () => string[]
-  abi: (name: string) => Promise<any>
-  getContractAddress: (name: string) => Promise<any>
-  getFunctionInput: (name: string) => Promise<any>
-  getConstructorInput: (name: string) => Promise<any>
+  abi: (name: string) => Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>
+  getContractAddress: (name: string) => Promise<string | undefined>
+  getFunctionInput: (name: string) => Promise<object | undefined>
+  getConstructorInput: (name: string) => Promise<object | undefined>
 }
 
 export function contract (context: ExtensionContext): ContractInterface {
@@ -22,19 +25,19 @@ export function contract (context: ExtensionContext): ContractInterface {
     if (contracts === undefined || contracts.length === 0) return []
     return Object.keys(contracts)
   }
-  async function abi (name: string): Promise<any> {
+  async function abi (name: string): Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined> {
     return await exportABI(context, name)
   }
 
-  async function getContractAddress (name: string): Promise<any> {
-    return getDeployedContractAddress(context, name)
+  async function getContractAddress (name: string): Promise<string | undefined> {
+    return await getDeployedContractAddress(context, name)
   }
 
-  async function getFunctionInput (name: string): Promise<any> {
+  async function getFunctionInput (name: string): Promise<object | undefined> {
     return getFunctionInputFile(context, name)
   }
 
-  async function getConstructorInput (name: string): Promise<any> {
+  async function getConstructorInput (name: string): Promise<object | undefined> {
     return await getConstructorInputFile(context, name)
   }
 

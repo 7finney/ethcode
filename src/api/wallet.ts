@@ -9,9 +9,9 @@ import {
   type Wallet
 } from 'ethers'
 
-interface WalletInterface {
+export interface WalletInterface {
   get: (account: string) => Promise<Wallet>
-  list: () => Promise<any>
+  list: () => Promise<string[]>
 }
 
 export function wallet (context: ExtensionContext): WalletInterface {

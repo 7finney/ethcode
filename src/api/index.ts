@@ -2,10 +2,10 @@ import { status } from './status'
 import { wallet } from './wallet'
 import { provider } from './provider'
 import { contract } from './contract'
-import { ethcode } from './events'
+import { events } from './events'
 
 export {
-  ethcode,
+  events,
   status,
   wallet,
   provider,

@@ -7,29 +7,30 @@ import {
 import {
   type ExtensionContext
 } from 'vscode'
-
-interface ProviderInterface {
-  get: () => any
+import { type Provider } from '@ethersproject/providers'
+import { type NetworkConfig } from '../types'
+export interface ProviderInterface {
+  get: () => Promise<Provider>
   network: {
-    get: () => any
-    set: (network: string) => any
-    list: () => any
+    get: () => NetworkConfig
+    set: (network: string) => string
+    list: () => string[]
   }
 }
 
 export function provider (context: ExtensionContext): ProviderInterface {
-  async function get (): Promise<any> {
+  async function get (): Promise<Provider> {
     const provider = await providerDefault(context)
     return provider
   }
 
-  function networkGet (): any {
+  function networkGet (): NetworkConfig {
     return getNetwork(context)
   }
-  function networkSet (network: string): any {
+  function networkSet (network: string): string {
     return setNetwork(context, network)
   };
-  function networkList (): any {
+  function networkList (): string[] {
     return getAvailableNetwork()
   };
 

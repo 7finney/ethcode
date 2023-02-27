@@ -20,9 +20,11 @@ import {
   parseCompiledJSONPayload,
   selectContract
 } from './utils'
-import { provider, status, wallet, contract, ethcode } from './api'
+import { provider, status, wallet, contract } from './api'
+import { events } from './api/events'
+import { type API } from './types'
 
-export async function activate (context: ExtensionContext): Promise<any> {
+export async function activate (context: ExtensionContext): Promise<API> {
   context.subscriptions.push(
     // Create new account with password
     commands.registerCommand('ethcode.account.create', async () => {
@@ -148,15 +150,16 @@ export async function activate (context: ExtensionContext): Promise<any> {
 
   // API for extensions
   // ref: https://code.visualstudio.com/api/references/vscode-api#extensions
-  const api: any = {
-    status,
+  const api: API = {
+    status: status(),
+    // WALLET
     wallet: wallet(context),
     // PROVIDER
     provider: provider(context),
     // CONTRACT
     contract: contract(context),
     // UTILS
-    events: ethcode()
+    events: events()
   }
 
   return api

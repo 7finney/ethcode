@@ -1,12 +1,12 @@
 import type * as vscode from 'vscode'
 import { event } from './api'
 
-interface EthcodeInterface {
+export interface EventsInterface {
   network: vscode.EventEmitter<string>
   account: vscode.EventEmitter<string>
 }
 
-export function ethcode (): EthcodeInterface {
+export function events (): EventsInterface {
   const network = event.network
   const account = event.account
 
