@@ -23,7 +23,6 @@ import {
 import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
 import { type API } from './types'
-
 export async function activate (context: ExtensionContext): Promise<API> {
   context.subscriptions.push(
     // Create new account with password
@@ -150,15 +149,72 @@ export async function activate (context: ExtensionContext): Promise<API> {
 
   // API for extensions
   // ref: https://code.visualstudio.com/api/references/vscode-api#extensions
+
+  /**
+ * Defines an API object with several endpoints for exporting functionality to other extensions.
+ *
+ * @remarks
+ * The API object is used to export functionality to other extensions.The API exports endpoints through the use of closures, allowing access to the API endpoint.
+ *
+ * @example
+ * ```typescript
+ * let ethcodeExtension: any = vscode.extensions.getExtension('7finney.ethcode');
+ * const api: any = ethcodeExtension.exports;
+ * const status: string = api.status();
+ * ```
+ *
+ * @returns {API} An API object with several endpoints for exporting functionality to other extensions.
+ */
   const api: API = {
+
+    /**
+   * STATUS
+   *
+   * Retrieves the current status of the API.
+   *
+   * @returns {string} The current status of the API.
+   */
     status: status(),
-    // WALLET
+
+    /**
+   * WALLET
+   *
+   * Provides wallet functionality to other extensions.
+   *
+   * @param {Context} context The context object used for managing the Ethcode Extension's state.
+   * @returns {WalletInterface} An object with several endpoints for exporting wallet functionality to other extensions.
+   */
     wallet: wallet(context),
-    // PROVIDER
+
+    /**
+   * PROVIDER
+   *
+   * Provides provider functionality to other extensions.
+   *
+   * @param {Context} context The context object used for managing the Ethcode Extension's state.
+   * @returns {ProviderInterface} An object with several endpoints for exporting provider functionality to other extensions.
+   *
+   */
     provider: provider(context),
-    // CONTRACT
+
+    /**
+     * CONTRACT
+     *
+     * Provides contract functionality to other extensions.
+     *
+     * @param {Context} context The context object used for managing the Ethcode Extension's state.
+     * @returns {ContractInterface} An object with several endpoints for exporting contract functionality to other extensions.
+     *
+     */
     contract: contract(context),
-    // UTILS
+
+    /**
+     * EVENTS
+     *
+     * Provides event functionality to other extensions.
+     *
+     * @returns {EventsInterface} An object with several endpoints for exporting event functionality to other extensions.
+     */
     events: events()
   }
 
