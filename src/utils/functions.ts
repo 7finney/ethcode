@@ -155,8 +155,8 @@ const getFunctionInputs: any = async (
 
       const quickPick = window.createQuickPick<IFunctionQP>()
       quickPick.items = functions.map((f) => ({
-        label: ((`${contract.name as string} > ${f.name as string}(${getFunctionParmas(f) as string})`).length > 0) || '',
-        functionKey: (f.name != null) || ''
+        label: `${contract.name as string} > ${f.name as string}(${getFunctionParmas(f) as string})`,
+        functionKey: f.name
       })) as IFunctionQP[]
       quickPick.placeholder = 'Select function'
       quickPick.onDidChangeSelection((selection: IFunctionQP[]) => {
