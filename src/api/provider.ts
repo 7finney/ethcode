@@ -11,7 +11,7 @@ import { type Provider } from '@ethersproject/providers'
 import { type NetworkConfig } from '../types'
 
 /**
- * Represents an interface for the provider object .
+ * Interface for the provider API.
  */
 export interface ProviderInterface {
   /**
@@ -68,7 +68,7 @@ export function provider (context: ExtensionContext): ProviderInterface {
   }
 
   /**
-   * Returns the current network configuration selected in the extension.
+   * Returns the current network configuration in ethcode.
    *
    * @returns The current network configuration.
    */
@@ -77,7 +77,7 @@ export function provider (context: ExtensionContext): ProviderInterface {
   }
 
   /**
-   * Sets the current network configuration to the given network name in the extension.
+   * Sets the current network configuration to the given network name in ethcode.
    *
    * @param network - The name of the network to switch to.
    * @returns The name of the network that was set.

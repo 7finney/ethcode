@@ -50,9 +50,9 @@ export function contract (context: ExtensionContext): ContractInterface {
   }
 
   /**
-   * Returns the ABI for the specified contract compiled in ethcode.
+   * Returns the ABI for the specified contract in ethcode.
    *
-   * @param {string} name - Name of the contract.
+   * @param {string} name - Name of the contract for which to retrieve the ABI.
    * @returns {Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>} - ABI of the specified contract, `undefined` if the ABI cannot be retrieved.
    */
   async function abi (contractTitle: string): Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined> {
@@ -60,9 +60,9 @@ export function contract (context: ExtensionContext): ContractInterface {
   }
 
   /**
-   * Returns the address of the specified deployed contract compiled in ethcode.
+   * Returns the address of the specified contract in ethcode.
    *
-   * @param {string} name - The name of the contract for which to retrieve the address.
+   * @param {string} name - Name of the contract for which to retrieve the address.
    * @returns {Promise<string | undefined>} - The address of the specified deployed contract, or undefined if the address cannot be retrieved.
    */
   async function getContractAddress (contractTitle: string): Promise<string | undefined> {
@@ -70,19 +70,19 @@ export function contract (context: ExtensionContext): ContractInterface {
   }
 
   /**
-   * Returns the function input file for the specified contract compiled in ethcode .
+   * Returns the function input JSON for the specified contract in ethcode.
    *
-   * @param {string} name - The name of the contract for which to retrieve the function input.
-   * @returns {Promise<object | undefined>} - The function input object for the specified contract, or undefined if the input cannot be retrieved.
+   * @param {string} name - Name of the contract for which to retrieve the function input.
+   * @returns {Promise<object | undefined>} - The function input JSON for the specified contract, or undefined if the input cannot be retrieved.
    */
   async function getFunctionInput (contractTitle: string): Promise<object | undefined> {
     return getFunctionInputFile(context, contractTitle)
   }
 
   /**
-   * Returns the constructor input file for the specified contract compiled in ethcode .
+   * Returns the constructor input file for the specified contract in ethcode .
    *
-   * @param {string} name - The name of the contract for which to retrieve the constructor input.
+   * @param {string} name - Name of the contract for which to retrieve the constructor input.
    * @returns {Promise<object | undefined>} - The constructor input object for the specified contract, or undefined if the input cannot be retrieved.
    */
   async function getConstructorInput (contractTitle: string): Promise<object | undefined> {

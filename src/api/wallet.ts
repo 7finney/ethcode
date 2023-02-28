@@ -40,17 +40,17 @@ export function wallet (context: ExtensionContext): WalletInterface {
   /**
    * Returns Wallet object of ethers.js for the given account.
    *
-   * @param account - The account to retrieve wallet object for that account.
-   * @returns A Promise that resolves to a Wallet object of ethers.js.
+   * @param account - Public key to retrieve the wallet.
+   * @returns A Promise that resolves to a Wallet instance of ethers.js.
    */
   async function get (account: string): Promise<Wallet> {
     return await getWallet(context, account)
   }
 
   /**
-   * Returns a list of all accounts in the wallet.
+   * Returns a list of all public keys in ethcode.
    *
-   * @returns A Promise that resolves to an array of account addresses.
+   * @returns A Promise that resolves to an array of addresses.
    */
   async function list (): Promise<string[]> {
     return await listAllWallet(context)
