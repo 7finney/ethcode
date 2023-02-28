@@ -12,7 +12,7 @@ import { type ContractABI } from '../types/api'
 import { type JsonFragment } from '@ethersproject/abi'
 
 /**
- * Defines the contract interface, which specifies the various properties and methods available for managing the contract via ethcode api.
+ * Defines the contract API interface.
  * @interface
  * @property {() => string[]} list Retrieves the list of contracts.
  * @property {(name: string) => Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>} abi Retrieves the abi of the contract.
@@ -30,14 +30,16 @@ export interface ContractInterface {
 }
 
 /**
- * Creates a `ContractInterface` object providing methods for managing smart contract interactions.
+ * Exports contract API.
+ * Returns a `ContractInterface` object.
+ * This API provides methods for managing interactions with smart contract files inside Ethcode workspace.
  *
  * @param {ExtensionContext} context - The `ExtensionContext` object representing the context in which the function is being called.
  * @returns {ContractInterface} - The `ContractInterface` object representing the available smart contract management methods.
  */
 export function contract (context: ExtensionContext): ContractInterface {
   /**
-   * Gets a list of available contracts compiled in ethcode .
+   * Returns a list of the compiled contracts loaded in ethcode.
    *
    * @returns {string[]} - The array of contract names.
    */
@@ -48,17 +50,17 @@ export function contract (context: ExtensionContext): ContractInterface {
   }
 
   /**
-   * Gets the ABI for the specified contract compiled in ethcode .
+   * Returns the ABI for the specified contract compiled in ethcode.
    *
-   * @param {string} name - The name of the contract for which to retrieve the ABI.
-   * @returns {Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>} - The ABI for the specified contract, or undefined if the ABI cannot be retrieved.
+   * @param {string} name - Name of the contract.
+   * @returns {Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>} - ABI of the specified contract, `undefined` if the ABI cannot be retrieved.
    */
   async function abi (contractTitle: string): Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined> {
     return await exportABI(context, contractTitle)
   }
 
   /**
-   * Gets the address of the specified deployed contract compiled in ethcode.
+   * Returns the address of the specified deployed contract compiled in ethcode.
    *
    * @param {string} name - The name of the contract for which to retrieve the address.
    * @returns {Promise<string | undefined>} - The address of the specified deployed contract, or undefined if the address cannot be retrieved.
@@ -68,7 +70,7 @@ export function contract (context: ExtensionContext): ContractInterface {
   }
 
   /**
-   * Gets the function input file for the specified contract compiled in ethcode .
+   * Returns the function input file for the specified contract compiled in ethcode .
    *
    * @param {string} name - The name of the contract for which to retrieve the function input.
    * @returns {Promise<object | undefined>} - The function input object for the specified contract, or undefined if the input cannot be retrieved.
@@ -78,7 +80,7 @@ export function contract (context: ExtensionContext): ContractInterface {
   }
 
   /**
-   * Gets the constructor input file for the specified contract compiled in ethcode .
+   * Returns the constructor input file for the specified contract compiled in ethcode .
    *
    * @param {string} name - The name of the contract for which to retrieve the constructor input.
    * @returns {Promise<object | undefined>} - The constructor input object for the specified contract, or undefined if the input cannot be retrieved.
