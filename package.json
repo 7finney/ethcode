@@ -179,11 +179,13 @@
     }
   },
   "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
+    "@types/keythereum": "^1.2.1",
     "@types/randombytes": "^2.0.0",
     "@types/underscore": "^1.11.4",
     "axios": "^0.27.2",
     "bn.js": "^5.2.1",
-    "eslint": "^8.0.1",
+    "eslint": "^8.34.0",
     "ethers": "^5.6.9",
     "keythereum": "^1.2.0",
     "number-to-bn": "^1.7.0",
@@ -192,16 +194,17 @@
     "utf8": "^3.0.0"
   },
   "devDependencies": {
-    "@types/keythereum": "^1.2.1",
     "@types/node": "^18.0.0",
+    "@types/utf8": "^3.0.1",
     "@types/vscode": "^1.38.1",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.52.0",
+    "@typescript-eslint/parser": "^5.52.0",
     "eslint-config-standard-with-typescript": "^34.0.0",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-n": "^15.0.0",
     "eslint-plugin-promise": "^6.0.0",
     "prettier": "^2.8.4",
-    "typescript": "*",
+    "typescript": "^4.9.5",
     "vscode": "^1.1.37"
   },
   "scripts": {

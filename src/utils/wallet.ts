@@ -1,291 +1,290 @@
-import { ethers } from "ethers";
-import * as fs from "fs";
-import * as vscode from "vscode";
-import { window, InputBoxOptions } from "vscode";
-import { logger } from "../lib";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const keythereum = require("keythereum");
-
-import { toChecksumAddress } from "../lib/hash/util";
-import { Account, LocalAddressType } from "../types";
+/* eslint-disable @typescript-eslint/no-var-requires */
+import { ethers } from 'ethers'
+import * as fs from 'fs'
+import * as vscode from 'vscode'
+import { window, type InputBoxOptions } from 'vscode'
+import { event } from '../api/api'
+import { logger } from '../lib'
+import { type Account, type LocalAddressType } from '../types'
 import {
   getSelectedNetwork,
   getSelectedProvider,
   getSelectedNetConf,
-  isTestingNetwork,
-} from "./networks";
+  isTestingNetwork
+} from './networks'
+
+const keythereum = require('keythereum')
 
 // list all local addresses
-const listAddresses = async (
+const listAddresses: any = async (
   context: vscode.ExtensionContext,
   keyStorePath: string
 ): Promise<string[]> => {
   try {
-    let localAddresses: LocalAddressType[];
-
-    if (isTestingNetwork(context)) {
+    if (isTestingNetwork(context) === true) {
       const provider = getSelectedProvider(
         context
-      ) as ethers.providers.JsonRpcProvider;
-      const account = await provider.listAccounts();
-      return account;
+      ) as ethers.providers.JsonRpcProvider
+      const account = await provider.listAccounts()
+      return account
     }
 
     if (!fs.existsSync(`${keyStorePath}/keystore`)) {
-      fs.mkdirSync(`${keyStorePath}/keystore`);
+      fs.mkdirSync(`${keyStorePath}/keystore`)
     }
 
-    const files = fs.readdirSync(`${keyStorePath}/keystore`);
+    const files = fs.readdirSync(`${keyStorePath}/keystore`)
 
-    localAddresses = files.map((file) => {
-      const arr = file.split("--");
+    const localAddresses: LocalAddressType[] = files.map((file) => {
+      const arr = file.split('--')
       return {
         pubAddress: `0x${arr[arr.length - 1]}`,
-        checksumAddress: toChecksumAddress(`0x${arr[arr.length - 1]}`),
-      };
-    });
+        checksumAddress: ethers.utils.getAddress(`0x${arr[arr.length - 1]}`)
+      }
+    })
 
-    return localAddresses.map((e) => e.pubAddress);
+    return localAddresses.map((e) => e.pubAddress)
   } catch (err) {
-    logger.error(err);
-    return [];
+    logger.error(err)
+    return []
   }
-};
+}
 
 // create keypair
-const createKeyPair = (
-  context: vscode.ExtensionContext,
-  path: string,
-  pswd: string
-) => {
-  const params = { keyBytes: 32, ivBytes: 16 };
-  const bareKey = keythereum.create(params);
+const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd: string) => {
+  const params = { keyBytes: 32, ivBytes: 16 }
+  const bareKey = keythereum.create(params)
   const options = {
-    kdf: "scrypt",
-    cipher: "aes-128-ctr",
-  };
+    kdf: 'scrypt',
+    cipher: 'aes-128-ctr'
+  }
   const keyObject = keythereum.dump(
-    Buffer.from(pswd, "utf-8"),
+    Buffer.from(pswd, 'utf-8'),
     bareKey.privateKey,
     bareKey.salt,
     bareKey.iv,
     options
-  );
+  )
   const account: Account = {
     pubAddr: keyObject.address,
-    checksumAddr: toChecksumAddress(keyObject.address),
-  };
-  logger.success("Account created!");
-  logger.log(JSON.stringify(account));
+    checksumAddr: ethers.utils.getAddress(keyObject.address)
+  }
+  logger.success('Account created!')
+  logger.log(JSON.stringify(account))
 
   if (!fs.existsSync(`${path}/keystore`)) {
-    fs.mkdirSync(`${path}/keystore`);
+    fs.mkdirSync(`${path}/keystore`)
   }
-  keythereum.exportToFile(keyObject, `${path}/keystore`);
-  listAddresses(context, path);
-  return keyObject.address;
-};
+  keythereum.exportToFile(keyObject, `${path}/keystore`)
+  listAddresses(context, path)
+    .catch((error: any) => {
+      logger.error(error)
+    })
+  return keyObject.address
+}
 
 // delete privateKey against address
-const deleteKeyPair = async (context: vscode.ExtensionContext) => {
+const deleteKeyPair: any = async (context: vscode.ExtensionContext) => {
   try {
     const pubkeyInp: InputBoxOptions = {
       ignoreFocusOut: true,
-      placeHolder: "Public key",
-    };
-    const publicKey = await window.showInputBox(pubkeyInp);
+      placeHolder: 'Public key'
+    }
+    const publicKey = await window.showInputBox(pubkeyInp)
     if (publicKey === undefined) {
-      logger.log("Please input public address");
-      return;
+      logger.log('Please input public address')
+      return
     }
     fs.readdir(`${context.extensionPath}/keystore`, (err, files) => {
-      if (err) throw new Error(`Unable to scan directory: ${err}`);
+      if (err != null) throw new Error(`Unable to scan directory: ${err.message}`)
 
       files.forEach((file) => {
-        if (file.includes(publicKey.replace("0x", ""))) {
-          fs.unlinkSync(`${context.extensionPath}/keystore/${file}`);
-          listAddresses(context, context.extensionPath);
-          logger.log("Account deleted!");
+        if (file.includes(publicKey.replace('0x', ''))) {
+          fs.unlinkSync(`${context.extensionPath}/keystore/${file}`)
+          listAddresses(context, context.extensionPath)
+            .catch((error: any) => {
+              logger.error(error)
+            })
+          logger.log('Account deleted!')
         }
-      });
-    });
+      })
+    })
   } catch (error) {
-    logger.error(error);
+    logger.error(error)
   }
-};
+}
 
-//Import Key pair
+// Import Key pair
 
-const importKeyPair = async (context: vscode.ExtensionContext) => {
+const importKeyPair: any = async (context: vscode.ExtensionContext) => {
   try {
     const options: vscode.OpenDialogOptions = {
       canSelectMany: false,
-      openLabel: "Open",
+      openLabel: 'Open',
       filters: {
-        "All files": ["*"],
-      },
-    };
+        'All files': ['*']
+      }
+    }
 
-    const addresses = await listAddresses(context, context.extensionPath);
+    const addresses = await listAddresses(context, context.extensionPath)
 
-    vscode.window.showOpenDialog(options).then((fileUri) => {
-      if (fileUri && fileUri[0]) {
-        const arrFilePath = fileUri[0].fsPath.split("\\");
-        const file = arrFilePath[arrFilePath.length - 1];
-        const arr = file.split("--");
-        const address = toChecksumAddress(`0x${arr[arr.length - 1]}`);
+    await vscode.window.showOpenDialog(options).then((fileUri) => {
+      if ((fileUri?.[0]) != null) {
+        const arrFilePath = fileUri[0].fsPath.split('\\')
+        const file = arrFilePath[arrFilePath.length - 1]
+        const arr = file.split('--')
+        const address = ethers.utils.getAddress(`0x${arr[arr.length - 1]}`)
 
         const already = addresses.find(
-          (element: string) => toChecksumAddress(element) === address
-        );
+          (element: string) => ethers.utils.getAddress(element) === address
+        )
 
         if (already !== undefined) {
-          logger.log(`Account ${address} is already exist.`);
+          logger.log(`Account ${address} is already exist.`)
         } else {
           fs.copyFile(
             fileUri[0].fsPath,
             `${context.extensionPath}/keystore/${file}`,
             (err) => {
-              if (err) throw err;
+              if (err != null) throw err
             }
-          );
+          )
 
-          logger.success(`Account ${address} is successfully imported!`);
-          listAddresses(context, context.extensionPath);
+          logger.success(`Account ${address} is successfully imported!`)
+          listAddresses(context, context.extensionPath)
+            .catch((error: any) => {
+              logger.error(error)
+            })
         }
       }
-    });
+    })
   } catch (error) {
-    logger.error(error);
+    logger.error(error)
   }
-};
+}
 
 // extract privateKey against address
-const extractPvtKey = async (keyStorePath: string, address: string) => {
+const extractPvtKey: any = async (keyStorePath: string, address: string) => {
   try {
     const pwdInpOpt: vscode.InputBoxOptions = {
       ignoreFocusOut: true,
       password: true,
-      placeHolder: "Password",
-    };
-    const password = await window.showInputBox(pwdInpOpt);
+      placeHolder: 'Password'
+    }
+    const password = await window.showInputBox(pwdInpOpt)
 
-    const keyObject = keythereum.importFromFile(address, keyStorePath);
-    return keythereum.recover(Buffer.from(password || "", "utf-8"), keyObject);
+    const keyObject = keythereum.importFromFile(address, keyStorePath)
+    return keythereum.recover(Buffer.from(password ?? '', 'utf-8'), keyObject)
   } catch (e) {
     throw new Error(
       "Password is wrong or such address doesn't exist in wallet lists"
-    );
+    )
   }
-};
+}
 
-const exportKeyPair = async (context: vscode.ExtensionContext) => {
+const exportKeyPair: any = async (context: vscode.ExtensionContext) => {
   try {
-    const addresses = await listAddresses(context, context.extensionPath);
+    const addresses = await listAddresses(context, context.extensionPath)
 
-    const quickPick = window.createQuickPick();
+    const quickPick = window.createQuickPick()
 
-    quickPick.items = addresses.map((account) => ({
+    quickPick.items = addresses.map((account: any) => ({
       label: account,
-      description: isTestingNetwork(context)
+      description: (isTestingNetwork(context) === true)
         ? getSelectedNetwork(context)
-        : "Local account",
-    }));
+        : 'Local account'
+    }))
 
     quickPick.onDidChangeActive(() => {
-      quickPick.placeholder = "Select account";
-    });
+      quickPick.placeholder = 'Select account'
+    })
 
     quickPick.onDidChangeSelection((selection) => {
-      if (selection[0]) {
-        const { label } = selection[0];
-
-        const files = fs.readdirSync(`${context.extensionPath}/keystore`);
-        const address = label.slice(2, label.length);
-        let selectedFile = "";
-        files.map((file: string) => {
-          const arr = file.split("--");
-          if (address === arr[arr.length - 1]) {
-            selectedFile = file;
-          }
-        });
+      if (selection[0] != null) {
+        const { label } = selection[0]
+        const files = fs.readdirSync(`${context.extensionPath}/keystore`)
+        const address = label.slice(2, label.length)
+        const selectedFile = files.filter((file: string) => {
+          return file.includes(address)
+        })[0]
 
         const options: vscode.OpenDialogOptions = {
           canSelectMany: false,
           canSelectFolders: true,
-          openLabel: "Save",
+          openLabel: 'Save',
           filters: {
-            "All files": ["*"],
-          },
-        };
+            'All files': ['*']
+          }
+        }
 
-        vscode.window.showOpenDialog(options).then((fileUri) => {
-          if (fileUri && fileUri[0]) {
+        void vscode.window.showOpenDialog(options).then((fileUri) => {
+          if (fileUri?.[0] != null) {
             logger.log(
-              "path: ",
+              'path: ',
               `${fileUri[0].fsPath}\\${selectedFile}\\${selectedFile}`
-            );
+            )
             fs.copyFile(
               `${context.extensionPath}\\keystore\\${selectedFile}`,
               `${fileUri[0].fsPath}\\${selectedFile}`,
               (err) => {
-                if (err) throw err;
+                if (err != null) throw err
               }
-            );
+            )
 
-            logger.success(`Account ${address} is successfully exported!`);
+            logger.success(`Account ${address} is successfully exported!`)
           }
-        });
-        quickPick.dispose();
+        })
+        quickPick.dispose()
       }
-    });
+    })
 
-    quickPick.onDidHide(() => quickPick.dispose());
-    quickPick.show();
+    quickPick.onDidHide(() => { quickPick.dispose() })
+    quickPick.show()
   } catch (error) {
-    logger.error(error);
+    logger.error(error)
   }
-};
+}
 
-const selectAccount = async (context: vscode.ExtensionContext) => {
-  const addresses = await listAddresses(context, context.extensionPath);
+const selectAccount: any = async (context: vscode.ExtensionContext) => {
+  const addresses = await listAddresses(context, context.extensionPath)
 
-  const quickPick = window.createQuickPick();
+  const quickPick = window.createQuickPick()
 
   if (addresses.length === 0) {
-    logger.log("No account found. Please create account first.");
-    return;
+    logger.log('No account found. Please create account first.')
+    return
   }
 
-  quickPick.items = addresses.map((account) => ({
+  quickPick.items = addresses.map((account: any) => ({
     label: account,
-    description: isTestingNetwork(context)
+    description: (isTestingNetwork(context) === true)
       ? getSelectedNetwork(context)
-      : "Local account",
-  }));
+      : 'Local account'
+  }))
 
   quickPick.onDidChangeActive(() => {
-    quickPick.placeholder = "Select account";
-  });
+    quickPick.placeholder = 'Select account'
+  })
 
   quickPick.onDidChangeSelection((selection) => {
-    if (selection[0]) {
-      const { label } = selection[0];
-      context.workspaceState.update("account", label);
-      logger.success(`Account ${label} is selected.`);
-      logger.success(
-        `You can see detail of this account here. ${
-          getSelectedNetConf(context).blockScanner
-        }/address/${label}`
-      );
-      quickPick.dispose();
-    }
-  });
+    if (selection[0] != null) {
+      const { label } = selection[0]
+      void context.workspaceState.update('account', label)
 
-  quickPick.onDidHide(() => quickPick.dispose());
-  quickPick.show();
-};
+      event.account.fire(label)
+
+      logger.success(`Account ${label} is selected.`)
+      logger.success(
+        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner
+        }/address/${label}`
+      )
+      quickPick.dispose()
+    }
+  })
+
+  quickPick.onDidHide(() => { quickPick.dispose() })
+  quickPick.show()
+}
 
 export {
   listAddresses,
@@ -294,5 +293,5 @@ export {
   deleteKeyPair,
   extractPvtKey,
   selectAccount,
-  importKeyPair,
-};
+  importKeyPair
+}
