@@ -75,16 +75,6 @@ const getContract = async (
   return contract
 }
 
-const listFunctions = (abi: any): any => {
-  const result = []
-  for (let i = 0; i < abi.length; i++) {
-    if (abi[i].type === 'function') {
-      result.push(abi[i].name)
-    }
-  }
-  return result
-}
-
 const executeContractMethod = async (
   contract: any,
   method: string,
@@ -96,7 +86,7 @@ const executeContractMethod = async (
 
 const exportABI = async (
   context: ExtensionContext,
-  selectSpecific: string = ''
+  contractName: string = ''
 ): Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined> => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
   if (contracts === undefined || Object.keys(contracts).length === 0) return
@@ -107,13 +97,9 @@ const exportABI = async (
       abi: contracts[name].hardhatOutput?.abi
     }
   })
-
-  for (let i = 0; i < contractABIS.length; i++) {
-    if (contractABIS[i].name === selectSpecific) {
-      return contractABIS[i].abi
-    }
-  }
-  return contractABIS
+  const contractABI = contractABIS.find(contract => contract.name === contractName)?.abi as readonly JsonFragment[]
+  if (contractName === '' || contractABI === undefined) return contractABIS
+  return contractABI
 }
 
 const getDeployedContractAddress = async (
@@ -127,7 +113,6 @@ const getDeployedContractAddress = async (
     if (contract.name === name) {
       const link = getDeployedFullPath(contract)
       const json: any = await require(link)
-      console.log(json)
       return json.address
     }
   }
@@ -139,14 +124,12 @@ const getFunctionInputFile: any = async (
 ): Promise<object | undefined> => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
   if (contracts === undefined || Object.keys(contracts).length === 0) return
-  for (let i = 0; i < Object.keys(contracts).length; i++) {
-    const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
-    if (contract.name === name) {
-      const link = getFunctionInputFullPath(contract)
-      const json: Promise<object> = await require(link)
-      console.log(json)
-      return await json
-    }
+
+  const contract = Object.values(contracts).find(contract => contract.name === name)
+  if (contract != null) {
+    const link = getFunctionInputFullPath(contract)
+    const json = await require(link)
+    return json
   }
 }
 
@@ -156,14 +139,11 @@ const getConstructorInputFile = async (
 ): Promise<object | undefined> => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
   if (contracts === undefined || Object.keys(contracts).length === 0) return
-  for (let i = 0; i < Object.keys(contracts).length; i++) {
-    const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
-    if (contract.name === name) {
-      const link = getConstructorInputFullPath(contract)
-      const json: Promise<object | undefined> = await require(link)
-      console.log(json)
-      return await json
-    }
+  const contract = Object.values(contracts).find(contract => contract.name === name)
+  if (contract != null) {
+    const link = getConstructorInputFullPath(contract)
+    const json = await require(link)
+    return json
   }
 }
 
@@ -175,7 +155,6 @@ export {
   listAllWallet,
   getWallet,
   getContract,
-  listFunctions,
   executeContractMethod,
   exportABI,
   getDeployedContractAddress,

@@ -53,8 +53,8 @@ export function contract (context: ExtensionContext): ContractInterface {
    * @param {string} name - The name of the contract for which to retrieve the ABI.
    * @returns {Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>} - The ABI for the specified contract, or undefined if the ABI cannot be retrieved.
    */
-  async function abi (name: string): Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined> {
-    return await exportABI(context, name)
+  async function abi (contractTitle: string): Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined> {
+    return await exportABI(context, contractTitle)
   }
 
   /**
@@ -63,8 +63,8 @@ export function contract (context: ExtensionContext): ContractInterface {
    * @param {string} name - The name of the contract for which to retrieve the address.
    * @returns {Promise<string | undefined>} - The address of the specified deployed contract, or undefined if the address cannot be retrieved.
    */
-  async function getContractAddress (name: string): Promise<string | undefined> {
-    return await getDeployedContractAddress(context, name)
+  async function getContractAddress (contractTitle: string): Promise<string | undefined> {
+    return await getDeployedContractAddress(context, contractTitle)
   }
 
   /**
@@ -73,8 +73,8 @@ export function contract (context: ExtensionContext): ContractInterface {
    * @param {string} name - The name of the contract for which to retrieve the function input.
    * @returns {Promise<object | undefined>} - The function input object for the specified contract, or undefined if the input cannot be retrieved.
    */
-  async function getFunctionInput (name: string): Promise<object | undefined> {
-    return getFunctionInputFile(context, name)
+  async function getFunctionInput (contractTitle: string): Promise<object | undefined> {
+    return getFunctionInputFile(context, contractTitle)
   }
 
   /**
@@ -83,8 +83,8 @@ export function contract (context: ExtensionContext): ContractInterface {
    * @param {string} name - The name of the contract for which to retrieve the constructor input.
    * @returns {Promise<object | undefined>} - The constructor input object for the specified contract, or undefined if the input cannot be retrieved.
    */
-  async function getConstructorInput (name: string): Promise<object | undefined> {
-    return await getConstructorInputFile(context, name)
+  async function getConstructorInput (contractTitle: string): Promise<object | undefined> {
+    return await getConstructorInputFile(context, contractTitle)
   }
 
   return {
