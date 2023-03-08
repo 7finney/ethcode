@@ -15,7 +15,7 @@
     "remix ide"
   ],
   "icon": "images/ethcode.png",
-  "repository": "https://github.com/7fny/ethcode",
+  "repository": "https://github.com/7finney/ethcode",
   "engines": {
     "vscode": "^1.38.1",
     "node": ">=16.15.0"
