@@ -24,32 +24,35 @@ const parseBatchCompiledJSON = (context: ExtensionContext): void => {
   }
 
   logger.log('Loading all compiled jsons...')
-  void context.workspaceState.update('contracts', '') // Initialize contracts storage
+  try {
+    void context.workspaceState.update('contracts', '') // Initialize contracts storage
 
-  const path_ = workspace.workspaceFolders[0].uri.fsPath
-  const paths: string[] = loadAllCompiledJsonOutputs(path_)
+    const path_ = workspace.workspaceFolders[0].uri.fsPath
+    const paths: string[] = loadAllCompiledJsonOutputs(path_)
+    paths.forEach((e) => {
+      let name = path.parse(e).base
+      name = name.substring(0, name.length - 5)
 
-  paths.forEach((e) => {
-    let name = path.parse(e).base
-    name = name.substring(0, name.length - 5)
+      logger.log(`Trying to parse ${name} contract output...`)
 
-    logger.log(`Trying to parse ${name} contract output...`)
+      const data = fs.readFileSync(e)
+      const output: CompiledJSONOutput = getCompiledJsonObject(data)
 
-    const data = fs.readFileSync(e)
-    const output: CompiledJSONOutput = getCompiledJsonObject(data)
+      if (output.contractType === 0) return
+      output.path = path.dirname(e)
+      output.name = name
 
-    if (output.contractType === 0) return
-    output.path = path.dirname(e)
-    output.name = name
+      logger.success(`Loaded ${name} contract into workspace.`)
+      let contracts: any = context.workspaceState.get('contracts')
 
-    logger.success(`Loaded ${name} contract into workspace.`)
-    let contracts: any = context.workspaceState.get('contracts')
+      if (contracts === undefined || contracts === '') contracts = new Map()
 
-    if (contracts === undefined || contracts === '') contracts = new Map()
-
-    contracts[name] = output
-    void context.workspaceState.update('contracts', contracts)
-  })
+      contracts[name] = output
+      void context.workspaceState.update('contracts', contracts)
+    })
+  } catch (e) {
+    logger.log("No compiled contract found. Make sure you've compiled your contracts.")
+  }
 }
 
 // Parse Combined JSON payload
@@ -121,6 +124,11 @@ const loadAllCompiledJsonOutputs: any = (path_: string) => {
 
 const selectContract: any = (context: ExtensionContext) => {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
+
+  if (contracts === undefined || Object.keys(contracts).length === 0) {
+    logger.log('No contracts found. Please load your compiled contract.')
+    return
+  }
 
   const quickPick = window.createQuickPick<IFunctionQP>()
   if (contracts === undefined || Object.keys(contracts).length === 0) return
