@@ -106,15 +106,25 @@ const getDeployedContractAddress = async (
   context: ExtensionContext,
   name: string
 ): Promise<string | undefined> => {
-  const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
-  if (contracts === undefined || Object.keys(contracts).length === 0) return
-  for (let i = 0; i < Object.keys(contracts).length; i++) {
-    const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
-    if (contract.name === name) {
-      const link = getDeployedFullPath(contract)
-      const json: any = await require(link)
-      return json.address
+  try {
+    const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
+    if (contracts === undefined || Object.keys(contracts).length === 0) return
+    for (let i = 0; i < Object.keys(contracts).length; i++) {
+      const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
+      if (contract.name === name) {
+        const link = getDeployedFullPath(contract)
+        const linkchnage = link.replace(/\\/g, '/')
+        const parsedUrl = new URL(linkchnage)
+        const fileUrl: vscode.Uri = vscode.Uri.parse(`file://${parsedUrl.pathname}`)
+        const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUrl)
+        const decoder = new TextDecoder()
+        const jsonString = decoder.decode(contents)
+        const json = JSON.parse(jsonString)
+        return json.address
+      }
     }
+  } catch (error) {
+    console.log(error)
   }
 }
 
@@ -122,14 +132,24 @@ const getFunctionInputFile: any = async (
   context: ExtensionContext,
   name: string
 ): Promise<object | undefined> => {
-  const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
-  if (contracts === undefined || Object.keys(contracts).length === 0) return
+  try {
+    const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
+    if (contracts === undefined || Object.keys(contracts).length === 0) return
 
-  const contract = Object.values(contracts).find(contract => contract.name === name)
-  if (contract != null) {
-    const link = getFunctionInputFullPath(contract)
-    const json = await require(link)
-    return json
+    const contract = Object.values(contracts).find(contract => contract.name === name)
+    if (contract != null) {
+      const link = getFunctionInputFullPath(contract)
+      const linkchnage = link.replace(/\\/g, '/')
+      const parsedUrl = new URL(linkchnage)
+      const fileUrl: vscode.Uri = vscode.Uri.parse(`file://${parsedUrl.pathname}`)
+      const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUrl)
+      const decoder = new TextDecoder()
+      const jsonString = decoder.decode(contents)
+      const json = JSON.parse(jsonString)
+      return json
+    }
+  } catch (error) {
+    console.log(error)
   }
 }
 
@@ -137,13 +157,23 @@ const getConstructorInputFile = async (
   context: ExtensionContext,
   name: string
 ): Promise<object | undefined> => {
-  const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
-  if (contracts === undefined || Object.keys(contracts).length === 0) return
-  const contract = Object.values(contracts).find(contract => contract.name === name)
-  if (contract != null) {
-    const link = getConstructorInputFullPath(contract)
-    const json = await require(link)
-    return json
+  try {
+    const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
+    if (contracts === undefined || Object.keys(contracts).length === 0) return
+    const contract = Object.values(contracts).find(contract => contract.name === name)
+    if (contract != null) {
+      const link = getConstructorInputFullPath(contract)
+      const linkchnage = link.replace(/\\/g, '/')
+      const parsedUrl = new URL(linkchnage)
+      const fileUrl: vscode.Uri = vscode.Uri.parse(`file://${parsedUrl.pathname}`)
+      const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUrl)
+      const decoder = new TextDecoder()
+      const jsonString = decoder.decode(contents)
+      const json = JSON.parse(jsonString)
+      return json
+    }
+  } catch (error) {
+    console.log(error)
   }
 }
 

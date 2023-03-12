@@ -1,4 +1,5 @@
 import { type InputBoxOptions, window, commands, type ExtensionContext } from 'vscode'
+
 import {
   callContractMethod,
   deployContract,
@@ -23,6 +24,7 @@ import {
 import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
 import { type API } from './types'
+
 export async function activate (context: ExtensionContext): Promise<API> {
   context.subscriptions.push(
     // Create new account with password
