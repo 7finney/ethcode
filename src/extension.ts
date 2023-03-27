@@ -1,5 +1,4 @@
-import { type InputBoxOptions, window, commands, type ExtensionContext } from 'vscode'
-
+import { type InputBoxOptions, window, commands, type ExtensionContext, workspace, RelativePattern } from 'vscode'
 import {
   callContractMethod,
   deployContract,
@@ -24,8 +23,9 @@ import {
 import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
 import { type API } from './types'
+import path = require('path')
 
-export async function activate (context: ExtensionContext): Promise<API> {
+export async function activate (context: ExtensionContext): Promise<API | undefined> {
   context.subscriptions.push(
     // Create new account with password
     commands.registerCommand('ethcode.account.create', async () => {
@@ -219,6 +219,31 @@ export async function activate (context: ExtensionContext): Promise<API> {
      */
     events: events()
   }
+
+  const path_ = workspace.workspaceFolders
+  if (path_ === undefined) {
+    await window.showErrorMessage('No folder selected please open one.')
+    return
+  }
+  const watcher = workspace.createFileSystemWatcher(
+    new RelativePattern(path.join(path_[0].uri.fsPath, 'cache'), '**/*.json')
+  )
+
+  watcher.onDidCreate(async (uri) => {
+    await window.showInformationMessage(`new file created: ${uri.path}`)
+    parseBatchCompiledJSON(context)
+  })
+
+  watcher.onDidChange(async (uri) => {
+    await window.showInformationMessage(`${uri.path} file content changed.`)
+    parseBatchCompiledJSON(context)
+  })
+
+  watcher.onDidDelete(async (uri) => {
+    await window.showInformationMessage(`${uri.path} file deleted.`)
+  })
+
+  context.subscriptions.push(watcher)
 
   return api
 }
