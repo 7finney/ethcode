@@ -1,5 +1,4 @@
-import { type InputBoxOptions, window, commands, type ExtensionContext } from 'vscode'
-
+import { type InputBoxOptions, window, commands, type ExtensionContext, workspace, RelativePattern } from 'vscode'
 import {
   callContractMethod,
   deployContract,
@@ -23,9 +22,11 @@ import {
 } from './utils'
 import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
+import { event } from './api/api'
 import { type API } from './types'
+import path = require('path')
 
-export async function activate (context: ExtensionContext): Promise<API> {
+export async function activate (context: ExtensionContext): Promise<API | undefined> {
   context.subscriptions.push(
     // Create new account with password
     commands.registerCommand('ethcode.account.create', async () => {
@@ -219,6 +220,37 @@ export async function activate (context: ExtensionContext): Promise<API> {
      */
     events: events()
   }
+
+  const path_ = workspace.workspaceFolders
+  if (path_ === undefined) {
+    await window.showErrorMessage('No folder selected please open one.')
+    return
+  }
+  const watcher = workspace.createFileSystemWatcher(
+    new RelativePattern(path.join(path_[0].uri.fsPath, 'cache'), '**/*.json')
+  )
+
+  watcher.onDidCreate(async (uri) => {
+    parseBatchCompiledJSON(context)
+    const contracts = context.workspaceState.get('contracts') as string[]
+    if (contracts === undefined || contracts.length === 0) return []
+    event.contracts.fire(Object.keys(contracts))
+  })
+
+  watcher.onDidChange(async (uri) => {
+    parseBatchCompiledJSON(context)
+    const contracts = context.workspaceState.get('contracts') as string[]
+    if (contracts === undefined || contracts.length === 0) return []
+    event.contracts.fire(Object.keys(contracts))
+  })
+
+  watcher.onDidDelete(async (uri) => {
+    const contracts = context.workspaceState.get('contracts') as string[]
+    if (contracts === undefined || contracts.length === 0) return []
+    event.contracts.fire(Object.keys(contracts))
+  })
+
+  context.subscriptions.push(watcher)
 
   return api
 }

@@ -20,6 +20,14 @@ export interface EventsInterface {
    * @type {vscode.EventEmitter<string>}
    */
   account: vscode.EventEmitter<string>
+
+  /**
+   * An event emitter for compiled contracts change.
+   *
+   * @event
+   * @type {vscode.EventEmitter<any>}
+   */
+  contracts: vscode.EventEmitter<any>
 }
 
 /**
@@ -31,9 +39,11 @@ export interface EventsInterface {
 export function events (): EventsInterface {
   const network = event.network
   const account = event.account
+  const contracts = event.contracts
 
   return {
     network,
-    account
+    account,
+    contracts
   }
 }
