@@ -18,9 +18,11 @@ import { type JsonFragment } from '@ethersproject/abi'
 const event: {
   network: vscode.EventEmitter<string>
   account: vscode.EventEmitter<string>
+  contracts: vscode.EventEmitter<any>
 } = {
   network: new vscode.EventEmitter<string>(),
-  account: new vscode.EventEmitter<string>()
+  account: new vscode.EventEmitter<string>(),
+  contracts: new vscode.EventEmitter<any>()
 }
 
 // PROVIDER

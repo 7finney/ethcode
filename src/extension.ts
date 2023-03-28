@@ -22,6 +22,7 @@ import {
 } from './utils'
 import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
+import { event } from './api/api'
 import { type API } from './types'
 import path = require('path')
 
@@ -230,17 +231,23 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
   )
 
   watcher.onDidCreate(async (uri) => {
-    await window.showInformationMessage(`new file created: ${uri.path}`)
     parseBatchCompiledJSON(context)
+    const contracts = context.workspaceState.get('contracts') as string[]
+    if (contracts === undefined || contracts.length === 0) return []
+    event.contracts.fire(Object.keys(contracts))
   })
 
   watcher.onDidChange(async (uri) => {
-    await window.showInformationMessage(`${uri.path} file content changed.`)
     parseBatchCompiledJSON(context)
+    const contracts = context.workspaceState.get('contracts') as string[]
+    if (contracts === undefined || contracts.length === 0) return []
+    event.contracts.fire(Object.keys(contracts))
   })
 
   watcher.onDidDelete(async (uri) => {
-    await window.showInformationMessage(`${uri.path} file deleted.`)
+    const contracts = context.workspaceState.get('contracts') as string[]
+    if (contracts === undefined || contracts.length === 0) return []
+    event.contracts.fire(Object.keys(contracts))
   })
 
   context.subscriptions.push(watcher)
