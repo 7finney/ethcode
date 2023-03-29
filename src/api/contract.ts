@@ -2,7 +2,8 @@ import {
   exportABI,
   getDeployedContractAddress,
   getFunctionInputFile,
-  getConstructorInputFile
+  getConstructorInputFile,
+  createContractFiles
 } from './api'
 import {
   type ExtensionContext
@@ -27,6 +28,7 @@ export interface ContractInterface {
   getContractAddress: (name: string) => Promise<string | undefined>
   getFunctionInput: (name: string) => Promise<object | undefined>
   getConstructorInput: (name: string) => Promise<object | undefined>
+  selectContract: (name: string) => Promise<void>
 }
 
 /**
@@ -89,11 +91,18 @@ export function contract (context: ExtensionContext): ContractInterface {
     return await getConstructorInputFile(context, contractTitle)
   }
 
+  async function selectContract (
+    contractTitle: string
+  ): Promise<void> {
+    await createContractFiles(context, contractTitle)
+  }
+
   return {
     list,
     abi,
     getContractAddress,
     getFunctionInput,
-    getConstructorInput
+    getConstructorInput,
+    selectContract
   }
 }

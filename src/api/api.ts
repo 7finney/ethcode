@@ -9,11 +9,15 @@ import {
 } from '../utils/networks'
 import { type ContractABI, type CompiledJSONOutput, type NetworkConfig } from '../types'
 import {
+  createConstructorInput,
+  createDeployed,
+  createFunctionInput,
   getConstructorInputFullPath,
   getDeployedFullPath,
   getFunctionInputFullPath
 } from '../utils/functions'
 import { type JsonFragment } from '@ethersproject/abi'
+import { logger } from '../lib'
 
 const event: {
   network: vscode.EventEmitter<string>
@@ -179,6 +183,20 @@ const getConstructorInputFile = async (
   }
 }
 
+const createContractFiles = async (context: vscode.ExtensionContext, contractTitle: string): Promise<void> => {
+  const contracts = await context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
+  const name = Object.keys(contracts).filter(
+    (i: string) => i === contractTitle
+  )
+  const contract: CompiledJSONOutput = contracts[name[0]]
+
+  void context.workspaceState.update('contract', contract)
+  createConstructorInput(contract)
+  createFunctionInput(contract)
+  createDeployed(contract)
+
+  logger.success(`Contract ${name[0]} is selected.`)
+}
 export {
   getNetwork,
   setNetwork,
@@ -192,5 +210,6 @@ export {
   getDeployedContractAddress,
   getFunctionInputFile,
   getConstructorInputFile,
+  createContractFiles,
   event
 }
