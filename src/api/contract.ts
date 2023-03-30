@@ -11,6 +11,7 @@ import {
 import { type ContractABI } from '../types/api'
 
 import { type JsonFragment } from '@ethersproject/abi'
+import { parseBatchCompiledJSON } from '../utils/contracts'
 
 /**
  * Defines the contract API interface.
@@ -46,6 +47,7 @@ export function contract (context: ExtensionContext): ContractInterface {
    * @returns {string[]} - The array of contract names.
    */
   function list (): string[] {
+    parseBatchCompiledJSON(context)
     const contracts = context.workspaceState.get('contracts') as string[]
     if (contracts === undefined || contracts.length === 0) return []
     return Object.keys(contracts)
