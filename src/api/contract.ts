@@ -2,7 +2,8 @@ import {
   exportABI,
   getDeployedContractAddress,
   getFunctionInputFile,
-  getConstructorInputFile
+  getConstructorInputFile,
+  createContractFiles
 } from './api'
 import {
   type ExtensionContext
@@ -10,6 +11,7 @@ import {
 import { type ContractABI } from '../types/api'
 
 import { type JsonFragment } from '@ethersproject/abi'
+import { parseBatchCompiledJSON } from '../utils/contracts'
 
 /**
  * Defines the contract API interface.
@@ -27,6 +29,7 @@ export interface ContractInterface {
   getContractAddress: (name: string) => Promise<string | undefined>
   getFunctionInput: (name: string) => Promise<object | undefined>
   getConstructorInput: (name: string) => Promise<object | undefined>
+  selectContract: (name: string) => Promise<void>
 }
 
 /**
@@ -44,6 +47,7 @@ export function contract (context: ExtensionContext): ContractInterface {
    * @returns {string[]} - The array of contract names.
    */
   function list (): string[] {
+    parseBatchCompiledJSON(context)
     const contracts = context.workspaceState.get('contracts') as string[]
     if (contracts === undefined || contracts.length === 0) return []
     return Object.keys(contracts)
@@ -89,11 +93,18 @@ export function contract (context: ExtensionContext): ContractInterface {
     return await getConstructorInputFile(context, contractTitle)
   }
 
+  async function selectContract (
+    contractTitle: string
+  ): Promise<void> {
+    await createContractFiles(context, contractTitle)
+  }
+
   return {
     list,
     abi,
     getContractAddress,
     getFunctionInput,
-    getConstructorInput
+    getConstructorInput,
+    selectContract
   }
 }
