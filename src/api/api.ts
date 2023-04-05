@@ -118,11 +118,15 @@ const getDeployedContractAddress = async (
     for (let i = 0; i < Object.keys(contracts).length; i++) {
       const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
       if (contract.name === name) {
+        console.log('get contract path')
+        console.log(contract.path)
         const link = getDeployedFullPath(contract)
         const linkchnage = link.replace(/\\/g, '/')
-        const parsedUrl = new URL(linkchnage)
-        const fileUrl: vscode.Uri = vscode.Uri.parse(`file://${parsedUrl.pathname}`)
-        const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUrl)
+        // const parsedUrl = new URL(linkchnage)
+        // console.log(parsedUrl)
+        // const fileUrl: vscode.Uri = vscode.Uri.parse(`file://${parsedUrl.pathname}`)
+        const fileUri = vscode.Uri.file(linkchnage)
+        const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUri)
         const decoder = new TextDecoder()
         const jsonString = decoder.decode(contents)
         const json = JSON.parse(jsonString)
@@ -130,7 +134,7 @@ const getDeployedContractAddress = async (
       }
     }
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 
@@ -146,16 +150,17 @@ const getFunctionInputFile: any = async (
     if (contract != null) {
       const link = getFunctionInputFullPath(contract)
       const linkchnage = link.replace(/\\/g, '/')
-      const parsedUrl = new URL(linkchnage)
-      const fileUrl: vscode.Uri = vscode.Uri.parse(`file://${parsedUrl.pathname}`)
-      const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUrl)
+      // const parsedUrl = new URL(linkchnage)
+      // const fileUrl: vscode.Uri = vscode.Uri.parse(`file://${parsedUrl.pathname}`)
+      const fileUri = vscode.Uri.file(linkchnage)
+      const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUri)
       const decoder = new TextDecoder()
       const jsonString = decoder.decode(contents)
       const json = JSON.parse(jsonString)
       return json
     }
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 
