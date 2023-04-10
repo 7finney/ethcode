@@ -15,7 +15,7 @@ import {
 
 const keythereum = require('keythereum')
 
-// list all local addresses
+// List all local addresses
 const listAddresses: any = async (
   context: vscode.ExtensionContext,
   keyStorePath: string
@@ -50,7 +50,7 @@ const listAddresses: any = async (
   }
 }
 
-// create keypair
+// Create keypair
 const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd: string) => {
   const params = { keyBytes: 32, ivBytes: 16 }
   const bareKey = keythereum.create(params)
@@ -83,7 +83,7 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
   return keyObject.address
 }
 
-// delete privateKey against address
+// Delete privateKey against address
 const deleteKeyPair: any = async (context: vscode.ExtensionContext) => {
   try {
     const pubkeyInp: InputBoxOptions = {
@@ -92,7 +92,7 @@ const deleteKeyPair: any = async (context: vscode.ExtensionContext) => {
     }
     const publicKey = await window.showInputBox(pubkeyInp)
     if (publicKey === undefined) {
-      logger.log('Please input public address')
+      logger.log('Please input public address!')
       return
     }
     fs.readdir(`${context.extensionPath}/keystore`, (err, files) => {
@@ -115,7 +115,6 @@ const deleteKeyPair: any = async (context: vscode.ExtensionContext) => {
 }
 
 // Import Key pair
-
 const importKeyPair: any = async (context: vscode.ExtensionContext) => {
   try {
     const options: vscode.OpenDialogOptions = {
@@ -130,6 +129,7 @@ const importKeyPair: any = async (context: vscode.ExtensionContext) => {
 
     await vscode.window.showOpenDialog(options).then((fileUri) => {
       if ((fileUri?.[0]) != null) {
+        const filename = fileUri[0].fsPath.replace(/^.*[\\/]/, '')
         const arrFilePath = fileUri[0].fsPath.split('\\')
         const file = arrFilePath[arrFilePath.length - 1]
         const arr = file.split('--')
@@ -144,7 +144,7 @@ const importKeyPair: any = async (context: vscode.ExtensionContext) => {
         } else {
           fs.copyFile(
             fileUri[0].fsPath,
-            `${context.extensionPath}/keystore/${file}`,
+            `${context.extensionPath}/keystore/${filename}`,
             (err) => {
               if (err != null) throw err
             }
@@ -163,7 +163,7 @@ const importKeyPair: any = async (context: vscode.ExtensionContext) => {
   }
 }
 
-// extract privateKey against address
+// Extract privateKey against address
 const extractPvtKey: any = async (keyStorePath: string, address: string) => {
   try {
     const pwdInpOpt: vscode.InputBoxOptions = {
