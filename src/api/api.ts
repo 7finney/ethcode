@@ -185,6 +185,7 @@ const getConstructorInputFile = async (
     }
   } catch (error) {
     console.log(error)
+    return []
   }
 }
 
