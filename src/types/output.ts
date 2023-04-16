@@ -1,6 +1,5 @@
 import { type JsonFragment } from '@ethersproject/abi'
 import type * as ethers from 'ethers'
-import * as fs from 'fs'
 
 export interface HardHatCompiledOutput {
   contractName: string
@@ -57,16 +56,6 @@ export const getByteCode = (
   if (output.contractType === 1) return output.hardhatOutput?.bytecode
 
   return output.remixOutput?.data.bytecode.object
-}
-
-export const isHardhatProject = (path_: string): boolean => {
-  return (
-    fs
-      .readdirSync(path_)
-      .filter(
-        (file) => file === 'hardhat.config.js' || file === 'hardhat.config.ts'
-      ).length > 0
-  )
 }
 
 export interface BytecodeObject {

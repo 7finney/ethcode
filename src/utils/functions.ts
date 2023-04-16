@@ -292,13 +292,34 @@ const fetchERC4907Contracts: any = async (uri: string) => {
   const response = await axios
     .get(uri)
     .then((res) => {
-      console.log(res)
       return res.data
     })
     .catch((err) => {
-      console.log('an error occoured while fetch files:', err)
+      console.error('an error occoured while fetch files:', err)
     })
   return response
+}
+
+// Checks is hardhat project
+const isHardhatProject = (path_: string): boolean => {
+  return (
+    fs
+      .readdirSync(path_)
+      .filter(
+        (file) => file === 'hardhat.config.js' || file === 'hardhat.config.ts'
+      ).length > 0
+  )
+}
+
+// Checks is foundry project
+const isFoundryProject = (path_: string): boolean => {
+  return (
+    fs
+      .readdirSync(path_)
+      .filter(
+        (file) => file === 'foundry.toml'
+      ).length > 0
+  )
 }
 
 export {
@@ -312,5 +333,7 @@ export {
   fetchERC4907Contracts,
   getDeployedFullPath,
   getFunctionInputFullPath,
-  getConstructorInputFullPath
+  getConstructorInputFullPath,
+  isHardhatProject,
+  isFoundryProject
 }
