@@ -11,8 +11,10 @@
   "keywords": [
     "solidity",
     "ethereum",
-    "eth2.0",
-    "remix ide"
+    "hardhat",
+    "foundry",
+    "web3",
+    "evm"
   ],
   "icon": "images/ethcode.png",
   "repository": "https://github.com/7finney/ethcode",

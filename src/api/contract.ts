@@ -8,7 +8,7 @@ import {
 import {
   type ExtensionContext
 } from 'vscode'
-import { type ContractABI } from '../types/api'
+import { type ContractABI, type CompiledJSONOutput } from '../types'
 
 import { type JsonFragment } from '@ethersproject/abi'
 import { parseBatchCompiledJSON } from '../utils/contracts'
@@ -48,9 +48,43 @@ export function contract (context: ExtensionContext): ContractInterface {
    */
   function list (): string[] {
     parseBatchCompiledJSON(context)
-    const contracts = context.workspaceState.get('contracts') as string[]
-    if (contracts === undefined || contracts.length === 0) return []
-    return Object.keys(contracts)
+    const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
+    // Exclude library contracts
+    const userContracts = Object.keys(contracts).filter((i) => {
+      const contract = contracts[i]
+      const contractName = contract.name ?? ''
+      // return contract if not in hardhat library or foundry library
+      const foundryLibContracts = [
+        'IMulticall3',
+        'Script',
+        'StdAssertions',
+        'StdChains',
+        'StdCheats',
+        'StdInvariant',
+        'StdStyle',
+        'StdUtils',
+        'Vm',
+        'console',
+        'console2',
+        'Test',
+        'CommonBase',
+        'ScriptBase',
+        'TestBase',
+        'CounterScript',
+        'StdCheatsSafe',
+        'stdError',
+        'stdJson',
+        'stdMath',
+        'stdStorage',
+        'stdStorageSafe',
+        'VmSafe',
+        'DSTest'
+      ]
+      // const hardhatLibContracts = ['']
+      return !foundryLibContracts.includes(contractName)
+    })
+    if (userContracts === undefined || Object.keys(userContracts).length === 0) return []
+    return userContracts
   }
 
   /**

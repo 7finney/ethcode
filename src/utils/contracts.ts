@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 import { logger } from '../lib'
-import { type CompiledJSONOutput, type IFunctionQP, isHardhatProject } from '../types'
+import { type CompiledJSONOutput, type IFunctionQP } from '../types'
 import {
   createERC4907ContractFile,
   createERC4907ContractInterface,
@@ -13,7 +13,9 @@ import {
 import {
   createConstructorInput,
   createFunctionInput,
-  createDeployed
+  createDeployed,
+  isHardhatProject,
+  isFoundryProject
 } from './functions'
 import { ERC4907ContractUrls } from '../contracts/ERC4907/ERC4907'
 
@@ -25,7 +27,7 @@ const parseBatchCompiledJSON = (context: ExtensionContext): void => {
 
   logger.log('Loading all compiled jsons...')
   try {
-    void context.workspaceState.update('contracts', '') // Initialize contracts storage
+    void context.workspaceState.update('contracts', '') // Initialize contracts storage with empty string
 
     const path_ = workspace.workspaceFolders[0].uri.fsPath
     const paths: string[] = loadAllCompiledJsonOutputs(path_)
@@ -108,6 +110,11 @@ const loadAllCompiledJsonOutputs: any = (path_: string) => {
   if (isHardhatProject(path_)) {
     allFiles = getDirectoriesRecursive(
       path.join(path_, 'artifacts', 'contracts'),
+      0
+    )
+  } else if (isFoundryProject(path_)) {
+    allFiles = getDirectoriesRecursive(
+      path.join(path_, 'out'),
       0
     )
   } else allFiles = getDirectoriesRecursive(path_, 0)
