@@ -24,7 +24,7 @@ import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
 import { event } from './api/api'
 import { type API } from './types'
-import path = require('path')
+// import path = require('path')
 
 export async function activate (context: ExtensionContext): Promise<API | undefined> {
   context.subscriptions.push(
@@ -226,7 +226,7 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
     return
   }
   const watcher = workspace.createFileSystemWatcher(
-    new RelativePattern(path.join(path_[0].uri.fsPath, 'cache'), '**/*.json')
+    new RelativePattern(path_[0].uri.fsPath, '{artifacts, build, out, cache}/**/*.json')
   )
 
   watcher.onDidCreate(async (uri) => {
