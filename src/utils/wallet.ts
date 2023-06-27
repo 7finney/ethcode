@@ -76,10 +76,9 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
     fs.mkdirSync(`${path}/keystore`)
   }
   keythereum.exportToFile(keyObject, `${path}/keystore`)
-  listAddresses(context, path)
-    .catch((error: any) => {
-      logger.error(error)
-    })
+  listAddresses(context, path).then((addresses: string[]) => {
+    event.updateAccountList.fire(addresses)
+  }).catch((error: any) => logger.error(error))
   return keyObject.address
 }
 
