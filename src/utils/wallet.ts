@@ -70,7 +70,10 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
       pubAddr: keyObject.address,
       checksumAddr: ethers.utils.getAddress(keyObject.address)
     }
-    event.accountCreated.fire(`New account created: 0x${keyObject.address as string}`)
+    event.accountCreated.fire({
+      successMsg: `New account created: 0x${keyObject.address as string}`,
+      success: true
+    })
     logger.log(JSON.stringify(account))
 
     if (!fs.existsSync(`${path}/keystore`)) {
@@ -82,7 +85,7 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
     }).catch((error: any) => logger.error(error))
     return keyObject.address
   } catch (error) {
-    event.accountCreated.fire('Failed to create account!')
+    event.accountCreated.fire({ error, success: false })
   }
 }
 

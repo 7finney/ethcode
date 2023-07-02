@@ -220,8 +220,11 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
     events: events()
   }
 
-  api.events.accountCreated.event((msg) => {
-    logger.success(msg)
+  api.events.accountCreated.event((info) => {
+    if (info.success) logger.success(info.successMsg)
+    else {
+      logger.error(info.error)
+    }
   })
 
   const path_ = workspace.workspaceFolders

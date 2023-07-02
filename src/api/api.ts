@@ -7,7 +7,7 @@ import {
   getSelectedNetConf,
   getSelectedProvider
 } from '../utils/networks'
-import { type ContractABI, type CompiledJSONOutput, type NetworkConfig } from '../types'
+import { type ContractABI, type CompiledJSONOutput, type NetworkConfig, type IAccountCreated } from '../types'
 import {
   createConstructorInput,
   createDeployed,
@@ -24,13 +24,13 @@ const event: {
   account: vscode.EventEmitter<string>
   contracts: vscode.EventEmitter<any>
   updateAccountList: vscode.EventEmitter<string[]>
-  accountCreated: vscode.EventEmitter<string>
+  accountCreated: vscode.EventEmitter<IAccountCreated>
 } = {
   network: new vscode.EventEmitter<string>(),
   account: new vscode.EventEmitter<string>(),
   contracts: new vscode.EventEmitter<any>(),
   updateAccountList: new vscode.EventEmitter<string[]>(),
-  accountCreated: new vscode.EventEmitter<string>()
+  accountCreated: new vscode.EventEmitter<IAccountCreated>()
 }
 
 // PROVIDER
