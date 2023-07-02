@@ -116,3 +116,11 @@ export function isConstructorInputValue (
 ): obj is ConstructorInputValue {
   return obj.value !== undefined
 }
+
+export type IAccountCreated = {
+  successMsg: string
+  success: true
+} | {
+  error: any
+  success: false
+}

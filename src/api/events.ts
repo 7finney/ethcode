@@ -1,5 +1,6 @@
 import type * as vscode from 'vscode'
 import { event } from './api'
+import { type IAccountCreated } from '../types'
 
 /**
  * Represents an interface for event emitters of network and account changes.
@@ -36,6 +37,14 @@ export interface EventsInterface {
  * @type {vscode.EventEmitter<any>}
  */
   updateAccountList: vscode.EventEmitter<any>
+
+  /**
+  * An event emitter for account creation.
+  *
+  * @event
+  * @type {vscode.EventEmitter<string>}
+  */
+  accountCreated: vscode.EventEmitter<IAccountCreated>
 }
 
 /**
@@ -49,11 +58,13 @@ export function events (): EventsInterface {
   const account = event.account
   const contracts = event.contracts
   const updateAccountList = event.updateAccountList
+  const accountCreated = event.accountCreated
 
   return {
     network,
     account,
     contracts,
-    updateAccountList
+    updateAccountList,
+    accountCreated
   }
 }
