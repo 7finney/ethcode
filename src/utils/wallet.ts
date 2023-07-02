@@ -52,34 +52,38 @@ const listAddresses: any = async (
 
 // Create keypair
 const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd: string) => {
-  const params = { keyBytes: 32, ivBytes: 16 }
-  const bareKey = keythereum.create(params)
-  const options = {
-    kdf: 'scrypt',
-    cipher: 'aes-128-ctr'
-  }
-  const keyObject = keythereum.dump(
-    Buffer.from(pswd, 'utf-8'),
-    bareKey.privateKey,
-    bareKey.salt,
-    bareKey.iv,
-    options
-  )
-  const account: Account = {
-    pubAddr: keyObject.address,
-    checksumAddr: ethers.utils.getAddress(keyObject.address)
-  }
-  logger.success('Account created!')
-  logger.log(JSON.stringify(account))
+  try {
+    const params = { keyBytes: 32, ivBytes: 16 }
+    const bareKey = keythereum.create(params)
+    const options = {
+      kdf: 'scrypt',
+      cipher: 'aes-128-ctr'
+    }
+    const keyObject = keythereum.dump(
+      Buffer.from(pswd, 'utf-8'),
+      bareKey.privateKey,
+      bareKey.salt,
+      bareKey.iv,
+      options
+    )
+    const account: Account = {
+      pubAddr: keyObject.address,
+      checksumAddr: ethers.utils.getAddress(keyObject.address)
+    }
+    event.accountCreated.fire(`New account created: 0x${keyObject.address as string}`)
+    logger.log(JSON.stringify(account))
 
-  if (!fs.existsSync(`${path}/keystore`)) {
-    fs.mkdirSync(`${path}/keystore`)
+    if (!fs.existsSync(`${path}/keystore`)) {
+      fs.mkdirSync(`${path}/keystore`)
+    }
+    keythereum.exportToFile(keyObject, `${path}/keystore`)
+    listAddresses(context, path).then((addresses: string[]) => {
+      event.updateAccountList.fire(addresses)
+    }).catch((error: any) => logger.error(error))
+    return keyObject.address
+  } catch (error) {
+    event.accountCreated.fire('Failed to create account!')
   }
-  keythereum.exportToFile(keyObject, `${path}/keystore`)
-  listAddresses(context, path).then((addresses: string[]) => {
-    event.updateAccountList.fire(addresses)
-  }).catch((error: any) => logger.error(error))
-  return keyObject.address
 }
 
 // Delete privateKey against address

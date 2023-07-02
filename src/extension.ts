@@ -220,6 +220,10 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
     events: events()
   }
 
+  api.events.accountCreated.event((msg) => {
+    logger.success(msg)
+  })
+
   const path_ = workspace.workspaceFolders
   if (path_ === undefined) {
     await window.showErrorMessage('No folder selected please open one.')

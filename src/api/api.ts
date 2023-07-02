@@ -24,11 +24,13 @@ const event: {
   account: vscode.EventEmitter<string>
   contracts: vscode.EventEmitter<any>
   updateAccountList: vscode.EventEmitter<string[]>
+  accountCreated: vscode.EventEmitter<string>
 } = {
   network: new vscode.EventEmitter<string>(),
   account: new vscode.EventEmitter<string>(),
   contracts: new vscode.EventEmitter<any>(),
-  updateAccountList: new vscode.EventEmitter<string[]>()
+  updateAccountList: new vscode.EventEmitter<string[]>(),
+  accountCreated: new vscode.EventEmitter<string>()
 }
 
 // PROVIDER
