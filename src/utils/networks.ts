@@ -37,10 +37,18 @@ const getSelectedNetwork = (context: vscode.ExtensionContext): string => {
 }
 
 const getSelectedNetConf = (context: vscode.ExtensionContext): NetworkConfig => {
+  try {
+    const networks: any = getConfiguration().get('networks')
+    const selectedNetworkConfig = networks[getSelectedNetwork(context)]
+    const parsedConfig: NetworkConfig = JSON.parse(selectedNetworkConfig)
+    return parsedConfig
+  } catch (error) {
+    logger.error(error)
+    logger.log('No selected network found. Using default!')
+  }
   const networks: any = getConfiguration().get('networks')
-  const selectedNetworkConfig = networks[getSelectedNetwork(context)]
-  const parsedConfig: NetworkConfig = JSON.parse(selectedNetworkConfig)
-  return parsedConfig
+  const defaultConfig: NetworkConfig = JSON.parse(networks[0])
+  return defaultConfig
 }
 
 const updateSelectedNetwork: any = async (context: vscode.ExtensionContext) => {

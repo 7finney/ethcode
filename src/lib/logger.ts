@@ -4,16 +4,9 @@ const successToast = (msg: string): any => {
   void window.showInformationMessage(msg, 'Dismiss')
 }
 
-// const warningToast = (msg: string) => {
-//   void window.showWarningMessage(msg, 'Dismiss')
-// }
 const errorToast = (msg: string): any => {
   void window.showErrorMessage(msg, 'Dismiss')
 }
-
-// const actionToast = (msg: string, actionName: string) => {
-//   return window.showInformationMessage(msg, actionName, 'Dismiss')
-// }
 
 export class Logger {
   private readonly outputChannel: OutputChannel
@@ -36,7 +29,7 @@ export class Logger {
   public error (e: any): any {
     const now = this.getNow()
     this.outputChannel.appendLine(`[${now}] Error: ${e.message as string}`)
-    this.outputChannel.appendLine(`[${now}] stack: ${e.stack as string}`)
+    this.outputChannel.appendLine(`[${now}] Error stack: ${JSON.stringify(e.stack)}`)
     this.outputChannel.show()
     errorToast(`Error: ${e.message as string}`)
   }

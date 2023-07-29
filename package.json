@@ -19,7 +19,6 @@
   "icon": "images/ethcode.png",
   "repository": "https://github.com/7finney/ethcode",
   "engines": {
-    "vscode": "^1.38.1",
     "node": ">=16.15.0"
   },
   "activationEvents": [
@@ -211,7 +210,7 @@
   },
   "scripts": {
     "vscode:prepublish": "yarn build",
-    "postinstall": "node ./node_modules/vscode/bin/install",
+    "postinstall": "npx @vscode/dts master",
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -watch -p ./"
   },
