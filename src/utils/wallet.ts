@@ -273,7 +273,7 @@ const selectAccount: any = async (context: vscode.ExtensionContext) => {
       const { label } = selection[0]
       void context.workspaceState.update('account', label)
       event.account.fire(label)
-      logger.success(`Account ${label} activated. See details -> ${getSelectedNetConf(context).blockScanner}/address/${label}`)
+      logger.success(`Account ${label} activated.\nSee details -> ${getSelectedNetConf(context).blockScanner}/address/${label}`)
       quickPick.dispose()
     }
   })

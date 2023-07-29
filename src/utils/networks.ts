@@ -60,9 +60,10 @@ const updateSelectedNetwork: any = async (context: vscode.ExtensionContext) => {
   quickPick.onDidChangeActive(() => {
     quickPick.placeholder = 'Select network'
   })
-  quickPick.onDidChangeSelection((selection: INetworkQP[]) => {
-    if (selection[0] != null) {
-      const { label } = selection[0]
+  quickPick.onDidChangeSelection(() => {
+    const selection = quickPick.selectedItems[0]
+    if (selection != null) {
+      const { label } = selection
       void context.workspaceState.update('selectedNetwork', label)
       quickPick.dispose()
 

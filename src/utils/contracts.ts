@@ -145,9 +145,10 @@ const selectContract: any = (context: ExtensionContext) => {
     functionKey: f
   }))
   quickPick.placeholder = 'Select a contract.'
-  quickPick.onDidChangeSelection((selection: IFunctionQP[]) => {
-    if ((selection[0] != null) && (workspace.workspaceFolders != null)) {
-      const { functionKey } = selection[0]
+  quickPick.onDidChangeSelection(() => {
+    const selection = quickPick.selectedItems[0]
+    if ((selection != null) && (workspace.workspaceFolders != null)) {
+      const { functionKey } = selection
       quickPick.dispose()
       // get selected contract
       const name = Object.keys(contracts).filter(

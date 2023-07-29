@@ -19,6 +19,7 @@
   "icon": "images/ethcode.png",
   "repository": "https://github.com/7finney/ethcode",
   "engines": {
+    "vscode": "^1.80.0",
     "node": ">=16.15.0"
   },
   "activationEvents": [
