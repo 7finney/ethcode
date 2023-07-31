@@ -77,17 +77,18 @@ const createFunctionInput: any = (contract: CompiledJSONOutput) => {
   const functions = functionsAbi.map((e: any) => ({
     name: e.name,
     stateMutability: e.stateMutability,
-    // inputs: e.inputs?.map((c: any) => ({
-    //   ...c,
-    //   value: ''
-    // })),
     ...(e.stateMutability === 'payable'
       ? {
           inputs: [
             ...e.inputs?.map((c: any) => ({
               ...c,
               value: ''
-            })), { value: 0 }]
+            })),
+            {
+              value: 0,
+              type: 'payable',
+              unit: 'gwei'
+            }]
         }
       : {
           inputs: [
@@ -97,6 +98,11 @@ const createFunctionInput: any = (contract: CompiledJSONOutput) => {
             }))]
         })
   }))
+  // const functions = functionsAbi.map((e: { name: any, stateMutability: any, inputs: any[] }) => ({
+  //   name: e.name,
+  //   stateMutability: e.stateMutability,
+  //   inputs: e.inputs?.map((c) => ({ ...c, value: '' }))
+  // }))
   console.log(functions)
 
   writeFunction(getFunctionInputFullPath(contract), contract, functions)

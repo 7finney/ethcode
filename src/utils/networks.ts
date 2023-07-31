@@ -166,13 +166,13 @@ const callContractMethod: any = async (context: vscode.ExtensionContext) => {
 
     const params_ = abiItem.inputs?.map((e: any) => e.value)
     const params = params_ === undefined ? [] : params_
-
+    console.log(params)
     logger.success(`Calling ${compiledOutput.name as string} : ${abiItem.name as string} -->`)
 
     const contractAddres = getDeployedInputs(context).address
     if (contractAddres === undefined) { throw new Error('Enter deployed address of selected contract.') }
 
-    if (abiItem.stateMutability === 'view') {
+    if (abiItem.stateMutability === 'view' || abiItem.stateMutability === 'pure') {
       selectContract(context)
 
       const contract = new ethers.Contract(
@@ -210,12 +210,42 @@ const callContractMethod: any = async (context: vscode.ExtensionContext) => {
           result = await contract[abiItem.name as string](...params)
         }
       } else {
-        const found: any = abiItem.inputs?.find(
-          (e: any) => e.type === 'uint256'
-        )
-        result = await contract[abiItem.name as string](...params, {
-          value: found.value
-        })
+        const payable: any = params[params.length - 1]
+        const param = params.slice(0, params.length - 1)
+        console.log('param -----> ', param)
+        console.log('payable -----> ', payable)
+        const selectedObject: any = abiItem.inputs?.find((item: any) => (
+          'value' in item && 'type' in item && 'unit' in item
+        ))
+        console.log('selectedObject -----> ', selectedObject)
+        const payableUnit = selectedObject.unit
+        console.log('payableUnit -----> ', payableUnit)
+        const payableValue = ethers.utils.parseUnits(payable.toString(), payableUnit)
+        console.log('payableValue -----> ', payableValue)
+        const gasCondition = (await context.workspaceState.get(
+          'gas'
+        )) as string
+
+        const gasEstimate = await getGasEstimates(gasCondition, context)
+
+        const settingsGasLimit = (await getConfiguration().get(
+          'gasLimit'
+        )) as number
+
+        if (gasEstimate !== undefined) {
+          const maxFeePerGas = (gasEstimate).price
+
+          result = await contract[abiItem.name as string](...param, {
+            gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), 'gwei'),
+            gasLimit: settingsGasLimit,
+            value: payableValue
+          })
+        } else {
+          result = await contract[abiItem.name as string](...param,
+            {
+              value: payableValue
+            })
+        }
       }
 
       logger.success('Waiting for confirmation...')
@@ -226,8 +256,7 @@ const callContractMethod: any = async (context: vscode.ExtensionContext) => {
         `Calling ${compiledOutput.name as string} : ${abiItem.name as string} --> Success!`
       )
       logger.success(
-        `You can see detail of this transaction here. ${
-          getSelectedNetConf(context).blockScanner
+        `You can see detail of this transaction here. ${getSelectedNetConf(context).blockScanner
         }/tx/${result.hash as string}`
       )
     }
