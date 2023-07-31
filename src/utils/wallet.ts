@@ -261,25 +261,19 @@ const selectAccount: any = async (context: vscode.ExtensionContext) => {
     label: account,
     description: (isTestingNetwork(context) === true)
       ? getSelectedNetwork(context)
-      : 'Local account'
+      : 'Local account!'
   }))
 
   quickPick.onDidChangeActive(() => {
-    quickPick.placeholder = 'Select account'
+    quickPick.placeholder = 'Select account!'
   })
 
   quickPick.onDidChangeSelection((selection) => {
     if (selection[0] != null) {
       const { label } = selection[0]
       void context.workspaceState.update('account', label)
-
       event.account.fire(label)
-
-      logger.success(`Account ${label} is selected.`)
-      logger.success(
-        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner
-        }/address/${label}`
-      )
+      logger.success(`Account ${label} activated.\nSee details -> ${getSelectedNetConf(context).blockScanner}/address/${label}`)
       quickPick.dispose()
     }
   })

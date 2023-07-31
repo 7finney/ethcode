@@ -37,10 +37,18 @@ const getSelectedNetwork = (context: vscode.ExtensionContext): string => {
 }
 
 const getSelectedNetConf = (context: vscode.ExtensionContext): NetworkConfig => {
+  try {
+    const networks: any = getConfiguration().get('networks')
+    const selectedNetworkConfig = networks[getSelectedNetwork(context)]
+    const parsedConfig: NetworkConfig = JSON.parse(selectedNetworkConfig)
+    return parsedConfig
+  } catch (error) {
+    logger.error(error)
+    logger.log('No selected network found. Using default!')
+  }
   const networks: any = getConfiguration().get('networks')
-  const selectedNetworkConfig = networks[getSelectedNetwork(context)]
-  const parsedConfig: NetworkConfig = JSON.parse(selectedNetworkConfig)
-  return parsedConfig
+  const defaultConfig: NetworkConfig = JSON.parse(networks[0])
+  return defaultConfig
 }
 
 const updateSelectedNetwork: any = async (context: vscode.ExtensionContext) => {
@@ -52,9 +60,10 @@ const updateSelectedNetwork: any = async (context: vscode.ExtensionContext) => {
   quickPick.onDidChangeActive(() => {
     quickPick.placeholder = 'Select network'
   })
-  quickPick.onDidChangeSelection((selection: INetworkQP[]) => {
-    if (selection[0] != null) {
-      const { label } = selection[0]
+  quickPick.onDidChangeSelection(() => {
+    const selection = quickPick.selectedItems[0]
+    if (selection != null) {
+      const { label } = selection
       void context.workspaceState.update('selectedNetwork', label)
       quickPick.dispose()
 
