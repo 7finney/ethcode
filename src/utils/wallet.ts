@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { ethers } from 'ethers'
 import * as fs from 'fs'
+import * as path from 'path'
 import * as vscode from 'vscode'
 import { window, type InputBoxOptions } from 'vscode'
 import { event } from '../api/api'
@@ -29,11 +30,11 @@ const listAddresses: any = async (
       return account
     }
 
-    if (!fs.existsSync(`${keyStorePath}/keystore`)) {
-      fs.mkdirSync(`${keyStorePath}/keystore`)
+    if (!fs.existsSync(path.join(`${keyStorePath}`, 'keystore'))) {
+      fs.mkdirSync(path.join(`${keyStorePath}`, 'keystore'))
     }
 
-    const files = fs.readdirSync(`${keyStorePath}/keystore`)
+    const files = fs.readdirSync(path.join(`${keyStorePath}`, 'keystore'))
 
     const localAddresses: LocalAddressType[] = files.map((file) => {
       const arr = file.split('--')
@@ -51,7 +52,7 @@ const listAddresses: any = async (
 }
 
 // Create keypair
-const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd: string) => {
+const createKeyPair: any = (context: vscode.ExtensionContext, keyPath: string, pswd: string) => {
   const params = { keyBytes: 32, ivBytes: 16 }
   const bareKey = keythereum.create(params)
   const options = {
@@ -71,12 +72,12 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
   }
   logger.success('Account created!')
   logger.log(JSON.stringify(account))
-
-  if (!fs.existsSync(`${path}/keystore`)) {
-    fs.mkdirSync(`${path}/keystore`)
+  const keyStorePath = path.join(context.extensionPath, 'keystore')
+  if (!fs.existsSync(keyStorePath)) {
+    fs.mkdirSync(keyStorePath)
   }
-  keythereum.exportToFile(keyObject, `${path}/keystore`)
-  listAddresses(context, path).then((addresses: string[]) => {
+  keythereum.exportToFile(keyObject, keyStorePath)
+  listAddresses(context, keyPath).then((addresses: string[]) => {
     event.updateAccountList.fire(addresses)
   }).catch((error: any) => logger.error(error))
   return keyObject.address
@@ -94,12 +95,12 @@ const deleteKeyPair: any = async (context: vscode.ExtensionContext) => {
       logger.log('Please input public address!')
       return
     }
-    fs.readdir(`${context.extensionPath}/keystore`, (err, files) => {
+    fs.readdir(path.join(`${context.extensionPath}`, 'keystore'), (err, files) => {
       if (err != null) throw new Error(`Unable to scan directory: ${err.message}`)
 
       files.forEach((file) => {
         if (file.includes(publicKey.replace('0x', ''))) {
-          fs.unlinkSync(`${context.extensionPath}/keystore/${file}`)
+          fs.unlinkSync(path.join(`${context.extensionPath}`, 'keystore', `${file}`))
           listAddresses(context, context.extensionPath)
             .catch((error: any) => {
               logger.error(error)
@@ -143,17 +144,19 @@ const importKeyPair: any = async (context: vscode.ExtensionContext) => {
         } else {
           fs.copyFile(
             fileUri[0].fsPath,
-            `${context.extensionPath}/keystore/${filename}`,
+            path.join(`${context.extensionPath}`, 'keystore', `${filename}`),
             (err) => {
               if (err != null) throw err
             }
           )
 
           logger.success(`Account ${address} is successfully imported!`)
-          listAddresses(context, context.extensionPath)
-            .catch((error: any) => {
-              logger.error(error)
-            })
+          if (!fs.existsSync(path.join(`${context.extensionPath}`, 'keystore'))) {
+            fs.mkdirSync(path.join(`${context.extensionPath}`, 'keystore'))
+          }
+          listAddresses(context, context.extensionPath).then((addresses: string[]) => {
+            event.updateAccountList.fire(addresses)
+          }).catch((error: any) => logger.error(error))
         }
       }
     })
@@ -201,7 +204,7 @@ const exportKeyPair: any = async (context: vscode.ExtensionContext) => {
     quickPick.onDidChangeSelection((selection) => {
       if (selection[0] != null) {
         const { label } = selection[0]
-        const files = fs.readdirSync(`${context.extensionPath}/keystore`)
+        const files = fs.readdirSync(path.join(`${context.extensionPath}`, 'keystore'))
         const address = label.slice(2, label.length)
         const selectedFile = files.filter((file: string) => {
           return file.includes(address)
@@ -220,11 +223,11 @@ const exportKeyPair: any = async (context: vscode.ExtensionContext) => {
           if (fileUri?.[0] != null) {
             logger.log(
               'path: ',
-              `${fileUri[0].fsPath}\\${selectedFile}\\${selectedFile}`
+              path.join(`${fileUri[0].fsPath}`, `${selectedFile}`, `${selectedFile}`)
             )
             fs.copyFile(
-              `${context.extensionPath}\\keystore\\${selectedFile}`,
-              `${fileUri[0].fsPath}\\${selectedFile}`,
+              path.join(`${context.extensionPath}`, 'keystore', `${selectedFile}`),
+              path.join(`${fileUri[0].fsPath}`, `${selectedFile}`),
               (err) => {
                 if (err != null) throw err
               }
@@ -258,25 +261,19 @@ const selectAccount: any = async (context: vscode.ExtensionContext) => {
     label: account,
     description: (isTestingNetwork(context) === true)
       ? getSelectedNetwork(context)
-      : 'Local account'
+      : 'Local account!'
   }))
 
   quickPick.onDidChangeActive(() => {
-    quickPick.placeholder = 'Select account'
+    quickPick.placeholder = 'Select account!'
   })
 
   quickPick.onDidChangeSelection((selection) => {
     if (selection[0] != null) {
       const { label } = selection[0]
       void context.workspaceState.update('account', label)
-
       event.account.fire(label)
-
-      logger.success(`Account ${label} is selected.`)
-      logger.success(
-        `You can see detail of this account here. ${getSelectedNetConf(context).blockScanner
-        }/address/${label}`
-      )
+      logger.success(`Account ${label} activated.\nSee details -> ${getSelectedNetConf(context).blockScanner}/address/${label}`)
       quickPick.dispose()
     }
   })

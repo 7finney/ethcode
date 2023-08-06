@@ -74,11 +74,36 @@ const createFunctionInput: any = (contract: CompiledJSONOutput) => {
     return
   }
 
-  const functions = functionsAbi.map((e: { name: any, stateMutability: any, inputs: any[] }) => ({
+  const functions = functionsAbi.map((e: any) => ({
     name: e.name,
     stateMutability: e.stateMutability,
-    inputs: e.inputs?.map((c) => ({ ...c, value: '' }))
+    ...(e.stateMutability === 'payable'
+      ? {
+          inputs: [
+            ...e.inputs?.map((c: any) => ({
+              ...c,
+              value: ''
+            })),
+            {
+              value: 0,
+              type: 'payable',
+              unit: 'gwei'
+            }]
+        }
+      : {
+          inputs: [
+            ...e.inputs?.map((c: any) => ({
+              ...c,
+              value: ''
+            }))]
+        })
   }))
+  // const functions = functionsAbi.map((e: { name: any, stateMutability: any, inputs: any[] }) => ({
+  //   name: e.name,
+  //   stateMutability: e.stateMutability,
+  //   inputs: e.inputs?.map((c) => ({ ...c, value: '' }))
+  // }))
+  console.log(functions)
 
   writeFunction(getFunctionInputFullPath(contract), contract, functions)
 }
@@ -159,9 +184,10 @@ const getFunctionInputs: any = async (
         functionKey: f.name
       })) as IFunctionQP[]
       quickPick.placeholder = 'Select function'
-      quickPick.onDidChangeSelection((selection: IFunctionQP[]) => {
-        if ((selection[0] != null) && (workspace.workspaceFolders != null)) {
-          const { functionKey } = selection[0]
+      quickPick.onDidChangeSelection(() => {
+        const selection = quickPick.selectedItems[0]
+        if ((selection != null) && (workspace.workspaceFolders != null)) {
+          const { functionKey } = selection
           quickPick.dispose()
           const abiItem = functions.filter(
             (i: JsonFragment) => i.name === functionKey
