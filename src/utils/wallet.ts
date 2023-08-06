@@ -52,7 +52,7 @@ const listAddresses: any = async (
 }
 
 // Create keypair
-const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd: string) => {
+const createKeyPair: any = (context: vscode.ExtensionContext, keyPath: string, pswd: string) => {
   const params = { keyBytes: 32, ivBytes: 16 }
   const bareKey = keythereum.create(params)
   const options = {
@@ -72,12 +72,12 @@ const createKeyPair: any = (context: vscode.ExtensionContext, path: string, pswd
   }
   logger.success('Account created!')
   logger.log(JSON.stringify(account))
-  const keyStorePath = `${context.extensionPath}/keystore`
+  const keyStorePath = path.join(context.extensionPath, 'keystore')
   if (!fs.existsSync(keyStorePath)) {
     fs.mkdirSync(keyStorePath)
   }
   keythereum.exportToFile(keyObject, keyStorePath)
-  listAddresses(context, path).then((addresses: string[]) => {
+  listAddresses(context, keyPath).then((addresses: string[]) => {
     event.updateAccountList.fire(addresses)
   }).catch((error: any) => logger.error(error))
   return keyObject.address
