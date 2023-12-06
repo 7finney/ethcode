@@ -2,13 +2,14 @@ import {
   getNetwork,
   providerDefault,
   setNetwork,
-  getAvailableNetwork
+  getAvailableNetwork,
+  getNetworkGasPrices
 } from './api'
 import {
   type ExtensionContext
 } from 'vscode'
 import { type Provider } from '@ethersproject/providers'
-import { type NetworkConfig } from '../types'
+import { type Fees, type NetworkConfig } from '../types'
 
 /**
  * Interface for the provider API.
@@ -47,6 +48,12 @@ export interface ProviderInterface {
      * @returns An array of the names of all available networks.
      */
     list: () => string[]
+
+    /**
+     * Returns the current gas price of the network selected in the extension.
+     * @returns the current gas price of the network selected in the extension.
+     */
+    getGasPrices: () => Promise<any>
   }
 }
 
@@ -95,12 +102,21 @@ export function provider (context: ExtensionContext): ProviderInterface {
     return getAvailableNetwork()
   };
 
+  /**
+   * Returns the current gas price of the network selected in the extension.
+   * @returns the current gas price of the network selected in the extension.
+   */
+  async function getGasPrices (): Promise<Fees> {
+    return await getNetworkGasPrices(context)
+  }
+
   return {
     get,
     network: {
       get: networkGet,
       set: networkSet,
-      list: networkList
+      list: networkList,
+      getGasPrices
     }
   }
 }

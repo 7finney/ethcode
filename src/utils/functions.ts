@@ -9,7 +9,8 @@ import {
   type ConstructorInputValue,
   getAbi,
   type IFunctionQP,
-  type EstimateGas
+  type EstimateGas,
+  type Fees
 } from '../types'
 import { logger } from '../lib'
 import { errors } from '../config'
@@ -19,8 +20,10 @@ import {
   writeFunction
 } from '../lib/file'
 import { getSelectedNetConf } from './networks'
-
+import { get1559Fees } from './get1559Fees'
+import { getSelectedProvider } from './utils'
 import axios from 'axios'
+import { type ethers } from 'ethers'
 
 const createDeployed: any = (contract: CompiledJSONOutput) => {
   const fullPath = getDeployedFullPath(contract)
@@ -98,11 +101,6 @@ const createFunctionInput: any = (contract: CompiledJSONOutput) => {
             }))]
         })
   }))
-  // const functions = functionsAbi.map((e: { name: any, stateMutability: any, inputs: any[] }) => ({
-  //   name: e.name,
-  //   stateMutability: e.stateMutability,
-  //   inputs: e.inputs?.map((c) => ({ ...c, value: '' }))
-  // }))
   console.log(functions)
 
   writeFunction(getFunctionInputFullPath(contract), contract, functions)
@@ -265,50 +263,75 @@ const getNetworkBlockpriceUrl: any = (context: vscode.ExtensionContext) => {
   } else { /* empty */ }
 }
 
+export const getGasPrices = async (context: vscode.ExtensionContext): Promise<Fees> => {
+  const chainID = getSelectedNetConf(context).chainID
+  const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider
+  if (chainID === '59140') {
+    // 10000000000 = 10 gwei
+    // 20 percentile
+    // Suggested on https://docs.linea.build/build-on-linea/gas-fees
+    return await get1559Fees(provider, BigInt(10000000000), 20)
+  } else {
+    return {
+      maxFeePerGas: BigInt(0),
+      maxPriorityFeePerGas: BigInt(0)
+    }
+  }
+}
+
 const getGasEstimates: any = async (
   condition: string,
   context: vscode.ExtensionContext
 ) => {
   let estimate: EstimateGas | undefined
-  const blockPriceUri = getNetworkBlockpriceUrl(context)
-  if (blockPriceUri !== undefined) {
-    await axios
-      .get(blockPriceUri, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers':
-            'Origin, X-Requested-With, Content-Type, Accept'
-        }
-      })
-      .then((res: any) => {
-        if (res.status === 200) {
-          switch (condition) {
-            case 'Low': {
-              estimate = res.data.blockPrices[0].estimatedPrices.find(
-                (x: any) => x.confidence === 70
-              ) as EstimateGas
-              break
-            }
-            case 'Medium': {
-              estimate = res.data.blockPrices[0].estimatedPrices.find(
-                (x: any) => x.confidence === 90
-              ) as EstimateGas
-              break
-            }
-            case 'High': {
-              estimate = res.data.blockPrices[0].estimatedPrices.find(
-                (x: any) => x.confidence === 99
-              ) as EstimateGas
-              break
-            }
+  const chainID = getSelectedNetConf(context).chainID
+  // try to use `eth_feeHistory` RPC API
+  const provider = getSelectedProvider(
+    context
+  ) as ethers.providers.JsonRpcProvider
+  if (chainID === '59140') {
+    const maxFeePerGas = get1559Fees(provider, BigInt(10), 70)
+    console.log(maxFeePerGas)
+  } else {
+    const blockPriceUri = getNetworkBlockpriceUrl(context)
+    if (blockPriceUri !== undefined) {
+      await axios
+        .get(blockPriceUri, {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers':
+              'Origin, X-Requested-With, Content-Type, Accept'
           }
-
-          return estimate
-        }
-      })
-      .catch((error: any) => {
-        console.error(error)
-      })
+        })
+        .then((res: any) => {
+          if (res.status === 200) {
+            switch (condition) {
+              case 'Low': {
+                estimate = res.data.blockPrices[0].estimatedPrices.find(
+                  (x: any) => x.confidence === 70
+                ) as EstimateGas
+                break
+              }
+              case 'Medium': {
+                estimate = res.data.blockPrices[0].estimatedPrices.find(
+                  (x: any) => x.confidence === 90
+                ) as EstimateGas
+                break
+              }
+              case 'High': {
+                estimate = res.data.blockPrices[0].estimatedPrices.find(
+                  (x: any) => x.confidence === 99
+                ) as EstimateGas
+                break
+              }
+            }
+            return estimate
+          }
+        })
+        .catch((error: any) => {
+          console.error(error)
+        })
+    }
   }
 
   return estimate
