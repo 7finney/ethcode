@@ -8,7 +8,7 @@ import {
 } from '../types/output'
 import { logger } from '../lib'
 import { extractPvtKey } from './wallet'
-import { type INetworkQP, type NetworkConfig } from '../types'
+import { type INetworkQP } from '../types'
 import {
   getConstructorInputs,
   getDeployedInputs,
@@ -19,8 +19,7 @@ import {
 import { errors } from '../config/errors'
 import { selectContract } from './contracts'
 import { event } from '../api/api'
-
-const provider = ethers.providers
+import { getSelectedProvider, getSelectedNetwork, getSelectedNetConf } from './utils'
 
 const getConfiguration: any = () => {
   return vscode.workspace.getConfiguration('ethcode')
@@ -29,26 +28,6 @@ const getConfiguration: any = () => {
 const getNetworkNames = (): string[] => {
   const networks = getConfiguration().get('networks') as object
   return Object.keys(networks)
-}
-
-// Selected Network Configuratin Helper
-const getSelectedNetwork = (context: vscode.ExtensionContext): string => {
-  return context.workspaceState.get('selectedNetwork') as string
-}
-
-const getSelectedNetConf = (context: vscode.ExtensionContext): NetworkConfig => {
-  try {
-    const networks: any = getConfiguration().get('networks')
-    const selectedNetworkConfig = networks[getSelectedNetwork(context)]
-    const parsedConfig: NetworkConfig = JSON.parse(selectedNetworkConfig)
-    return parsedConfig
-  } catch (error) {
-    logger.error(error)
-    logger.log('No selected network found. Using default!')
-  }
-  const networks: any = getConfiguration().get('networks')
-  const defaultConfig: NetworkConfig = JSON.parse(networks[0])
-  return defaultConfig
 }
 
 const updateSelectedNetwork: any = async (context: vscode.ExtensionContext) => {
@@ -74,25 +53,6 @@ const updateSelectedNetwork: any = async (context: vscode.ExtensionContext) => {
   })
   quickPick.onDidHide(() => { quickPick.dispose() })
   quickPick.show()
-}
-
-const isValidHttpUrl: any = (url_: string) => {
-  let url
-
-  try {
-    url = new URL(url_)
-  } catch (_) {
-    return false
-  }
-
-  return url.protocol === 'http:' || url.protocol === 'https:'
-}
-
-const getSelectedProvider: any = (context: vscode.ExtensionContext) => {
-  const rpc = getSelectedNetConf(context).rpc // default providers have a name with less than 10 chars
-  if (isValidHttpUrl(rpc) === true) return new provider.JsonRpcProvider(rpc)
-
-  return provider.getDefaultProvider(rpc)
 }
 
 // Contract function calls
@@ -265,8 +225,7 @@ const callContractMethod: any = async (context: vscode.ExtensionContext) => {
         `Calling ${compiledOutput.name as string} : ${abiItem.name as string} --> Success!`
       )
       logger.success(
-        `You can see detail of this transaction here. ${getSelectedNetConf(context).blockScanner
-        }/tx/${result.hash as string}`
+        `You can see detail of this transaction here. ${getSelectedNetConf(context).blockScanner}/tx/${result.hash as string}`
       )
     }
   } catch (err: any) {
@@ -280,7 +239,6 @@ const callContractMethod: any = async (context: vscode.ExtensionContext) => {
 const deployContract: any = async (context: vscode.ExtensionContext) => {
   try {
     logger.success('Deploying contract...')
-
     const myContract = await getContractFactoryWithParams(context)
     const parameters = getConstructorInputs(context)
     const gasCondition = (await context.workspaceState.get('gas')) as string
@@ -290,14 +248,16 @@ const deployContract: any = async (context: vscode.ExtensionContext) => {
       const settingsGasLimit = (await getConfiguration().get(
         'gasLimit'
       )) as number
+      console.log('maxFeePerGas -----> ', maxFeePerGas)
+      console.log('settingsGasLimit -----> ', settingsGasLimit)
 
-      const contract = await myContract.deploy(...parameters, {
-        gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), 'gwei'),
-        gasLimit: settingsGasLimit
-      })
+      // const contract = await myContract.deploy(...parameters, {
+      //   gasPrice: ethers.utils.parseUnits(maxFeePerGas.toString(), 'gwei'),
+      //   gasLimit: settingsGasLimit
+      // })
 
-      void context.workspaceState.update('contractAddress', contract.address)
-      logger.success(`Contract deployed to ${contract.address as string}`)
+      // void context.workspaceState.update('contractAddress', contract.address)
+      // logger.success(`Contract deployed to ${contract.address as string}`)
     } else {
       const contract = await myContract.deploy(...parameters)
 

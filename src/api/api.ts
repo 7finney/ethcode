@@ -7,14 +7,15 @@ import {
   getSelectedNetConf,
   getSelectedProvider
 } from '../utils/networks'
-import { type ContractABI, type CompiledJSONOutput, type NetworkConfig } from '../types'
+import { type ContractABI, type CompiledJSONOutput, type NetworkConfig, type Fees } from '../types'
 import {
   createConstructorInput,
   createDeployed,
   createFunctionInput,
   getConstructorInputFullPath,
   getDeployedFullPath,
-  getFunctionInputFullPath
+  getFunctionInputFullPath,
+  getGasPrices
 } from '../utils/functions'
 import { type JsonFragment } from '@ethersproject/abi'
 import { logger } from '../lib'
@@ -197,6 +198,10 @@ const createContractFiles = async (context: vscode.ExtensionContext, contractTit
 
   logger.success(`Contract ${name[0]} is selected.`)
 }
+
+const getNetworkGasPrices = async (context: vscode.ExtensionContext): Promise<Fees> => {
+  return await getGasPrices(context)
+}
 export {
   getNetwork,
   setNetwork,
@@ -211,5 +216,6 @@ export {
   getFunctionInputFile,
   getConstructorInputFile,
   createContractFiles,
+  getNetworkGasPrices,
   event
 }

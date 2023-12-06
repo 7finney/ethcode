@@ -2,7 +2,7 @@
   "name": "ethcode",
   "displayName": "ETHcode",
   "description": "Ethereum IDE for VS Code",
-  "version": "0.4.9",
+  "version": "0.4.10",
   "publisher": "7finney",
   "categories": [
     "Debuggers",
@@ -19,7 +19,7 @@
   "icon": "images/ethcode.png",
   "repository": "https://github.com/7finney/ethcode",
   "engines": {
-    "vscode": "^1.80.0",
+    "vscode": "^1.84.2",
     "node": ">=16.15.0"
   },
   "activationEvents": [
@@ -116,6 +116,11 @@
         "category": "Ethcode"
       },
       {
+        "command": "ethcode.transaction.gas.prices",
+        "title": "Get network gas prices",
+        "category": "Ethcode"
+      },
+      {
         "command": "ethcode.compiled-json.load",
         "title": "Ethcode: Load compiled JSON output"
       },
@@ -198,7 +203,7 @@
   "devDependencies": {
     "@types/node": "^18.0.0",
     "@types/utf8": "^3.0.1",
-    "@types/vscode": "^1.38.1",
+    "@types/vscode": "^1.84.2",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "eslint-config-standard-with-typescript": "^34.0.0",

@@ -102,6 +102,13 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
         })
     }),
 
+    // Get network gas prices
+    commands.registerCommand('ethcode.transaction.gas.prices', async () => {
+      const { maxFeePerGas, maxPriorityFeePerGas } = await provider(context).network.getGasPrices()
+      logger.log('maxFeePerGas > ', maxFeePerGas)
+      logger.log('maxPriorityFeePerGas > ', maxPriorityFeePerGas)
+    }),
+
     // Load combined JSON output
     commands.registerCommand('ethcode.compiled-json.load', () => {
       const editorContent = (window.activeTextEditor != null)
