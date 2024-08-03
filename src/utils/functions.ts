@@ -264,18 +264,11 @@ const getNetworkBlockpriceUrl: any = (context: vscode.ExtensionContext) => {
 }
 
 export const getGasPrices = async (context: vscode.ExtensionContext): Promise<Fees> => {
-  const chainID = getSelectedNetConf(context).chainID
   const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider
-  if (chainID === '59140') {
-    // 10000000000 = 10 gwei
-    // 20 percentile
-    // Suggested on https://docs.linea.build/build-on-linea/gas-fees
-    return await get1559Fees(provider, BigInt(10000000000), 20)
-  } else {
-    return {
-      maxFeePerGas: BigInt(0),
-      maxPriorityFeePerGas: BigInt(0)
-    }
+  const feeData = await provider.getFeeData()
+  return {
+    maxFeePerGas: feeData.maxFeePerGas?.toBigInt() ?? BigInt(0),
+    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toBigInt() ?? BigInt(0)
   }
 }
 
