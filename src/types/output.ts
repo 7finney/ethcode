@@ -68,3 +68,15 @@ export interface BytecodeObject {
   /** If given, this is an unlinked object. */
   linkReferences?: Record<string, Record<string, Array<{ start: number, length: number }>>>
 }
+
+export interface Fees {
+  maxFeePerGas: bigint
+  maxPriorityFeePerGas?: bigint
+}
+
+export interface FeeHistory {
+  oldestBlock: number
+  reward: string[][]
+  baseFeePerGas: string[]
+  gasUsedRatio: number[]
+}
