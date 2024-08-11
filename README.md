@@ -49,7 +49,7 @@ Step 1: Login to https://dev.azure.com/ and generate PAT for your user or organi
 
 Step 2:
 
-```
+```shell
 vsce login <publisher>
 vsce publish 0.1.4 -p <access token> --yarn
 git push origin v0.1.4
