@@ -24,7 +24,6 @@ import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
 import { event } from './api/api'
 import { type API } from './types'
-// import path = require('path')
 
 export async function activate (context: ExtensionContext): Promise<API | undefined> {
   context.subscriptions.push(
@@ -119,7 +118,7 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
 
     // Load all combined JSON output
     commands.registerCommand('ethcode.compiled-json.load.all', async () => {
-      parseBatchCompiledJSON(context)
+      await parseBatchCompiledJSON(context)
     }),
 
     // Select a compiled json from the list
@@ -237,14 +236,14 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
   )
 
   watcher.onDidCreate(async (uri) => {
-    parseBatchCompiledJSON(context)
+    await parseBatchCompiledJSON(context)
     const contracts = context.workspaceState.get('contracts') as string[]
     if (contracts === undefined || contracts.length === 0) return []
     event.contracts.fire(Object.keys(contracts))
   })
 
   watcher.onDidChange(async (uri) => {
-    parseBatchCompiledJSON(context)
+    await parseBatchCompiledJSON(context)
     const contracts = context.workspaceState.get('contracts') as string[]
     if (contracts === undefined || contracts.length === 0) return []
     event.contracts.fire(Object.keys(contracts))

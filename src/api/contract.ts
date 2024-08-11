@@ -16,7 +16,7 @@ import { parseBatchCompiledJSON } from '../utils/contracts'
 /**
  * Defines the contract API interface.
  * @interface
- * @property {() => string[]} list Retrieves the list of contracts.
+ * @property {() => Promise<string[]>} list Retrieves the list of contracts.
  * @property {(name: string) => Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>} abi Retrieves the abi of the contract.
  * @property {(name: string) => Promise<string | undefined>} getContractAddress Retrieves the address of the contract.
  * @property {(name: string) => Promise<object | undefined>} getFunctionInput Retrieves the function input of the contract.
@@ -24,7 +24,7 @@ import { parseBatchCompiledJSON } from '../utils/contracts'
  * @property {(name: string) => Promise<object | undefined>} getConstructorInput Retrieves the constructor input of the contract.
  */
 export interface ContractInterface {
-  list: () => string[]
+  list: () => Promise<string[]>
   abi: (name: string) => Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>
   getContractAddress: (name: string) => Promise<string | undefined>
   getFunctionInput: (name: string) => Promise<object | undefined>
@@ -44,10 +44,10 @@ export function contract (context: ExtensionContext): ContractInterface {
   /**
    * Returns a list of the compiled contracts loaded in ethcode.
    *
-   * @returns {string[]} - The array of contract names.
+   * @returns {Promise<string[]>} - The array of contract names.
    */
-  function list (): string[] {
-    parseBatchCompiledJSON(context)
+  async function list (): Promise<string[]> {
+    await parseBatchCompiledJSON(context)
     const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
     // Exclude library contracts
     const userContracts = Object.keys(contracts).filter((i) => {
