@@ -1,7 +1,7 @@
 import { type ExtensionContext, window, workspace, type InputBoxOptions } from 'vscode'
 import * as path from 'path'
 import * as fs from 'fs'
-
+import * as toml from 'toml'
 import { logger } from '../lib'
 import { type CompiledJSONOutput, type IFunctionQP } from '../types'
 import {
@@ -19,7 +19,7 @@ import {
 } from './functions'
 import { ERC4907ContractUrls } from '../contracts/ERC4907/ERC4907'
 
-const parseBatchCompiledJSON = (context: ExtensionContext): void => {
+const parseBatchCompiledJSON = async (context: ExtensionContext): Promise<void> => {
   if (workspace.workspaceFolders === undefined) {
     logger.error(new Error('Please open your solidity project to vscode'))
     return
@@ -30,7 +30,7 @@ const parseBatchCompiledJSON = (context: ExtensionContext): void => {
     void context.workspaceState.update('contracts', '') // Initialize contracts storage with empty string
 
     const path_ = workspace.workspaceFolders[0].uri.fsPath
-    const paths: string[] = loadAllCompiledJsonOutputs(path_)
+    const paths: string[] = await loadAllCompiledJsonOutputs(path_)
     paths.forEach((e) => {
       let name = path.parse(e).base
       name = name.substring(0, name.length - 5)
@@ -104,17 +104,21 @@ const getCompiledJsonObject = (_jsonPayload: any): CompiledJSONOutput => {
 /**
  * @dev return file paths with possibility of solidity compiled output jsons
  */
-const loadAllCompiledJsonOutputs: any = (path_: string) => {
+const loadAllCompiledJsonOutputs: any = async (path_: string) => {
+  logger.log('Loading all compiled jsons outputs...')
   let allFiles
 
-  if (isHardhatProject(path_)) {
+  if (await isFoundryProject()) {
+    const foundryConfigFile = await workspace.findFiles('**/foundry.toml', '**/{node_modules,lib}/**')
+    const file = await workspace.fs.readFile(foundryConfigFile[0])
+    const foundryConfig = toml.parse(file.toString())
     allFiles = getDirectoriesRecursive(
-      path.join(path_, 'artifacts', 'contracts'),
+      path.join(path_, foundryConfig.profile.default.out), // for USDC project output dir is artifacts/foundry
       0
     )
-  } else if (isFoundryProject(path_)) {
+  } else if (isHardhatProject(path_)) {
     allFiles = getDirectoriesRecursive(
-      path.join(path_, 'out'),
+      path.join(path_, 'artifacts', 'contracts'),
       0
     )
   } else allFiles = getDirectoriesRecursive(path_, 0)
