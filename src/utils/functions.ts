@@ -354,14 +354,13 @@ const isHardhatProject = (path_: string): boolean => {
 }
 
 // Checks is foundry project
-const isFoundryProject = (path_: string): boolean => {
-  return (
-    fs
-      .readdirSync(path_)
-      .filter(
-        (file) => file === 'foundry.toml'
-      ).length > 0
-  )
+const isFoundryProject = async (): Promise<boolean> => {
+  const foundryConfigFile = await workspace.findFiles('**/foundry.toml', '**/{node_modules,lib}/**')
+  if (foundryConfigFile.length > 0) {
+    return true
+  } else {
+    return false
+  }
 }
 
 export {
