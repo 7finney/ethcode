@@ -15,7 +15,7 @@ import {
   getConstructorInputFullPath,
   getDeployedFullPath,
   getFunctionInputFullPath,
-  getGasPrices
+  getNetworkFeeData
 } from '../utils/functions'
 import { type JsonFragment } from '@ethersproject/abi'
 import { logger } from '../lib'
@@ -200,7 +200,7 @@ const createContractFiles = async (context: vscode.ExtensionContext, contractTit
 }
 
 const getNetworkGasPrices = async (context: vscode.ExtensionContext): Promise<Fees> => {
-  return await getGasPrices(context)
+  return await getNetworkFeeData(context)
 }
 export {
   getNetwork,
