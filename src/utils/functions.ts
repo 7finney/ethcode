@@ -23,7 +23,7 @@ import { getSelectedNetConf } from './networks'
 import { get1559Fees } from './get1559Fees'
 import { getSelectedProvider } from './utils'
 import axios from 'axios'
-import { type ethers } from 'ethers'
+import { type ethers, utils } from 'ethers'
 
 const createDeployed: any = (contract: CompiledJSONOutput) => {
   const fullPath = getDeployedFullPath(contract)
@@ -263,12 +263,24 @@ const getNetworkBlockpriceUrl: any = (context: vscode.ExtensionContext) => {
   } else { /* empty */ }
 }
 
-export const getGasPrices = async (context: vscode.ExtensionContext): Promise<Fees> => {
-  const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider
-  const feeData = await provider.getFeeData()
-  return {
-    maxFeePerGas: feeData.maxFeePerGas?.toBigInt() ?? BigInt(0),
-    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toBigInt() ?? BigInt(0)
+export const getNetworkFeeData = async (context: vscode.ExtensionContext): Promise<Fees> => {
+  const chainID = getSelectedNetConf(context).chainID
+  const gasCondition = (await context.workspaceState.get(
+    'gas'
+  )) as string
+  if (chainID === '137' || chainID === '1') {
+    const feeData = await getGasEstimates(gasCondition, context)
+    return {
+      maxFeePerGas: utils.parseUnits(feeData.maxFeePerGas.toString(), 'gwei').toBigInt() ?? BigInt(0),
+      maxPriorityFeePerGas: utils.parseUnits(feeData.maxPriorityFeePerGas.toString(), 'gwei').toBigInt() ?? BigInt(0)
+    }
+  } else {
+    const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider
+    const feeData = await provider.getFeeData()
+    return {
+      maxFeePerGas: feeData.maxFeePerGas?.toBigInt() ?? BigInt(0),
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toBigInt() ?? BigInt(0)
+    }
   }
 }
 
@@ -288,7 +300,7 @@ const getGasEstimates: any = async (
   } else {
     const blockPriceUri = getNetworkBlockpriceUrl(context)
     if (blockPriceUri !== undefined) {
-      await axios
+      return await axios
         .get(blockPriceUri, {
           headers: {
             'Access-Control-Allow-Origin': '*',
@@ -326,8 +338,6 @@ const getGasEstimates: any = async (
         })
     }
   }
-
-  return estimate
 }
 
 const fetchERC4907Contracts: any = async (uri: string) => {
