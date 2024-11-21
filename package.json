@@ -189,7 +189,7 @@
     "@types/keythereum": "^1.2.1",
     "@types/randombytes": "^2.0.0",
     "@types/underscore": "^1.11.4",
-    "axios": "^0.27.2",
+    "axios": "^1.6.0",
     "bn.js": "^5.2.1",
     "eslint": "^8.34.0",
     "ethers": "^5.6.9",
