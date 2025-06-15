@@ -13,7 +13,18 @@
 Ethcode is a Visual Studio Code extension that helps deploy and execute Solidity smart contracts on EVM-based blockchains. It supports multiple test networks and streamlines your smart contract development workflow.
 
 ---
+- [Website](#-website)
+- [Documentation](#-documentation)
+- [Installation](#-installation)
+- [System Support](#-system-support)
+- [Support the Project](#-support-the-project)
+- [Development](#-development)
+- [Packaging](#-packaging)
+- [Publishing](#-publishing)
+- [Code Formatting](#-code-formatting)
+- [References](#-references)
 
+- 
 ## 🌐 Website  
 [https://ethcode.dev](https://ethcode.dev)
 
