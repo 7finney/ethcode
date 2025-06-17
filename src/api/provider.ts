@@ -1,113 +1,69 @@
-import {
-  getNetwork,
-  providerDefault,
-  setNetwork,
-  getAvailableNetwork,
-  getNetworkGasPrices
-} from './api'
-import {
-  type ExtensionContext
-} from 'vscode'
-import { type Provider } from '@ethersproject/providers'
-import { type Fees, type NetworkConfig } from '../types'
+import { type ExtensionContext } from 'vscode'
+import { createPublicClient, http, type PublicClient } from 'viem'
+import { getSelectedNetConf, getNetworkNames } from '../utils/networks'
+import { type NetworkConfig } from '../types'
 
-/**
- * Interface for the provider API.
- */
 export interface ProviderInterface {
-  /**
-   * Returns a Promise that resolves to the current ethers.js provider instance of the network selected in the extension.
-   *
-   * @returns A Promise that resolves to the current ethers.js provider instance.
-   */
-  get: () => Promise<Provider>
-
-  /**
-   * Provides methods for interacting with the current network configuration.
-   */
+  get: () => Promise<PublicClient>
   network: {
-
-    /**
-     * Returns the current network configuration selected in the extension.
-     *
-     * @returns The current network configuration.
-     */
     get: () => NetworkConfig
-
-    /**
-     * Sets the current network configuration with the given network name in the extension.
-     *
-     * @param network - The name of the network to switch to.
-     * @returns The name of the network that was set.
-     */
     set: (network: string) => string
-
-    /**
-     * Returns an array of the names of all available networks in the extension.
-     *
-     * @returns An array of the names of all available networks.
-     */
     list: () => string[]
-
-    /**
-     * Returns the current gas price of the network selected in the extension.
-     * @returns the current gas price of the network selected in the extension.
-     */
-    getGasPrices: () => Promise<any>
+    getGasPrices: () => Promise<{ maxFeePerGas: string, maxPriorityFeePerGas: string }>
   }
 }
 
-/**
- * Returns an object providing methods for interacting with the ethers.js provider.
- *
- * @param context - The extension context.
- * @returns An object providing methods for interacting with the ethers.js provider.
- */
-export function provider (context: ExtensionContext): ProviderInterface {
-  /**
-   * Returns a Promise that resolves to the current ethers.js provider instanc for the network selected in the extension.
-   *
-   * @returns A Promise that resolves to the current Ethereum provider instance.
-   */
-  async function get (): Promise<Provider> {
-    const provider = await providerDefault(context)
-    return provider
+export function getProvider(context: ExtensionContext): PublicClient {
+  const networkConfig = getSelectedNetConf(context)
+  return createPublicClient({
+    transport: http(networkConfig.rpc)
+  })
+}
+
+export function provider(context: ExtensionContext): ProviderInterface {
+  async function get(): Promise<PublicClient> {
+    return getProvider(context)
   }
 
-  /**
-   * Returns the current network configuration in ethcode.
-   *
-   * @returns The current network configuration.
-   */
-  function networkGet (): NetworkConfig {
-    return getNetwork(context)
+  function networkGet(): NetworkConfig {
+    return getSelectedNetConf(context)
   }
 
-  /**
-   * Sets the current network configuration to the given network name in ethcode.
-   *
-   * @param network - The name of the network to switch to.
-   * @returns The name of the network that was set.
-   */
-  function networkSet (network: string): string {
-    return setNetwork(context, network)
+  function networkSet(network: string): string {
+    if (network === null) {
+      return 'Network parameter not given'
+    }
+    if (!getNetworkNames().includes(network)) {
+      return 'Network not found'
+    } else {
+      void context.workspaceState.update('selectedNetwork', network)
+      return 'Network changed to ' + network
+    }
   }
 
-  /**
-   * Returns an array of the names of all available networks in the extension.
-   *
-   * @returns An array of the names of all available networks.
-   */
-  function networkList (): string[] {
-    return getAvailableNetwork()
-  };
+  function networkList(): string[] {
+    return getNetworkNames()
+  }
 
-  /**
-   * Returns the current gas price of the network selected in the extension.
-   * @returns the current gas price of the network selected in the extension.
-   */
-  async function getGasPrices (): Promise<Fees> {
-    return await getNetworkGasPrices(context)
+  async function getGasPrices(): Promise<{ maxFeePerGas: string, maxPriorityFeePerGas: string }> {
+    const client = getProvider(context)
+    const feeHistory = await client.request({
+      method: 'eth_feeHistory',
+      params: ['0x5', 'latest', [70]]
+    }) as { baseFeePerGas: string[], reward: string[][] }
+
+    if (!feeHistory.reward || !feeHistory.baseFeePerGas || feeHistory.reward.length === 0) {
+      throw new Error('Failed to fetch gas price data from the network')
+    }
+
+    const baseFeePerGas = feeHistory.baseFeePerGas
+    const reward = feeHistory.reward
+    const maxPriorityFeePerGas = reward.reduce((acc: bigint, curr: string[]) => acc + BigInt(curr[0]), 0n) / BigInt(reward.length)
+    const maxFeePerGas = BigInt(baseFeePerGas[baseFeePerGas.length - 1]) * 2n + maxPriorityFeePerGas
+    return {
+      maxFeePerGas: maxFeePerGas.toString(),
+      maxPriorityFeePerGas: maxPriorityFeePerGas.toString()
+    }
   }
 
   return {
