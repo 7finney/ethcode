@@ -1,11 +1,10 @@
-import { type JsonFragment } from '@ethersproject/abi'
-import type * as ethers from 'ethers'
+import { type AbiItem } from './types'
 
 export interface HardHatCompiledOutput {
   contractName: string
   sourceName: string
   /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
-  abi: readonly JsonFragment[]
+  abi: readonly AbiItem[]
   bytecode: string
   deployedBytecode: string
 }
@@ -16,7 +15,7 @@ export interface RemixCompiledOutput {
     deployedByteCode: BytecodeObject
   }
   /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
-  abi: readonly JsonFragment[]
+  abi: readonly AbiItem[]
 }
 
 interface GasEstimate {
@@ -50,7 +49,7 @@ export const getAbi = (output: CompiledJSONOutput): any => {
 
 export const getByteCode = (
   output: CompiledJSONOutput
-): ethers.utils.BytesLike | undefined => {
+): string | undefined => {
   if (output.contractType === 0) return ''
 
   if (output.contractType === 1) return output.hardhatOutput?.bytecode
@@ -60,7 +59,7 @@ export const getByteCode = (
 
 export interface BytecodeObject {
   /** The bytecode as a hex string. */
-  object: ethers.utils.BytesLike
+  object: string
   /** Opcodes list */
   opcodes: string
   /** The source mapping as a string. See the source mapping definition. */
