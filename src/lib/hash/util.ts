@@ -1,4 +1,4 @@
-import * as randomBytes from 'randombytes'
+import randomBytes from 'randombytes'
 import { sha3, isHexStrict } from './sha3'
 
 function toChecksumAddress (address: any): string {
