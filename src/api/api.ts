@@ -1,130 +1,61 @@
-import { ethers, type Wallet, type Contract } from 'ethers'
 import { type ExtensionContext } from 'vscode'
-import { extractPvtKey, listAddresses } from '../utils/wallet'
-import * as vscode from 'vscode'
-import {
-  getNetworkNames,
-  getSelectedNetConf,
-  getSelectedProvider
-} from '../utils/networks'
+import { type PublicClient } from 'viem'
+import { getProvider } from './provider'
 import { type ContractABI, type CompiledJSONOutput, type NetworkConfig, type Fees } from '../types'
-import {
-  createConstructorInput,
-  createDeployed,
-  createFunctionInput,
-  getConstructorInputFullPath,
-  getDeployedFullPath,
-  getFunctionInputFullPath,
-  getNetworkFeeData
-} from '../utils/functions'
-import { type JsonFragment } from '@ethersproject/abi'
+import { createConstructorInput, createDeployed, createFunctionInput, getConstructorInputFullPath, getDeployedFullPath, getFunctionInputFullPath } from '../utils/functions'
 import { logger } from '../lib'
+import * as vscode from 'vscode'
 
-const event: {
-  network: vscode.EventEmitter<string>
-  account: vscode.EventEmitter<string>
-  contracts: vscode.EventEmitter<any>
-  updateAccountList: vscode.EventEmitter<string[]>
-} = {
+export const event = {
   network: new vscode.EventEmitter<string>(),
   account: new vscode.EventEmitter<string>(),
   contracts: new vscode.EventEmitter<any>(),
   updateAccountList: new vscode.EventEmitter<string[]>()
 }
 
-// PROVIDER
-const providerDefault = (context: ExtensionContext): any => {
-  return getSelectedProvider(context)
-}
-
-const getAvailableNetwork = (): string[] => {
-  return getNetworkNames()
-}
-
-const getNetwork = (context: ExtensionContext): NetworkConfig => {
-  return getSelectedNetConf(context)
-}
-
-const setNetwork = (context: ExtensionContext, network: string): string => {
-  if (network === null) {
-    return 'Network parameter not given'
-  }
-  if (!getNetworkNames().includes(network)) {
-    return 'Network not found'
-  } else {
-    void context.workspaceState.update('selectedNetwork', network)
-    return 'Network changed to ' + network
+export async function getNetwork(context: ExtensionContext) {
+  const client = getProvider(context)
+  // viem does not have getNetwork, so use chainId and rpc info
+  return {
+    chainId: client.chain?.id,
+    name: client.chain?.name,
+    rpc: client.transport.url
   }
 }
 
-// WALLETS
-const getWallet = async (context: ExtensionContext, account: string): Promise<Wallet> => {
-  const address: any = await context.workspaceState.get('account')
-  account = account ?? address
-  const provider = getSelectedProvider(context)
-  const privateKey = await extractPvtKey(context.extensionPath, account)
-  const wallet = new ethers.Wallet(privateKey, provider)
-  return wallet
+export async function getNetworkFeeData(context: ExtensionContext) {
+  const client = getProvider(context)
+  // Use viem's fee data method or custom RPC call
+  const feeHistory = await client.request({
+    method: 'eth_feeHistory',
+    params: ['0x5', 'latest', [70]]
+  })
+  return feeHistory
 }
 
-const listAllWallet = async (context: ExtensionContext): Promise<string[]> => {
-  const result = await listAddresses(context, context.extensionPath)
-  return result
-}
-
-// CONTRACT
-
-const getContract = async (
-  context: ExtensionContext,
-  address: string,
-  abi: any,
-  wallet: ethers.Signer
-): Promise<Contract> => {
-  const contract = new ethers.Contract(address, abi, wallet)
-  return contract
-}
-
-const executeContractMethod = async (
-  contract: any,
-  method: string,
-  args: any[]
-): Promise<any> => {
-  const result = await contract[method](...args)
-  return result
-}
-
-const exportABI = async (
-  context: ExtensionContext,
-  contractName: string = ''
-): Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined> => {
+export async function exportABI(context: ExtensionContext, contractName: string = '') {
   const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
   if (contracts === undefined || Object.keys(contracts).length === 0) return
 
-  const contractABIS: readonly ContractABI[] = Object.keys(contracts).map((name) => {
-    return {
+  const contractABIS: readonly ContractABI[] = Object.keys(contracts).map((name) => ({
       name,
       abi: contracts[name].hardhatOutput?.abi
-    }
-  })
-  const contractABI = contractABIS.find(contract => contract.name === contractName)?.abi as readonly JsonFragment[]
+  }))
+  const contractABI = contractABIS.find(contract => contract.name === contractName)?.abi
   if (contractName === '' || contractABI === undefined) return contractABIS
   return contractABI
 }
 
-const getDeployedContractAddress = async (
-  context: ExtensionContext,
-  name: string
-): Promise<string | undefined> => {
+export async function getDeployedContractAddress(context: ExtensionContext, name: string) {
   try {
     const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
     if (contracts === undefined || Object.keys(contracts).length === 0) return
-    for (let i = 0; i < Object.keys(contracts).length; i++) {
-      const contract: CompiledJSONOutput = contracts[Object.keys(contracts)[i]]
+    for (const contract of Object.values(contracts)) {
       if (contract.name === name) {
         const link = getDeployedFullPath(contract)
         const linkchnage = link.replace(/\\/g, '/')
         const fileUri = vscode.Uri.file(linkchnage)
-        const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUri)
+        const contents = await vscode.workspace.fs.readFile(fileUri)
         const decoder = new TextDecoder()
         const jsonString = decoder.decode(contents)
         const json = JSON.parse(jsonString)
@@ -136,10 +67,7 @@ const getDeployedContractAddress = async (
   }
 }
 
-const getFunctionInputFile: any = async (
-  context: ExtensionContext,
-  name: string
-): Promise<object | undefined> => {
+export async function getFunctionInputFile(context: ExtensionContext, name: string) {
   try {
     const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
     if (contracts === undefined || Object.keys(contracts).length === 0) return
@@ -149,7 +77,7 @@ const getFunctionInputFile: any = async (
       const link = getFunctionInputFullPath(contract)
       const linkchnage = link.replace(/\\/g, '/')
       const fileUri = vscode.Uri.file(linkchnage)
-      const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUri)
+      const contents = await vscode.workspace.fs.readFile(fileUri)
       const decoder = new TextDecoder()
       const jsonString = decoder.decode(contents)
       const json = JSON.parse(jsonString)
@@ -160,10 +88,7 @@ const getFunctionInputFile: any = async (
   }
 }
 
-const getConstructorInputFile = async (
-  context: ExtensionContext,
-  name: string
-): Promise<object | undefined> => {
+export async function getConstructorInputFile(context: ExtensionContext, name: string) {
   try {
     const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
     if (contracts === undefined || Object.keys(contracts).length === 0) return
@@ -172,7 +97,7 @@ const getConstructorInputFile = async (
       const link = getConstructorInputFullPath(contract)
       const linkchnage = link.replace(/\\/g, '/')
       const fileUri = vscode.Uri.file(linkchnage)
-      const contents: Uint8Array = await vscode.workspace.fs.readFile(fileUri)
+      const contents = await vscode.workspace.fs.readFile(fileUri)
       const decoder = new TextDecoder()
       const jsonString = decoder.decode(contents)
       const json = JSON.parse(jsonString)
@@ -184,7 +109,7 @@ const getConstructorInputFile = async (
   }
 }
 
-const createContractFiles = async (context: vscode.ExtensionContext, contractTitle: string): Promise<void> => {
+export async function createContractFiles(context: vscode.ExtensionContext, contractTitle: string) {
   const contracts = await context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
   const name = Object.keys(contracts).filter(
     (i: string) => i === contractTitle
@@ -197,25 +122,4 @@ const createContractFiles = async (context: vscode.ExtensionContext, contractTit
   createDeployed(contract)
 
   logger.success(`Contract ${name[0]} is selected.`)
-}
-
-const getNetworkGasPrices = async (context: vscode.ExtensionContext): Promise<Fees> => {
-  return await getNetworkFeeData(context)
-}
-export {
-  getNetwork,
-  setNetwork,
-  getAvailableNetwork,
-  providerDefault,
-  listAllWallet,
-  getWallet,
-  getContract,
-  executeContractMethod,
-  exportABI,
-  getDeployedContractAddress,
-  getFunctionInputFile,
-  getConstructorInputFile,
-  createContractFiles,
-  getNetworkGasPrices,
-  event
 }
