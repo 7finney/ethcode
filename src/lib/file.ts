@@ -1,9 +1,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { type JsonFragment } from '@ethersproject/abi'
 import { logger } from './index'
 import { type CompiledJSONOutput } from '../types/output'
 import { fetchERC4907Contracts } from '../utils/functions'
+import { type AbiItem } from '../types/types'
 
 const flatten = (lists: any): any => {
   return lists.reduce((a: any, b: any) => a.concat(b), [])
@@ -45,7 +45,7 @@ const getDirectoriesRecursive = (srcpath: string, depth: number): any => {
 const writeConstructor = (
   fileName: string,
   contract: CompiledJSONOutput,
-  inputs: JsonFragment[]
+  inputs: AbiItem[]
 ): any => {
   fs.writeFileSync(fileName, JSON.stringify(inputs, null, 2))
   logger.success(`Created constructor json of ${contract.name as string} contract`)
@@ -55,7 +55,7 @@ const writeConstructor = (
 const writeFunction = (
   fileName: string,
   contract: CompiledJSONOutput,
-  inputs: JsonFragment[]
+  inputs: AbiItem[]
 ): any => {
   fs.writeFileSync(fileName, JSON.stringify(inputs, null, 2))
   logger.success(`Created functions input json of ${contract.name as string} contract`)
