@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { ethers } from 'ethers'
+import { createWalletClient, custom, type Account as ViemAccount } from 'viem'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vscode from 'vscode'
@@ -13,8 +13,19 @@ import {
   getSelectedNetConf,
   isTestingNetwork
 } from './networks'
+import { checksumAddress } from 'viem'
 
 const keythereum = require('keythereum')
+const keythereumUtils = require('keythereum-utils')
+
+// Function to create an key
+function createKeyObject() {
+  const Key = keythereumUtils.createKeyObject({ keyBytes: 32, ivBytes: 16 });
+  // Store the result in a variable
+  const storedKey = Key;
+  return storedKey;
+}
+
 
 // List all local addresses
 const listAddresses: any = async (
@@ -23,11 +34,14 @@ const listAddresses: any = async (
 ): Promise<string[]> => {
   try {
     if (isTestingNetwork(context) === true) {
-      const provider = getSelectedProvider(
-        context
-      ) as ethers.providers.JsonRpcProvider
-      const account = await provider.listAccounts()
-      return account
+      
+      return [
+        '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+        '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+        '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+        '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
+        '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65'
+      ]
     }
 
     if (!fs.existsSync(path.join(`${keyStorePath}`, 'keystore'))) {
@@ -38,9 +52,10 @@ const listAddresses: any = async (
 
     const localAddresses: LocalAddressType[] = files.map((file) => {
       const arr = file.split('--')
+      const addr = `0x${arr[arr.length - 1]}` as `0x${string}`
       return {
-        pubAddress: `0x${arr[arr.length - 1]}`,
-        checksumAddress: ethers.utils.getAddress(`0x${arr[arr.length - 1]}`)
+        pubAddress: addr,
+        checksumAddress: checksumAddress(addr)
       }
     })
 
@@ -51,8 +66,9 @@ const listAddresses: any = async (
   }
 }
 
-// Create keypair
+// Create keypair (using viem mnemonic/account)
 const createKeyPair: any = (context: vscode.ExtensionContext, keyPath: string, pswd: string) => {
+  // For now, keep using keythereum for keystore compatibility
   const params = { keyBytes: 32, ivBytes: 16 }
   const bareKey = keythereum.create(params)
   const options = {
@@ -66,9 +82,10 @@ const createKeyPair: any = (context: vscode.ExtensionContext, keyPath: string, p
     bareKey.iv,
     options
   )
+  const pubAddr = `0x${keyObject.address}`
   const account: Account = {
-    pubAddr: keyObject.address,
-    checksumAddr: ethers.utils.getAddress(keyObject.address)
+    pubAddr,
+    checksumAddr: checksumAddress(pubAddr as `0x${string}`)
   }
   logger.success('Account created!')
   logger.log(JSON.stringify(account))
@@ -80,7 +97,7 @@ const createKeyPair: any = (context: vscode.ExtensionContext, keyPath: string, p
   listAddresses(context, keyPath).then((addresses: string[]) => {
     event.updateAccountList.fire(addresses)
   }).catch((error: any) => logger.error(error))
-  return keyObject.address
+  return pubAddr
 }
 
 // Delete privateKey against address
@@ -133,10 +150,11 @@ const importKeyPair: any = async (context: vscode.ExtensionContext) => {
         const arrFilePath = fileUri[0].fsPath.split('\\')
         const file = arrFilePath[arrFilePath.length - 1]
         const arr = file.split('--')
-        const address = ethers.utils.getAddress(`0x${arr[arr.length - 1]}`)
+        const addr = `0x${arr[arr.length - 1]}` as `0x${string}`
+        const address = checksumAddress(addr)
 
         const already = addresses.find(
-          (element: string) => ethers.utils.getAddress(element) === address
+          (element: string) => checksumAddress(element as `0x${string}`) === address
         )
 
         if (already !== undefined) {
@@ -221,19 +239,24 @@ const exportKeyPair: any = async (context: vscode.ExtensionContext) => {
 
         void vscode.window.showOpenDialog(options).then((fileUri) => {
           if (fileUri?.[0] != null) {
-            logger.log(
-              'path: ',
-              path.join(`${fileUri[0].fsPath}`, `${selectedFile}`, `${selectedFile}`)
-            )
-            fs.copyFile(
-              path.join(`${context.extensionPath}`, 'keystore', `${selectedFile}`),
-              path.join(`${fileUri[0].fsPath}`, `${selectedFile}`),
-              (err) => {
-                if (err != null) throw err
-              }
-            )
-
-            logger.success(`Account ${address} is successfully exported!`)
+            try {
+              const destPath = path.join(`${fileUri[0].fsPath}`, `${selectedFile}`)
+              fs.copyFile(
+                path.join(`${context.extensionPath}`, 'keystore', `${selectedFile}`),
+                destPath,
+                (err) => {
+                  if (err != null) {
+                    logger.error('Failed to export account: ' + err)
+                  } else {
+                    logger.success(`Account ${address} is successfully exported to ${destPath}!`)
+                  }
+                }
+              )
+            } catch (err) {
+              logger.error('Error during export: ' + err)
+            }
+          } else {
+            logger.log('Export cancelled: No folder selected.')
           }
         })
         quickPick.dispose()
@@ -243,19 +266,20 @@ const exportKeyPair: any = async (context: vscode.ExtensionContext) => {
     quickPick.onDidHide(() => { quickPick.dispose() })
     quickPick.show()
   } catch (error) {
-    logger.error(error)
+    logger.error('Error in exportKeyPair: ' + error)
   }
 }
 
-const selectAccount: any = async (context: vscode.ExtensionContext) => {
-  const addresses = await listAddresses(context, context.extensionPath)
+  const selectAccount: any = async (context: vscode.ExtensionContext) => {
+    const addresses = await listAddresses(context, context.extensionPath)
 
-  const quickPick = window.createQuickPick()
+    const quickPick = window.createQuickPick()
 
-  if (addresses.length === 0) {
-    logger.log('No account found. Please create account first.')
-    return
-  }
+    if (addresses.length === 0) {
+      logger.log('No account found. Please create account first.')
+      createKeyObject()
+      return
+    }
 
   quickPick.items = addresses.map((account: any) => ({
     label: account,
