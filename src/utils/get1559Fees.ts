@@ -1,12 +1,15 @@
-import { type ethers } from 'ethers'
+import { type PublicClient } from 'viem'
 import { type Fees, type FeeHistory } from '../types'
 
 export async function get1559Fees (
-  provider: ethers.providers.JsonRpcProvider,
+  client: PublicClient,
   maxFeePerGasFromConfig: bigint,
   percentile: number
 ): Promise<Fees> {
-  const { reward, baseFeePerGas }: FeeHistory = await provider.send('eth_feeHistory', ['0x5', 'latest', [percentile]])
+  const { reward, baseFeePerGas }: FeeHistory = await client.request({
+    method: 'eth_feeHistory',
+    params: ['0x5', 'latest', [percentile]]
+  })
 
   const maxPriorityFeePerGas = reward.reduce((accumulator, currentValue) => BigInt(accumulator) + BigInt(currentValue[0]), BigInt(0)) / BigInt(reward.length)
 
