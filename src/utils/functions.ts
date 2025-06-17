@@ -2,7 +2,7 @@ import type * as vscode from 'vscode'
 import { window, workspace } from 'vscode'
 import * as fs from 'fs'
 import * as path from 'path'
-import { type JsonFragment } from '@ethersproject/abi'
+import { parseUnits } from 'viem'
 
 import {
   type CompiledJSONOutput,
@@ -23,7 +23,15 @@ import { getSelectedNetConf } from './networks'
 import { get1559Fees } from './get1559Fees'
 import { getSelectedProvider } from './utils'
 import axios from 'axios'
-import { type ethers, utils } from 'ethers'
+
+// Define a minimal ABI item type for compatibility
+export type AbiItem = {
+  type: string
+  name?: string
+  stateMutability?: string
+  inputs?: any[]
+  outputs?: any[]
+}
 
 const createDeployed: any = (contract: CompiledJSONOutput) => {
   const fullPath = getDeployedFullPath(contract)
@@ -70,7 +78,7 @@ const createFunctionInput: any = (contract: CompiledJSONOutput) => {
   }
 
   const functionsAbi = getAbi(contract)?.filter(
-    (i: JsonFragment) => i.type === 'function'
+    (i: AbiItem) => i.type === 'function'
   )
   if (functionsAbi === undefined || functionsAbi.length === 0) {
     logger.error("This contract doesn't have any function")
@@ -123,11 +131,12 @@ const getFunctionInputFullPath: any = (contract: CompiledJSONOutput) => {
 }
 
 const getConstructorInputFullPath: any = (contract: CompiledJSONOutput) => {
-  if (contract.path === undefined) {
-    throw new Error('Contract Path is empty.')
-  }
-
-  return path.join(contract.path, `${contract.name as string}_constructor_input.json`)
+  if (workspace.workspaceFolders === undefined) return ''
+  return path.join(
+    workspace.workspaceFolders[0].uri.fsPath,
+    'constructor',
+    `${contract.name as string}.txt`
+  )
 }
 
 const getDeployedInputs: any = (context: vscode.ExtensionContext) => {
@@ -158,14 +167,14 @@ const getConstructorInputs: any = (context: vscode.ExtensionContext) => {
   }
 }
 
-const getFunctionParmas: any = (func: JsonFragment) => {
+const getFunctionParmas: any = (func: AbiItem) => {
   const inputs = func.inputs?.map((e) => e.type)
   return inputs?.join(', ')
 }
 
 const getFunctionInputs: any = async (
   context: vscode.ExtensionContext
-): Promise<JsonFragment> => {
+): Promise<AbiItem> => {
   return await new Promise((resolve, reject) => {
     try {
       const contract = context.workspaceState.get(
@@ -174,7 +183,7 @@ const getFunctionInputs: any = async (
       const fullPath = getFunctionInputFullPath(contract)
       const inputs = fs.readFileSync(fullPath).toString()
 
-      const functions: JsonFragment[] = JSON.parse(inputs)
+      const functions: AbiItem[] = JSON.parse(inputs)
 
       const quickPick = window.createQuickPick<IFunctionQP>()
       quickPick.items = functions.map((f) => ({
@@ -188,7 +197,7 @@ const getFunctionInputs: any = async (
           const { functionKey } = selection
           quickPick.dispose()
           const abiItem = functions.filter(
-            (i: JsonFragment) => i.name === functionKey
+            (i: AbiItem) => i.name === functionKey
           )
           if (abiItem.length === 0) throw new Error('No function is selected')
           resolve(abiItem[0])
@@ -229,7 +238,7 @@ const createConstructorInput: any = (contract: CompiledJSONOutput) => {
   }
 
   const constructor = getAbi(contract)?.filter(
-    (i: JsonFragment) => i.type === 'constructor'
+    (i: AbiItem) => i.type === 'constructor'
   )
   if (constructor === undefined) {
     logger.log("Abi doesn't exist on the loaded contract")
@@ -271,15 +280,24 @@ export const getNetworkFeeData = async (context: vscode.ExtensionContext): Promi
   if (chainID === '137' || chainID === '1') {
     const feeData = await getGasEstimates(gasCondition, context)
     return {
-      maxFeePerGas: utils.parseUnits(feeData.maxFeePerGas.toString(), 'gwei').toBigInt() ?? BigInt(0),
-      maxPriorityFeePerGas: utils.parseUnits(feeData.maxPriorityFeePerGas.toString(), 'gwei').toBigInt() ?? BigInt(0)
+      maxFeePerGas: parseUnits(feeData.maxFeePerGas.toString(), 9),
+      maxPriorityFeePerGas: parseUnits(feeData.maxPriorityFeePerGas.toString(), 9)
     }
   } else {
-    const provider = getSelectedProvider(context) as ethers.providers.JsonRpcProvider
-    const feeData = await provider.getFeeData()
+    const client = getSelectedProvider(context)
+    // Use viem's fee data method or custom RPC call
+    const feeHistory = await client.request({
+      method: 'eth_feeHistory',
+      params: ['0x5', 'latest', [70]]
+    })
+    // Simplified: you may want to use get1559Fees here
+    const baseFeePerGas = feeHistory.baseFeePerGas
+    const reward = feeHistory.reward
+    const maxPriorityFeePerGas = reward.reduce((accumulator: bigint, currentValue: string[]) => accumulator + BigInt(currentValue[0]), 0n) / BigInt(reward.length)
+    const maxFeePerGas = BigInt(baseFeePerGas[baseFeePerGas.length - 1]) * 2n + maxPriorityFeePerGas
     return {
-      maxFeePerGas: feeData.maxFeePerGas?.toBigInt() ?? BigInt(0),
-      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.toBigInt() ?? BigInt(0)
+      maxFeePerGas,
+      maxPriorityFeePerGas
     }
   }
 }
@@ -291,12 +309,11 @@ const getGasEstimates: any = async (
   let estimate: EstimateGas | undefined
   const chainID = getSelectedNetConf(context).chainID
   // try to use `eth_feeHistory` RPC API
-  const provider = getSelectedProvider(
-    context
-  ) as ethers.providers.JsonRpcProvider
+  const client = getSelectedProvider(context)
   if (chainID === '59140') {
-    const maxFeePerGas = get1559Fees(provider, BigInt(10), 70)
+    const maxFeePerGas = await get1559Fees(client, BigInt(10), 70)
     console.log(maxFeePerGas)
+    return maxFeePerGas
   } else {
     const blockPriceUri = getNetworkBlockpriceUrl(context)
     if (blockPriceUri !== undefined) {
