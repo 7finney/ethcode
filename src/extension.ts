@@ -4,7 +4,8 @@ import {
   deployContract,
   displayBalance,
   setTransactionGas,
-  updateSelectedNetwork
+  updateSelectedNetwork,
+  getNetworkGasPrices
 } from './utils/networks'
 import { logger } from './lib'
 import {
@@ -24,9 +25,10 @@ import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
 import { event } from './api/api'
 import { type API } from './types'
+import { runTests } from './utils/runTests'
 
 export async function activate (context: ExtensionContext): Promise<API | undefined> {
-  context.subscriptions.push(
+  const disposables = [
     // Create new account with password
     commands.registerCommand('ethcode.account.create', async () => {
       try {
@@ -77,6 +79,7 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
           logger.error(error)
         })
     }),
+
     // Select Ethereum Account
     commands.registerCommand('ethcode.account.select', () => {
       selectAccount(context)
@@ -103,9 +106,7 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
 
     // Get network gas prices
     commands.registerCommand('ethcode.transaction.gas.prices', async () => {
-      const { maxFeePerGas, maxPriorityFeePerGas } = await provider(context).network.getGasPrices()
-      logger.log('maxFeePerGas > ', maxFeePerGas)
-      logger.log('maxPriorityFeePerGas > ', maxPriorityFeePerGas)
+      await getNetworkGasPrices(context)
     }),
 
     // Load combined JSON output
@@ -141,6 +142,7 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
           logger.error(error)
         })
     }),
+
     // Import Key pair
     commands.registerCommand('ethcode.account.import', async () => {
       importKeyPair(context)
@@ -152,8 +154,18 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       logger.success('Welcome to Ethcode!')
+    }),
+
+    // Run tests
+    commands.registerCommand('ethcode.contract.test', async () => {
+      runTests(context)
+        .catch((error: any) => {
+          logger.error(error)
+        })
     })
-  )
+  ]
+
+  context.subscriptions.push(...disposables)
 
   // API for extensions
   // ref: https://code.visualstudio.com/api/references/vscode-api#extensions
