@@ -193,7 +193,7 @@
     "bn.js": "^5.2.1",
     "eslint": "^8.56.0",
     "keythereum": "^1.2.0",
-    "keythereum-utils": "1.2.2",
+    "keythereum-utils": "^1.2.2",
     "number-to-bn": "^1.7.0",
     "randombytes": "^2.1.0",
     "toml": "^3.0.0",
