@@ -5,7 +5,7 @@
   "version": "0.4.13",
   "publisher": "7finney",
   "engines": {
-    "vscode": "^1.84.2",
+    "vscode": "^1.84.0",
     "node": ">=16.15.0"
   },
   "categories": [
@@ -24,23 +24,23 @@
   "repository": "https://github.com/7finney/ethcode",
   "activationEvents": [
     "onLanguage:solidity",
-    "onCommand: ethcode.activate",
-    "onCommand: ethcode.compiled-json.load",
-    "onCommand: ethcode.compiled-json.load.all",
-    "onCommand: ethcode.compiled-json.select",
-    "onCommand: ethcode.network.select",
-    "onCommand: ethcode.account.export",
-    "onCommand: ethcode.account.import",
-    "onCommand: ethcode.account.create",
-    "onCommand: ethcode.account.delete",
-    "onCommand: ethcode.account.select",
-    "onCommand: ethcode.account.balance",
-    "onCommand: ethcode.contract.deploy",
-    "onCommand: ethcode.contract.call",
-    "onCommand: ethcode.contract.test",
-    "onCommand: ethcode.transaction.gas.set",
-    "onCommand: ethcode.transaction.gas.prices",
-    "onCommand: ethcode.rental.create"
+    "onCommand:ethcode.activate",
+    "onCommand:ethcode.compiled-json.load",
+    "onCommand:ethcode.compiled-json.load.all",
+    "onCommand:ethcode.compiled-json.select",
+    "onCommand:ethcode.network.select",
+    "onCommand:ethcode.account.export",
+    "onCommand:ethcode.account.import",
+    "onCommand:ethcode.account.create",
+    "onCommand:ethcode.account.delete",
+    "onCommand:ethcode.account.select",
+    "onCommand:ethcode.account.balance",
+    "onCommand:ethcode.contract.deploy",
+    "onCommand:ethcode.contract.call",
+    "onCommand:ethcode.contract.test",
+    "onCommand:ethcode.transaction.gas.set",
+    "onCommand:ethcode.transaction.gas.prices",
+    "onCommand:ethcode.rental.create"
   ],
   "main": "./extension/build/extension.js",
   "extensionDependencies": [
@@ -75,82 +75,28 @@
       }
     },
     "commands": [
-      {
-        "command": "ethcode:selectNetwork",
-        "title": "Select Network"
-      },
-      {
-        "command": "ethcode:selectAccount",
-        "title": "Select Account"
-      },
-      {
-        "command": "ethcode:createAccount",
-        "title": "Create Account"
-      },
-      {
-        "command": "ethcode:exportAccount",
-        "title": "Export Account"
-      },
-      {
-        "command": "ethcode:deleteAccount",
-        "title": "Delete Account"
-      },
-      {
-        "command": "ethcode:importAccount",
-        "title": "Import Account"
-      },
-      {
-        "command": "ethcode:displayBalance",
-        "title": "Display Balance"
-      },
-      {
-        "command": "ethcode:setTransactionGas",
-        "title": "Set Transaction Gas"
-      },
-      {
-        "command": "ethcode:getNetworkGasPrices",
-        "title": "Get Network Gas Prices"
-      },
-      {
-        "command": "ethcode:loadCompiledJSON",
-        "title": "Load compiled JSON output"
-      },
-      {
-        "command": "ethcode:selectContract",
-        "title": "Select one compiled JSON output"
-      },
-      {
-        "command": "ethcode:deployContract",
-        "title": "Deploy Contract"
-      },
-      {
-        "command": "ethcode:callContractMethod",
-        "title": "Call Contract Method"
-      },
-      {
-        "command": "ethcode:createFunctionInput",
-        "title": "Create Function Input"
-      },
-      {
-        "command": "ethcode:createConstructorInput",
-        "title": "Create Constructor Input"
-      },
-      {
-        "command": "ethcode:createDeployed",
-        "title": "Create Deployed"
-      },
-      {
-        "command": "ethcode:exportABI",
-        "title": "Export ABI"
-      },
-      {
-        "command": "ethcode:createERC4907Contract",
-        "title": "Create ERC4907 Contract"
-      },
-      {
-        "command": "ethcode:runTests",
-        "title": "Run Tests"
-      }
+      { "command": "ethcode.network.select", "title": "Ethcode: Select Network" },
+      { "command": "ethcode.account.select", "title": "Ethcode: Select Account" },
+      { "command": "ethcode.account.create", "title": "Ethcode: Create Account" },
+      { "command": "ethcode.account.export", "title": "Ethcode: Export Account" },
+      { "command": "ethcode.account.delete", "title": "Ethcode: Delete Account" },
+      { "command": "ethcode.account.import", "title": "Ethcode: Import Account" },
+      { "command": "ethcode.account.balance", "title": "Ethcode: Display Balance" },
+      { "command": "ethcode.transaction.gas.set", "title": "Ethcode: Set Transaction Gas" },
+      { "command": "ethcode.transaction.gas.prices", "title": "Ethcode: Get Network Gas Prices" },
+      { "command": "ethcode.compiled-json.load", "title": "Ethcode: Load Compiled JSON" },
+      { "command": "ethcode.compiled-json.select", "title": "Ethcode: Select Compiled JSON" },
+      { "command": "ethcode.contract.deploy", "title": "Ethcode: Deploy Contract" },
+      { "command": "ethcode.contract.call", "title": "Ethcode: Call Contract" },
+      { "command": "ethcode.contract.test", "title": "Ethcode: Run Contract Tests" },
+      { "command": "ethcode.compiled-json.load.all", "title": "Ethcode: Load All Compiled JSON" },
+      { "command": "ethcode.activate", "title": "Ethcode: Activate" },
+      { "command": "ethcode.createFunctionInput", "title": "Ethcode: Create Function Input" },
+      { "command": "ethcode.createConstructorInput", "title": "Ethcode: Create Constructor Input" },
+      { "command": "ethcode.createDeployed", "title": "Ethcode: Create Deployed" },
+      { "command": "ethcode.exportABI", "title": "Ethcode: Export ABI" },
+      { "command": "ethcode.createERC4907Contract", "title": "Ethcode: Create ERC4907 Contract" },
+      { "command": "ethcode.runTests", "title": "Ethcode: Run Tests" }
     ],
     "keybindings": [
       {
@@ -160,28 +106,12 @@
     ],
     "menus": {
       "editor/context": [
-        {
-          "when": "resourceLangId == json",
-          "command": "ethcode.compiled-json.select",
-          "group": "Ethcode"
-        },
-        {
-          "when": "resourceLangId == json",
-          "command": "ethcode.compiled-json.load.all",
-          "group": "Ethcode"
-        },
-        {
-          "when": "resourceLangId == json",
-          "command": "ethcode.contract.call",
-          "group": "Ethcode"
-        }
+        { "when": "resourceLangId == json", "command": "ethcode.compiled-json.select", "group": "Ethcode" },
+        { "when": "resourceLangId == json", "command": "ethcode.compiled-json.load.all", "group": "Ethcode" },
+        { "when": "resourceLangId == json", "command": "ethcode.contract.call", "group": "Ethcode" }
       ],
       "commandPalette": [
-        {
-          "when": "false",
-          "command": "ethcode.compiled-json.load",
-          "group": "Ethcode"
-        }
+        { "command": "ethcode.compiled-json.load", "group": "Ethcode" }
       ]
     }
   },
@@ -199,7 +129,7 @@
     "toml": "^3.0.0",
     "underscore": "^1.13.4",
     "utf8": "^3.0.0",
-    "viem": "^2.7.9"
+    "viem": "^2.31.3"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
@@ -212,8 +142,7 @@
     "eslint": "^8.54.0",
     "glob": "^10.3.10",
     "mocha": "^10.2.0",
-    "typescript": "^5.3.2",
-    "viem": "^2.31.3"
+    "typescript": "^5.3.2"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
