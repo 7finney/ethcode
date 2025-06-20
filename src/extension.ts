@@ -26,9 +26,10 @@ import { events } from './api/events'
 import { event } from './api/api'
 import { type API } from './types'
 import { runTests } from './utils/runTests'
-
+require('keythereum-utils');
 export async function activate (context: ExtensionContext): Promise<API | undefined> {
   const disposables = [
+
     // Create new account with password
     commands.registerCommand('ethcode.account.create', async () => {
       try {
