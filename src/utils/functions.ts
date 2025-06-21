@@ -132,11 +132,14 @@ const getFunctionInputFullPath: any = (contract: CompiledJSONOutput) => {
 
 const getConstructorInputFullPath: any = (contract: CompiledJSONOutput) => {
   if (workspace.workspaceFolders === undefined) return ''
-  return path.join(
-    workspace.workspaceFolders[0].uri.fsPath,
-    'constructor',
-    `${contract.name as string}.txt`
-  )
+  const constructorDir = path.join(workspace.workspaceFolders[0].uri.fsPath, 'constructor')
+  
+  // Ensure constructor directory exists
+  if (!fs.existsSync(constructorDir)) {
+    fs.mkdirSync(constructorDir, { recursive: true })
+  }
+  
+  return path.join(constructorDir, `${contract.name as string}.json`)
 }
 
 const getDeployedInputs: any = (context: vscode.ExtensionContext) => {
@@ -158,12 +161,19 @@ const getConstructorInputs: any = (context: vscode.ExtensionContext) => {
       'contract'
     ) as CompiledJSONOutput
     const fullPath = getConstructorInputFullPath(contract)
+    
+    // Check if file exists
+    if (!fs.existsSync(fullPath)) {
+      logger.log(`Constructor input file not found: ${fullPath}`)
+      return undefined
+    }
+    
     const inputs = fs.readFileSync(fullPath).toString()
-
     const constructorInputs: ConstructorInputValue[] = JSON.parse(inputs)
     return constructorInputs.map((e) => e.value) // flattened parameters of input
   } catch (e) {
-    return []
+    logger.error(`Error reading constructor inputs: ${e}`)
+    return undefined
   }
 }
 
@@ -262,7 +272,8 @@ const createConstructorInput: any = (contract: CompiledJSONOutput) => {
     }
   )
 
-  writeConstructor(getConstructorInputFullPath(contract), contract, inputs)
+  const fullPath = getConstructorInputFullPath(contract)
+  writeConstructor(fullPath, contract, inputs)
 }
 
 const getNetworkBlockpriceUrl: any = (context: vscode.ExtensionContext) => {
