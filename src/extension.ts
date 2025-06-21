@@ -155,14 +155,6 @@ export async function activate (context: ExtensionContext): Promise<API | undefi
     // Activate
     commands.registerCommand('ethcode.activate', async () => {
       logger.success('Welcome to Ethcode!')
-    }),
-
-    // Run tests
-    commands.registerCommand('ethcode.contract.test', async () => {
-      runTests(context)
-        .catch((error: any) => {
-          logger.error(error)
-        })
     })
   ]
 
