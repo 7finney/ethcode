@@ -31,8 +31,8 @@ Ethereum donation address: [0xd22fE4aEFed0A984B1165dc24095728EE7005a36](https://
 ### Run following commands in the terminal
 
 ```shell
-yarn install
-yarn run build
+npm install
+npm run compile
 ```
 
 And then press F5, in Extension Development Host session, run `Ethereum: Solidity compile` command from command palette.
@@ -40,7 +40,7 @@ And then press F5, in Extension Development Host session, run `Ethereum: Solidit
 ## Packaging
 
 ```shell
-vsce package --yarn
+vsce package
 ```
 
 ## Publishing
@@ -51,7 +51,7 @@ Step 2:
 
 ```shell
 vsce login <publisher>
-vsce publish 0.1.4 -p <access token> --yarn
+vsce publish 0.1.4 -p <access token>
 git push origin v0.1.4
 ```
 
