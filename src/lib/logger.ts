@@ -28,10 +28,23 @@ export class Logger {
 
   public error (e: any): any {
     const now = this.getNow()
-    this.outputChannel.appendLine(`[${now}] Error: ${e.message as string}`)
-    this.outputChannel.appendLine(`[${now}] Error stack: ${JSON.stringify(e.stack)}`)
+    
+    // Handle undefined or null errors
+    if (!e) {
+      this.outputChannel.appendLine(`[${now}] Error: Unknown error occurred`)
+      this.outputChannel.show()
+      errorToast('Unknown error occurred')
+      return
+    }
+    
+    // Handle error objects without message property
+    const errorMessage = e.message || e.toString() || 'Unknown error'
+    const errorStack = e.stack || 'No stack trace available'
+    
+    this.outputChannel.appendLine(`[${now}] Error: ${errorMessage}`)
+    this.outputChannel.appendLine(`[${now}] Error stack: ${JSON.stringify(errorStack)}`)
     this.outputChannel.show()
-    errorToast(`Error: ${e.message as string}`)
+    errorToast(`Error: ${errorMessage}`)
   }
 
   public success (m: string): any {
