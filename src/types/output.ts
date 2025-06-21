@@ -52,9 +52,28 @@ export const getByteCode = (
 ): string | undefined => {
   if (output.contractType === 0) return ''
 
-  if (output.contractType === 1) return output.hardhatOutput?.bytecode
+  if (output.contractType === 1) {
+    const bytecode = output.hardhatOutput?.bytecode
+    if (!bytecode) return undefined
+    // Ensure 0x prefix for Hardhat format
+    return bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`
+  }
 
-  return output.remixOutput?.data.bytecode.object
+  // Remix format
+  const bytecode = output.remixOutput?.data.bytecode.object
+  if (!bytecode) {
+    console.log('Remix bytecode is undefined or null')
+    return undefined
+  }
+  
+  console.log(`Original Remix bytecode: ${bytecode.substring(0, 20)}...`)
+  console.log(`Bytecode starts with 0x: ${bytecode.startsWith('0x')}`)
+  
+  // Ensure 0x prefix for Remix format
+  const result = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`
+  console.log(`Final bytecode: ${result.substring(0, 20)}...`)
+  
+  return result
 }
 
 export interface BytecodeObject {
