@@ -110,16 +110,32 @@ export async function getConstructorInputFile(context: ExtensionContext, name: s
 }
 
 export async function createContractFiles(context: vscode.ExtensionContext, contractTitle: string) {
-  const contracts = await context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
-  const name = Object.keys(contracts).filter(
-    (i: string) => i === contractTitle
-  )
-  const contract: CompiledJSONOutput = contracts[name[0]]
+  try {
+    const contracts = await context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
+    
+    if (!contracts || Object.keys(contracts).length === 0) {
+      logger.error('No contracts found in workspace state')
+      return
+    }
+    
+    const name = Object.keys(contracts).filter(
+      (i: string) => i === contractTitle
+    )
+    
+    if (name.length === 0) {
+      logger.error(`Contract ${contractTitle} not found in workspace`)
+      return
+    }
+    
+    const contract: CompiledJSONOutput = contracts[name[0]]
 
-  void context.workspaceState.update('contract', contract)
-  createConstructorInput(contract)
-  createFunctionInput(contract)
-  createDeployed(contract)
+    void context.workspaceState.update('contract', contract)
+    createConstructorInput(contract)
+    createFunctionInput(contract)
+    createDeployed(contract)
 
-  logger.success(`Contract ${name[0]} is selected.`)
+    logger.success(`Contract ${name[0]} is selected.`)
+  } catch (error) {
+    logger.error(`Error in createContractFiles: ${error}`)
+  }
 }
