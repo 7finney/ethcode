@@ -16,15 +16,6 @@ import {
 import { checksumAddress } from 'viem'
 
 const keythereum = require('keythereum')
-const keythereumUtils = require('keythereum-utils')
-
-// Function to create an key
-function createKeyObject() {
-  const Key = keythereumUtils.createKeyObject({ keyBytes: 32, ivBytes: 16 });
-  // Store the result in a variable
-  const storedKey = Key;
-  return storedKey;
-}
 
 
 // List all local addresses
@@ -277,7 +268,6 @@ const exportKeyPair: any = async (context: vscode.ExtensionContext) => {
 
     if (addresses.length === 0) {
       logger.log('No account found. Please create account first.')
-      createKeyObject()
       return
     }
 
