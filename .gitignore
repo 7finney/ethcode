@@ -10,7 +10,7 @@
 /keystore/
 
 # production
-/build
+/extension/build
 *.vsix
 
 # misc
