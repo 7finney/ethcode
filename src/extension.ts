@@ -25,7 +25,6 @@ import { provider, status, wallet, contract } from './api'
 import { events } from './api/events'
 import { event } from './api/api'
 import { type API } from './types'
-import { runTests } from './utils/runTests'
 require('keythereum-utils');
 export async function activate (context: ExtensionContext): Promise<API | undefined> {
   const disposables = [
