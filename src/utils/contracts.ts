@@ -47,7 +47,7 @@ const parseBatchCompiledJSON = async (context: ExtensionContext): Promise<void> 
       logger.success(`Loaded ${name} contract into workspace.`)
       let contracts: any = context.workspaceState.get('contracts')
 
-      if (contracts === undefined || contracts === '') contracts = new Map()
+      if (contracts === undefined || contracts === '') contracts = {}
 
       contracts[name] = output
       void context.workspaceState.update('contracts', contracts)
@@ -134,43 +134,51 @@ const loadAllCompiledJsonOutputs: any = async (path_: string) => {
 }
 
 const selectContract: any = (context: ExtensionContext) => {
-  const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
+  try {
+    const contracts = context.workspaceState.get('contracts') as Record<string, CompiledJSONOutput>
 
-  if (contracts === undefined || Object.keys(contracts).length === 0) {
-    logger.log('No contracts found. Please load your compiled contract.')
-    return
-  }
-
-  const quickPick = window.createQuickPick<IFunctionQP>()
-  if (contracts === undefined || Object.keys(contracts).length === 0) return
-
-  quickPick.items = Object.keys(contracts).map((f) => ({
-    label: f,
-    functionKey: f
-  }))
-  quickPick.placeholder = 'Select a contract.'
-  quickPick.onDidChangeSelection(() => {
-    const selection = quickPick.selectedItems[0]
-    if ((selection != null) && (workspace.workspaceFolders != null)) {
-      const { functionKey } = selection
-      quickPick.dispose()
-      // get selected contract
-      const name = Object.keys(contracts).filter(
-        (i: string) => i === functionKey
-      )
-      const contract: CompiledJSONOutput = contracts[name[0]]
-      void context.workspaceState.update('contract', contract)
-
-      // Create a constructor input at the same time
-      createConstructorInput(contract)
-      createFunctionInput(contract)
-      createDeployed(contract)
-
-      logger.success(`Contract ${name[0]} is selected.`)
+    if (contracts === undefined || Object.keys(contracts).length === 0) {
+      logger.log('No contracts found. Please load your compiled contract.')
+      return
     }
-  })
-  quickPick.onDidHide(() => { quickPick.dispose() })
-  quickPick.show()
+
+    const quickPick = window.createQuickPick<IFunctionQP>()
+    if (contracts === undefined || Object.keys(contracts).length === 0) return
+
+    quickPick.items = Object.keys(contracts).map((f) => ({
+      label: f,
+      functionKey: f
+    }))
+    quickPick.placeholder = 'Select a contract.'
+    quickPick.onDidChangeSelection(() => {
+      try {
+        const selection = quickPick.selectedItems[0]
+        if ((selection != null) && (workspace.workspaceFolders != null)) {
+          const { functionKey } = selection
+          quickPick.dispose()
+          // get selected contract
+          const name = Object.keys(contracts).filter(
+            (i: string) => i === functionKey
+          )
+          const contract: CompiledJSONOutput = contracts[name[0]]
+          void context.workspaceState.update('contract', contract)
+
+          // Create a constructor input at the same time
+          createConstructorInput(contract)
+          createFunctionInput(contract)
+          createDeployed(contract)
+
+          logger.success(`Contract ${name[0]} is selected.`)
+        }
+      } catch (error) {
+        logger.error(`Error during contract selection: ${error}`)
+      }
+    })
+    quickPick.onDidHide(() => { quickPick.dispose() })
+    quickPick.show()
+  } catch (error) {
+    logger.error(`Error in selectContract: ${error}`)
+  }
 }
 
 const createERC4907Contract: any = async (context: ExtensionContext) => {
