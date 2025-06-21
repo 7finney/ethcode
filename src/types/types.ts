@@ -1,5 +1,12 @@
 import { type QuickPickItem } from 'vscode'
-import { type JsonFragment } from '@ethersproject/abi'
+// Minimal ABI item type for compatibility with viem
+export type AbiItem = {
+  type: string
+  name?: string
+  stateMutability?: string
+  inputs?: any[]
+  outputs?: any[]
+}
 
 export interface ISource {
   content: string | undefined
@@ -65,7 +72,7 @@ export interface IFunctionQP extends QuickPickItem {
   functionKey: string
 }
 
-export interface ConstructorInputValue extends JsonFragment {
+export interface ConstructorInputValue extends AbiItem {
   value: string
 }
 

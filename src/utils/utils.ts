@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { createPublicClient, http } from 'viem'
 import * as vscode from 'vscode'
 import { type NetworkConfig } from '../types'
 import { logger } from '../lib'
@@ -40,8 +40,28 @@ export const getSelectedNetwork = (context: vscode.ExtensionContext): string => 
 }
 
 export const getSelectedProvider: any = (context: vscode.ExtensionContext) => {
-  const rpc = getSelectedNetConf(context).rpc // default providers have a name with less than 10 chars
-  if (isValidHttpUrl(rpc) === true) return new ethers.providers.JsonRpcProvider(rpc)
+  const config = getSelectedNetConf(context)
+  const rpc = config.rpc
 
-  return ethers.providers.getDefaultProvider(rpc)
+  if (!isValidHttpUrl(rpc)) {
+    throw new Error('Invalid RPC URL')
+  }
+
+  return createPublicClient({
+    transport: http(rpc),
+    chain: {
+      id: Number(config.chainID),
+      name: getSelectedNetwork(context),
+      network: getSelectedNetwork(context).toLowerCase().replace(' ', '-'),
+      nativeCurrency: {
+        name: config.nativeCurrency.name,
+        symbol: config.nativeCurrency.symbol,
+        decimals: Number(config.nativeCurrency.decimal)
+      },
+      rpcUrls: {
+        default: { http: [rpc] },
+        public: { http: [rpc] }
+      }
+    }
+  })
 }

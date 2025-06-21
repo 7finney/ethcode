@@ -8,16 +8,14 @@ import {
 import {
   type ExtensionContext
 } from 'vscode'
-import { type ContractABI, type CompiledJSONOutput } from '../types'
-
-import { type JsonFragment } from '@ethersproject/abi'
+import { type ContractABI, type CompiledJSONOutput, type AbiItem } from '../types'
 import { parseBatchCompiledJSON } from '../utils/contracts'
 
 /**
  * Defines the contract API interface.
  * @interface
  * @property {() => Promise<string[]>} list Retrieves the list of contracts.
- * @property {(name: string) => Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>} abi Retrieves the abi of the contract.
+ * @property {(name: string) => Promise<readonly ContractABI[] | readonly AbiItem[] | undefined>} abi Retrieves the abi of the contract.
  * @property {(name: string) => Promise<string | undefined>} getContractAddress Retrieves the address of the contract.
  * @property {(name: string) => Promise<object | undefined>} getFunctionInput Retrieves the function input of the contract.
  * @property {(name: string) => Promise<object | undefined>} getConstructorInput Retrieves the constructor input of the contract.
@@ -25,7 +23,7 @@ import { parseBatchCompiledJSON } from '../utils/contracts'
  */
 export interface ContractInterface {
   list: () => Promise<string[]>
-  abi: (name: string) => Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>
+  abi: (name: string) => Promise<readonly ContractABI[] | readonly AbiItem[] | undefined>
   getContractAddress: (name: string) => Promise<string | undefined>
   getFunctionInput: (name: string) => Promise<object | undefined>
   getConstructorInput: (name: string) => Promise<object | undefined>
@@ -91,9 +89,9 @@ export function contract (context: ExtensionContext): ContractInterface {
    * Returns the ABI for the specified contract in ethcode.
    *
    * @param {string} name - Name of the contract for which to retrieve the ABI.
-   * @returns {Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined>} - ABI of the specified contract, `undefined` if the ABI cannot be retrieved.
+   * @returns {Promise<readonly ContractABI[] | readonly AbiItem[] | undefined>} - ABI of the specified contract, `undefined` if the ABI cannot be retrieved.
    */
-  async function abi (contractTitle: string): Promise<readonly ContractABI[] | readonly JsonFragment[] | undefined> {
+  async function abi (contractTitle: string): Promise<readonly ContractABI[] | readonly AbiItem[] | undefined> {
     return await exportABI(context, contractTitle)
   }
 

@@ -1,11 +1,10 @@
-import { type JsonFragment } from '@ethersproject/abi'
-import type * as ethers from 'ethers'
+import { type AbiItem } from './types'
 
 export interface HardHatCompiledOutput {
   contractName: string
   sourceName: string
   /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
-  abi: readonly JsonFragment[]
+  abi: readonly AbiItem[]
   bytecode: string
   deployedBytecode: string
 }
@@ -16,7 +15,7 @@ export interface RemixCompiledOutput {
     deployedByteCode: BytecodeObject
   }
   /** The Ethereum Contract ABI. If empty, it is represented as an empty array. */
-  abi: readonly JsonFragment[]
+  abi: readonly AbiItem[]
 }
 
 interface GasEstimate {
@@ -50,17 +49,36 @@ export const getAbi = (output: CompiledJSONOutput): any => {
 
 export const getByteCode = (
   output: CompiledJSONOutput
-): ethers.utils.BytesLike | undefined => {
+): string | undefined => {
   if (output.contractType === 0) return ''
 
-  if (output.contractType === 1) return output.hardhatOutput?.bytecode
+  if (output.contractType === 1) {
+    const bytecode = output.hardhatOutput?.bytecode
+    if (!bytecode) return undefined
+    // Ensure 0x prefix for Hardhat format
+    return bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`
+  }
 
-  return output.remixOutput?.data.bytecode.object
+  // Remix format
+  const bytecode = output.remixOutput?.data.bytecode.object
+  if (!bytecode) {
+    console.log('Remix bytecode is undefined or null')
+    return undefined
+  }
+  
+  console.log(`Original Remix bytecode: ${bytecode.substring(0, 20)}...`)
+  console.log(`Bytecode starts with 0x: ${bytecode.startsWith('0x')}`)
+  
+  // Ensure 0x prefix for Remix format
+  const result = bytecode.startsWith('0x') ? bytecode : `0x${bytecode}`
+  console.log(`Final bytecode: ${result.substring(0, 20)}...`)
+  
+  return result
 }
 
 export interface BytecodeObject {
   /** The bytecode as a hex string. */
-  object: ethers.utils.BytesLike
+  object: string
   /** Opcodes list */
   opcodes: string
   /** The source mapping as a string. See the source mapping definition. */

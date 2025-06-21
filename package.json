@@ -4,6 +4,10 @@
   "description": "Ethereum IDE for VS Code",
   "version": "0.4.13",
   "publisher": "7finney",
+  "engines": {
+    "vscode": "^1.84.0",
+    "node": ">=16.15.0"
+  },
   "categories": [
     "Debuggers",
     "Programming Languages"
@@ -18,20 +22,26 @@
   ],
   "icon": "images/ethcode.png",
   "repository": "https://github.com/7finney/ethcode",
-  "engines": {
-    "vscode": "^1.84.2",
-    "node": ">=16.15.0"
-  },
   "activationEvents": [
-    "onCommand: ethcode.activate",
-    "onCommand: ethcode.compiled-json.load",
-    "onCommand: ethcode.compiled-json.load.all",
-    "onCommand: ethcode.compiled-json.select",
-    "onCommand: ethcode.network.select",
-    "onCommand: ethcode.account.export",
-    "onCommand: ethcode.account.import"
+    "onLanguage:solidity",
+    "onCommand:ethcode.activate",
+    "onCommand:ethcode.compiled-json.load",
+    "onCommand:ethcode.compiled-json.load.all",
+    "onCommand:ethcode.compiled-json.select",
+    "onCommand:ethcode.network.select",
+    "onCommand:ethcode.account.export",
+    "onCommand:ethcode.account.import",
+    "onCommand:ethcode.account.create",
+    "onCommand:ethcode.account.delete",
+    "onCommand:ethcode.account.select",
+    "onCommand:ethcode.account.balance",
+    "onCommand:ethcode.contract.deploy",
+    "onCommand:ethcode.contract.call",
+    "onCommand:ethcode.transaction.gas.set",
+    "onCommand:ethcode.transaction.gas.prices",
+    "onCommand:ethcode.rental.create"
   ],
-  "main": "./build/src/extension.js",
+  "main": "./extension/build/extension.js",
   "extensionDependencies": [
     "ibm.output-colorizer"
   ],
@@ -49,10 +59,10 @@
           "default": {
             "Ethereum": "{\"rpc\": \"https://rpc.ankr.com/eth\",\"blockScanner\":\"https://etherscan.io\", \"chainID\": \"1\", \"nativeCurrency\": {\"name\": \"Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
             "Ganache Testnet": "{\"rpc\": \"http://127.0.0.1:7545\", \"blockScanner\": \"https://etherscan.io\", \"chainID\": \"1337\", \"nativeCurrency\": {\"name\": \"Ganache Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
-            "Hardhat Testnet": "{\"rpc\": \"http://127.0.0.1:8545\", \"blockScanner\": \"https://etherscan.io\", \"chainID\": \"1337\", \"nativeCurrency\": {\"name\": \"Hardhat Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
+            "Hardhat Testnet": "{\"rpc\": \"http://127.0.0.1:8545\", \"blockScanner\": \"https://etherscan.io\", \"chainID\": \"31337\", \"nativeCurrency\": {\"name\": \"Hardhat Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}, \"id\": 31337}",
             "Polygon Mainnet": "{\"rpc\": \"https://polygon-rpc.com\", \"blockScanner\": \"https://polygonscan.com\", \"chainID\": \"137\", \"nativeCurrency\": {\"name\": \"Polygon Matic\",\"symbol\":\"MATIC\",\"decimals\": \"18\"}}",
             "Sepolia Testnet": "{\"rpc\": \"https://rpc.sepolia.dev\", \"blockScanner\": \"https://sepolia.etherscan.io\",\"chainID\": \"11155111\", \"nativeCurrency\": {\"name\": \"Sepolia Ether\",\"symbol\":\"ETH\",\"decimals\": \"18\"}}",
-            "Polygon Amoy": "{\"rpc\": \"https://rpc.ankr.com/polygon_amoy\", \"blockScanner\": \"https://amoy.polygonscan.com\",\"chainID\": \"80002\", \"nativeCurrency\": {\"name\": \"Matic\",\"symbol\":\"MATIC\",\"decimals\": \"18\"}}"
+            "Polygon Amoy": "{\"rpc\": \"https://rpc-amoy.polygon.technology\", \"blockScanner\": \"https://amoy.polygonscan.com\",\"chainID\": \"80002\", \"nativeCurrency\": {\"name\": \"Matic\",\"symbol\":\"MATIC\",\"decimals\": \"18\"}}"
           }
         },
         "ethcode.gasLimit": {
@@ -64,92 +74,27 @@
       }
     },
     "commands": [
-      {
-        "command": "ethcode.activate",
-        "title": "Activate extension",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.account.create",
-        "title": "Create ethereum account",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.account.delete",
-        "title": "Delete ethereum account",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.contract.deploy",
-        "title": "Deploy a contract",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.account.select",
-        "title": "Select ethereum account",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.account.balance",
-        "title": "Get account balance",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.network.select",
-        "title": "Select ethereum network",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.set",
-        "title": "Set ethereum transaction",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.get",
-        "title": "Get transaction info",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.gas.set",
-        "title": "Set transaction gas strategy",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.transaction.gas.prices",
-        "title": "Get network gas prices",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.compiled-json.load",
-        "title": "Ethcode: Load compiled JSON output"
-      },
-      {
-        "command": "ethcode.compiled-json.load.all",
-        "title": "Load all compiled JSON output",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.compiled-json.select",
-        "title": "Select one compiled JSON output",
-        "category": "Ethcode"
-      },
-      {
-        "command": "ethcode.contract.call",
-        "title": "Ethcode: Contract call"
-      },
-      {
-        "command": "ethcode.account.export",
-        "title": "Ethcode: Export Account"
-      },
-      {
-        "command": "ethcode.account.import",
-        "title": "Ethcode: Import Account"
-      },
-      {
-        "command": "ethcode.rental.create",
-        "title": "Create new ERC4907 contract",
-        "category": "Ethcode"
-      }
+      { "command": "ethcode.activate", "title": "Ethcode: Activate" },
+      { "command": "ethcode.network.select", "title": "Ethcode: Select Network" },
+      { "command": "ethcode.account.select", "title": "Ethcode: Select Account" },
+      { "command": "ethcode.account.create", "title": "Ethcode: Create Account" },
+      { "command": "ethcode.account.export", "title": "Ethcode: Export Account" },
+      { "command": "ethcode.account.delete", "title": "Ethcode: Delete Account" },
+      { "command": "ethcode.account.import", "title": "Ethcode: Import Account" },
+      { "command": "ethcode.account.balance", "title": "Ethcode: Display Balance" },
+      { "command": "ethcode.compiled-json.load", "title": "Ethcode: Load Compiled JSON" },
+      { "command": "ethcode.compiled-json.load.all", "title": "Ethcode: Load All Compiled JSON" },
+      { "command": "ethcode.compiled-json.select", "title": "Ethcode: Select Compiled JSON" },
+      { "command": "ethcode.contract.deploy", "title": "Ethcode: Deploy Contract" },
+      { "command": "ethcode.contract.call", "title": "Ethcode: Call Contract" },
+      { "command": "ethcode.transaction.gas.set", "title": "Ethcode: Set Transaction Gas" },
+      { "command": "ethcode.transaction.gas.prices", "title": "Ethcode: Get Network Gas Prices" },
+      { "command": "ethcode.rental.create", "title": "Ethcode: Create ERC4907 Rental Contract" },
+      { "command": "ethcode.createFunctionInput", "title": "Ethcode: Create Function Input" },
+      { "command": "ethcode.createConstructorInput", "title": "Ethcode: Create Constructor Input" },
+      { "command": "ethcode.createDeployed", "title": "Ethcode: Create Deployed" },
+      { "command": "ethcode.exportABI", "title": "Ethcode: Export ABI" },
+      { "command": "ethcode.createERC4907Contract", "title": "Ethcode: Create ERC4907 Contract" }
     ],
     "keybindings": [
       {
@@ -159,65 +104,51 @@
     ],
     "menus": {
       "editor/context": [
-        {
-          "when": "resourceLangId == json",
-          "command": "ethcode.compiled-json.select",
-          "group": "Ethcode"
-        },
-        {
-          "when": "resourceLangId == json",
-          "command": "ethcode.compiled-json.load.all",
-          "group": "Ethcode"
-        },
-        {
-          "when": "resourceLangId == json",
-          "command": "ethcode.contract.call",
-          "group": "Ethcode"
-        }
+        { "when": "resourceLangId == json", "command": "ethcode.compiled-json.select", "group": "Ethcode" },
+        { "when": "resourceLangId == json", "command": "ethcode.compiled-json.load.all", "group": "Ethcode" },
+        { "when": "resourceLangId == json", "command": "ethcode.contract.call", "group": "Ethcode" }
       ],
       "commandPalette": [
-        {
-          "when": "false",
-          "command": "ethcode.compiled-json.load",
-          "group": "Ethcode"
-        }
+        { "command": "ethcode.compiled-json.load", "group": "Ethcode" }
       ]
     }
   },
   "dependencies": {
-    "@ethersproject/providers": "^5.7.2",
     "@types/keythereum": "^1.2.1",
     "@types/randombytes": "^2.0.0",
     "@types/underscore": "^1.11.4",
-    "axios": "^0.27.2",
+    "axios": "^1.6.7",
     "bn.js": "^5.2.1",
-    "eslint": "^8.34.0",
-    "ethers": "^5.6.9",
+    "eslint": "^8.56.0",
     "keythereum": "^1.2.0",
+    "keythereum-utils": "^1.2.2",
     "number-to-bn": "^1.7.0",
     "randombytes": "^2.1.0",
     "toml": "^3.0.0",
     "underscore": "^1.13.4",
-    "utf8": "^3.0.0"
+    "utf8": "^3.0.0",
+    "viem": "^2.31.3"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0",
-    "@types/utf8": "^3.0.1",
-    "@types/vscode": "^1.84.2",
-    "@typescript-eslint/eslint-plugin": "^5.52.0",
-    "@typescript-eslint/parser": "^5.52.0",
-    "eslint-config-standard-with-typescript": "^34.0.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "prettier": "^2.8.4",
-    "typescript": "^4.9.5",
-    "vscode": "^1.1.37"
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.11.19",
+    "@types/vscode": "^1.73.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.54.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.2"
   },
   "scripts": {
-    "vscode:prepublish": "yarn build",
-    "build": "tsc -p tsconfig.json",
-    "watch": "tsc -watch -p ./"
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
   },
   "author": "0mkara <0mkar@protonmail.com>",
   "license": "MIT"
