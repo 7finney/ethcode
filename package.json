@@ -37,7 +37,6 @@
     "onCommand:ethcode.account.balance",
     "onCommand:ethcode.contract.deploy",
     "onCommand:ethcode.contract.call",
-    "onCommand:ethcode.contract.test",
     "onCommand:ethcode.transaction.gas.set",
     "onCommand:ethcode.transaction.gas.prices",
     "onCommand:ethcode.rental.create"
@@ -75,6 +74,7 @@
       }
     },
     "commands": [
+      { "command": "ethcode.activate", "title": "Ethcode: Activate" },
       { "command": "ethcode.network.select", "title": "Ethcode: Select Network" },
       { "command": "ethcode.account.select", "title": "Ethcode: Select Account" },
       { "command": "ethcode.account.create", "title": "Ethcode: Create Account" },
@@ -82,21 +82,19 @@
       { "command": "ethcode.account.delete", "title": "Ethcode: Delete Account" },
       { "command": "ethcode.account.import", "title": "Ethcode: Import Account" },
       { "command": "ethcode.account.balance", "title": "Ethcode: Display Balance" },
-      { "command": "ethcode.transaction.gas.set", "title": "Ethcode: Set Transaction Gas" },
-      { "command": "ethcode.transaction.gas.prices", "title": "Ethcode: Get Network Gas Prices" },
       { "command": "ethcode.compiled-json.load", "title": "Ethcode: Load Compiled JSON" },
+      { "command": "ethcode.compiled-json.load.all", "title": "Ethcode: Load All Compiled JSON" },
       { "command": "ethcode.compiled-json.select", "title": "Ethcode: Select Compiled JSON" },
       { "command": "ethcode.contract.deploy", "title": "Ethcode: Deploy Contract" },
       { "command": "ethcode.contract.call", "title": "Ethcode: Call Contract" },
-      { "command": "ethcode.contract.test", "title": "Ethcode: Run Contract Tests" },
-      { "command": "ethcode.compiled-json.load.all", "title": "Ethcode: Load All Compiled JSON" },
-      { "command": "ethcode.activate", "title": "Ethcode: Activate" },
+      { "command": "ethcode.transaction.gas.set", "title": "Ethcode: Set Transaction Gas" },
+      { "command": "ethcode.transaction.gas.prices", "title": "Ethcode: Get Network Gas Prices" },
+      { "command": "ethcode.rental.create", "title": "Ethcode: Create ERC4907 Rental Contract" },
       { "command": "ethcode.createFunctionInput", "title": "Ethcode: Create Function Input" },
       { "command": "ethcode.createConstructorInput", "title": "Ethcode: Create Constructor Input" },
       { "command": "ethcode.createDeployed", "title": "Ethcode: Create Deployed" },
       { "command": "ethcode.exportABI", "title": "Ethcode: Export ABI" },
-      { "command": "ethcode.createERC4907Contract", "title": "Ethcode: Create ERC4907 Contract" },
-      { "command": "ethcode.runTests", "title": "Ethcode: Run Tests" }
+      { "command": "ethcode.createERC4907Contract", "title": "Ethcode: Create ERC4907 Contract" }
     ],
     "keybindings": [
       {
