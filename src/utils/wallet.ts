@@ -2,6 +2,7 @@
 import { createWalletClient, custom, type Account as ViemAccount } from 'viem'
 import * as fs from 'fs'
 import * as path from 'path'
+import {randomBytes} from 'crypto'
 import * as vscode from 'vscode'
 import { window, type InputBoxOptions } from 'vscode'
 import { event } from '../api/api'
@@ -14,8 +15,8 @@ import {
   isTestingNetwork
 } from './networks'
 import { checksumAddress } from 'viem'
-
-const keythereum = require('keythereum')
+import { generatePrivateKey } from 'viem/accounts'
+import { dump, exportToFile, importFromFile, recover } from './keythereum'
 
 
 // List all local addresses
@@ -60,17 +61,29 @@ const listAddresses: any = async (
 // Create keypair (using viem mnemonic/account)
 const createKeyPair: any = (context: vscode.ExtensionContext, keyPath: string, pswd: string) => {
   // For now, keep using keythereum for keystore compatibility
-  const params = { keyBytes: 32, ivBytes: 16 }
-  const bareKey = keythereum.create(params)
+  const privateKey = generatePrivateKey()
+  
+  // Generate salt and IV using crypto library
+  const salt = randomBytes(32)
+  const iv = randomBytes(16)
+  
+  // Options for keythereum
   const options = {
     kdf: 'scrypt',
-    cipher: 'aes-128-ctr'
+    cipher: 'aes-128-ctr',
+    kdfparams: {
+      n: 8192,
+      r: 8,
+      p: 1,
+      dklen: 32
+    }
   }
-  const keyObject = keythereum.dump(
+  
+  const keyObject = dump(
     Buffer.from(pswd, 'utf-8'),
-    bareKey.privateKey,
-    bareKey.salt,
-    bareKey.iv,
+    Buffer.from(privateKey.slice(2), 'hex'),
+    salt,
+    iv,
     options
   )
   const pubAddr = `0x${keyObject.address}`
@@ -84,7 +97,7 @@ const createKeyPair: any = (context: vscode.ExtensionContext, keyPath: string, p
   if (!fs.existsSync(keyStorePath)) {
     fs.mkdirSync(keyStorePath)
   }
-  keythereum.exportToFile(keyObject, keyStorePath)
+  exportToFile(keyObject, keyStorePath)
   listAddresses(context, keyPath).then((addresses: string[]) => {
     event.updateAccountList.fire(addresses)
   }).catch((error: any) => logger.error(error))
@@ -184,8 +197,8 @@ const extractPvtKey: any = async (keyStorePath: string, address: string) => {
     }
     const password = await window.showInputBox(pwdInpOpt)
 
-    const keyObject = keythereum.importFromFile(address, keyStorePath)
-    return keythereum.recover(Buffer.from(password ?? '', 'utf-8'), keyObject)
+    const keyObject = importFromFile(address, keyStorePath)
+    return recover(Buffer.from(password ?? '', 'utf-8'), keyObject)
   } catch (e) {
     throw new Error(
       "Password is wrong or such address doesn't exist in wallet lists"

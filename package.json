@@ -192,19 +192,16 @@
     }
   },
   "dependencies": {
-    "@types/keythereum": "^1.2.1",
-    "@types/randombytes": "^2.0.0",
     "@types/underscore": "^1.11.4",
     "axios": "^1.6.7",
     "bn.js": "^5.2.1",
     "eslint": "^8.56.0",
-    "keythereum": "^1.2.0",
-    "keythereum-utils": "^1.2.2",
+    "ethereum-cryptography": "^3.2.0",
     "number-to-bn": "^1.7.0",
-    "randombytes": "^2.1.0",
     "toml": "^3.0.0",
     "underscore": "^1.13.4",
     "utf8": "^3.0.0",
+    "uuid": "^11.1.0",
     "viem": "^2.31.3"
   },
   "devDependencies": {
